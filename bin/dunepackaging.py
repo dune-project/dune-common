@@ -6,24 +6,7 @@ import email.utils
 import pkg_resources
 from datetime import date
 
-from dune.common.module import Version, VersionRequirement, Description
-class Data:
-    def __init__(self):
-        description = Description('dune.module')
-        self.name = description.name
-        self.version = str(description.version)
-        self.author_email = description.maintainer[1]
-        self.author = description.author or self.author_email
-        self.description = description.description
-        self.url = description.url
-        self.dune_dependencies = [
-                (dep[0]+str(dep[1])).replace("("," ").replace(")","")+".dev0"
-                for dep in description.depends
-             ]
-        self.install_requires = [
-                (dep[0]+str(dep[1])).replace("("," ").replace(")","")
-                for dep in description.python_requires
-             ]
+from dune.common.dunepackaging import metaData
 
 def main(argv):
 
@@ -71,26 +54,7 @@ def main(argv):
         if not upload:
             sys.exit(2)
 
-    data = Data()
-
-    # defaults
-    if not hasattr(data, 'dune_dependencies'):
-        data.dune_dependencies = []
-
-    if not hasattr(data, 'install_requires'):
-        data.install_requires = []
-
-    # if no version parameter specified, append DATE to version number in package.py
-    if version is None:
-        if not hasattr(data, 'version'):
-            print("No version number specified!")
-            sys.exit(2)
-        version = data.version + '.devDATE'
-
-    # version - replacing "DATE" with yearmonthday string
-    t = date.today()
-    today = t.strftime('%Y%m%d')
-    data.version = version.replace("DATE",today)
+    data, cmake_flags = metaData(version)
 
     # Generate setup.py
     print("Generate setup.py")
@@ -154,13 +118,6 @@ setup(
     f.write("build-backend = 'setuptools.build_meta'\n")
     f.close()
 
-    # Generate MANIFEST
-    with open('MANIFEST', 'wb') as manifest_file:
-        manifest_file.write("setup.py\n".encode())
-        manifest_file.write("pyproject.toml\n".encode())
-        manifest_file.write(
-             subprocess.check_output(['git', 'ls-files'])
-        )
 
     # Create source distribution
     python = sys.executable

@@ -1,10 +1,11 @@
 add_python_targets(common
   __init__
+  checkconfiguration
   compatibility
   deprecated            # deprecated 2.8
-  module
-  checkconfiguration
+  dunepackaging.py
   hashit
+  module
   pickle                # deprecated 2.8
   project
   utility
