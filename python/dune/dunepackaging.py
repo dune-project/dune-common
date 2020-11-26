@@ -267,6 +267,24 @@ def metaData(version=None):
     with open("README.md", "r") as fh:
         long_description = fh.read()
 
+    try:
+        with io.open('pyproject.toml', 'r', encoding='utf-8') as f:
+            for line in f:
+                if 'requires' in line:
+                    line = line.split('=',maxsplit=1)[1].strip()
+                    modules = ast.literal_eval(line)
+                    modules = [x for x in modules
+                                  if x not in ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
+                              ]
+                    if any( [ x for x in data.dune_modules if x not in modules ] ):
+                        raise RuntimeError("""
+pyproject.toml file does not contain all required dune projects defined in the
+dune.module file
+""")
+                    data.install_requires = data.install_requires + [ x for x in modules ]
+    except IOError:
+        pass
+
     setupParams = {
         "name":data.name,
         "version":data.version,
@@ -291,23 +309,4 @@ def metaData(version=None):
             "python_requires":'>=3.4',
          })
 
-    try:
-        with io.open('pyproject.toml', 'r', encoding='utf-8') as f:
-            for line in f:
-                if 'requires' in line:
-                    line = line.split('=',maxsplit=1)[1].strip()
-                    modules = ast.literal_eval(line)
-                    modules = [x for x in modules
-                                  if x not in ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
-                              ]
-                    if any( [ x for x in data.dune_modules if x not in modules ] ):
-                        raise RuntimeError("""
-pyproject.toml file does not contain all required dune projects defined in the
-dune.module file
-""")
-                    data.install_requires = data.install_requires + [ x for x in modules ]
-    except IOError:
-        pass
-
-    print("install requires:",data.install_requires)
     return data, setupParams
