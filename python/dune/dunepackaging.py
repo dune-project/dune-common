@@ -275,16 +275,19 @@ def metaData(version=None):
         "long_description":long_description,
         "long_description_content_type":"text/markdown",
         "url":data.url if data.url is not None else '',
-        "packages":find_packages(where="python"),
-        "package_dir":{"": "python"},
-        "install_requires":requires,
         "classifiers":[
             "Programming Language :: C++",
             "Programming Language :: Python :: 3",
             "License :: OSI Approved :: GNU General Public License (GPL)",
         ],
-        "python_requires":'>=3.4',
         "cmake_args":cmake_flags
-    }
+      }
+    if os.path.isdir('python'):
+      setupParams.update({
+            "packages":find_packages(where="python"),
+            "package_dir":{"": "python"},
+            "install_requires":requires,
+            "python_requires":'>=3.4',
+         })
 
     return data, setupParams
