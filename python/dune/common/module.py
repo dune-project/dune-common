@@ -433,7 +433,10 @@ def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, bu
         file.write(repr(desc))
 
     # remove cache
-    os.remove(os.path.join(dune_py_dir, 'CMakeCache.txt'))
+    try:
+        os.remove(os.path.join(dune_py_dir, 'CMakeCache.txt'))
+    except FileNotFoundError:
+        pass
 
     prefix = {}
     for name, dir in dirs.items():
