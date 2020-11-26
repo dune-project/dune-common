@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
-setup(name="${DUNE_MOD_NAME}",
+setup(name="${ProjectName}",
     namespace_packages=['dune'],
-    description="${DUNE_COMMON_DESCRIPTION}",
-    version="${DUNE_COMMON_VERSION}",
-    author="${DUNE_COMMON_AUTHOR}",
-    author_email="${DUNE_COMMON_AUTHOREMAIL}",
+    description="${ProjectDescription}",
+    version="${ProjectVersionString}",
+    author="${ProjectAuthor}",
+    author_email="${ProjectAuthorEmail}",
     packages = find_packages(),
     zip_safe = 0,
     package_data = {'': ['*.so']},
-    install_requires = "${DUNE_COMMON_PYTHON_REQUIRES}".split(' ')
+    install_requires = "${ProjectPythonRequires}".split(' ')
   )
