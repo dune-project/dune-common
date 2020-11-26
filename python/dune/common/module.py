@@ -432,6 +432,9 @@ def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, bu
     with open(os.path.join(dune_py_dir, 'dune.module'), 'w') as file:
         file.write(repr(desc))
 
+    # remove cache
+    os.remove(os.path.join(dune_py_dir, 'CMakeCache.txt'))
+
     prefix = {}
     for name, dir in dirs.items():
         if is_installed(dir, name):

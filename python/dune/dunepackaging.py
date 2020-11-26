@@ -215,6 +215,7 @@ class Data:
         self.author = description.author or self.author_email
         self.description = description.description
         self.url = description.url
+        self.dune_modules = [ dep[0] for dep in description.depends ]
         self.dune_dependencies = [
                 (dep[0]+str(dep[1])).replace("("," ").replace(")","")+".dev0"
                 for dep in description.depends
@@ -289,5 +290,17 @@ def metaData(version=None):
             "install_requires":requires,
             "python_requires":'>=3.4',
          })
+
+    try:
+        with io.open('pyproject.toml', 'r', encoding='utf-8') as f:
+            for line in f:
+                if 'requires' in line:
+                    if any( [ x for x in data.dune_modules if x not in line ] ):
+                        raise RuntimeError("""
+pyproject.toml file does not contain all required dune projects defined in the
+dune.module file
+""")
+    except IOError:
+        pass
 
     return data, setupParams
