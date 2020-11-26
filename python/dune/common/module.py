@@ -172,24 +172,25 @@ def get_local():
     return ''
 
 def get_module_path():
+    path = []
     try:
-        path = [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
+        path = path + [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
         logger.debug('Module path [DUNE_CONTROL_PATH]: ' + ':'.join(path))
-        return path
+        # return path
     except KeyError:
         pass
 
     # try to guess module path using pkg-config
     try:
         prefix = pkg_config('dune-common', 'prefix').strip()
-        path = [p for p in ['.', os.path.join(prefix, 'lib', 'dunecontrol')] if os.path.isdir(p)]
+        path = path + [p for p in ['.', os.path.join(prefix, 'lib', 'dunecontrol')] if os.path.isdir(p)]
         logger.debug('Module path [pkg-config]: ' + ':'.join(path))
-        return path
+        # return path
     except KeyError:
         pass
 
     # try to guess modules path for unix systems
-    path = [p for p in ['.',
+    path = path + [p for p in ['.',
                         '/usr/local/lib/dunecontrol',
                         '/usr/lib/dunecontrol',
                         os.path.join(get_local(),'lib','dunecontrol') ]
@@ -197,7 +198,7 @@ def get_module_path():
     try:
         pkg_config_path = [p for p in os.environ['PKG_CONFIG_PATH'].split(':') if p and os.path.isdir(p)]
         pkg_config_path = [os.path.join(p, '..', 'dunecontrol') for p in pkg_config_path]
-        path += [p for p in pkg_config_path if os.path.isdir(p)]
+        path = path + [p for p in pkg_config_path if os.path.isdir(p)]
     except KeyError:
         pass
 

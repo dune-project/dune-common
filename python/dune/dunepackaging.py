@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from setuptools import find_packages
-import sys, os, io, getopt, re
+import sys, os, io, getopt, re, ast
 import importlib, subprocess
 import email.utils
 import pkg_resources
@@ -295,12 +295,19 @@ def metaData(version=None):
         with io.open('pyproject.toml', 'r', encoding='utf-8') as f:
             for line in f:
                 if 'requires' in line:
-                    if any( [ x for x in data.dune_modules if x not in line ] ):
+                    line = line.split('=',maxsplit=1)[1].strip()
+                    modules = ast.literal_eval(line)
+                    modules = [x for x in modules
+                                  if x not in ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
+                              ]
+                    if any( [ x for x in data.dune_modules if x not in modules ] ):
                         raise RuntimeError("""
 pyproject.toml file does not contain all required dune projects defined in the
 dune.module file
 """)
+                    data.install_requires = data.install_requires + [ x for x in modules ]
     except IOError:
         pass
 
+    print("install requires:",data.install_requires)
     return data, setupParams
