@@ -262,11 +262,6 @@ def metaData(version=None):
         '-DCMAKE_MACOSX_RPATH=TRUE',
     ]
 
-    requires=data.install_requires+data.dune_dependencies
-
-    with open("README.md", "r") as fh:
-        long_description = fh.read()
-
     try:
         with io.open('pyproject.toml', 'r', encoding='utf-8') as f:
             for line in f:
@@ -284,6 +279,11 @@ dune.module file
                     data.install_requires = data.install_requires + [ x for x in modules ]
     except IOError:
         pass
+
+    requires=data.install_requires+data.dune_dependencies
+
+    with open("README.md", "r") as fh:
+        long_description = fh.read()
 
     setupParams = {
         "name":data.name,
