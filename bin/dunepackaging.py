@@ -5,8 +5,9 @@ import importlib, subprocess
 import email.utils
 import pkg_resources
 from datetime import date
+import json
 
-from dune.common.dunepackaging import metaData
+from dune.dunepackaging import metaData
 
 def main(argv):
 
@@ -58,64 +59,20 @@ def main(argv):
 
     # Generate setup.py
     print("Generate setup.py")
-    setuppy = '''\
-import sys, os
-from setuptools import find_packages
-from skbuild import setup
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
-'''
-    setuppy += '''
-setup(
-'''
-    setuppy += '    name="'+data.name+'",\n'
-    setuppy += '    version="'+data.version+'",\n'
-    setuppy += '    author="'+data.author+'",\n'
-    setuppy += '    author_email="'+data.author_email+'",\n'
-    setuppy += '    description="'+data.description+'",\n'
-    setuppy += '    long_description=long_description,\n'
-    setuppy += '    long_description_content_type="text/markdown",\n'
-    if data.url is not None:
-        setuppy += '    url="'+data.url+'",\n'
-    setuppy += '    packages=find_packages(where="python"),\n'
-    setuppy += '    package_dir={"": "python"},\n'
-    setuppy += '    install_requires='+(data.install_requires+data.dune_dependencies).__str__()+','
-    setuppy += '''
-    classifiers=[
-        "Programming Language :: C++",
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU General Public License (GPL)",
-    ],
-    python_requires='>=3.4',
-    cmake_args=[
-        '-DBUILD_SHARED_LIBS=TRUE',
-        '-DDUNE_ENABLE_PYTHONBINDINGS=TRUE',
-        '-DDUNE_PYTHON_INSTALL_LOCATION=none',
-        '-DDUNE_GRID_GRIDTYPE_SELECTOR=ON',
-        '-DALLOW_CXXFLAGS_OVERWRITE=ON',
-        '-DUSE_PTHREADS=ON',
-        '-DCMAKE_BUILD_TYPE=Release',
-        '-DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE',
-        '-DCMAKE_DISABLE_DOCUMENTATION=TRUE',
-        '-DINKSCAPE=FALSE',
-        '-DCMAKE_INSTALL_RPATH='+sys.prefix+'/lib/',
-        '-DCMAKE_MACOSX_RPATH=TRUE',
-    ]
-)
-'''
     f = open("setup.py", "w")
-    f.write(setuppy)
+    f.write("from dune.dunepackaging import metaData\n")
+    f.write("from skbuild import setup\n")
+    f.write("setup(**metaData()[1])\n")
     f.close()
 
     # Generate pyproject.toml
     print("Generate pyproject.toml")
     f = open("pyproject.toml", "w")
     requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
-    requires += data.dune_dependencies
+    requires += data.dune_modules
     f.write("[build-system]\n")
-    f.write("requires = "+requires.__str__()+"\n")
-    f.write("build-backend = 'setuptools.build_meta'\n")
+    f.write("requires = "+json.dumps(requires)+"\n")
+    f.write("build-backend = \"setuptools.build_meta\"\n")
     f.close()
 
 
