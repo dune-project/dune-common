@@ -5,7 +5,7 @@ add_subdirectory(typeregistry)
 add_python_targets(dune
   __init__
   create
-  dunepackaging
+  packagemetadata
   plotting
   deprecate
   utility

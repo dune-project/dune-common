@@ -21,7 +21,7 @@ else:
 
 logger = logging.getLogger(__name__)
 
-from dune.dunepackaging import Version, VersionRequirement, Description
+from dune.packagemetadata import Version, VersionRequirement, Description
 
 def find_modules(path):
     """find DUNE modules in given path
