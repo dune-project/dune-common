@@ -13,7 +13,7 @@ import sys
 from os.path import expanduser
 
 if __name__ == "dune.common.module":
-    from d une.common.utility import buffer_to_str
+    from dune.common.utility import buffer_to_str
     from dune.common import project
 else:
     from utility import buffer_to_str
