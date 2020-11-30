@@ -6,7 +6,17 @@ import email.utils
 import pkg_resources
 from datetime import date
 
-from dune.dunepackaging import metaData
+# make sure that 'metadata' is taken from the current `dune-common` folder
+# and not some installed version which might be different from the one I'm
+# packaging (by mistake). The path to `packagemetadata.py` needs to be
+# added to the python path (to work here) and to the environment so that a
+# later call to `python setup.py` also works.
+here = os.path.dirname(os.path.abspath(__file__))
+mods = os.path.join(here, "..", "python", "dune")
+sys.path.append(mods)
+pythonpath  = mods + ":" + os.environ.get('PYTHONPATH','.')
+os.environ['PYTHONPATH'] = pythonpath
+from packagemetadata import metaData
 
 def main(argv):
 
@@ -44,7 +54,7 @@ def main(argv):
     # Remove generated files
     def removeFiles():
         import glob
-        files = ['setup.py', 'MANIFEST', 'pyproject.toml', 'dist', '_skbuild', '__pycache__']
+        files = ['MANIFEST', 'dist', '_skbuild', '__pycache__']
         print("Remove generated files: " + ", ".join(files))
         remove = ['rm', '-rf'] + files
         subprocess.call(remove)
@@ -62,9 +72,12 @@ def main(argv):
     if data.name == 'dune-common':
         f.write("import os, sys\n")
         f.write("here = os.path.dirname(os.path.abspath(__file__))\n")
-        f.write("mods = os.path.join(here, \"python\")\n")
+        f.write("mods = os.path.join(here, \"python\", \"dune\")\n")
         f.write("sys.path.append(mods)\n\n")
-    f.write("from dune.dunepackaging import metaData\n")
+    f.write("try:\n")
+    f.write("    from dune.packagemetadata import metaData\n")
+    f.write("except ImportError:\n")
+    f.write("    from packagemetadata import metaData\n")
     f.write("from skbuild import setup\n")
     if version is not None:
         f.write("setup(**metaData('"+version+"')[1])\n")
@@ -75,7 +88,7 @@ def main(argv):
     # Generate pyproject.toml
     print("Generate pyproject.toml")
     f = open("pyproject.toml", "w")
-    requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
+    requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "requests"]
     requires += data.asPythonRequirementString(data.depends)
     requires += data.asPythonRequirementString(data.python_suggests)
     f.write("[build-system]\n")
