@@ -121,6 +121,7 @@ class Description:
         except KeyError:
             raise KeyError('Module description does not contain module name.')
 
+        self.versionstring = data.get('version')
         self.version = Version(data.get('version'))
 
         try:
@@ -207,47 +208,41 @@ class Description:
 
 
 class Data:
-    def __init__(self):
+    def __init__(self, version=None):
         description = Description('dune.module')
         self.name = description.name
-        self.version = str(description.version)
+        self.version = description.versionstring if version is None else version
         self.author_email = description.maintainer[1]
         self.author = description.author or self.author_email
         self.description = description.description
         self.url = description.url
-        self.dune_modules = [ dep[0] for dep in description.depends ]
-        self.dune_dependencies = [
-                (dep[0]+str(dep[1])).replace("("," ").replace(")","")+".dev0"
-                for dep in description.depends
-             ]
-        self.install_requires = [
-                (dep[0]+str(dep[1])).replace("("," ").replace(")","")
-                for dep in description.python_requires
-             ]
+        self.depends = description.depends
+        self.suggests = description.suggests
+        self.python_requires = description.python_requires
 
-def metaData(version=None):
-    data = Data()
+        # if -git version parameter specified, append devDATE to version number for all DUNE modules
+        if self.version.find('git') or version is not None:
+            if version is None:
+                major = self.version.split('-')[0]
+                self.version = Version(major).__str__() + '.dev' + date.today().strftime('%Y%m%d')
+                self.depends = [(dep[0], '(<= '+self.version+')') for dep in self.depends]
+                self.suggests = [(dep[0], '(<= '+self.version+')') for dep in self.suggests]
 
-    # defaults
-    if not hasattr(data, 'dune_dependencies'):
-        data.dune_dependencies = []
+        # add suggestions if they have a pypi entry
+        self.python_suggests = []
+        for r in self.suggests:
+            import requests
+            response = requests.get("https://pypi.org/pypi/{}/json".format(r[0]))
+            if response.status_code == 200:
+                self.python_suggests += [r]
 
-    if not hasattr(data, 'install_requires'):
-        data.install_requires = []
+    def asPythonRequirementString(self, requirements):
+        return [(r[0]+str(r[1])).replace("("," ").replace(")","") for r in requirements]
 
-    # if no version parameter specified, append DATE to version number in package.py
-    if version is None:
-        if not hasattr(data, 'version'):
-            print("No version number specified!")
-            sys.exit(2)
-        version = data.version + '.devDATE'
+def metaData(version=None, dependencyCheck=True):
+    data = Data(version)
 
-    # version - replacing "DATE" with yearmonthday string
-    t = date.today()
-    today = t.strftime('%Y%m%d')
-    data.version = version.replace("DATE",today)
-
-    cmake_flags= [
+    cmake_flags = [
         '-DBUILD_SHARED_LIBS=TRUE',
         '-DDUNE_ENABLE_PYTHONBINDINGS=TRUE',
         '-DDUNE_PYTHON_INSTALL_LOCATION=none',
@@ -262,25 +257,27 @@ def metaData(version=None):
         '-DCMAKE_MACOSX_RPATH=TRUE',
     ]
 
-    try:
-        with io.open('pyproject.toml', 'r', encoding='utf-8') as f:
-            for line in f:
-                if 'requires' in line:
-                    line = line.split('=',maxsplit=1)[1].strip()
-                    modules = ast.literal_eval(line)
-                    modules = [x for x in modules
-                                  if x not in ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
-                              ]
-                    if any( [ x for x in data.dune_modules if x not in modules ] ):
-                        raise RuntimeError("""
-pyproject.toml file does not contain all required dune projects defined in the
-dune.module file
-""")
-                    data.install_requires = data.install_requires + [ x for x in modules ]
-    except IOError:
-        pass
+    # check if all dependencies are listed in pyproject.toml
+    if dependencyCheck:
+        try:
+            with io.open('pyproject.toml', 'r', encoding='utf-8') as f:
+                for line in f:
+                    if 'requires' in line:
+                        line = line.split('=',maxsplit=1)[1].strip()
+                        modules = ast.literal_eval(line)
+                        modules = [x for x in modules
+                                      if x not in ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
+                                  ]
+                        for dep in data.asPythonRequirementString(data.depends):
+                            if dep not in modules:
+                                raise RuntimeError("""
+    pyproject.toml file does not contain all required dune projects defined in the
+    dune.module file: """ + dep)
 
-    requires=data.install_requires+data.dune_dependencies
+        except IOError:
+            pass
+
+    install_requires = data.asPythonRequirementString(data.python_requires + data.depends + data.python_suggests)
 
     with open("README.md", "r") as fh:
         long_description = fh.read()
@@ -305,7 +302,7 @@ dune.module file
       setupParams.update({
             "packages":find_packages(where="python"),
             "package_dir":{"": "python"},
-            "install_requires":requires,
+            "install_requires":install_requires,
             "python_requires":'>=3.4',
          })
 

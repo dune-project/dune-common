@@ -54,7 +54,7 @@ def main(argv):
         if not upload:
             sys.exit(2)
 
-    data, cmake_flags = metaData(version)
+    data, cmake_flags = metaData(version, dependencyCheck=False)
 
     # Generate setup.py
     print("Generate setup.py")
@@ -66,14 +66,18 @@ def main(argv):
         f.write("sys.path.append(mods)\n\n")
     f.write("from dune.dunepackaging import metaData\n")
     f.write("from skbuild import setup\n")
-    f.write("setup(**metaData()[1])\n")
+    if version is not None:
+        f.write("setup(**metaData('"+version+"')[1])\n")
+    else:
+        f.write("setup(**metaData()[1])\n")
     f.close()
 
     # Generate pyproject.toml
     print("Generate pyproject.toml")
     f = open("pyproject.toml", "w")
     requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
-    requires += data.dune_modules
+    requires += data.asPythonRequirementString(data.depends)
+    requires += data.asPythonRequirementString(data.python_suggests)
     f.write("[build-system]\n")
     f.write("requires = "+requires.__str__()+"\n")
     f.write("build-backend = 'setuptools.build_meta'\n")
