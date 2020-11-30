@@ -5,7 +5,6 @@ import importlib, subprocess
 import email.utils
 import pkg_resources
 from datetime import date
-import json
 
 from dune.dunepackaging import metaData
 
@@ -60,6 +59,11 @@ def main(argv):
     # Generate setup.py
     print("Generate setup.py")
     f = open("setup.py", "w")
+    if data.name == 'dune-common':
+        f.write("import os, sys\n")
+        f.write("here = os.path.dirname(os.path.abspath(__file__))\n")
+        f.write("mods = os.path.join(here, \"python\")\n")
+        f.write("sys.path.append(mods)\n\n")
     f.write("from dune.dunepackaging import metaData\n")
     f.write("from skbuild import setup\n")
     f.write("setup(**metaData()[1])\n")
@@ -71,8 +75,8 @@ def main(argv):
     requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
     requires += data.dune_modules
     f.write("[build-system]\n")
-    f.write("requires = "+json.dumps(requires)+"\n")
-    f.write("build-backend = \"setuptools.build_meta\"\n")
+    f.write("requires = "+requires.__str__()+"\n")
+    f.write("build-backend = 'setuptools.build_meta'\n")
     f.close()
 
 
