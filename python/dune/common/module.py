@@ -13,7 +13,7 @@ import sys
 from os.path import expanduser
 
 if __name__ == "dune.common.module":
-    from dune.common.utility import buffer_to_str
+    from d une.common.utility import buffer_to_str
     from dune.common import project
 else:
     from utility import buffer_to_str
@@ -21,7 +21,7 @@ else:
 
 logger = logging.getLogger(__name__)
 
-from dune.dunepackaging import Version, VersionRequirement, Description
+from dune.packagemetadata import Version, VersionRequirement, Description
 
 def find_modules(path):
     """find DUNE modules in given path
