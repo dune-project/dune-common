@@ -66,6 +66,9 @@ def main(argv):
 
     data, cmake_flags = metaData(version, dependencyCheck=False)
 
+    if version is None:
+        version = data.version
+
     # Generate setup.py
     print("Generate setup.py")
     f = open("setup.py", "w")
@@ -79,10 +82,7 @@ def main(argv):
     f.write("except ImportError:\n")
     f.write("    from packagemetadata import metaData\n")
     f.write("from skbuild import setup\n")
-    if version is not None:
-        f.write("setup(**metaData('"+version+"')[1])\n")
-    else:
-        f.write("setup(**metaData()[1])\n")
+    f.write("setup(**metaData('"+version+"')[1])\n")
     f.close()
 
     # Generate pyproject.toml

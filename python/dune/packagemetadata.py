@@ -167,10 +167,10 @@ class Description:
                         deps.append((m, VersionRequirement(None)))
             else:
                 while s:
-                    match = re.match('(?P<module>[a-zA-Z0-9_\-]+)(\s*\((?P<version>[^)]*)\))?', s)
+                    match = re.match('(?P<module>[a-zA-Z0-9_\-]+)(\s*\((?P<version>[^)]*)\))?((?P<pyversion>[^\s]*))?', s)
                     if not match:
                         raise ValueError('Invalid dependency list.')
-                    deps.append((match.group('module'), VersionRequirement(match.group('version'))))
+                    deps.append((match.group('module'), VersionRequirement(match.group('version') or match.group('pyversion'))))
                     s = s[match.end():].strip()
             return deps
 
@@ -211,7 +211,7 @@ class Data:
     def __init__(self, version=None):
         description = Description('dune.module')
         self.name = description.name
-        self.version = description.versionstring if version is None else version
+        self.version = version or description.versionstring
         self.author_email = description.maintainer[1]
         self.author = description.author or self.author_email
         self.description = description.description
@@ -225,8 +225,8 @@ class Data:
             if version is None:
                 major = self.version.split('-')[0]
                 self.version = Version(major).__str__() + '.dev' + date.today().strftime('%Y%m%d')
-                self.depends = [(dep[0], '(<= '+self.version+')') for dep in self.depends]
-                self.suggests = [(dep[0], '(<= '+self.version+')') for dep in self.suggests]
+            self.depends = [(dep[0], '(<= '+self.version+')') for dep in self.depends]
+            self.suggests = [(dep[0], '(<= '+self.version+')') for dep in self.suggests]
 
         # add suggestions if they have a pypi entry
         self.python_suggests = []
@@ -237,7 +237,7 @@ class Data:
                 self.python_suggests += [r]
 
     def asPythonRequirementString(self, requirements):
-        return [(r[0]+str(r[1])).replace("("," ").replace(")","") for r in requirements]
+        return [(r[0]+str(r[1])).replace("("," ").replace(")","").replace(" ","") for r in requirements]
 
 def metaData(version=None, dependencyCheck=True):
     data = Data(version)
@@ -266,7 +266,7 @@ def metaData(version=None, dependencyCheck=True):
                         line = line.split('=',maxsplit=1)[1].strip()
                         modules = ast.literal_eval(line)
                         modules = [x for x in modules
-                                      if x not in ["setuptools", "wheel", "scikit-build", "cmake", "ninja"]
+                                      if x not in ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "requests"]
                                   ]
                         for dep in data.asPythonRequirementString(data.depends):
                             if dep not in modules:
