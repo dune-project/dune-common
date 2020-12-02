@@ -422,7 +422,6 @@ macro(dune_module_information MODULE_DIR)
   extract_line("Description:" ${DUNE_MOD_NAME_UPPERCASE}_DESCRIPTION "${MODULE_DIR}/dune.module")
   extract_line("URL:" ${DUNE_MOD_NAME_UPPERCASE}_URL "${MODULE_DIR}/dune.module")
   extract_line("Python-Requires:" ${DUNE_MOD_NAME_UPPERCASE}_PYTHON_REQUIRES "${MODULE_DIR}/dune.module")
-  set(${DUNE_MOD_NAME_UPPERCASE}_AUTHOREMAIL "${DUNE_MAINTAINER}")
 
   # set module version
   set(${DUNE_MOD_NAME_UPPERCASE}_VERSION          "${DUNE_MOD_VERSION}")
@@ -651,7 +650,6 @@ macro(dune_project)
   set(ProjectAuthor          "${${DUNE_MOD_NAME_UPPERCASE}_AUTHOR}")
   set(ProjectUrl             "${${DUNE_MOD_NAME_UPPERCASE}_URL}")
   set(ProjectPythonRequires  "${${DUNE_MOD_NAME_UPPERCASE}_PYTHON_REQUIRES}")
-  set(ProjectAuthorEmail     "${${DUNE_MOD_NAME_UPPERCASE}_AUTHOREMAIL}")
 
   # check whether this module has been explicitly disabled through the cmake flags.
   # If so, stop the build. This is necessary because dunecontrol does not parse
@@ -1033,12 +1031,6 @@ macro(dune_add_library basename)
     set_target_properties(${basename} PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
       ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-
-    if (APPLE)
-      set_target_properties(${basename} PROPERTIES SUFFIX ".so")
-      target_link_options(${basename} PRIVATE "-undefined")
-      target_link_options(${basename} PRIVATE "dynamic_lookup")
-    endif()
 
     if(NOT DUNE_LIB_NO_EXPORT)
       # The following allows for adding multiple libs in the same

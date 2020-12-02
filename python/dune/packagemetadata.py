@@ -253,8 +253,6 @@ def metaData(version=None, dependencyCheck=True):
         '-DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE',
         '-DCMAKE_DISABLE_DOCUMENTATION=TRUE',
         '-DINKSCAPE=FALSE',
-        '-DCMAKE_INSTALL_RPATH='+sys.prefix+'/lib/',
-        '-DCMAKE_MACOSX_RPATH=TRUE',
     ]
 
     # check if all dependencies are listed in pyproject.toml
