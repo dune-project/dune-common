@@ -15,13 +15,14 @@ from os.path import expanduser
 if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
+    from dune.packagemetadata import Version, VersionRequirement, Description
 else:
     from utility import buffer_to_str
     import project
+    from packagemetadata import Version, VersionRequirement, Description
 
 logger = logging.getLogger(__name__)
 
-from dune.packagemetadata import Version, VersionRequirement, Description
 
 def find_modules(path):
     """find DUNE modules in given path
@@ -127,7 +128,7 @@ def pkg_config(pkg, var=None):
     pkgconfig = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     pkgconfig.wait()
     if pkgconfig.returncode != 0:
-        raise KeyError('package ' + pkg + 'not found.')
+        raise KeyError('package ' + pkg + ' not found.')
     return buffer_to_str(pkgconfig.stdout.read()).strip()
 
 
