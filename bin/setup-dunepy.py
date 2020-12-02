@@ -14,9 +14,12 @@ try:
 except ImportError:
     import os
     here = os.path.dirname(os.path.abspath(__file__))
-    mods = os.path.join(os.path.dirname(here), "python", "dune", "common")
-    if os.path.exists(os.path.join(mods, "module.py")):
-        sys.path.append(mods)
+    modsA = os.path.join(os.path.dirname(here), "python", "dune")
+    modsB = os.path.join(modsA,"common")
+    sys.path.append(modsB)
+    sys.path.append(modsA)
+
+    if os.path.exists(os.path.join(modsB, "module.py")):
         from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules
     else:
         raise
