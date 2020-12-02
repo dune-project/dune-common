@@ -10,7 +10,6 @@ Name: @PACKAGE_NAME@
 Version: @VERSION@
 Description: @DESCRIPTION@
 URL: @URL@
-AUTHOR: @DUNE_MAINTAINER@
 Requires: ${DEPENDENCIES}
 Libs: -L${libdir} -ldunecommon
 Cflags: -I${includedir}
