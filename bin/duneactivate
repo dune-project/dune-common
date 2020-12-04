@@ -1,0 +1,3 @@
+envpath=`dirname "${BASH_SOURCE[0]}"`
+source $envpath/activate
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$VIRTUAL_ENV/lib
