@@ -60,8 +60,9 @@ def main(argv):
 
     if clean:
         removeFiles()
-        if not upload:
-            sys.exit(2)
+        checkout = ['git', 'checkout', 'setup.py', 'pyproject.toml']
+        subprocess.call(checkout)
+        sys.exit(2)
 
     data, cmake_flags = metaData(version, dependencyCheck=False)
 
