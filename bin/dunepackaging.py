@@ -57,26 +57,18 @@ def main(argv):
         print("Remove generated files: " + ", ".join(files))
         remove = ['rm', '-rf'] + files
         subprocess.call(remove)
+        # checkout setup.py and pyproject.toml
+        checkout = ['git', 'checkout', 'setup.py', 'pyproject.toml']
+        subprocess.call(checkout)
 
     if clean:
         removeFiles()
-        checkout = ['git', 'checkout', 'setup.py', 'pyproject.toml']
-        subprocess.call(checkout)
         sys.exit(2)
 
     data, cmake_flags = metaData(version, dependencyCheck=False)
 
     if version is None:
         version = data.version
-
-    # Store current setup.py and pyproject.toml
-    if upload:
-        try:
-            subprocess.call(['cp', 'setup.py', 'setup.py.old'])
-            subprocess.call(['cp', 'pyproject.toml', 'pyproject.toml.old'])
-            print("Stored setup.py and pyproject.toml")
-        except:
-            pass
 
     # Generate setup.py
     print("Generate setup.py")
@@ -137,14 +129,6 @@ def main(argv):
         subprocess.call(twine)
 
         removeFiles()
-
-        # Restore old setup.py and pyproject.toml
-        try:
-            print("Restore setup.py and pyproject.toml")
-            subprocess.call(['mv', 'setup.py.old', 'setup.py'])
-            subprocess.call(['mv', 'pyproject.toml.old', 'pyproject.toml'])
-        except:
-            pass
 
 
 if __name__ == "__main__":
