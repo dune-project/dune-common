@@ -66,7 +66,7 @@ def main(argv):
 
     if clean:
         removeFiles()
-        sys.exit(2)
+        sys.exit(0)
 
     data, cmake_flags = metaData(version, dependencyCheck=False)
 
