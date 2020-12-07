@@ -22,10 +22,10 @@ def main(argv):
 
     repositories = ["gitlab", "testpypi", "pypi"]
     def usage():
-        return 'usage: dunepackaging.py [--upload <'+"|".join(repositories)+'> | -c | --clean | --version 1.0.DATE>]'
+        return 'usage: dunepackaging.py [--upload <'+"|".join(repositories)+'> | -c | --clean | --version 1.0.DATE> | --onlysdist]'
 
     try:
-        opts, args = getopt.getopt(argv, "hc", ["upload=", "clean", "version="])
+        opts, args = getopt.getopt(argv, "hc", ["upload=", "clean", "version=", "onlysdist"])
     except getopt.GetoptError:
         print(usage())
         sys.exit(2)
@@ -34,6 +34,7 @@ def main(argv):
     repository = "gitlab"
     clean = False
     version = None
+    onlysdist = False
     for opt, arg in opts:
         if opt == '-h':
             print(usage())
@@ -49,6 +50,8 @@ def main(argv):
             clean = True
         elif opt in ("--version"):
             version = arg
+        elif opt in ("--onlysdist"):
+            onlysdist = True
 
     # Remove generated files
     def removeFiles():
@@ -63,7 +66,7 @@ def main(argv):
 
     if clean:
         removeFiles()
-        sys.exit(2)
+        sys.exit(0)
 
     data, cmake_flags = metaData(version, dependencyCheck=False)
 
@@ -100,7 +103,7 @@ def main(argv):
 
     # Create source distribution and upload to repository
     python = sys.executable
-    if upload:
+    if upload or onlysdist:
         print("Remove dist")
         remove = ['rm', '-rf', 'dist']
         subprocess.call(remove)
@@ -116,19 +119,20 @@ def main(argv):
         build = [python, 'setup.py', 'sdist']
         subprocess.call(build, stdout=subprocess.DEVNULL)
 
-        # check if we have twine
-        import pkg_resources
-        installed = {pkg.key for pkg in pkg_resources.working_set}
-        if not 'twine' in installed:
-            print("Please install the pip package 'twine' to upload the source distribution.")
-            sys.exit(2)
+        if not onlysdist:
+            # check if we have twine
+            import pkg_resources
+            installed = {pkg.key for pkg in pkg_resources.working_set}
+            if not 'twine' in installed:
+                print("Please install the pip package 'twine' to upload the source distribution.")
+                sys.exit(2)
 
-        twine = [python, '-m', 'twine', 'upload']
-        twine += ['--repository', repository]
-        twine += ['dist/*']
-        subprocess.call(twine)
+            twine = [python, '-m', 'twine', 'upload']
+            twine += ['--repository', repository]
+            twine += ['dist/*']
+            subprocess.call(twine)
 
-        removeFiles()
+            removeFiles()
 
 
 if __name__ == "__main__":
