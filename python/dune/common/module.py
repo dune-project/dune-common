@@ -372,7 +372,7 @@ def get_cmake_definitions():
         definitions['USE_PTHREADS']='ON'
         definitions['CMAKE_BUILD_TYPE']='Release'
         definitions['CMAKE_DISABLE_FIND_PACKAGE_LATEX']='TRUE'
-        definitions['CMAKE_DISABLE_DOCUMENTATION']='TRUE'
+        definitions['DCMAKE_DISABLE_FIND_PACKAGE_Doxygen']='TRUE'
 
     return definitions
 

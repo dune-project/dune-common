@@ -249,7 +249,7 @@ def metaData(version=None, dependencyCheck=True):
         '-DDUNE_PYTHON_INSTALL_LOCATION=none',
         '-DALLOW_CXXFLAGS_OVERWRITE=ON',
         '-DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE',
-        '-DCMAKE_DISABLE_DOCUMENTATION=TRUE',
+        '-DCMAKE_DISABLE_FIND_PACKAGE_Doxygen=TRUE',
         '-DINKSCAPE=FALSE',
     ]
 
