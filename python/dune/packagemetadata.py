@@ -239,19 +239,43 @@ class Data:
     def asPythonRequirementString(self, requirements):
         return [(r[0]+str(r[1])).replace("("," ").replace(")","").replace(" ","") for r in requirements]
 
+def cmakeFlags():
+    # defaults
+    flags = dict([
+        ('CMAKE_BUILD_TYPE','Release'),
+        ('BUILD_SHARED_LIBS','TRUE'),
+        ('DUNE_ENABLE_PYTHONBINDINGS','TRUE'),
+        ('DUNE_PYTHON_INSTALL_LOCATION','none'),
+        ('ALLOW_CXXFLAGS_OVERWRITE','ON'),
+        ('CMAKE_DISABLE_FIND_PACKAGE_LATEX','TRUE'),
+        ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen','TRUE'),
+        ('INKSCAPE','FALSE')
+    ])
+    # test environment for additional flags
+    cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
+    if cmakeFlags is None:
+        cmakeFlags = os.environ.get('CMAKE_FLAGS')
+    # split flags and store in dict
+    add = {}
+    if cmakeFlags is not None:
+        for arg in shlex.split(cmakeFlags):
+            try:
+                key, value = arg.split('=', 1)
+                if key.startswith('-D'):
+                    key = key[2:]
+            except ValueError:
+                key, value = arg, None
+            add[key] = value
+    flags.update(add)
+    return flags
+
 def metaData(version=None, dependencyCheck=True):
     data = Data(version)
 
-    cmake_flags = [
-        '-DCMAKE_BUILD_TYPE=Release',
-        '-DBUILD_SHARED_LIBS=TRUE',
-        '-DDUNE_ENABLE_PYTHONBINDINGS=TRUE',
-        '-DDUNE_PYTHON_INSTALL_LOCATION=none',
-        '-DALLOW_CXXFLAGS_OVERWRITE=ON',
-        '-DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE',
-        '-DCMAKE_DISABLE_FIND_PACKAGE_Doxygen=TRUE',
-        '-DINKSCAPE=FALSE',
-    ]
+    flags = cmakeFlags()
+    cmake_flags  = ['-D' + key + '=' + value + '' for key, value in flags.items() if value]
+    cmake_flags += [key + '' for key, value in flags.items() if not value]
+    print("CMAKEFLAGS",cmake_flags)
 
     # check if all dependencies are listed in pyproject.toml
     if dependencyCheck:

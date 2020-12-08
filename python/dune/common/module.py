@@ -15,11 +15,13 @@ from os.path import expanduser
 if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
-    from dune.packagemetadata import Version, VersionRequirement, Description
+    from dune.packagemetadata import Version, VersionRequirement,\
+            Description, cmakeFlags
 else:
     from utility import buffer_to_str
     import project
-    from packagemetadata import Version, VersionRequirement, Description
+    from packagemetadata import Version, VersionRequirement,\
+            Description, cmakeFlags
 
 logger = logging.getLogger(__name__)
 
@@ -349,34 +351,6 @@ def get_dune_py_version():
     return Version("2.8.0")
 
 
-def get_cmake_definitions():
-    definitions = {}
-    cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
-    if cmakeFlags is None:
-        cmakeFlags = os.environ.get('CMAKE_FLAGS')
-    if cmakeFlags is not None:
-        for arg in shlex.split(cmakeFlags):
-            try:
-                key, value = arg.split('=', 1)
-                if key.startswith('-D'):
-                    key = key[2:]
-            except ValueError:
-                key, value = arg, None
-            definitions[key] = value
-    else: # some defaults
-        definitions['BUILD_SHARED_LIBS']='TRUE'
-        definitions['DUNE_ENABLE_PYTHONBINDINGS']='TRUE'
-        definitions['DUNE_PYTHON_INSTALL_LOCATION']='none'
-        definitions['DUNE_GRID_GRIDTYPE_SELECTOR']='ON'
-        definitions['ALLOW_CXXFLAGS_OVERWRITE']='ON'
-        definitions['USE_PTHREADS']='ON'
-        definitions['CMAKE_BUILD_TYPE']='Release'
-        definitions['CMAKE_DISABLE_FIND_PACKAGE_LATEX']='TRUE'
-        definitions['DCMAKE_DISABLE_FIND_PACKAGE_Doxygen']='TRUE'
-
-    return definitions
-
-
 def make_dune_py_module(dune_py_dir=None, deps=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
@@ -427,7 +401,7 @@ def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, bu
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     if definitions is None:
-        definitions = get_cmake_definitions()
+        definitions = cmakeFlags()
 
     modules, dirs = select_modules()
     deps = resolve_dependencies(modules, None)
