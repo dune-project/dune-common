@@ -2,6 +2,7 @@
 
 from setuptools import find_packages
 import sys, os, io, getopt, re, ast
+import shlex
 import importlib, subprocess
 import email.utils
 import pkg_resources
@@ -228,14 +229,6 @@ class Data:
             self.depends = [(dep[0], '(<= '+self.version+')') for dep in self.depends]
             self.suggests = [(dep[0], '(<= '+self.version+')') for dep in self.suggests]
 
-        # add suggestions if they have a pypi entry
-        self.python_suggests = []
-        for r in self.suggests:
-            import requests
-            response = requests.get("https://pypi.org/pypi/{}/json".format(r[0]))
-            if response.status_code == 200:
-                self.python_suggests += [r]
-
     def asPythonRequirementString(self, requirements):
         return [(r[0]+str(r[1])).replace("("," ").replace(")","").replace(" ","") for r in requirements]
 
@@ -246,6 +239,8 @@ def cmakeFlags():
         ('BUILD_SHARED_LIBS','TRUE'),
         ('DUNE_ENABLE_PYTHONBINDINGS','TRUE'),
         ('DUNE_PYTHON_INSTALL_LOCATION','none'),
+        ('CMAKE_INSTALL_RPATH_USE_LINK_PATH','TRUE'),
+        ('CMAKE_INSTALL_RPATH',"'$ORIGIN/../../../..'"),
         ('ALLOW_CXXFLAGS_OVERWRITE','ON'),
         ('CMAKE_DISABLE_FIND_PACKAGE_LATEX','TRUE'),
         ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen','TRUE'),
@@ -275,7 +270,6 @@ def metaData(version=None, dependencyCheck=True):
     flags = cmakeFlags()
     cmake_flags  = ['-D' + key + '=' + value + '' for key, value in flags.items() if value]
     cmake_flags += [key + '' for key, value in flags.items() if not value]
-    print("CMAKEFLAGS",cmake_flags)
 
     # check if all dependencies are listed in pyproject.toml
     if dependencyCheck:
@@ -288,16 +282,16 @@ def metaData(version=None, dependencyCheck=True):
                         modules = [x for x in modules
                                       if x not in ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "requests"]
                                   ]
-                        for dep in data.asPythonRequirementString(data.depends):
-                            if dep not in modules:
+                        for dep in data.depends:
+                            if not any([mod.startswith(dep[0]) for mod in modules]):
                                 raise RuntimeError("""
     pyproject.toml file does not contain all required dune projects defined in the
-    dune.module file: """ + dep)
+    dune.module file: """ + dep[0])
 
         except IOError:
             pass
 
-    install_requires = data.asPythonRequirementString(data.python_requires + data.depends + data.python_suggests)
+    install_requires = data.asPythonRequirementString(data.python_requires + data.depends)
 
     with open("README.md", "r") as fh:
         long_description = fh.read()

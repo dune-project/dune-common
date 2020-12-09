@@ -3,7 +3,6 @@ install(PROGRAMS
   duneproject
   dunecontrol
   dunepackaging.py
-  duneactivate
   dune-git-whitespace-hook
   rmgenerated.py
   setup-dunepy.py
