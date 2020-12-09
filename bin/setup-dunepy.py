@@ -10,14 +10,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 try:
-    from dune.common.module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules
+    from dune.common.module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies
 except ImportError:
     import os
     here = os.path.dirname(os.path.abspath(__file__))
     mods = os.path.join(os.path.dirname(here), "python", "dune", "common")
     if os.path.exists(os.path.join(mods, "module.py")):
         sys.path.append(mods)
-        from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules
+        from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies
     else:
         raise
 
@@ -32,13 +32,14 @@ def toBuildDir(builddir, moddir, module):
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"ho",["opts=","builddir="])
+        opts, args = getopt.getopt(argv,"ho",["opts=","builddir=","module="])
     except getopt.GetoptError:
-        print('usage: setup-dunepy.py [-o config.opts | --opts=config.opts | --builddir] [install]')
+        print('usage: setup-dunepy.py [-o config.opts | --opts=config.opts | --builddir] [--module=mod] [install]')
         sys.exit(2)
 
     optsfile = None
     builddir = None
+    masterModule = None
     for opt, arg in opts:
         if opt == '-h':
             print('usage: setup-dunepy.py [-o config.opts | --opts=config.opts] [install]')
@@ -47,6 +48,8 @@ def main(argv):
             optsfile = arg
         elif opt in ("--builddir"):
             builddir = arg
+        elif opt in ("--module"):
+            masterModule = arg
     if len(args) > 0:
         execute = args[0]
     else:
@@ -85,7 +88,20 @@ def main(argv):
 
     if os.path.exists(dunepy):
         shutil.rmtree(dunepy)
-    foundModule = make_dune_py_module(dunepy)
+
+    # Generate list of all modules
+    duneModules = select_modules()
+
+    # Generate list of dependencies for dune-py. If --module=mod is passed,
+    # use mod and all its dependencies only. Otherwise use all found modules
+    # as dependencies.
+    if masterModule is None:
+        deps = [m[0] for m in duneModules[0].items()]
+    else:
+        deps = resolve_dependencies(duneModules[0], masterModule)
+        deps.add(masterModule)
+
+    foundModule = make_dune_py_module(dunepy, deps)
 
     output = build_dune_py_module(dunepy, definitions, None, builddir)
 
@@ -98,9 +114,9 @@ def main(argv):
     f.close()
 
     if execute == "install":
-        duneModules = select_modules()
-        # moddir = duneModules[1]["dune-python"]
-        for m,depends in duneModules[0].items():
+        if deps is None:
+            deps = duneModules[0].items()
+        for m in deps:
             moddir = duneModules[1][m]
             pythonModule = toBuildDir(builddir,moddir,m)
             print("calling install_python in",moddir)
