@@ -288,11 +288,11 @@ def metaData(version=None, dependencyCheck=True):
                         modules = [x for x in modules
                                       if x not in ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "requests"]
                                   ]
-                        for dep in data.asPythonRequirementString(data.depends):
-                            if dep not in modules:
+                        for dep in data.depends:
+                            if not any([mod.startswith(dep[0]) for mod in modules]):
                                 raise RuntimeError("""
     pyproject.toml file does not contain all required dune projects defined in the
-    dune.module file: """ + dep)
+    dune.module file: """ + dep[0])
 
         except IOError:
             pass
