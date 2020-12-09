@@ -96,7 +96,7 @@ def main(argv):
     # use mod and all its dependencies only. Otherwise use all found modules
     # as dependencies.
     if masterModule is None:
-        deps = duneModules[0].items()
+        deps = [m[0] for m in duneModules[0].items()]
     else:
         deps = resolve_dependencies(duneModules[0], masterModule)
         deps.add(masterModule)
@@ -116,7 +116,6 @@ def main(argv):
     if execute == "install":
         if deps is None:
             deps = duneModules[0].items()
-        # moddir = duneModules[1]["dune-python"]
         for m in deps:
             moddir = duneModules[1][m]
             pythonModule = toBuildDir(builddir,moddir,m)
