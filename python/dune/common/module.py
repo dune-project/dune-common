@@ -522,7 +522,7 @@ def get_cmake_definitions():
     return definitions
 
 
-def make_dune_py_module(dune_py_dir=None):
+def make_dune_py_module(dune_py_dir=None, deps=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     os.makedirs(dune_py_dir, exist_ok=True)
@@ -550,8 +550,11 @@ def make_dune_py_module(dune_py_dir=None):
             file.write('#define USING_DUNE_PYTHON 1\n\n')
             file.write('\n#include "generated_module.hh"\n')
 
-        modules, _ = select_modules()
-        description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
+        if deps is None:
+            modules, _ = select_modules()
+            deps = modules.values()
+
+        description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(deps))
         logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
         project.make_project(dune_py_dir, description,
                 subdirs=[generated_dir_rel], is_dunepy=True)
