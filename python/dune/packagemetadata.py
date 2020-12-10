@@ -246,7 +246,7 @@ def cmakeFlags():
         ('BUILD_SHARED_LIBS','TRUE'),
         ('DUNE_ENABLE_PYTHONBINDINGS','TRUE'),
         ('DUNE_PYTHON_INSTALL_LOCATION','none'),
-        ('CMAKE_INSTALL_RPATH',"'$ORIGIN/../../../..'"),
+        ('CMAKE_INSTALL_RPATH',"'$ORIGIN/../../../..;$CMAKE_PREFIX_PATH'"),
         ('ALLOW_CXXFLAGS_OVERWRITE','ON'),
         ('CMAKE_DISABLE_FIND_PACKAGE_LATEX','TRUE'),
         ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen','TRUE'),
@@ -276,7 +276,6 @@ def metaData(version=None, dependencyCheck=True):
     flags = cmakeFlags()
     cmake_flags  = ['-D' + key + '=' + value + '' for key, value in flags.items() if value]
     cmake_flags += [key + '' for key, value in flags.items() if not value]
-    print("CMAKEFLAGS",cmake_flags)
 
     # check if all dependencies are listed in pyproject.toml
     if dependencyCheck:
