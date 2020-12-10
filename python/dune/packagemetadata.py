@@ -246,6 +246,7 @@ def cmakeFlags():
         ('BUILD_SHARED_LIBS','TRUE'),
         ('DUNE_ENABLE_PYTHONBINDINGS','TRUE'),
         ('DUNE_PYTHON_INSTALL_LOCATION','none'),
+        ('CMAKE_INSTALL_RPATH',"'$ORIGIN/../../../..'"),
         ('ALLOW_CXXFLAGS_OVERWRITE','ON'),
         ('CMAKE_DISABLE_FIND_PACKAGE_LATEX','TRUE'),
         ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen','TRUE'),
