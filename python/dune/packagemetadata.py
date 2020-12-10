@@ -2,6 +2,7 @@
 
 from setuptools import find_packages
 import sys, os, io, getopt, re, ast
+import shlex
 import importlib, subprocess
 import email.utils
 import pkg_resources
