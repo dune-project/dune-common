@@ -94,7 +94,6 @@ def main(argv):
     f = open("pyproject.toml", "w")
     requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "requests"]
     requires += data.asPythonRequirementString(data.depends)
-    requires += data.asPythonRequirementString(data.python_suggests)
     f.write("[build-system]\n")
     f.write("requires = "+requires.__str__()+"\n")
     f.write("build-backend = 'setuptools.build_meta'\n")

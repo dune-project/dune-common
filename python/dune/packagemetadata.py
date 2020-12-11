@@ -229,14 +229,6 @@ class Data:
             self.depends = [(dep[0], '(<= '+self.version+')') for dep in self.depends]
             self.suggests = [(dep[0], '(<= '+self.version+')') for dep in self.suggests]
 
-        # add suggestions if they have a pypi entry
-        self.python_suggests = []
-        for r in self.suggests:
-            import requests
-            response = requests.get("https://pypi.org/pypi/{}/json".format(r[0]))
-            if response.status_code == 200:
-                self.python_suggests += [r]
-
     def asPythonRequirementString(self, requirements):
         return [(r[0]+str(r[1])).replace("("," ").replace(")","").replace(" ","") for r in requirements]
 
@@ -299,7 +291,7 @@ def metaData(version=None, dependencyCheck=True):
         except IOError:
             pass
 
-    install_requires = data.asPythonRequirementString(data.python_requires + data.depends + data.python_suggests)
+    install_requires = data.asPythonRequirementString(data.python_requires + data.depends)
 
     with open("README.md", "r") as fh:
         long_description = fh.read()
