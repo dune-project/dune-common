@@ -99,7 +99,6 @@ def main(argv):
     f.write("build-backend = 'setuptools.build_meta'\n")
     f.close()
 
-
     # Create source distribution and upload to repository
     python = sys.executable
     if upload or onlysdist:
@@ -115,8 +114,16 @@ def main(argv):
             sys.exit(2)
 
         print("Create source distribution")
+        # make sure setup.py/pyproject.toml are tracked by git so that
+        # they get added to the package by scikit
+        gitadd = ['git', 'add', 'setup.py', 'pyproject.toml']
+        subprocess.call(gitadd)
+        # run sdist
         build = [python, 'setup.py', 'sdist']
         subprocess.call(build, stdout=subprocess.DEVNULL)
+        # undo the above git add
+        gitreset = ['git', 'reset', 'setup.py', 'pyproject.toml']
+        subprocess.call(gitreset)
 
         if not onlysdist:
             # check if we have twine
@@ -132,7 +139,6 @@ def main(argv):
             subprocess.call(twine)
 
             removeFiles()
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])
