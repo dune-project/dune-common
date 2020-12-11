@@ -293,8 +293,16 @@ def metaData(version=None, dependencyCheck=True):
 
     install_requires = data.asPythonRequirementString(data.python_requires + data.depends)
 
-    with open("README.md", "r") as fh:
-        long_description = fh.read()
+    try:
+        with open("README.md", "r") as fh:
+            long_description = fh.read()
+    except FileNotFoundError:
+        try:
+            with open("README", "r") as fh:
+                long_description = fh.read()
+        except FileNotFoundError:
+            long_description = 'No long description available for this package'
+            print("Warning: no README[.md] file found so providing a default 'long_description' for this package")
 
     setupParams = {
         "name":data.name,
