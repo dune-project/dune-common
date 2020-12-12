@@ -55,6 +55,9 @@ def main(argv):
     else:
         execute = ""
 
+    thisPath = os.path.dirname(os.path.realpath(__file__))
+    os.environ['PKG_CONFIG_PATH'] = os.path.join(thisPath,"..","lib","pkgconfig")
+
     if optsfile is not None:
         definitions = {}
         command = ['bash', '-c', 'source ' + optsfile + ' && echo "$CMAKE_FLAGS"']

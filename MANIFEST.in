@@ -1,0 +1,16 @@
+graft bin
+graft cmake
+graft doc
+graft dune
+graft lib
+graft python
+graft share
+include CHANGELOG.md
+include CMakeLists.txt
+include config.h.cmake
+include CONTRIBUTING.md
+include dune-common.pc.in
+include dune.module
+include LICENSE.md
+include README.md
+include pyproject.toml

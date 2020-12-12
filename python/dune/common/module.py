@@ -210,7 +210,7 @@ def find_modules(path):
         for root, dirs, files in os.walk(dir):
             if 'dune.module' in files:
                 description = Description(os.path.join(root, 'dune.module'))
-                if not description.name == "dune-py":
+                if ( not description.name == "dune-py" ): # and not os.path.abspath(root).startswith('/tmp') ):
                     modules.append((description,os.path.abspath(root)))
                 # do not traverse subdirectories
                 # del dirs[:]
@@ -301,7 +301,7 @@ def pkg_config(pkg, var=None):
     pkgconfig.wait()
     if pkgconfig.returncode != 0:
         raise KeyError('package ' + pkg + 'not found.')
-    return buffer_to_str(pkgconfig.stdout.read())
+    return buffer_to_str( pkgconfig.stdout.read() ).strip()
 
 
 def get_prefix(module):
@@ -352,7 +352,11 @@ def get_module_path():
         pass
 
     # try to guess modules path for unix systems
-    path = [p for p in ['.', '/usr/local/lib/dunecontrol', '/usr/lib/dunecontrol'] if os.path.isdir(p)]
+    path = [p for p in ['.',
+                        '/usr/local/lib/dunecontrol',
+                        '/usr/lib/dunecontrol',
+                        os.path.join(get_local(),'lib','dunecontrol') ]
+                  if os.path.isdir(p)]
     try:
         pkg_config_path = [p for p in os.environ['PKG_CONFIG_PATH'].split(':') if p and os.path.isdir(p)]
         pkg_config_path = [os.path.join(p, '..', 'dunecontrol') for p in pkg_config_path]
@@ -387,7 +391,7 @@ def select_modules(modules=None):
                 else:
                   desc[n], dir[n] = d, p
             else:
-              if not is_installed(d, n):
+              if not is_installed(p, n):
                   raise KeyError('Multiple source versions for module \'' + n + '\' found.')
         else:
             desc[n], dir[n] = d, p
@@ -474,6 +478,15 @@ def inVEnv():
     # If none of the above conditions triggered, this is probably no virtualenv interpreter
     return 0
 
+def get_local():
+    if inVEnv():
+        return sys.prefix
+    try:
+        home = expanduser("~")
+        return os.path.join(home, '.local')
+    except KeyError:
+        pass
+    return ''
 
 def get_dune_py_dir():
     try:
