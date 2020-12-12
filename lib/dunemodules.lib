@@ -69,6 +69,10 @@ parse_control() {
     echo "ERROR: $CONTROL files $1 contains an invalid Module entry" >&2
     exit 1
   fi
+  # don't include the generated `dune-py` module in the dependency list
+  if test "$module" = "dune_py" ; then
+    return
+  fi
   # read dune.module file
   local deps="$($GREP "^[BLANK]*Depends:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
   local sugs="$($GREP "^[BLANK]*Suggests:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
