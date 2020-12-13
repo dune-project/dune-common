@@ -18,6 +18,8 @@ def cppType(arg):
             t, i = "std::size_t", []
         elif isinstance(arg, float) or isinstance(arg,numpy.float_):
             t, i = "double", []
+        elif isinstance(arg, str):
+            t, i = "std::string", []
         elif isinstance(arg, numpy.ndarray):
             dtype = None
             if arg.dtype.type == numpy.intc:
