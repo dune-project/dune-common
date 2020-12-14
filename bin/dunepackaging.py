@@ -22,7 +22,7 @@ def main(argv):
 
     repositories = ["gitlab", "testpypi", "pypi"]
     def usage():
-        return 'usage: dunepackaging.py [--upload <'+"|".join(repositories)+'> | -c | --clean | --version 1.0.DATE> | --onlysdist]'
+        return 'usage: dunepackaging.py [--upload <'+"|".join(repositories)+'> | -c | --clean | --version <version> | --onlysdist]'
 
     try:
         opts, args = getopt.getopt(argv, "hc", ["upload=", "clean", "version=", "onlysdist"])

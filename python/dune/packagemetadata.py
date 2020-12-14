@@ -227,7 +227,7 @@ class Data:
                 major = self.version.split('-')[0]
                 self.version = Version(major).__str__() + '.dev' + date.today().strftime('%Y%m%d')
             self.depends = [(dep[0], '(<= '+self.version+')') for dep in self.depends]
-            self.suggests = [(dep[0], '(<= '+self.version+')') for dep in self.suggests]
+            self.python_requires = [((pr[0], '(<= '+self.version+')') if pr[0].startswith('dune-') else pr) for pr in self.python_requires]
 
     def asPythonRequirementString(self, requirements):
         return [(r[0]+str(r[1])).replace("("," ").replace(")","").replace(" ","") for r in requirements]
@@ -236,11 +236,9 @@ def cmakeFlags():
     # defaults
     flags = dict([
         ('CMAKE_BUILD_TYPE','Release'),
-        ('BUILD_SHARED_LIBS','TRUE'),
+        ('CMAKE_INSTALL_RPATH_USE_LINK_PATH','TRUE'),
         ('DUNE_ENABLE_PYTHONBINDINGS','TRUE'),
         ('DUNE_PYTHON_INSTALL_LOCATION','none'),
-        ('CMAKE_INSTALL_RPATH_USE_LINK_PATH','TRUE'),
-        ('CMAKE_INSTALL_RPATH',"'$ORIGIN/../../../..'"),
         ('ALLOW_CXXFLAGS_OVERWRITE','ON'),
         ('CMAKE_DISABLE_FIND_PACKAGE_LATEX','TRUE'),
         ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen','TRUE'),
