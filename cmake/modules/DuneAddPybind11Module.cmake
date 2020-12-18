@@ -79,8 +79,7 @@ function(dune_add_pybind11_module)
   # https://pybind11.readthedocs.io/en/stable/compiling.html#building-manually
   if (APPLE)
     set_target_properties(${PYBIND11_MODULE_NAME} PROPERTIES SUFFIX ".so")
-    target_link_options(${PYBIND11_MODULE_NAME} PRIVATE "-undefined")
-    target_link_options(${PYBIND11_MODULE_NAME} PRIVATE "dynamic_lookup")
+    target_link_options(${PYBIND11_MODULE_NAME} PRIVATE -undefined dynamic_lookup)
   endif()
 
   target_compile_definitions(${PYBIND11_MODULE_NAME} PRIVATE ${PYBIND11_MODULE_COMPILE_DEFINITIONS})

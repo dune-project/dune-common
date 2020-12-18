@@ -15,6 +15,16 @@
   Furthermore, flags for either shared library or position independent code
   needs to be used.
 
+- Support for distributing DUNE modules as python packages has been added.
+  Package meta data is parsed in `packagemetadata.py` from the dune.module file.
+  A script `/bin/dunepackaging.py` was added to generate package files
+  (`setup.py`, `pyproject.toml`) that can also be used to upload packages to
+  the Python Package Index. For a brief description of what is required to add
+  this support to existing dune modules see
+  https://gitlab.dune-project.org/core/dune-common/-/merge_requests/900
+  Note that this can also be used to generate a package for dune modules
+  that don't provide Python bindings.
+
 - Eigenvectors of symmetric 2x2 `FieldMatrix`es are now computed correctly
   even when they have zero eigenvalues.
 

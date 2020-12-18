@@ -4,3 +4,7 @@
 *~
 # ignore Python files
 *.pyc
+# ignore files generated during python setup.py sdist
+MANIFEST
+_skbuild/
+dist

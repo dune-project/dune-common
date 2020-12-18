@@ -32,6 +32,8 @@ def cppType(arg):
                 t, i = "pybind11::array", ["dune/python/pybind11/numpy.h"]
             else:
                 t, i = "pybind11::array_t<"+dtype+">", ["dune/python/pybind11/numpy.h"]
+        elif isinstance(arg, str):
+            t, i = "std::string", ["string"]
         elif callable(arg):
             t, i = "pybind11::function", ["dune/python/pybind11/pybind11.h"]
         elif isinstance(arg,tuple) or isinstance(arg,list):
