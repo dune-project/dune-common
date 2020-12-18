@@ -15,185 +15,15 @@ from os.path import expanduser
 if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
+    from dune.packagemetadata import Version, VersionRequirement,\
+            Description, cmakeFlags
 else:
     from utility import buffer_to_str
     import project
+    from packagemetadata import Version, VersionRequirement,\
+            Description, cmakeFlags
 
 logger = logging.getLogger(__name__)
-
-class Version:
-    def __init__(self, s):
-        if s is None:
-            self.major = 0
-            self.minor = 0
-            self.revision = 0
-        elif isinstance(s, Version):
-            self.major = s.major
-            self.minor = s.minor
-            self.revision = s.revision
-        else:
-            match = re.match('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)([.](?P<revision>[0-9]+))?', s)
-            if not match:
-                raise ValueError('Invalid version: \'' + s + '\'.')
-            self.major = int(match.group('major'))
-            self.minor = int(match.group('minor'))
-            self.revision = int(match.group('revision')) if match.group( 'revision' ) else 0
-
-    def __str__(self):
-        return str(self.major) + '.' + str(self.minor) + '.' + str(self.revision)
-
-    def as_tuple(self):
-        return (self.major, self.minor, self.revision)
-
-    def __eq__(self, other):
-        return self.as_tuple() == other.as_tuple()
-
-    def __ne__(self, other):
-        return self.as_tuple() != other.as_tuple()
-
-    def __lt__(self, other):
-        return self.as_tuple() < other.as_tuple()
-
-    def __le__(self, other):
-        return self.as_tuple() <= other.as_tuple()
-
-    def __gt__(self, other):
-        return self.as_tuple() > other.as_tuple()
-
-    def __ge__(self, other):
-        return self.as_tuple() >= other.as_tuple()
-
-
-class VersionRequirement:
-    def __init__(self, s):
-        if s:
-            match = re.match('(?P<operator>(>|>=|==|<=|<))\s*(?P<version>[0-9.]+)', s)
-            if not match:
-                raise ValueError('Invalid version qualifier: \'' + s + '\'.')
-            self.version = Version(match.group('version'))
-            operator = match.group('operator')
-
-            if operator == '>':
-                self.operator = Version.__gt__
-            elif operator == '>=':
-                self.operator = Version.__ge__
-            elif operator == '==':
-                self.operator = Version.__eq__
-            elif operator == '<=':
-                self.operator = Version.__le__
-            elif operator == '<':
-                self.operator = Version.__lt__
-            else:
-                raise ValueError('Invalid comparison operator: \'' + operator + '\'.')
-        else:
-            self.operator = lambda a, b : True
-            self.version = None
-
-    def __bool__(self):
-        return self.version is not None
-
-    __nonzero__ = __bool__
-
-    def __call__(self, version):
-        return self.operator(version, self.version)
-
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        if self.operator == Version.__gt__:
-            return '(> ' + str(self.version) + ')'
-        elif self.operator == Version.__ge__:
-            return '(>= ' + str(self.version) + ')'
-        elif self.operator == Version.__eq__:
-            return '(== ' + str(self.version) + ')'
-        elif self.operator == Version.__le__:
-            return '(<= ' + str(self.version) + ')'
-        elif self.operator == Version.__lt__:
-            return '(< ' + str(self.version) + ')'
-        else:
-            return ''
-
-
-class Description:
-    def __init__(self, fileName=None, **kwargs):
-        data = kwargs.copy()
-        if fileName is not None:
-            with io.open(fileName, 'r', encoding='utf-8') as file:
-                for line in file:
-                    line = line.strip()
-                    if not line or line[ 0 ] == '#':
-                        continue
-
-                    pos = line.find(':')
-                    if pos < 0:
-                        raise ValueError('Invalid key:value pair (' + line + ').')
-                    data[line[:pos].strip().lower()] = line[pos+1:].strip()
-
-        try:
-            self.name = data['module']
-        except KeyError:
-            raise KeyError('Module description does not contain module name.')
-
-        self.version = Version(data.get('version'))
-
-        try:
-            self.maintainer = email.utils.parseaddr(data['maintainer'])
-            if not self.maintainer[1]:
-                raise ValueError('Module description contains invalid maintainer e-mail address.')
-        except KeyError:
-            self.maintainer = None
-
-        try:
-            wshook = data['whitespace-hook'].lower()
-            if wshook == 'yes':
-                self.whitespace_hook = True
-            elif wshook == 'no':
-                self.whitespace_hook = False
-            else:
-              raise ValueError('Invalid value for whitespace-hook: ' + wshook + '.')
-        except KeyError:
-            self.whitespace_hook = None
-
-        def parse_deps(s):
-            deps = []
-            if isinstance(s, list):
-                for m in s:
-                    if isinstance(m, Description):
-                        deps.append((m.name, VersionRequirement(None)))
-                    else:
-                        deps.append((m, VersionRequirement(None)))
-            else:
-                while s:
-                    match = re.match('(?P<module>[a-zA-Z0-9_\-]+)(\s*\((?P<version>[^)]*)\))?', s)
-                    if not match:
-                        raise ValueError('Invalid dependency list.')
-                    deps.append((match.group('module'), VersionRequirement(match.group('version'))))
-                    s = s[match.end():].strip()
-            return deps
-
-        self.depends = parse_deps(data.get('depends'))
-        self.suggests = parse_deps(data.get('suggests'))
-
-    def __repr__(self):
-        s = 'Module:          ' + self.name + '\n'
-        s += 'Version:         ' + str(self.version) + '\n'
-        if self.maintainer is not None:
-            s += 'Maintainer:      ' + email.utils.formataddr(self.maintainer) + '\n'
-        if self.whitespace_hook is not None:
-            s += 'Whitespace-Hook: ' + ('Yes' if self.whitespace_hook else 'No') + '\n'
-
-        def print_deps(deps):
-            return ' '.join([m + (' ' + str(c) if c else '') for m, c in deps])
-
-        if self.depends:
-            s += 'Depends:         ' + print_deps(self.depends) + '\n'
-        if self.suggests:
-            s += 'Suggests:        ' + print_deps(self.suggests) + '\n'
-        return s
-
-    def __str__(self):
-        return self.name + " (" + str(self.version) + ")"
 
 
 def find_modules(path):
@@ -300,8 +130,8 @@ def pkg_config(pkg, var=None):
     pkgconfig = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     pkgconfig.wait()
     if pkgconfig.returncode != 0:
-        raise KeyError('package ' + pkg + 'not found.')
-    return buffer_to_str(pkgconfig.stdout.read())
+        raise KeyError('package ' + pkg + ' not found.')
+    return buffer_to_str(pkgconfig.stdout.read()).strip()
 
 
 def get_prefix(module):
@@ -334,29 +164,44 @@ def get_cmake_command():
     except KeyError:
         return 'cmake'
 
-def get_module_path():
+def get_local():
+    if inVEnv():
+        return sys.prefix
     try:
-        path = [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
+        home = expanduser("~")
+        return os.path.join(home, '.local')
+    except KeyError:
+        pass
+    return ''
+
+def get_module_path():
+    path = []
+    try:
+        path = path + [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
         logger.debug('Module path [DUNE_CONTROL_PATH]: ' + ':'.join(path))
-        return path
+        # return path
     except KeyError:
         pass
 
     # try to guess module path using pkg-config
     try:
         prefix = pkg_config('dune-common', 'prefix').strip()
-        path = [p for p in ['.', os.path.join(prefix, 'lib', 'dunecontrol')] if os.path.isdir(p)]
+        path = path + [p for p in ['.', os.path.join(prefix, 'lib', 'dunecontrol')] if os.path.isdir(p)]
         logger.debug('Module path [pkg-config]: ' + ':'.join(path))
-        return path
+        # return path
     except KeyError:
         pass
 
     # try to guess modules path for unix systems
-    path = [p for p in ['.', '/usr/local/lib/dunecontrol', '/usr/lib/dunecontrol'] if os.path.isdir(p)]
+    path = path + [p for p in ['.',
+                        '/usr/local/lib/dunecontrol',
+                        '/usr/lib/dunecontrol',
+                        os.path.join(get_local(),'lib','dunecontrol') ]
+                  if os.path.isdir(p)]
     try:
         pkg_config_path = [p for p in os.environ['PKG_CONFIG_PATH'].split(':') if p and os.path.isdir(p)]
         pkg_config_path = [os.path.join(p, '..', 'dunecontrol') for p in pkg_config_path]
-        path += [p for p in pkg_config_path if os.path.isdir(p)]
+        path = path + [p for p in pkg_config_path if os.path.isdir(p)]
     except KeyError:
         pass
 
@@ -381,13 +226,14 @@ def select_modules(modules=None):
     for d, p in modules:
         n = d.name
         if n in dir:
+            if p == dir[n]: continue
             if is_installed(dir[n], n):
                 if is_installed(p, n):
                     raise KeyError('Multiple installed versions for module \'' + n + '\' found.')
                 else:
                   desc[n], dir[n] = d, p
             else:
-              if not is_installed(d, n):
+              if not is_installed(p, n):
                   raise KeyError('Multiple source versions for module \'' + n + '\' found.')
         else:
             desc[n], dir[n] = d, p
@@ -505,23 +351,6 @@ def get_dune_py_version():
     return Version("2.8.0")
 
 
-def get_cmake_definitions():
-    definitions = {}
-    cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
-    if cmakeFlags is None:
-        cmakeFlags = os.environ.get('CMAKE_FLAGS')
-    if cmakeFlags is not None:
-        for arg in shlex.split(cmakeFlags):
-            try:
-                key, value = arg.split('=', 1)
-                if key.startswith('-D'):
-                    key = key[2:]
-            except ValueError:
-                key, value = arg, None
-            definitions[key] = value
-    return definitions
-
-
 def make_dune_py_module(dune_py_dir=None, deps=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
@@ -572,12 +401,21 @@ def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, bu
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     if definitions is None:
-        definitions = get_cmake_definitions()
-
-    desc = Description(os.path.join(dune_py_dir, 'dune.module'))
+        definitions = cmakeFlags()
 
     modules, dirs = select_modules()
-    deps = resolve_dependencies(modules, desc)
+    deps = resolve_dependencies(modules, None)
+
+    desc = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
+
+    with open(os.path.join(dune_py_dir, 'dune.module'), 'w') as file:
+        file.write(repr(desc))
+
+    # remove cache
+    try:
+        os.remove(os.path.join(dune_py_dir, 'CMakeCache.txt'))
+    except FileNotFoundError:
+        pass
 
     prefix = {}
     for name, dir in dirs.items():
