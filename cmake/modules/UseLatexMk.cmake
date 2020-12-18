@@ -210,8 +210,9 @@ function(add_latex_document)
   endif()
 
   # Maybe allow latexmk the use of absolute paths
+  set(ENV_COMMAND "")
   if(NOT LATEXMK_PARANOID)
-    set($ENV{openout_any} "a")
+    set(ENV_COMMAND ${CMAKE_COMMAND} -E env openout_any="a")
   endif()
 
   # Call the latexmk executable
@@ -220,7 +221,7 @@ function(add_latex_document)
   #     intentional decision of UseLatexMk to avoid listing dependencies of the tex source.
   add_custom_target(${LMK_TARGET}
                     ${ALL_OPTION}
-                    COMMAND ${LATEXMK_EXECUTABLE} ${LATEXMKRC_OPTIONS} ${LMK_SOURCE}
+                    COMMAND ${ENV_COMMAND} ${LATEXMK_EXECUTABLE} ${LATEXMKRC_OPTIONS} ${LMK_SOURCE}
                     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
                     COMMENT "Building PDF from ${LMK_SOURCE}..."
                     ${BYPRODUCTS_PARAMETER}
@@ -246,7 +247,7 @@ function(add_latex_document)
 
   # Add a clean up rule to the clean_latex target
   add_custom_target(${LMK_TARGET}_clean
-                    COMMAND ${LATEXMK_EXECUTABLE} -C ${LATEXMKRC_OPTIONS} ${LMK_SOURCE}
+                    COMMAND ${ENV_COMMAND} ${LATEXMK_EXECUTABLE} -C ${LATEXMKRC_OPTIONS} ${LMK_SOURCE}
                     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
                     COMMENT "Cleaning build results from target ${LMK_TARGET}"
                     )
