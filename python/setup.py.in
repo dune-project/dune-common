@@ -1,5 +1,7 @@
 from setuptools import setup, find_packages
 
+pkg = [m for m in "${ProjectPythonRequires}".split(' ') if "dune" not in m]
+
 setup(name="${ProjectName}",
     namespace_packages=['dune'],
     description="${ProjectDescription}",
@@ -9,5 +11,5 @@ setup(name="${ProjectName}",
     packages = find_packages(),
     zip_safe = 0,
     package_data = {'': ['*.so']},
-    install_requires = "${ProjectPythonRequires}".split(' ')
+    install_requires = pkg
   )
