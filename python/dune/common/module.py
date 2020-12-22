@@ -16,12 +16,12 @@ if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
     from dune.packagemetadata import Version, VersionRequirement,\
-            Description, cmakeFlags, cmakeArguments
+            Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 else:
     from utility import buffer_to_str
     import project
     from packagemetadata import Version, VersionRequirement,\
-            Description, cmakeFlags, cmakeArguments
+            Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 
 logger = logging.getLogger(__name__)
 
@@ -215,7 +215,7 @@ def select_modules(modules=None, module=None):
     Args:
         modules (optional): List of (description, dir) pairs
             If not given, the find_modules(get_module_path()) is used
-        module (optional): 
+        module (optional):
 
     Returns:
         pair of dictionaries mapping module name to unique description and directory respectively
@@ -303,41 +303,6 @@ def build_module(builddir, build_args=None):
     if cmake.returncode != 0:
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
-
-def inVEnv():
-    # If sys.real_prefix exists, this is a virtualenv set up with the virtualenv package
-    real_prefix = hasattr(sys, 'real_prefix')
-    if real_prefix:
-        return 1
-    # If a virtualenv is set up with pyvenv, we check for equality of base_prefix and prefix
-    if hasattr(sys, 'base_prefix'):
-        return (sys.prefix != sys.base_prefix)
-    # If none of the above conditions triggered, this is probably no virtualenv interpreter
-    return 0
-
-
-def get_dune_py_dir():
-    try:
-        basedir = os.path.realpath( os.environ['DUNE_PY_DIR'] )
-        basedir = os.path.join(basedir,'dune-py')
-        return basedir
-    except KeyError:
-        pass
-
-    # test if in virtual env
-    if inVEnv():
-        virtualEnvPath = sys.prefix
-        return os.path.join(virtualEnvPath, '.cache', 'dune-py')
-
-    # generate in home directory
-    try:
-        home = expanduser("~")
-        return os.path.join(home, '.cache', 'dune-py')
-    except KeyError:
-        pass
-
-    raise RuntimeError('Unable to determine location for dune-py module. Please set the environment variable "DUNE_PY_DIR".')
-
 
 def get_dune_py_version():
     # change this version on the following events:
