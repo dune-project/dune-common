@@ -63,6 +63,12 @@
 #    the presence of the configure time virtualenv described in :ref:`DunePythonVirtualenv`.
 #
 
+# unless the user has defined the variable, unversioned names (like python3) are found
+# first, to match what users most probably use later on to call the executable
+if(NOT DEFINED Python3_FIND_UNVERSIONED_NAMES)
+  set(Python3_FIND_UNVERSIONED_NAMES "FIRST")
+endif()
+
 # Include all the other parts of the python extension to avoid that users need
 # to explicitly include parts of our build system.
 include(DunePythonFindPackage)
