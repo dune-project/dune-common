@@ -57,7 +57,7 @@ for importer, modname, ispkg in pkgutil.iter_modules(package.__path__, prefix):
 _create_map.setdefault("view",{}).update(_create_map["grid"])
 
 logMsg = logMsg + "]"
-logger.info(logMsg)
+logger.debug(logMsg)
 
 ############################################################################
 def get(category=None,entry=None):

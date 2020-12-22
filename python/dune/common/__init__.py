@@ -3,7 +3,7 @@ import os
 
 logger = logging.getLogger(__name__)
 
-loglevel = None
+loglevel = logging.INFO
 try:
     loglevel = getattr(logging, os.environ['DUNE_LOG_LEVEL'].upper())
 except KeyError:
@@ -11,16 +11,16 @@ except KeyError:
 except AttributeError:
     logger.warn('Invalid log level in environment variable DUNE_LOG_LEVEL')
 
-logformat = os.environ.get('DUNE_LOG_FORMAT')
+logformat = os.environ.get('DUNE_LOG_FORMAT', 'DUNE-%(levelname)s: %(message)s')
 
 logging.basicConfig(format=logformat, level=loglevel)
 
 try:
     from mpi4py import MPI
     if MPI.COMM_WORLD.Get_rank() == 0:
-        logger.info('MPI initialized successfully')
+        logger.debug('MPI initialized successfully')
 except ImportError:
-    logger.info('mpi4py not found, MPI not initialized')
+    logger.debug('mpi4py not found, MPI not initialized')
 
 from ._common import *
 from .deprecated import DeprecatedObject

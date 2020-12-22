@@ -355,7 +355,7 @@ def make_dune_py_module(dune_py_dir=None, deps=None):
             logger.error('"' + dune_py_dir + '" contains version ' + str(description.version) + ' of the dune-py module, ' + str(get_dune_py_version()) + ' required.')
             logger.error('If you upgraded dune-python, you can safely remove "' + dune_py_dir + '" and retry.')
             raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
-        logger.info('Using dune-py module in ' + dune_py_dir)
+        logger.debug('Using dune-py module in ' + dune_py_dir)
 
 def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, builddir=None, deps=None):
     if dune_py_dir is None:
