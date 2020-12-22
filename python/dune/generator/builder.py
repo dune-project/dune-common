@@ -70,6 +70,8 @@ class Builder:
                 tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
                 if not os.path.isfile(tagfile):
                     dune.common.module.build_dune_py_module(self.dune_py_dir)
+                    # create .noconfigure to disable configuration for future calls
+                    open(tagfile, 'a').close()
                 else:
                     logger.info('using pre configured dune-py module')
         comm.barrier()
