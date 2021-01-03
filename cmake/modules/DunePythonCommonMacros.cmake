@@ -69,6 +69,11 @@ if(NOT DEFINED Python3_FIND_UNVERSIONED_NAMES)
   set(Python3_FIND_UNVERSIONED_NAMES "FIRST")
 endif()
 
+# include code from CMake 3.20 to back-port using unversioned Python first
+if(${CMAKE_VERSION} VERSION_LESS "3.20")
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/FindPython3")
+endif()
+
 # Include all the other parts of the python extension to avoid that users need
 # to explicitly include parts of our build system.
 include(DunePythonFindPackage)

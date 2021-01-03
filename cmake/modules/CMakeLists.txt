@@ -1,3 +1,5 @@
+add_subdirectory(FindPython3)
+
 install(FILES
   AddGMPFlags.cmake
   AddMETISFlags.cmake
