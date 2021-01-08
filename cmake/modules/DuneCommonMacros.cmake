@@ -13,8 +13,12 @@ if(${HAVE_LAPACK})
   set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES})
   check_function_exists("dsyev_" LAPACK_NEEDS_UNDERLINE)
   cmake_pop_check_state()
+  dune_add_pkg_config_requirement("lapack")
 endif(${HAVE_LAPACK})
 set(HAVE_BLAS ${BLAS_FOUND})
+if(${HAVE_BLAS})
+  dune_add_pkg_config_requirement("blas")
+endif(${HAVE_BLAS})
 
 set_package_properties("BLAS" PROPERTIES
   DESCRIPTION "fast linear algebra routines")

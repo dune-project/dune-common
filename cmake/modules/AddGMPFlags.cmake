@@ -19,6 +19,7 @@ if(GMP_FOUND)
     LIBRARIES GMP::gmpxx
     COMPILE_DEFINITIONS "ENABLE_GMP=1"
   )
+  dune_add_pkg_config_requirement("gmpxx")
 endif()
 
 # add function to link against the GMP library
