@@ -866,12 +866,17 @@ endif()")
   set(DUNE_MODULE_SRC_DOCDIR "${PROJECT_SOURCE_DIR}/doc")
   set(MODULE_INSTALLED ON)
 
+  # join requirements handled by the dune.module mechanism
+  dune_add_pkg_config_requirement("${${ProjectName}_DEPENDS}")
+  dune_add_pkg_config_requirement("${${ProjectName}_SUGGESTS}")
+  list(REMOVE_DUPLICATES DUNE_PKG_CONFIG_REQUIREMENTS)
+  string(JOIN " " REQUIRES ${DUNE_PKG_CONFIG_REQUIREMENTS})
+
   configure_package_config_file(${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
     INSTALL_DESTINATION  ${DUNE_INSTALL_LIBDIR}/cmake/${ProjectName}
     PATH_VARS CMAKE_INSTALL_DATAROOTDIR DUNE_INSTALL_MODULEDIR CMAKE_INSTALL_INCLUDEDIR
     DOXYSTYLE_DIR SCRIPT_DIR)
-
 
   #create cmake-config files for build tree
   set(PACKAGE_CMAKE_INSTALL_INCLUDEDIR ${PROJECT_SOURCE_DIR})
@@ -1193,3 +1198,11 @@ macro(add_dune_all_flags targets)
     target_compile_options(${target} PUBLIC ${opts})
   endforeach()
 endmacro(add_dune_all_flags targets)
+
+macro(dune_add_pkg_config_requirement reqs)
+  foreach(req ${reqs})
+    string(REPLACE "(" "" req2 ${req})
+    string(REPLACE ")" "" req ${req2})
+    list(PREPEND DUNE_PKG_CONFIG_REQUIREMENTS ${req})
+  endforeach()
+endmacro(dune_add_pkg_config_requirement reqs)
