@@ -869,7 +869,9 @@ endif()")
   # join requirements handled by the dune.module mechanism
   dune_add_pkg_config_requirement("${${ProjectName}_DEPENDS}")
   dune_add_pkg_config_requirement("${${ProjectName}_SUGGESTS}")
-  list(REMOVE_DUPLICATES DUNE_PKG_CONFIG_REQUIREMENTS)
+  if (DUNE_PKG_CONFIG_REQUIREMENTS)
+    list(REMOVE_DUPLICATES DUNE_PKG_CONFIG_REQUIREMENTS)
+  endif()
   string(JOIN " " REQUIRES ${DUNE_PKG_CONFIG_REQUIREMENTS})
 
   configure_package_config_file(${CONFIG_SOURCE_FILE}
