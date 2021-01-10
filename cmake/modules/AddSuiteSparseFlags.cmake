@@ -19,6 +19,14 @@ if(SuiteSparse_FOUND)
   dune_register_package_flags(
     COMPILE_DEFINITIONS "ENABLE_SUITESPARSE=1"
     LIBRARIES SuiteSparse::SuiteSparse)
+
+  dune_create_and_install_pkg_config("suitesparse"
+    NAME "SuiteSparse"
+    VERSION "${SuiteSparse_VERSION}"
+    DESCRIPTION "A suite of sparse matrix software"
+    URL "http://faculty.cse.tamu.edu/davis/suitesparse.html"
+    TARGET SuiteSparse::SuiteSparse)
+  dune_add_pkg_config_requirement("suitesparse")
 endif()
 
 # Provide function to set target properties for linking to SuiteSparse

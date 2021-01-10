@@ -31,12 +31,13 @@ if(Vc_FOUND)
   string(JOIN " " Vc_FLAGS ${Vc_COMPILE_FLAGS})
   set(Vc_FLAGS "${Vc_FLAGS} -I${Vc_INCLUDE_DIR}")
 
-  dune_create_and_install_pkg_config("Vc"
+  dune_create_and_install_pkg_config("vc"
+    NAME "Vc"
     VERSION "${Vc_VERSION}"
     DESCRIPTION "C++ Vectorization library"
     URL "https://github.com/VcDevel/Vc"
     CFLAGS "${Vc_COMPILE_FLAGS};-I${Vc_INCLUDE_DIR};-DHAVE_VC"
     LIBS "${Vc_LIBRARIES}")
-  dune_add_pkg_config_requirement("Vc")
+  dune_add_pkg_config_requirement("vc")
 endif(Vc_FOUND)
 set(HAVE_VC ${Vc_FOUND})
