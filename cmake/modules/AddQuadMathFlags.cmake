@@ -24,6 +24,7 @@ if(QuadMath_FOUND)
     NAME "QuadMath"
     DESCRIPTION "GCC Quad-Precision Math Library"
     URL "https://gcc.gnu.org/onlinedocs/libquadmath"
+    CFLAGS "-DHAVE_QUADMATH"
     TARGET QuadMath::QuadMath)
   dune_add_pkg_config_requirement("libquadmath")
 endif()
