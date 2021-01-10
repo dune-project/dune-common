@@ -6,8 +6,6 @@ CXX=@CXX@
 CC=@CC@
 CXX_STD_FLAGS=@cxx_std_flag@
 FPIC_FLAGS=
-VC_FLAGS=@Vc_FLAGS@ -I@Vc_INCLUDE_DIR@
-VC_LIBS=@Vc_LIBRARIES@
 DEPENDENCIES=@REQUIRES@
 
 Name: @PACKAGE_NAME@
@@ -16,5 +14,4 @@ Description: @DESCRIPTION@
 URL: @URL@
 Requires: ${DEPENDENCIES}
 Libs: -L${libdir} -ldunecommon
-Cflags: -I${includedir} ${CXX_STD_FLAGS} ${FPIC_FLAGS} ${VC_FLAGS}
-Libs.private: ${VC_LIBS}
+Cflags: -I${includedir} ${CXX_STD_FLAGS} ${FPIC_FLAGS}

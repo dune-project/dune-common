@@ -1,0 +1,7 @@
+Name: @PKG_CFG_NAME@
+Version: @PKG_CFG_VERSION@
+Description: @PKG_CFG_DESCRIPTION@
+URL: @PKG_CFG_URL@
+Requires: @PKG_CFG_REQUIRES@
+Libs: @PKG_CFG_LIBS@
+Cflags: @PKG_CFG_CFLAGS@

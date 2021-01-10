@@ -61,3 +61,41 @@ function(create_and_install_pkconfig installlibdir)
     DESTINATION ${installlibdir}/pkgconfig)
 
 endfunction(create_and_install_pkconfig)
+
+
+function(dune_create_and_install_pkg_config PKG_CFG_NAME)
+  cmake_parse_arguments(PKG_CFG "" "DESCRIPTION;URL;VERSION;TARGET" "REQUIRES;CFLAGS;LIBS" ${ARGN})
+  if(TARGET ${PKG_CFG_TARGET})
+    get_target_property(PKG_CFG_INCLUDE_DIRS ${PKG_CFG_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(PKG_CFG_COMPILE_DEFS ${PKG_CFG_TARGET} INTERFACE_COMPILE_DEFINITIONS)
+    get_target_property(PKG_CFG_COMPILE_OPTS ${PKG_CFG_TARGET} INTERFACE_COMPILE_OPTIONS)
+    get_target_property(PKG_CFG_LINK_DIRS ${PKG_CFG_TARGET} INTERFACE_LINK_DIRECTORIES)
+    get_target_property(PKG_CFG_LINK_LIBS ${PKG_CFG_TARGET} INTERFACE_LINK_LIBRARIES)
+    get_target_property(PKG_CFG_LINK_OPTS ${PKG_CFG_TARGET} INTERFACE_LINK_OPTIONS)
+    # TODO: transform target properties
+  endif()
+
+  if(PKG_CFG_CFLAGS)
+    string(JOIN " " PKG_CFG_CFLAGS ${PKG_CFG_CFLAGS})
+  endif()
+
+  if(PKG_CFG_LIBS)
+    string(JOIN " " PKG_CFG_LIBS ${PKG_CFG_LIBS})
+  endif()
+
+  if(EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/template.pc.in)
+    set(TEMPLATE_PC_FILE "${PROJECT_SOURCE_DIR}/cmake/pkg/template.pc.in")
+  elseif(EXISTS ${dune-common_PREFIX}/cmake/pkg/template.pc.in)
+    set(TEMPLATE_PC_FILE "${dune-common_PREFIX}/cmake/pkg/template.pc.in")
+  endif()
+
+  #create pkg-config file
+  configure_file(${TEMPLATE_PC_FILE}
+    ${PROJECT_BINARY_DIR}/${PKG_CFG_NAME}.pc
+    @ONLY)
+
+  # install pkgconfig file
+  install(FILES ${PROJECT_BINARY_DIR}/${PKG_CFG_NAME}.pc
+    DESTINATION ${DUNE_INSTALL_LIBDIR}/pkgconfig)
+
+endfunction(dune_create_and_install_pkg_config)
