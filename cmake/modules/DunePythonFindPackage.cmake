@@ -36,7 +36,7 @@
 #       :single:
 #
 #       The python interpreter, whose paths are searched for the package.
-#       Defaults to :code:`${PYTHON_EXECUTABLE}`, might differ when dealing with
+#       Defaults to :code:`${Python3_EXECUTABLE}`, might differ when dealing with
 #       the configure-time virtualenv set up with :ref:`DUNE_PYTHON_VIRTUALENV_SETUP`.
 #
 #    Find a given python package on the system.
@@ -58,7 +58,7 @@ function(dune_python_find_package)
     set(PYPACKAGE_RESULT DUNE_PYTHON_${PYPACKAGE_PACKAGE}_FOUND)
   endif()
   if(NOT PYPACKAGE_INTERPRETER)
-    set(PYPACKAGE_INTERPRETER "${PYTHON_EXECUTABLE}")
+    set(PYPACKAGE_INTERPRETER "${Python3_EXECUTABLE}")
   endif()
   if(PYPACKAGE_EXACT AND NOT PYPACKAGE_VERSION)
     message(FATAL_ERROR "dune_python_find_package: EXACT given, but no VERSION specified.")

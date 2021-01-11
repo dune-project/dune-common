@@ -63,37 +63,36 @@
 #    the presence of the configure time virtualenv described in :ref:`DunePythonVirtualenv`.
 #
 
+# unless the user has defined the variable, unversioned names (like python3) are found
+# first, to match what users most probably use later on to call the executable
+if(NOT DEFINED Python3_FIND_UNVERSIONED_NAMES)
+  set(Python3_FIND_UNVERSIONED_NAMES "FIRST")
+endif()
+
+# include code from CMake 3.20 to back-port using unversioned Python first
+if(${CMAKE_VERSION} VERSION_LESS "3.20")
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/FindPython3")
+endif()
+
 # Include all the other parts of the python extension to avoid that users need
 # to explicitly include parts of our build system.
 include(DunePythonFindPackage)
 include(DunePythonInstallPackage)
-include(DunePythonRequireVersion)
 include(DunePythonTestCommand)
 
-# Update the list of valid python versions, the shipped CMake modules tend to outdate...
-# Mention all those not present in CMake 2.8.12
-set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6 3.5 3.4)
+# Find the Python Interpreter and libraries
+find_package(Python3 COMPONENTS Interpreter Development)
 
-# Find the Python Interpreter
-find_package(PythonInterp 3)
-
-# interpreter was found set available version of library to that version
-if(PYTHONINTERP_FOUND)
-  set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-endif()
-
-# Find the Python libraries
-find_package(PythonLibs)
 
 # Determine whether the given interpreter is running inside a virtualenv
-if(PYTHONINTERP_FOUND)
+if(Python3_Interpreter_FOUND)
   include(DuneExecuteProcess)
   include(DunePathHelper)
   dune_module_path(MODULE dune-common
                    RESULT scriptdir
                    SCRIPT_DIR)
 
-  dune_execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${scriptdir}/envdetect.py"
+  dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/envdetect.py"
                        RESULT_VARIABLE DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
                        )
 endif()
