@@ -866,15 +866,6 @@ endif()")
   set(DUNE_MODULE_SRC_DOCDIR "${PROJECT_SOURCE_DIR}/doc")
   set(MODULE_INSTALLED ON)
 
-  # join requirements handled by the dune.module mechanism
-  dune_add_pkg_config_requirement("${${ProjectName}_DEPENDS}")
-  dune_add_pkg_config_requirement("${${ProjectName}_SUGGESTS}")
-  if (DUNE_PKG_CONFIG_REQUIREMENTS)
-    list(REMOVE_DUPLICATES DUNE_PKG_CONFIG_REQUIREMENTS)
-  endif()
-  list(REVERSE DUNE_PKG_CONFIG_REQUIREMENTS)
-  string(JOIN " " REQUIRES ${DUNE_PKG_CONFIG_REQUIREMENTS})
-
   configure_package_config_file(${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
     INSTALL_DESTINATION  ${DUNE_INSTALL_LIBDIR}/cmake/${ProjectName}
@@ -933,6 +924,11 @@ endif()
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
     install(FILES config.h.cmake DESTINATION share/${ProjectName})
   endif()
+
+  # join requirements handled by the dune.module mechanism
+  dune_add_pkg_config_requirement("${${ProjectName}_DEPENDS}")
+  dune_add_pkg_config_requirement("${${ProjectName}_SUGGESTS}")
+  dune_add_pkg_config_flags("${cxx_std_flag}")
 
   # install pkg-config files
   create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
@@ -1201,11 +1197,3 @@ macro(add_dune_all_flags targets)
     target_compile_options(${target} PUBLIC ${opts})
   endforeach()
 endmacro(add_dune_all_flags targets)
-
-macro(dune_add_pkg_config_requirement reqs)
-  foreach(req ${reqs})
-    string(REPLACE "(" "" req2 ${req})
-    string(REPLACE ")" "" req ${req2})
-    list(APPEND DUNE_PKG_CONFIG_REQUIREMENTS ${req})
-  endforeach()
-endmacro(dune_add_pkg_config_requirement reqs)

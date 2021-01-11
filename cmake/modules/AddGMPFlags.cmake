@@ -19,22 +19,20 @@ if(GMP_FOUND)
     LIBRARIES GMP::gmpxx
     COMPILE_DEFINITIONS "ENABLE_GMP=1"
   )
-  if(GMP_VERSION VERSION_LESS "6.2")
-    dune_create_and_install_pkg_config("gmp"
-      NAME "GMP"
-      VERSION "${GMP_VERSION}"
-      DESCRIPTION "GNU multi-precision library"
-      URL "https://gmplib.org"
-      TARGET GMP::gmp)
-    dune_create_and_install_pkg_config("gmpxx"
-      NAME "GMP"
-      VERSION "${GMP_VERSION}"
-      DESCRIPTION "GNU multi-precision library"
-      URL "https://gmplib.org"
-      CFLAGS "-DHAVE_GMP"
-      TARGET GMP::gmpxx)
-  endif()
+  dune_create_and_install_pkg_config("gmp"
+    NAME "GMP"
+    VERSION "${GMP_VERSION}"
+    DESCRIPTION "GNU multi-precision library"
+    URL "https://gmplib.org"
+    TARGET GMP::gmp)
+  dune_create_and_install_pkg_config("gmpxx"
+    NAME "GMP"
+    VERSION "${GMP_VERSION}"
+    DESCRIPTION "GNU multi-precision library"
+    URL "https://gmplib.org"
+    TARGET GMP::gmpxx)
   dune_add_pkg_config_requirement("gmpxx")
+  dune_add_pkg_config_flags("-DHAVE_GMP")
 endif()
 
 # add function to link against the GMP library

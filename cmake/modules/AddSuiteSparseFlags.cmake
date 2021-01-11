@@ -25,9 +25,10 @@ if(SuiteSparse_FOUND)
     VERSION "${SuiteSparse_VERSION}"
     DESCRIPTION "A suite of sparse matrix software"
     URL "http://faculty.cse.tamu.edu/davis/suitesparse.html"
-    CFLAGS "-DHAVE_SUITESPARSE"
     TARGET SuiteSparse::SuiteSparse)
   dune_add_pkg_config_requirement("suitesparse")
+  dune_add_pkg_config_flags("-DHAVE_SUITESPARSE")
+  dune_add_pkg_config_flags("-DHAVE_UMFPACK")
 endif()
 
 # Provide function to set target properties for linking to SuiteSparse

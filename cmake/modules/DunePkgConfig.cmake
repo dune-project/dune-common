@@ -35,19 +35,15 @@ function(create_and_install_pkconfig installlibdir)
   set(PACKAGE_NAME ${ProjectName})
   set(VERSION ${ProjectVersion})
   set(CC ${CMAKE_C_COMPILER})
-  set(CXX "${CMAKE_CXX_COMPILER} ${CXX_STD11_FLAGS}")
+  set(CXX ${CMAKE_CXX_COMPILER})
 
-  if(DUNE_DEPENDS)
-    foreach(_DUNE_DEPEND ${DUNE_DEPENDS})
-      string(REGEX REPLACE "\\(" "" REQF1 ${_DUNE_DEPEND})
-      string(REGEX REPLACE "\\)" "" LR ${REQF1})
-      if(REQUIRES)
-        set(REQUIRES "${REQUIRES} ${LR}")
-      else()
-        set(REQUIRES ${LR})
-      endif(REQUIRES)
-    endforeach(_DUNE_DEPEND ${DUNE_DEPENDS})
-  endif(DUNE_DEPENDS)
+  set(PKG_CFG_REQUIRES_LIST ${${ProjectName}_PKG_CFG_REQUIRES})
+  list(REMOVE_DUPLICATES PKG_CFG_REQUIRES_LIST)
+  list(REVERSE PKG_CFG_REQUIRES_LIST)
+
+  string(JOIN "," PKG_CFG_REQUIRES ${PKG_CFG_REQUIRES_LIST})
+  string(JOIN " " PKG_CFG_CFLAGS   ${${ProjectName}_PKG_CFG_CFLAGS})
+  string(JOIN " " PKG_CFG_LIBS     ${${ProjectName}_PKG_CFG_LIBS})
 
   #create pkg-config file
   configure_file(
@@ -68,7 +64,23 @@ macro(dune_pkg_config_name _name _var)
 endmacro(dune_pkg_config_name)
 
 function(dune_create_and_install_pkg_config _name)
+  include(FindPkgConfig)
   cmake_parse_arguments(PKG_CFG "" "NAME;DESCRIPTION;URL;VERSION;TARGET" "REQUIRES;CFLAGS;LIBS" ${ARGN})
+
+  if(NOT PKG_CFG_VERSION AND ${PKG_CFG_NAME}_VERSION)
+    set(PKG_CFG_VERSION ${${PKG_CFG_NAME}_VERSION})
+  endif()
+
+  # check whether pkg-config file already exists
+  if(PKG_CFG_VERSION)
+    pkg_check_modules(PKG QUIET ${_name}=${PKG_CFG_VERSION})
+  else()
+    pkg_check_modules(PKG QUIET ${_name})
+  endif()
+  if(PKG_FOUND)
+    return()
+  endif()
+
   if(TARGET ${PKG_CFG_TARGET})
     # try to extract all the information from the given target
     get_target_property(PKG_CFG_INCLUDE_DIRS ${PKG_CFG_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
@@ -131,10 +143,6 @@ function(dune_create_and_install_pkg_config _name)
     endforeach()
   endif()
 
-  if(NOT PKG_CFG_VERSION AND ${PKG_CFG_NAME}_VERSION)
-    set(PKG_CFG_VERSION ${${PKG_CFG_NAME}_VERSION})
-  endif()
-
   if(PKG_CFG_REQUIRES)
     string(JOIN "," PKG_CFG_REQUIRES ${PKG_CFG_REQUIRES})
   endif()
@@ -163,3 +171,17 @@ function(dune_create_and_install_pkg_config _name)
     DESTINATION ${DUNE_INSTALL_LIBDIR}/pkgconfig)
 
 endfunction(dune_create_and_install_pkg_config)
+
+
+macro(dune_add_pkg_config_requirement reqs)
+  foreach(req ${reqs})
+    string(REPLACE "(" "" req2 ${req})
+    string(REPLACE ")" "" req ${req2})
+    list(APPEND ${ProjectName}_PKG_CFG_REQUIRES ${req})
+  endforeach()
+endmacro(dune_add_pkg_config_requirement)
+
+
+macro(dune_add_pkg_config_flags flags)
+  list(APPEND ${ProjectName}_PKG_CFG_CFLAGS ${flags})
+endmacro(dune_add_pkg_config_flags)

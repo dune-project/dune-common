@@ -22,9 +22,9 @@ if(METIS_FOUND)
     VERSION "${METIS_VERSION}"
     DESCRIPTION "Serial Graph Partitioning"
     URL "http://glaros.dtc.umn.edu/gkhome/metis/metis/overview"
-    CFLAGS "-DHAVE_METIS"
     TARGET METIS::METIS)
   dune_add_pkg_config_requirement("metis")
+  dune_add_pkg_config_flags("-DHAVE_METIS")
 endif()
 
 # Add function to link targets against METIS library
