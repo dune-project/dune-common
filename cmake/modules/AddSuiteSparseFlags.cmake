@@ -20,13 +20,16 @@ if(SuiteSparse_FOUND)
     COMPILE_DEFINITIONS "ENABLE_SUITESPARSE=1"
     LIBRARIES SuiteSparse::SuiteSparse)
 
+  list(TRANSFORM SuiteSparse_INCLUDE_DIRS PREPEND "-I" OUTPUT_VARIABLE SuiteSparse_CFLAGS)
   dune_create_and_install_pkg_config("suitesparse"
     NAME "SuiteSparse"
     VERSION "${SuiteSparse_VERSION}"
     DESCRIPTION "A suite of sparse matrix software"
     URL "http://faculty.cse.tamu.edu/davis/suitesparse.html"
-    TARGET SuiteSparse::SuiteSparse)
-  dune_add_pkg_config_requirement("suitesparse")
+    CFLAGS "${SuiteSparse_CFLAGS}"
+    LIBS "${SuiteSparse_LIBRARIES}"
+    REQUIRES "blas;lapack")
+  dune_add_pkg_config_requirement("suitesparse=${SuiteSparse_VERSION}")
   dune_add_pkg_config_flags("-DHAVE_SUITESPARSE")
   dune_add_pkg_config_flags("-DHAVE_UMFPACK")
 endif()

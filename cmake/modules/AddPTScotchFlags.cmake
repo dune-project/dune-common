@@ -29,7 +29,7 @@ if(PTScotch_FOUND)
     DESCRIPTION "Sequential and Parallel Graph Partitioning"
     URL "https://www.labri.fr/perso/pelegrin/scotch"
     TARGET PTScotch::PTScotch)
-  dune_add_pkg_config_requirement("ptscotch")
+  dune_add_pkg_config_requirement("ptscotch=${PTScotch_VERSION}")
   dune_add_pkg_config_flags("-DHAVE_PTSCOTCH")
 endif()
 

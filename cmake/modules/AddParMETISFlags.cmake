@@ -23,7 +23,7 @@ if(ParMETIS_FOUND)
     DESCRIPTION "Parallel Graph Partitioning"
     URL "http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview"
     TARGET ParMETIS::ParMETIS)
-  dune_add_pkg_config_requirement("parmetis")
+  dune_add_pkg_config_requirement("parmetis=${ParMETIS_VERSION}")
   dune_add_pkg_config_flags("-DHAVE_PARMETIS")
 endif()
 
