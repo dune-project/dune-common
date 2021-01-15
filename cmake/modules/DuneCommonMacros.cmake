@@ -49,6 +49,7 @@ find_package(METIS)
 include(AddMETISFlags)
 find_package(ParMETIS 4.0)
 include(AddParMETISFlags)
+find_package(PTScotch)
 include(AddPTScotchFlags)
 
 # try to find the Vc library

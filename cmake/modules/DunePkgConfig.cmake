@@ -41,6 +41,14 @@ function(create_and_install_pkconfig installlibdir)
   list(REMOVE_DUPLICATES PKG_CFG_REQUIRES_LIST)
   list(REVERSE PKG_CFG_REQUIRES_LIST)
 
+  # Add some flags from the config.h file
+  dune_module_to_uppercase(PROJECT_NAME ${ProjectName})
+  list(APPEND ${ProjectName}_PKG_CFG_CFLAGS
+    "-D${PROJECT_NAME}_VERSION=${${PROJECT_NAME}_VERSION}"
+    "-D${PROJECT_NAME}_VERSION_MAJOR=${${PROJECT_NAME}_VERSION_MAJOR}"
+    "-D${PROJECT_NAME}_VERSION_MINOR=${${PROJECT_NAME}_VERSION_MINOR}"
+    "-D${PROJECT_NAME}_VERSION_REVISION=${${PROJECT_NAME}_VERSION_REVISION}")
+
   string(JOIN "," PKG_CFG_REQUIRES ${PKG_CFG_REQUIRES_LIST})
   string(JOIN " " PKG_CFG_CFLAGS   ${${ProjectName}_PKG_CFG_CFLAGS})
   string(JOIN " " PKG_CFG_LIBS     ${${ProjectName}_PKG_CFG_LIBS})
@@ -58,92 +66,113 @@ function(create_and_install_pkconfig installlibdir)
 
 endfunction(create_and_install_pkconfig)
 
-macro(dune_pkg_config_name _name _var)
-  string(TOLOWER "${_name}" ${_var})
-  string(REPLACE "_" "-" ${_var} "${${_var}}")
+
+macro(dune_pkg_config_name _target _name _ns)
+  set(target_ns "")
+  set(target_name "${_target}")
+
+  string(REPLACE "::" ";" _components "${_target}")
+  list(LENGTH _components _num_components)
+
+  # extract namespace and target name from <target>
+  if(_num_components EQUAL 2)
+    list(GET _components 0 target_ns)
+    list(GET _components 1 target_name)
+  endif()
+
+  # transform name into consistent naming scheme
+  string(TOLOWER "${target_name}" target_name)
+  string(REPLACE "_" "-" target_name "${target_name}")
+
+  set(${_ns} "${target_ns}")
+  set(${_name} "${target_name}")
 endmacro(dune_pkg_config_name)
 
-function(dune_create_and_install_pkg_config _name)
-  include(FindPkgConfig)
+
+define_property(GLOBAL PROPERTY PKG_CONFIGS
+  BRIEF_DOCS "List of created pkg-config files"
+  FULL_DOCS "List of created pkg-config files")
+
+
+# try to extract all the information from the given target
+macro(dune_pkg_config_from_target _target _requires _cflags _libs)
+  get_target_property(PKG_CFG_INCLUDE_DIRS ${_target} INTERFACE_INCLUDE_DIRECTORIES)
+  if(PKG_CFG_INCLUDE_DIRS)
+    list(TRANSFORM PKG_CFG_INCLUDE_DIRS PREPEND "-I")
+    list(APPEND ${_cflags} ${PKG_CFG_INCLUDE_DIRS})
+  endif()
+
+  get_target_property(PKG_CFG_COMPILE_DEFS ${_target} INTERFACE_COMPILE_DEFINITIONS)
+  if(PKG_CFG_COMPILE_DEFS)
+    list(TRANSFORM PKG_CFG_COMPILE_DEFS PREPEND "-D")
+    list(APPEND ${_cflags} ${PKG_CFG_COMPILE_DEFS})
+  endif()
+
+  get_target_property(PKG_CFG_COMPILE_OPTS ${_target} INTERFACE_COMPILE_OPTIONS)
+  if(PKG_CFG_COMPILE_OPTS)
+    list(APPEND ${_cflags} ${PKG_CFG_COMPILE_OPTS})
+  endif()
+
+  get_target_property(PKG_CFG_LINK_OPTS ${_target} INTERFACE_LINK_OPTIONS)
+  if(PKG_CFG_LINK_OPTS)
+    list(APPEND ${_libs} ${INTERFACE_LINK_OPTIONS})
+  endif()
+
+  get_target_property(PKG_CFG_LINK_DIRS ${_target} INTERFACE_LINK_DIRECTORIES)
+  if(PKG_CFG_LINK_DIRS)
+    list(TRANSFORM PKG_CFG_LINK_DIRS PREPEND "-L")
+    list(APPEND ${_libs} ${PKG_CFG_LINK_DIRS})
+  endif()
+
+  get_target_property(PKG_CFG_LINK_LIBS ${_target} INTERFACE_LINK_LIBRARIES)
+  if(NOT PKG_CFG_LINK_LIBS)
+    set(PKG_CFG_LINK_LIBS "")
+  endif()
+
+  get_property(TARGET_TYPE TARGET ${_target} PROPERTY TYPE)
+  if(NOT TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
+    get_property(TARGET_HAS_IMPORTED_LOCATION TARGET ${_target} PROPERTY IMPORTED_LOCATION SET)
+    if(TARGET_HAS_IMPORTED_LOCATION)
+      get_target_property(PKG_CFG_IMPORTED_LOCATION ${_target} IMPORTED_LOCATION)
+      if(PKG_CFG_IMPORTED_LOCATION)
+        list(APPEND PKG_CFG_LINK_LIBS ${PKG_CFG_IMPORTED_LOCATION})
+      endif()
+    endif()
+  endif()
+
+  foreach(_lib ${PKG_CFG_LINK_LIBS})
+    if(TARGET ${_lib})
+      # if link library is an actual target
+      dune_pkg_config_name(${_lib} _lib_pkg _lib_namespace)
+      # do not recursively create pkg-config files
+      # dune_create_and_install_pkg_config(${_lib_pkg} NAME ${_lib_pkg} TARGET ${_lib})
+      list(APPEND ${_requires} "${_lib_pkg}")
+    elseif(EXISTS ${_lib})
+      # if link library is given as full path
+      list(APPEND ${_libs} ${_lib})
+    else()
+      # if link library is given as lib-name
+      list(APPEND ${_libs} "-l${_lib}")
+    endif()
+  endforeach()
+endmacro(dune_pkg_config_from_target)
+
+
+function(dune_create_and_install_pkg_config _pkg)
+  # check whether pkg-config file was already created
+  get_property(PKG_CONFIGS GLOBAL PROPERTY PKG_CONFIGS)
+  if(${_pkg} IN_LIST PKG_CONFIGS)
+    return()
+  endif()
+
   cmake_parse_arguments(PKG_CFG "" "NAME;DESCRIPTION;URL;VERSION;TARGET" "REQUIRES;CFLAGS;LIBS" ${ARGN})
 
   if(NOT PKG_CFG_VERSION AND ${PKG_CFG_NAME}_VERSION)
     set(PKG_CFG_VERSION ${${PKG_CFG_NAME}_VERSION})
   endif()
 
-  # check whether pkg-config file already exists
-  if(PKG_CFG_VERSION)
-    pkg_check_modules(PKG QUIET ${_name}=${PKG_CFG_VERSION})
-  else()
-    pkg_check_modules(PKG QUIET ${_name})
-  endif()
-  if(PKG_FOUND)
-    return()
-  endif()
-
   if(TARGET ${PKG_CFG_TARGET})
-    # try to extract all the information from the given target
-    get_target_property(PKG_CFG_INCLUDE_DIRS ${PKG_CFG_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
-    if(PKG_CFG_INCLUDE_DIRS)
-      list(TRANSFORM PKG_CFG_INCLUDE_DIRS PREPEND "-I")
-      list(APPEND PKG_CFG_CFLAGS ${PKG_CFG_INCLUDE_DIRS})
-    endif()
-
-    get_target_property(PKG_CFG_COMPILE_DEFS ${PKG_CFG_TARGET} INTERFACE_COMPILE_DEFINITIONS)
-    if(PKG_CFG_COMPILE_DEFS)
-      list(TRANSFORM PKG_CFG_COMPILE_DEFS PREPEND "-D")
-      list(APPEND PKG_CFG_CFLAGS ${PKG_CFG_COMPILE_DEFS})
-    endif()
-
-    get_target_property(PKG_CFG_COMPILE_OPTS ${PKG_CFG_TARGET} INTERFACE_COMPILE_OPTIONS)
-    if(PKG_CFG_COMPILE_OPTS)
-      list(APPEND PKG_CFG_CFLAGS ${PKG_CFG_COMPILE_OPTS})
-    endif()
-
-    get_target_property(PKG_CFG_LINK_OPTS ${PKG_CFG_TARGET} INTERFACE_LINK_OPTIONS)
-    if(PKG_CFG_LINK_OPTS)
-      list(APPEND PKG_CFG_LIBS ${INTERFACE_LINK_OPTIONS})
-    endif()
-
-    get_target_property(PKG_CFG_LINK_DIRS ${PKG_CFG_TARGET} INTERFACE_LINK_DIRECTORIES)
-    if(PKG_CFG_LINK_DIRS)
-      list(TRANSFORM PKG_CFG_LINK_DIRS PREPEND "-L")
-      list(APPEND PKG_CFG_LIBS ${PKG_CFG_LINK_DIRS})
-    endif()
-
-    get_target_property(PKG_CFG_LINK_LIBS ${PKG_CFG_TARGET} INTERFACE_LINK_LIBRARIES)
-    if(NOT PKG_CFG_LINK_LIBS)
-      set(PKG_CFG_LINK_LIBS "")
-    endif()
-
-    get_property(TARGET_HAS_IMPORTED_LOCATION TARGET ${PKG_CFG_TARGET} PROPERTY IMPORTED_LOCATION DEFINED)
-    if(TARGET_HAS_IMPORTED_LOCATION)
-      get_target_property(PKG_CFG_IMPORTED_LOCATION ${PKG_CFG_TARGET} IMPORTED_LOCATION)
-      if(PKG_CFG_IMPORTED_LOCATION)
-        list(APPEND PKG_CFG_LINK_LIBS ${PKG_CFG_IMPORTED_LOCATION})
-      endif()
-    endif()
-
-    foreach(_lib ${PKG_CFG_LINK_LIBS})
-      if(TARGET ${_lib})
-        # if link library is actually a target and add as requirement
-        string(FIND "${_lib}" "::" _sep)
-        if("${_sep}" EQUAL "-1")
-          list(APPEND PKG_CFG_REQUIRES ${_lib})
-        else()
-          math(EXPR _sep "${_sep} + 2")
-          string(SUBSTRING "${_lib}" ${_sep} -1 _target_name)
-          dune_pkg_config_name(${_target_name} _target_name)
-          list(APPEND PKG_CFG_REQUIRES ${_target_name})
-        endif()
-      elseif(EXISTS ${_lib})
-        # if link library is given as full path
-        list(APPEND PKG_CFG_LIBS ${_lib})
-      else()
-        # if link library is given as lib-name
-        list(APPEND PKG_CFG_LIBS "-l${_lib}")
-      endif()
-    endforeach()
+    dune_pkg_config_from_target(${PKG_CFG_TARGET} PKG_CFG_REQUIRES PKG_CFG_CFLAGS PKG_CFG_LIBS)
   endif()
 
   if(PKG_CFG_REQUIRES)
@@ -166,13 +195,14 @@ function(dune_create_and_install_pkg_config _name)
 
   #create pkg-config file
   configure_file(${TEMPLATE_PC_FILE}
-    ${PROJECT_BINARY_DIR}/${_name}.pc
+    ${PROJECT_BINARY_DIR}/${_pkg}.pc
     @ONLY)
 
   # install pkgconfig file
-  install(FILES ${PROJECT_BINARY_DIR}/${_name}.pc
+  install(FILES ${PROJECT_BINARY_DIR}/${_pkg}.pc
     DESTINATION ${DUNE_INSTALL_LIBDIR}/pkgconfig)
 
+  set_property(GLOBAL APPEND PROPERTY PKG_CONFIGS ${_pkg})
 endfunction(dune_create_and_install_pkg_config)
 
 

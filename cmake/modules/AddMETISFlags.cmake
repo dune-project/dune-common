@@ -23,7 +23,7 @@ if(METIS_FOUND)
     DESCRIPTION "Serial Graph Partitioning"
     URL "http://glaros.dtc.umn.edu/gkhome/metis/metis/overview"
     TARGET METIS::METIS)
-  dune_add_pkg_config_requirement("metis=${METIS_VERSION}")
+  dune_add_pkg_config_requirement("metis")
   dune_add_pkg_config_flags("-DHAVE_METIS")
 endif()
 

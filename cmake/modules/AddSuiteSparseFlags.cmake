@@ -29,7 +29,7 @@ if(SuiteSparse_FOUND)
     CFLAGS "${SuiteSparse_CFLAGS}"
     LIBS "${SuiteSparse_LIBRARIES}"
     REQUIRES "blas;lapack")
-  dune_add_pkg_config_requirement("suitesparse=${SuiteSparse_VERSION}")
+  dune_add_pkg_config_requirement("suitesparse")
   dune_add_pkg_config_flags("-DHAVE_SUITESPARSE")
   dune_add_pkg_config_flags("-DHAVE_UMFPACK")
 endif()
