@@ -30,7 +30,7 @@ function(create_and_install_pkconfig installlibdir)
   endif()
 
   set(exec_prefix "\${prefix}")
-  set(libdir "\${exec_prefix}/${installlibdir}")
+  set(libdir "\${exec_prefix}/${DUNE_INSTALL_LIBDIR}")
   set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
   set(PACKAGE_NAME ${ProjectName})
   set(VERSION ${ProjectVersion})
@@ -200,7 +200,7 @@ function(dune_create_and_install_pkg_config _pkg)
 
   # install pkgconfig file
   install(FILES ${PROJECT_BINARY_DIR}/${_pkg}.pc
-    DESTINATION ${DUNE_INSTALL_LIBDIR}/pkgconfig)
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
   set_property(GLOBAL APPEND PROPERTY PKG_CONFIGS ${_pkg})
 endfunction(dune_create_and_install_pkg_config)
