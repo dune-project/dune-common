@@ -121,7 +121,7 @@ function(dune_python_install_package)
 
   # Add a custom target that globally installs this package if requested
   add_custom_target(${targetname}
-                    COMMAND ${PYTHON_EXECUTABLE} ${INSTALL_CMDLINE}
+                    COMMAND ${Python3_EXECUTABLE} ${INSTALL_CMDLINE}
                     COMMENT "Installing the python package at ${PYINST_FULLPATH}"
                     )
 
@@ -135,7 +135,7 @@ function(dune_python_install_package)
   #
 
   # Construct the wheel installation commandline
-  set(WHEEL_COMMAND ${PYTHON_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${PYINST_FULLPATH})
+  set(WHEEL_COMMAND ${Python3_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${PYINST_FULLPATH})
 
   # Add the installation rule
   install(CODE "message(\"Installing wheel for python package at ${PYINST_FULLPATH}...\")

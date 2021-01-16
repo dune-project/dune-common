@@ -1,3 +1,5 @@
+add_subdirectory(FindPython3)
+
 install(FILES
   AddGMPFlags.cmake
   AddMETISFlags.cmake
@@ -26,7 +28,6 @@ install(FILES
   DunePythonFindPackage.cmake
   DunePythonInstallPackage.cmake
   DunePythonMacros.cmake
-  DunePythonRequireVersion.cmake
   DunePythonTestCommand.cmake
   DunePythonVirtualenv.cmake
   DuneSphinxDoc.cmake

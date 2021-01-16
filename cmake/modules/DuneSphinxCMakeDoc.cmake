@@ -68,7 +68,7 @@ function(dune_cmake_sphinx_doc)
   endif()
 
   # Only proceed if the python interpreter was found by cmake
-  if(NOT PYTHONINTERP_FOUND)
+  if(NOT Python3_Interpreter_FOUND)
     message("-- Skipping building CMake API documentation (Python interpreter was not found!)")
     return()
   endif()
@@ -156,7 +156,7 @@ function(dune_cmake_sphinx_doc)
   foreach(module ${SPHINX_DOC_MODULE_LIST})
     get_filename_component(modname ${module} NAME)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/modules/${modname}
-                       COMMAND ${PYTHON_EXECUTABLE} ${DUNE_SPHINX_EXT_PATH}/extract_cmake_data.py
+                       COMMAND ${Python3_EXECUTABLE} ${DUNE_SPHINX_EXT_PATH}/extract_cmake_data.py
                          --module=${module}
                          --builddir=${CMAKE_CURRENT_BINARY_DIR}
                        DEPENDS ${module}
