@@ -65,6 +65,9 @@
   `[[deprecated]]` but be aware that it is no drop-in replacement,
   as it must be sometimes placed at different position in the code.
 
+- Remove deprecated `ToUniquePtr::pointer()`. Use `std::unique_ptr`
+  or `std::shared_ptr` instead.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.

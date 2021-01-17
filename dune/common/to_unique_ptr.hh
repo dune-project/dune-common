@@ -65,12 +65,6 @@ namespace Dune
     // Conversion operators:
     //@{
 
-    /// Convert to underlying pointer, releases the stored pointer.
-    /// \deprecated Cast to raw pointer is deprecated. Use std::unique_ptr or std::shared_ptr instead.
-    ///             Will be removed after Dune 2.8
-    [[deprecated("Cast to raw pointer is deprecated. Use std::unique_ptr or std::shared_ptr instead.")]]
-    operator pointer() noexcept { return Super::release(); }
-
     /// Convert to unique_ptr, invalidates the stored pointer
     operator std::unique_ptr<T>() noexcept { return std::move(static_cast<Super&>(*this)); }
 
