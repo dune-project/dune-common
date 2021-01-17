@@ -8,8 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include <dune/common/deprecated.hh>
-
 namespace Dune
 {
 
@@ -196,7 +194,7 @@ namespace Dune
    * Internally, this is just a forward to `std::is_floating_point<T>`.
    */
   template <typename T>
-  struct DUNE_DEPRECATED_MSG("Has been renamed to 'HasNaN'.") has_nan
+  struct [[deprecated("Has been renamed to 'HasNaN'.")]] has_nan
     : HasNaN<T> {};
 
 #if defined(DOXYGEN) or HAVE_IS_INDEXABLE_SUPPORT
@@ -319,7 +317,7 @@ namespace Dune
    *          are problems with GCC 4.4 and 4.5.
    */
   template<typename T, typename I = std::size_t>
-  struct DUNE_DEPRECATED_MSG("Has been renamed to 'IsIndexable'.") is_indexable
+  struct [[deprecated("Has been renamed to 'IsIndexable'.")]] is_indexable
     : public IsIndexable<T,I> {};
 
 #ifndef DOXYGEN
@@ -365,7 +363,7 @@ namespace Dune
      \deprecated is_range is deprecated, use `Dune::IsIterable` instead
    */
   template<typename T, typename = void>
-  struct DUNE_DEPRECATED_MSG("Has been renamed to 'IsIterable'.") is_range
+  struct [[deprecated("Has been renamed to 'IsIterable'.")]] is_range
     : public IsIterable<T> {};
 
 #ifndef DOXYGEN

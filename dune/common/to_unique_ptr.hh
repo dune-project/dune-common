@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include <dune/common/deprecated.hh>
-
 namespace Dune
 {
   /// \brief An owning pointer wrapper that can be assigned to (smart) pointers. Cannot be copied.
@@ -67,8 +65,10 @@ namespace Dune
     // Conversion operators:
     //@{
 
-    /// Convert to underlying pointer, releases the stored pointer. NOTE: deprecated
-    DUNE_DEPRECATED_MSG("Cast to raw pointer is deprecated. Use std::unique_ptr or std::shared_ptr instead.")
+    /// Convert to underlying pointer, releases the stored pointer.
+    /// \deprecated Cast to raw pointer is deprecated. Use std::unique_ptr or std::shared_ptr instead.
+    ///             Will be removed after Dune 2.8
+    [[deprecated("Cast to raw pointer is deprecated. Use std::unique_ptr or std::shared_ptr instead.")]]
     operator pointer() noexcept { return Super::release(); }
 
     /// Convert to unique_ptr, invalidates the stored pointer
