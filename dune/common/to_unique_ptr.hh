@@ -4,6 +4,8 @@
 #ifndef DUNE_TO_UNIQUE_PTR_HH
 #define DUNE_TO_UNIQUE_PTR_HH
 
+#warning to_unique_ptr.hh and ToUniquePtr is deprecated. Use std::unique_ptr or std::shared_ptr instead.
+
 #include <memory>
 
 namespace Dune
@@ -12,6 +14,9 @@ namespace Dune
   /// Transfers ownership by cast to any (smart) pointer type. Releases the stored pointer on transfer.
   /// NOTE: This is an intermediate solution to switch to std::unique_ptr in later releases smoothly.
   /**
+   * \deprecated ToUniquePtr is deprecated and will be removed after Dune 2.8.
+   *             Use std::unique_ptr or std::shared_ptr instead.
+   *
    * Example of usage:
    * ```
    * ToUniquePtr<int> f() { return new int(1); }
@@ -30,7 +35,9 @@ namespace Dune
    * ```
    **/
   template <class T>
-  class ToUniquePtr
+  class
+  [[deprecated("Will be removed after Dune 2.8. Use std::unique_ptr or std::shared_ptr instead.")]]
+  ToUniquePtr
       : public std::unique_ptr<T>
   {
     using Super = std::unique_ptr<T>;

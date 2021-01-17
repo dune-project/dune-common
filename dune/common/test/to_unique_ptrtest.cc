@@ -22,6 +22,8 @@ int main()
   using namespace Dune;
   TestSuite t;
 
+  DUNE_NO_DEPRECATED_BEGIN
+
   {
     int* ptr = new int(1);
 
@@ -32,10 +34,8 @@ int main()
     ToUniquePtr<int> w2 = makeToUnique<int>(2);
 
     // test conversion to pointer
-    DUNE_NO_DEPRECATED_BEGIN
     int* p1 = f1();
     A* p2 = g();
-    DUNE_NO_DEPRECATED_END
 
     delete p1;
     delete p2;
@@ -89,5 +89,8 @@ int main()
   std::unique_ptr<int> x0{ f_old() };
   std::unique_ptr<int> x1{ f1() };
   std::unique_ptr<int> x2 = f1();
+
+  DUNE_NO_DEPRECATED_END
+
   return t.exit();
 }
