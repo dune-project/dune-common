@@ -60,6 +60,11 @@
 - Remove incomplete CPack support that was never used to make an official
   build or tarball.
 
+- Both macros `DUNE_DEPRECATED` and `DUNE_DEPRECATED_MSG(text)` are
+  deprecated and will be removed after Dune 2.8. Use C++14 attribute
+  `[[deprecated]]` but be aware that it is no drop-in replacement,
+  as it must be sometimes placed at different position in the code.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.

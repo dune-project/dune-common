@@ -5,6 +5,7 @@
 #include "config.h"
 #endif
 
+#include <dune/common/deprecated.hh>
 #include <dune/common/to_unique_ptr.hh>
 #include <dune/common/test/testsuite.hh>
 

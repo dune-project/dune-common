@@ -19,7 +19,6 @@
 #include <utility>
 
 #include <dune/common/classname.hh>
-#include <dune/common/deprecated.hh>
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/simd/io.hh>
@@ -145,7 +144,7 @@ namespace Dune {
       template<class...>
       constexpr bool debugTypes(std::true_type) { return true; }
       template<class... Types>
-      DUNE_DEPRECATED
+      [[deprecated]]
       constexpr bool debugTypes(std::false_type) { return false; }
 
     } // namespace Impl
@@ -321,8 +320,8 @@ namespace Dune {
       }
 
       template<class V>
-      DUNE_DEPRECATED_MSG("Warning: please include bool in the Rebinds for "
-                          "simd type V, as Masks are not checked otherwise.")
+      [[deprecated("Warning: please include bool in the Rebinds for "
+                          "simd type V, as Masks are not checked otherwise.")]]
       void warnMissingMaskRebind(std::true_type) {}
       template<class V>
       void warnMissingMaskRebind(std::false_type) {}

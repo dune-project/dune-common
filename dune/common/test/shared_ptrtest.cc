@@ -10,6 +10,7 @@
 #include "config.h"
 #endif
 
+#include <dune/common/deprecated.hh>
 #include <dune/common/shared_ptr.hh>
 
 #include <cstdlib>
