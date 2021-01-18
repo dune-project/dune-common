@@ -56,7 +56,7 @@ code-formatting-check:
   image: registry.dune-project.org/docker/ci/debian:10
   script:
     # Format all *.cc and *.hh files using the uncrustify tool
-    - uncrustify -l CPP -c dune-uncrustify.cfg --no-backup `find -name "*.cpp" -o -name "*.hh"`
+    - uncrustify -l CPP -c dune-uncrustify.cfg --no-backup `find -name "*.cpp" -o -name "*.hh" ! -name "remoteindices.hh"`
 
     # Did anything change?  That would indicate a violation of the formatting rules
     - git diff --exit-code
