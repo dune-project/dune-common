@@ -1,5 +1,5 @@
 dune_python_add_test(NAME pythontests
-                     COMMAND pythontests.py
+                     SCRIPT pythontests.py
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                      LABELS quick)
 
