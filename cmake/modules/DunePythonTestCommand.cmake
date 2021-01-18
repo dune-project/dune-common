@@ -64,7 +64,7 @@ function(dune_python_add_test)
 
   # Actually run the command
   add_custom_target(target_${PYTEST_NAME}
-                    COMMAND ${PYTEST_COMMAND}
+                    COMMAND ${Python3_EXECUTABLE} ${PYTEST_COMMAND}
                     WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY})
 
   # Build this during make test_python
@@ -74,7 +74,7 @@ function(dune_python_add_test)
   dune_declare_test_label(LABELS ${PYTEST_LABELS})
   # Also build this during ctest
   _add_test(NAME ${PYTEST_NAME}
-            COMMAND ${PYTEST_COMMAND}
+            COMMAND ${Python3_EXECUTABLE} ${PYTEST_COMMAND}
             WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY}
             )
   # Set the labels on the test
