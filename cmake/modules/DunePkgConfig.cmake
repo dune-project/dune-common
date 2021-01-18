@@ -165,6 +165,15 @@ function(dune_create_and_install_pkg_config _pkg)
     return()
   endif()
 
+  # check whether pkg-config file is installed in the system
+  pkg_check_modules(tmp${_pkg} ${_pkg})
+  if(tmp${_pkg}_FOUND)
+	message("--- Found global pkg-config file ${_pkg}.pc")
+	set_property(GLOBAL APPEND PROPERTY PKG_CONFIGS ${_pkg})
+    return()
+  endif()
+
+  # ...
   cmake_parse_arguments(PKG_CFG "" "NAME;DESCRIPTION;URL;VERSION;TARGET" "REQUIRES;CFLAGS;LIBS" ${ARGN})
 
   if(NOT PKG_CFG_VERSION AND ${PKG_CFG_NAME}_VERSION)
@@ -197,6 +206,8 @@ function(dune_create_and_install_pkg_config _pkg)
   configure_file(${TEMPLATE_PC_FILE}
     ${PROJECT_BINARY_DIR}/${_pkg}.pc
     @ONLY)
+
+  message("--- Writing pkg-config file ${_pkg}.pc")
 
   # install pkgconfig file
   install(FILES ${PROJECT_BINARY_DIR}/${_pkg}.pc
