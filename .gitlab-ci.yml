@@ -49,3 +49,19 @@ debian-11-gcc-9-17-python:
     # finally set the python path to all modules
     PYTHONPATH:        $CI_PROJECT_DIR/build-cmake/python
   tags: [duneci]
+
+debian-11-gcc-9-17-downstream:
+  image: duneci/debian:11
+  script:
+    - duneci-install-module https://gitlab.dune-project.org/core/dune-common.git
+    - duneci-install-module https://gitlab.dune-project.org/core/dune-geometry.git
+    - duneci-install-module https://gitlab.dune-project.org/core/dune-grid.git
+    - cd /duneci/modules/dune-geometry/build-cmake
+    - make build_tests
+    - make test
+    - cd /duneci/modules/dune-grid/build-cmake
+    - make build_tests
+    - make test
+  variables:
+    DUNECI_TOOLCHAIN: gcc-9-17
+  tags: [duneci]
