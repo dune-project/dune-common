@@ -66,16 +66,10 @@ debian-10-gcc-7-17-downstream:
     - cd /duneci/modules/dune-localfunctions && duneci-standard-test
   variables:
     DUNECI_TOOLCHAIN: gcc-7-17
-    # so we need some variables to build the dune-py module during execution of the first python test:
-    # we need to find the dune mdoule
+    DUNECI_TEST_LABELS: ""
     DUNE_CONTROL_PATH: /duneci/modules:$CI_PROJECT_DIR
-    # the position for the dune-py module
-    #DUNE_PY_DIR: /duneci/modules/dune-py
-    # during dune-py build this variable is used - do know a way to access
-    # the CMAKE_FLAGS used to build the modules...
-    #DUNE_CMAKE_FLAGS: "CC=gcc-7 CXX=g++-7 -DCMAKE_CXX_FLAGS='-std=c++17 -O2 -g -Wall -fdiagnostics-color=always' -DDUNE_ENABLE_PYTHONBINDINGS=ON -DDUNE_MAX_TEST_CORES=4 -DBUILD_SHARED_LIBS=TRUE -DDUNE_PYTHON_INSTALL_LOCATION=none -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Alberta=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Vc=TRUE -DCMAKE_DISABLE_DOCUMENTATION=TRUE"
-    # cmake flags we use for all dune module - important is that build shared libs is set (need some better way of doing this)
-    #DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
-    # finally set the python path to all modules
-    #PYTHONPATH: $CI_PROJECT_DIR/build-cmake/python
+    DUNE_PY_DIR: /duneci/modules/dune-py
+    DUNE_CMAKE_FLAGS: "CC=gcc-7 CXX=g++-7 -DCMAKE_CXX_FLAGS='-std=c++17 -O2 -g -Wall -fdiagnostics-color=always' -DDUNE_ENABLE_PYTHONBINDINGS=ON -DDUNE_MAX_TEST_CORES=4 -DBUILD_SHARED_LIBS=TRUE -DDUNE_PYTHON_INSTALL_LOCATION=none -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Alberta=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Vc=TRUE -DCMAKE_DISABLE_DOCUMENTATION=TRUE"
+    DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
+    PYTHONPATH: $CI_PROJECT_DIR/build-cmake/python
   tags: [duneci]
