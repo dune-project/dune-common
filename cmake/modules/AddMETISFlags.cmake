@@ -17,7 +17,7 @@ set(HAVE_METIS ${METIS_FOUND})
 if(METIS_FOUND)
   dune_register_package_flags(LIBRARIES METIS::METIS)
 
-  dune_create_and_install_pkg_config("metis"
+  dune_generate_pkg_config("metis"
     NAME "METIS"
     VERSION "${METIS_VERSION}"
     DESCRIPTION "Serial Graph Partitioning"

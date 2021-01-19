@@ -17,7 +17,7 @@ set(HAVE_PARMETIS ${ParMETIS_FOUND})
 if(ParMETIS_FOUND)
   dune_register_package_flags(LIBRARIES ParMETIS::ParMETIS)
 
-  dune_create_and_install_pkg_config("parmetis"
+  dune_generate_pkg_config("parmetis"
     NAME "ParMETIS"
     VERSION "${ParMETIS_VERSION}"
     DESCRIPTION "Parallel Graph Partitioning"

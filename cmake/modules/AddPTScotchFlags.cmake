@@ -17,13 +17,13 @@ set(HAVE_PTSCOTCH ${PTScotch_FOUND})
 if(PTScotch_FOUND)
   dune_register_package_flags(LIBRARIES "PTScotch::PTScotch")
 
-  dune_create_and_install_pkg_config("scotch"
-    NAME "scotch"
+  dune_generate_pkg_config("scotch"
+    NAME "Scotch"
     VERSION "${PTScotch_VERSION}"
     DESCRIPTION "Sequential and Parallel Graph Partitioning"
     URL "https://www.labri.fr/perso/pelegrin/scotch"
     TARGET PTScotch::Scotch)
-  dune_create_and_install_pkg_config("ptscotch"
+  dune_generate_pkg_config("ptscotch"
     NAME "PTScotch"
     VERSION "${PTScotch_VERSION}"
     DESCRIPTION "Sequential and Parallel Graph Partitioning"

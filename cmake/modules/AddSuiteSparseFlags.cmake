@@ -21,7 +21,7 @@ if(SuiteSparse_FOUND)
     LIBRARIES SuiteSparse::SuiteSparse)
 
   list(TRANSFORM SuiteSparse_INCLUDE_DIRS PREPEND "-I" OUTPUT_VARIABLE SuiteSparse_CFLAGS)
-  dune_create_and_install_pkg_config("suitesparse"
+  dune_generate_pkg_config("suitesparse"
     NAME "SuiteSparse"
     VERSION "${SuiteSparse_VERSION}"
     DESCRIPTION "A suite of sparse matrix software"

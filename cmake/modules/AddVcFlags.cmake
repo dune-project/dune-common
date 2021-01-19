@@ -28,10 +28,7 @@ if(Vc_FOUND)
   dune_register_package_flags(COMPILE_OPTIONS "${Vc_COMPILE_FLAGS};-DENABLE_VC=1"
                               LIBRARIES "${Vc_LIBRARIES}"
                               INCLUDE_DIRS "${Vc_INCLUDE_DIR}")
-  string(JOIN " " Vc_FLAGS ${Vc_COMPILE_FLAGS})
-  set(Vc_FLAGS "${Vc_FLAGS} -I${Vc_INCLUDE_DIR}")
-
-  dune_create_and_install_pkg_config("vc"
+  dune_generate_pkg_config("vc"
     NAME "Vc"
     VERSION "${Vc_VERSION}"
     DESCRIPTION "C++ Vectorization library"

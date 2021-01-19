@@ -20,7 +20,7 @@ if(QuadMath_FOUND)
     COMPILE_DEFINITIONS "ENABLE_QUADMATH=1"
   )
 
-  dune_create_and_install_pkg_config("libquadmath"
+  dune_generate_pkg_config("libquadmath"
     NAME "QuadMath"
     DESCRIPTION "GCC Quad-Precision Math Library"
     URL "https://gcc.gnu.org/onlinedocs/libquadmath"
