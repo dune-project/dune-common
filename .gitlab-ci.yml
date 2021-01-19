@@ -54,12 +54,11 @@ debian-11-gcc-9-17-python:
 debian-10-gcc-7-17-downstream:
   image: registry.dune-project.org/docker/ci/debian:10
   script:
-    - duneci-install-module https://gitlab.dune-project.org/core/dune-common.git
+    - export PATH=$CI_PROJECT_DIR/bin:$PATH
     - duneci-install-module https://gitlab.dune-project.org/core/dune-geometry.git
     - duneci-install-module https://gitlab.dune-project.org/core/dune-grid.git
     - duneci-install-module https://gitlab.dune-project.org/core/dune-istl.git
     - duneci-install-module https://gitlab.dune-project.org/core/dune-localfunctions.git
-    - cd /duneci/modules/dune-common && duneci-standard-test
     - cd /duneci/modules/dune-geometry && duneci-standard-test
     - cd /duneci/modules/dune-grid && duneci-standard-test
     - cd /duneci/modules/dune-istl && duneci-standard-test
