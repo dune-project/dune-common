@@ -211,7 +211,7 @@ function(dune_create_and_install_pkg_config _pkg)
 
   # install pkgconfig file
   install(FILES ${PROJECT_BINARY_DIR}/${_pkg}.pc
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/dune)
 
   set_property(GLOBAL APPEND PROPERTY PKG_CONFIGS ${_pkg})
 endfunction(dune_create_and_install_pkg_config)

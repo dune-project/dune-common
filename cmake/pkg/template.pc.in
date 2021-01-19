@@ -2,6 +2,9 @@
 # This file was automatically generate DUNE (see
 # https://dune-project.org/) and is only for internal use.
 #
+# If you are working with DUNE, you should add the
+# ${libdir}/pkg-config/dune/ directory to your PKG_CONFIG_PATH
+#
 # Don't use this pkg-config file to configure your own projects
 #
 
