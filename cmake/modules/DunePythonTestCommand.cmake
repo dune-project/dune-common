@@ -2,20 +2,17 @@
 #
 # .. cmake_function:: dune_python_add_test
 #
-#    .. cmake_param:: COMMAND
+#    .. cmake_param:: SCRIPT
 #       :multi:
 #       :required:
 #
-#       The command to run. It will be executed during :code:`make test_python`
+#       The script to execute using the python interpreter. It will be executed during :code:`make test_python`
 #       and during `ctest`.
 #
 #       .. note::
 #
-#          If your testing command involves an invocation of the python
-#          interpreter you should use :code:`${Python3_EXECUTABLE}` for that.
-#          Also calling python executables through :code:`-m` is generally to
-#          be favored, e.g. :code:`${Python3_EXECUTABLE} -m pytest` instead of
-#          :code:`py.test`.
+#          The script will be executed using
+#          :code:`${Python3_EXECUTABLE} SCRIPT`.
 #
 #    .. cmake_param:: WORKING_DIRECTORY
 #       :single:
@@ -40,8 +37,12 @@ function(dune_python_add_test)
   include(CMakeParseArguments)
   set(OPTION)
   set(SINGLE WORKING_DIRECTORY NAME)
-  set(MULTI COMMAND LABELS)
+  set(MULTI SCRIPT COMMAND LABELS)
+  # set(MULTI COMMAND LABELS)
   cmake_parse_arguments(PYTEST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
+  if(PYTEST_COMMAND)
+    message(FATAL_ERROR "dune_python_add_test: COMMAND argument should not be used, use SCRIPT instead providing only the Python script and not the Python interpreter")
+  endif()
   if(PYTEST_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_python_add_test: This often indicates typos!")
   endif()
@@ -50,12 +51,12 @@ function(dune_python_add_test)
   if(NOT PYTEST_WORKING_DIRECTORY)
     set(PYTEST_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   endif()
-  if(NOT PYTEST_COMMAND)
-    message(FATAL_ERROR "dune_python_add_test: no COMMAND to execute specified!")
+  if(NOT PYTEST_SCRIPT)
+    message(FATAL_ERROR "dune_python_add_test: no SCRIPT to execute specified!")
   endif()
   if(NOT PYTEST_NAME)
     set(commandstr "")
-    foreach(comm ${PYTEST_COMMAND})
+    foreach(comm ${PYTEST_SCRIPT})
       set(commandstr "${commandstr}_${comm}")
     endforeach()
     set(commandstr "${commandstr}_${PYTEST_WORKING_DIRECTORY}")
@@ -64,7 +65,7 @@ function(dune_python_add_test)
 
   # Actually run the command
   add_custom_target(target_${PYTEST_NAME}
-                    COMMAND ${PYTEST_COMMAND}
+                    COMMAND ${Python3_EXECUTABLE} ${PYTEST_SCRIPT}
                     WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY})
 
   # Build this during make test_python
@@ -74,7 +75,7 @@ function(dune_python_add_test)
   dune_declare_test_label(LABELS ${PYTEST_LABELS})
   # Also build this during ctest
   _add_test(NAME ${PYTEST_NAME}
-            COMMAND ${PYTEST_COMMAND}
+            COMMAND ${Python3_EXECUTABLE} ${PYTEST_SCRIPT}
             WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY}
             )
   # Set the labels on the test
