@@ -175,6 +175,10 @@ function(dune_generate_pkg_config pkg)
   cmake_parse_arguments(PKG_CFG "" "NAME;DESCRIPTION;URL;VERSION;TARGET"
                                    "REQUIRES;CFLAGS;LIBS" ${ARGN})
 
+  if(NOT PKG_CFG_NAME)
+    set(PKG_CFG_NAME ${pkg})
+  endif()
+
   if(NOT PKG_CFG_VERSION AND ${PKG_CFG_NAME}_VERSION)
     set(PKG_CFG_VERSION ${${PKG_CFG_NAME}_VERSION})
   endif()
