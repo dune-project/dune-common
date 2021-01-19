@@ -55,6 +55,8 @@ debian-10-gcc-7-17-downstream:
   image: registry.dune-project.org/docker/ci/debian:10
   script:
     - |
+      echo $PATH
+      export PATH=/duneci/bin:$PATH
       for mod in "${DUNECI_DOWNSTREAM_MODULES}"; do
         duneci-install-module https://gitlab.dune-project.org/core/${mod}.git
         (cd /duneci/modules/${mod} && duneci-standard-test)
