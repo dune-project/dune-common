@@ -150,8 +150,8 @@ endfunction(create_and_install_pkconfig)
 # Register pkg dependencies for the dune module to be stored in the pkg-config file
 macro(dune_add_pkg_config_requirement reqs)
   foreach(_req ${reqs})
-    string(REPLACE "(" "" _req "${_req}")
-    string(REPLACE ")" "" _req "${_req}")
+    # try to transform the version requirement into a compatible pkg-config format
+    string(REGEX REPLACE "([a-zA-Z0-9_-]+)[( ]*([<>=]+)[ ]*([0-9.]+)[) ]*" "\\1 \\2 \\3" _req "${_req}")
     list(APPEND ${ProjectName}_PKG_CFG_REQUIRES ${_req})
   endforeach(_req)
 endmacro(dune_add_pkg_config_requirement)
