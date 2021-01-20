@@ -31,7 +31,7 @@ endif()
 
 get_property(_${_PYTHON_PREFIX}_CMAKE_ROLE GLOBAL PROPERTY CMAKE_ROLE)
 
-include (FindPackageHandleStandardArgs)
+include (${CMAKE_CURRENT_LIST_DIR}/../FindPackageHandleStandardArgs.cmake)
 
 #
 # helper commands
@@ -99,9 +99,7 @@ macro (_PYTHON_FIND_FRAMEWORKS)
                          ~/Library/Frameworks
                          /usr/local/Frameworks
                          ${CMAKE_SYSTEM_FRAMEWORK_PATH})
-    if (_pff_frameworks) # Behavior change in CMake 3.14
-      list (REMOVE_DUPLICATES _pff_frameworks)
-    endif ()
+    list (REMOVE_DUPLICATES _pff_frameworks)
     foreach (_pff_implementation IN LISTS _${_PYTHON_PREFIX}_FIND_IMPLEMENTATIONS)
       unset (_${_PYTHON_PREFIX}_${_pff_implementation}_FRAMEWORKS)
       if (_pff_implementation STREQUAL "CPython")
@@ -323,9 +321,7 @@ function (_PYTHON_GET_PATH_SUFFIXES _PYTHON_PGPS_PATH_SUFFIXES)
       endif()
     endif()
   endforeach()
-  if (path_suffixes) # Behavior change in CMake 3.14
-    list (REMOVE_DUPLICATES path_suffixes)
-  endif ()
+  list (REMOVE_DUPLICATES path_suffixes)
 
   set (${_PYTHON_PGPS_PATH_SUFFIXES} ${path_suffixes} PARENT_SCOPE)
 endfunction()
@@ -341,9 +337,6 @@ function (_PYTHON_GET_NAMES _PYTHON_PGN_NAMES)
 
   foreach (implementation IN LISTS _PGN_IMPLEMENTATIONS)
     if (implementation STREQUAL "CPython")
-      if (_PGN_INTERPRETER AND _${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES STREQUAL "FIRST")
-        list (APPEND names python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR} python)
-      endif()
       foreach (version IN LISTS _PGN_VERSION)
         if (_PGN_WIN32)
           string (REPLACE "." "" version_no_dots ${version})
@@ -393,7 +386,7 @@ function (_PYTHON_GET_NAMES _PYTHON_PGN_NAMES)
           endif()
         endif()
       endforeach()
-      if (_PGN_INTERPRETER AND _${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES STREQUAL "LAST")
+      if (_PGN_INTERPRETER)
         list (APPEND names python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR} python)
       endif()
     elseif (implementation STREQUAL "IronPython")
@@ -457,9 +450,7 @@ function (_PYTHON_GET_CONFIG_VAR _PYTHON_PGCV_VALUE NAME)
         # do some clean-up
         string (REGEX MATCHALL "(-I|-iwithsysroot)[ ]*[^ ]+" _values "${_values}")
         string (REGEX REPLACE "(-I|-iwithsysroot)[ ]*" "" _values "${_values}")
-        if (_values) # Behavior change in CMake 3.14
-          list (REMOVE_DUPLICATES _values)
-        endif ()
+        list (REMOVE_DUPLICATES _values)
       elseif (NAME STREQUAL "SOABI")
         # clean-up: remove prefix character and suffix
         if (_values MATCHES "^(\\.${CMAKE_SHARED_LIBRARY_SUFFIX}|\\.so|\\.pyd)$")
@@ -481,9 +472,7 @@ function (_PYTHON_GET_CONFIG_VAR _PYTHON_PGCV_VALUE NAME)
       if (_result)
         unset (_values)
       else()
-        if (_values) # Behavior change in CMake 3.14
-          list (REMOVE_DUPLICATES _values)
-        endif ()
+        list (REMOVE_DUPLICATES _values)
       endif()
     elseif (NAME STREQUAL "INCLUDES")
       if (WIN32)
@@ -500,9 +489,7 @@ function (_PYTHON_GET_CONFIG_VAR _PYTHON_PGCV_VALUE NAME)
       if (_result)
         unset (_values)
       else()
-        if (_values) # Behavior change in CMake 3.14
-          list (REMOVE_DUPLICATES _values)
-        endif ()
+        list (REMOVE_DUPLICATES _values)
       endif()
     elseif (NAME STREQUAL "SOABI")
       execute_process (COMMAND ${_${_PYTHON_PREFIX}_INTERPRETER_LAUNCHER} "${_${_PYTHON_PREFIX}_EXECUTABLE}" -c
@@ -560,9 +547,7 @@ function (_PYTHON_GET_CONFIG_VAR _PYTHON_PGCV_VALUE NAME)
     string (REGEX MATCHALL "-(l|framework)[ ]*[^ ]+" _values "${_values}")
     # remove elements relative to python library itself
     list (FILTER _values EXCLUDE REGEX "-lpython")
-    if (_values) # Behavior change in CMake 3.14
-          list (REMOVE_DUPLICATES _values)
-        endif ()
+    list (REMOVE_DUPLICATES _values)
   endif()
 
   if (WIN32 AND NAME MATCHES "^(PREFIX|CONFIGDIR|INCLUDES)$")
@@ -1081,9 +1066,7 @@ function (_PYTHON_SET_LIBRARY_DIRS _PYTHON_SLD_RESULT)
       list (APPEND _PYTHON_DIRS "${_PYTHON_DIR}")
     endif()
   endforeach()
-  if (_PYTHON_DIRS) # Behavior change in CMake 3.14
-    list (REMOVE_DUPLICATES _PYTHON_DIRS)
-  endif ()
+  list (REMOVE_DUPLICATES _PYTHON_DIRS)
   set (${_PYTHON_SLD_RESULT} ${_PYTHON_DIRS} PARENT_SCOPE)
 endfunction()
 
@@ -1142,9 +1125,7 @@ endif()
 if ("Development" IN_LIST ${_PYTHON_PREFIX}_FIND_COMPONENTS)
   list (APPEND ${_PYTHON_PREFIX}_FIND_COMPONENTS "Development.Module" "Development.Embed")
 endif()
-if (${_PYTHON_PREFIX}_FIND_COMPONENTS) # Behavior change in CMake 3.14
-  list (REMOVE_DUPLICATES ${_PYTHON_PREFIX}_FIND_COMPONENTS)
-endif ()
+list (REMOVE_DUPLICATES ${_PYTHON_PREFIX}_FIND_COMPONENTS)
 foreach (_${_PYTHON_PREFIX}_COMPONENT IN ITEMS Interpreter Compiler Development Development.Module Development.Embed NumPy)
   set (${_PYTHON_PREFIX}_${_${_PYTHON_PREFIX}_COMPONENT}_FOUND FALSE)
 endforeach()
@@ -1166,9 +1147,7 @@ if ("Development.Embed" IN_LIST ${_PYTHON_PREFIX}_FIND_COMPONENTS)
   list (APPEND _${_PYTHON_PREFIX}_FIND_DEVELOPMENT_EMBED_ARTIFACTS "LIBRARY" "INCLUDE_DIR")
 endif()
 set (_${_PYTHON_PREFIX}_FIND_DEVELOPMENT_ARTIFACTS ${_${_PYTHON_PREFIX}_FIND_DEVELOPMENT_MODULE_ARTIFACTS} ${_${_PYTHON_PREFIX}_FIND_DEVELOPMENT_EMBED_ARTIFACTS})
-if (_${_PYTHON_PREFIX}_FIND_DEVELOPMENT_ARTIFACTS) # Behavior change in CMake 3.14
-  list (REMOVE_DUPLICATES _${_PYTHON_PREFIX}_FIND_DEVELOPMENT_ARTIFACTS)
-endif ()
+list (REMOVE_DUPLICATES _${_PYTHON_PREFIX}_FIND_DEVELOPMENT_ARTIFACTS)
 
 # Set versions to search
 ## default: search any version
@@ -1228,11 +1207,7 @@ endif()
 unset (${_PYTHON_PREFIX}_SOABI)
 
 # Define lookup strategy
-if(POLICY CMP0094)
-  cmake_policy (GET CMP0094 _${_PYTHON_PREFIX}_LOOKUP_POLICY)
-else()
-  set (_${_PYTHON_PREFIX}_LOOKUP_POLICY "OLD")
-endif()
+cmake_policy (GET CMP0094 _${_PYTHON_PREFIX}_LOOKUP_POLICY)
 if (_${_PYTHON_PREFIX}_LOOKUP_POLICY STREQUAL "NEW")
   set (_${_PYTHON_PREFIX}_FIND_STRATEGY "LOCATION")
 else()
@@ -1397,22 +1372,9 @@ else()
 endif()
 
 
-# Python naming handling
-if (DEFINED ${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES)
-  if (NOT ${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES MATCHES "^(FIRST|LAST|NEVER)$")
-    message (AUTHOR_WARNING "Find${_PYTHON_PREFIX}: ${_${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES}: invalid value for '${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES'. 'FIRST', 'LAST' or 'NEVER' expected. 'LAST' will be used instead.")
-    set (_${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES LAST)
-  else()
-    set (_${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES ${${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES})
-  endif()
-else()
-  set (_${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES LAST)
-endif()
-
-
 # Compute search signature
 # This signature will be used to check validity of cached variables on new search
-set (_${_PYTHON_PREFIX}_SIGNATURE "${${_PYTHON_PREFIX}_ROOT_DIR}:${_${_PYTHON_PREFIX}_FIND_IMPLEMENTATIONS}:${_${_PYTHON_PREFIX}_FIND_STRATEGY}:${${_PYTHON_PREFIX}_FIND_VIRTUALENV}${_${_PYTHON_PREFIX}_FIND_UNVERSIONED_NAMES}")
+set (_${_PYTHON_PREFIX}_SIGNATURE "${${_PYTHON_PREFIX}_ROOT_DIR}:${_${_PYTHON_PREFIX}_FIND_IMPLEMENTATIONS}:${_${_PYTHON_PREFIX}_FIND_STRATEGY}:${${_PYTHON_PREFIX}_FIND_VIRTUALENV}")
 if (NOT WIN32)
   string (APPEND _${_PYTHON_PREFIX}_SIGNATURE ":${${_PYTHON_PREFIX}_USE_STATIC_LIBS}:")
 endif()
@@ -2332,9 +2294,7 @@ if (${_PYTHON_PREFIX}_FIND_REQUIRED_Development.Embed)
     list (APPEND _${_PYTHON_PREFIX}_REQUIRED_VARS ${_PYTHON_PREFIX}_INCLUDE_DIRS)
   endif()
 endif()
-if (_${_PYTHON_PREFIX}_REQUIRED_VARS) # Behavior change in CMake 3.14
-  list (REMOVE_DUPLICATES _${_PYTHON_PREFIX}_REQUIRED_VARS)
-endif ()
+list (REMOVE_DUPLICATES _${_PYTHON_PREFIX}_REQUIRED_VARS)
 ## Development environment is not compatible with IronPython interpreter
 if (("Development.Module" IN_LIST ${_PYTHON_PREFIX}_FIND_COMPONENTS
       OR "Development.Embed" IN_LIST ${_PYTHON_PREFIX}_FIND_COMPONENTS)
@@ -3045,9 +3005,8 @@ if (("Development.Module" IN_LIST ${_PYTHON_PREFIX}_FIND_COMPONENTS
     unset(_${_PYTHON_PREFIX}_is_prefix)
     foreach (_${_PYTHON_PREFIX}_implementation IN LISTS _${_PYTHON_PREFIX}_FIND_IMPLEMENTATIONS)
       foreach (_${_PYTHON_PREFIX}_framework IN LISTS _${_PYTHON_PREFIX}_${_${_PYTHON_PREFIX}_implementation}_FRAMEWORKS)
-        cmake_path (IS_PREFIX _${_PYTHON_PREFIX}_framework "${${_PYTHON_PREFIX}_LIBRARY_RELEASE}" _${_PYTHON_PREFIX}_is_prefix)
-        if (_${_PYTHON_PREFIX}_is_prefix)
-          cmake_path (GET _${_PYTHON_PREFIX}_framework PARENT_PATH _${_PYTHON_PREFIX}_framework)
+        if (${_PYTHON_PREFIX}_LIBRARY_RELEASE MATCHES "^${_${_PYTHON_PREFIX}_framework}")
+          get_filename_component (_${_PYTHON_PREFIX}_framework "${_${_PYTHON_PREFIX}_framework}" DIRECTORY)
           set (${_PYTHON_PREFIX}_LINK_OPTIONS "LINKER:-rpath,${_${_PYTHON_PREFIX}_framework}")
           break()
         endif()
@@ -3189,7 +3148,9 @@ endforeach()
 find_package_handle_standard_args (${_PYTHON_PREFIX}
                                    REQUIRED_VARS ${_${_PYTHON_PREFIX}_REQUIRED_VARS}
                                    VERSION_VAR ${_PYTHON_PREFIX}_VERSION
-                                   HANDLE_COMPONENTS)
+                                   HANDLE_VERSION_RANGE
+                                   HANDLE_COMPONENTS
+                                   REASON_FAILURE_MESSAGE "${_${_PYTHON_PREFIX}_REASON_FAILURE}")
 
 # Create imported targets and helper functions
 if(_${_PYTHON_PREFIX}_CMAKE_ROLE STREQUAL "PROJECT")
