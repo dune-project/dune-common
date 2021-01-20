@@ -4,15 +4,30 @@
 #
 #    .. cmake_param:: SCRIPT
 #       :multi:
-#       :required:
 #
 #       The script to execute using the python interpreter. It will be executed during :code:`make test_python`
-#       and during `ctest`.
+#       and during `ctest`. You are required to either pass SCRIPT or MODULE.
 #
 #       .. note::
 #
-#          The script will be executed using
-#          :code:`${Python3_EXECUTABLE} SCRIPT`.
+#          The script will be executed using :code:`${Python3_EXECUTABLE} SCRIPT`. If the INTERPRETER
+#          option is given, that interpreter is used instead.
+#
+#    .. cmake_param:: MODULE
+#       :multi:
+#
+#       The Python module to be executed.  It will be executed during :code:`make test_python`
+#       and during `ctest`. You are required to either pass SCRIPT or MODULE.
+#
+#       .. note::
+#
+#          The script will be executed using :code:`${Python3_EXECUTABLE} -m MODULE`. If the INTERPRETER
+#          option is given, that interpreter is used instead.
+#
+#    .. cmake_param:: INTERPRETER
+#       :single:
+#
+#       The Python interpreter to use for this test. It defaults to the one found by CMake.
 #
 #    .. cmake_param:: WORKING_DIRECTORY
 #       :single:
@@ -37,8 +52,8 @@ function(dune_python_add_test)
   include(CMakeParseArguments)
   set(OPTION)
   set(SINGLE WORKING_DIRECTORY NAME INTERPRETER)
-  set(MULTI SCRIPT COMMAND LABELS)
-  # set(MULTI COMMAND LABELS)
+  set(MULTI SCRIPT COMMAND LABELS MODULE)
+
   cmake_parse_arguments(PYTEST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYTEST_COMMAND)
     message(FATAL_ERROR "dune_python_add_test: COMMAND argument should not be used, use SCRIPT instead providing only the Python script and not the Python interpreter")
@@ -54,8 +69,14 @@ function(dune_python_add_test)
   if(NOT PYTEST_WORKING_DIRECTORY)
     set(PYTEST_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   endif()
-  if(NOT PYTEST_SCRIPT)
-    message(FATAL_ERROR "dune_python_add_test: no SCRIPT to execute specified!")
+  if((NOT PYTEST_MODULE) AND (NOT PYTEST_SCRIPT))
+    message(FATAL_ERROR "dune_python_add_test: Either SCRIPT or MODULE need to be specified!")
+  endif()
+  if(PYTEST_MODULE AND PYTEST_SCRIPT)
+    message(FATAL_ERROR "dune_python_add_test: You can only specify either SCRIPT or MODULE, not both!")
+  endif()
+  if(PYTEST_MODULE)
+    set(PYTEST_SCRIPT -m ${PYTEST_MODULE})
   endif()
   if(NOT PYTEST_NAME)
     set(commandstr "")
