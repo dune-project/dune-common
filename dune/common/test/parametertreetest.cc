@@ -85,6 +85,12 @@ void testparam(const P & p)
     DUNE_THROW(Dune::Exception, "failed to detect missing subtree");
   }
   catch (Dune::RangeError & r) {}
+  // try accessing inexistent nested subtree in throwing mode
+  try {
+    p.sub("Foo.Zoo",true);
+    DUNE_THROW(Dune::Exception, "failed to detect missing nested subtree");
+  }
+  catch (Dune::RangeError & r) {}
   // try accessing inexistent subtree in non-throwing mode
   p.sub("bar");
   // try accessing inexistent subtree that shadows a value key
