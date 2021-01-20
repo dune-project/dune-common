@@ -17,6 +17,7 @@
 
 #include <mpi.h>
 
+#include <dune/common/parallel/gatherscatterbackwardscompat.hh>
 #include <dune/common/parallel/interface.hh>
 #include <dune/common/parallel/mpitraits.hh>
 #include <dune/common/unused.hh>
@@ -536,6 +537,7 @@ private:
 };
 
 /** @} */
+
 namespace
 {
 /**
@@ -555,15 +557,19 @@ public:
   {
     return true;
   }
-  std::size_t size(std::size_t i)
+  std::size_t size(std::size_t i, int proc)
   {
     DUNE_UNUSED_PARAMETER(i);
+    DUNE_UNUSED_PARAMETER(proc);
     return 1;
   }
   template<class B>
-  void gather(B& buf, int  i)
+  void gather(B& buf, int i, int proc)
   {
-    buf.write(data_.size(i));
+    if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any()))
+      buf.write(data_.size(i, proc));
+    else
+      buf.write(data_.size(i));
   }
   void setReceivingIndex(std::size_t i)
   {
@@ -667,7 +673,10 @@ struct PackEntries
       std::size_t noIndices=std::min(buffer.size()/tracker.fixedSize, tracker.indicesLeft());
       for(std::size_t i=0; i< noIndices; ++i)
       {
-        handle.gather(buffer, tracker.index());
+        if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any()))
+          handle.gather(buffer, tracker.index(), tracker.rank());
+        else
+          handle.gather(buffer, tracker.index());
         tracker.moveToNextIndex();
       }
       return noIndices*tracker.fixedSize;
@@ -676,15 +685,28 @@ struct PackEntries
     {
       int packed=0;
       tracker.skipZeroIndices();
-      while(!tracker.finished())
-        if(buffer.hasSpaceForItems(handle.size(tracker.index())))
-        {
-          handle.gather(buffer, tracker.index());
-          packed+=handle.size(tracker.index());
-          tracker.moveToNextIndex();
-        }
-        else
-          break;
+      if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any())) {
+        while(!tracker.finished())
+          if(buffer.hasSpaceForItems(handle.size(tracker.index(), tracker.rank())))
+          {
+            handle.gather(buffer, tracker.index(), tracker.rank());
+            packed+=handle.size(tracker.index(), tracker.rank());
+            tracker.moveToNextIndex();
+          }
+          else
+            break;
+      } else {
+        while(!tracker.finished())
+          if(buffer.hasSpaceForItems(handle.size(tracker.index())))
+          {
+            handle.gather(buffer, tracker.index());
+            packed+=handle.size(tracker.index());
+            tracker.moveToNextIndex();
+          }
+          else
+            break;
+      }
+
       return packed;
     }
   }
@@ -715,7 +737,10 @@ struct UnpackEntries{
 
       for(std::size_t i=0; i< noIndices; ++i)
       {
-        handle.scatter(buffer, tracker.index(), tracker.fixedSize);
+        if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any()))
+          handle.scatter(buffer, tracker.index(), tracker.fixedSize, tracker.rank());
+        else
+          handle.scatter(buffer, tracker.index(), tracker.fixedSize);
         tracker.moveToNextIndex();
       }
       return tracker.finished();
@@ -727,7 +752,10 @@ struct UnpackEntries{
       {
         assert(!tracker.finished());
         assert(buffer.hasSpaceForItems(tracker.size()));
-        handle.scatter(buffer, tracker.index(), tracker.size());
+        if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any()))
+          handle.scatter(buffer, tracker.index(), tracker.size(), tracker.rank());
+        else
+          handle.scatter(buffer, tracker.index(), tracker.size());
         unpacked+=tracker.size();
         tracker.moveToNextIndex();
       }
@@ -816,8 +844,15 @@ struct SetupSendRequest{
     buffer.reset();
     int size=PackEntries<DataHandle>()(handle, tracker, buffer);
     // Skip indices of zero size.
-    while(!tracker.finished() &&  !handle.size(tracker.index()))
-      tracker.moveToNextIndex();
+
+    if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any())) {
+      while(!tracker.finished() &&  !handle.size(tracker.index(), tracker.rank()))
+        tracker.moveToNextIndex();
+    } else {
+      while(!tracker.finished() &&  !handle.size(tracker.index()))
+        tracker.moveToNextIndex();
+    }
+
     if(size)
       MPI_Issend(buffer, size, MPITraits<typename DataHandle::DataType>::getType(),
                  tracker.rank(), 933399, comm, &request);
@@ -1046,8 +1081,13 @@ void VariableSizeCommunicator<Allocator>::setupInterfaceTrackers(DataHandle& han
   for(IIter inf=interface_->begin(), end=interface_->end(); inf!=end; ++inf)
   {
 
-    if(handle.fixedsize() && InterfaceInformationChooser<FORWARD>::getSend(inf->second).size())
-      fixedsize=handle.size(InterfaceInformationChooser<FORWARD>::getSend(inf->second)[0]);
+    if(handle.fixedsize() && InterfaceInformationChooser<FORWARD>::getSend(inf->second).size()) {
+      if constexpr (Impl::isValidWithArgs<DataHandle, Impl::DetectedSize>(Impl::Any(), Impl::Any())) {
+        fixedsize=handle.size(InterfaceInformationChooser<FORWARD>::getSend(inf->second)[0], inf->first);
+      } else {
+        fixedsize=handle.size(InterfaceInformationChooser<FORWARD>::getSend(inf->second)[0]);
+      }
+    }
     assert(!handle.fixedsize()||fixedsize>0);
     send_trackers.push_back(InterfaceTracker(inf->first,
                                              InterfaceInformationChooser<FORWARD>::getSend(inf->second), fixedsize));

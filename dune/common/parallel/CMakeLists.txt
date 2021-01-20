@@ -6,6 +6,7 @@ install(FILES
         collectivecommunication.hh
         communication.hh
         communicator.hh
+        gatherscatterbackwardscompat.hh
         indexset.hh
         indicessyncer.hh
         interface.hh
