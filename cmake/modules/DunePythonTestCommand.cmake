@@ -37,7 +37,7 @@ function(dune_python_add_test)
   include(CMakeParseArguments)
   set(OPTION)
   set(SINGLE WORKING_DIRECTORY NAME)
-  set(MULTI SCRIPT COMMAND LABELS)
+  set(MULTI SCRIPT COMMAND LABELS INTERPRETER)
   # set(MULTI COMMAND LABELS)
   cmake_parse_arguments(PYTEST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYTEST_COMMAND)
@@ -48,6 +48,9 @@ function(dune_python_add_test)
   endif()
 
   # Apply defaults
+  if(NOT PYTEST_INTERPRETER)
+    set(PYTEST_INTERPRETER ${Python3_EXECUTABLE})
+  endif()
   if(NOT PYTEST_WORKING_DIRECTORY)
     set(PYTEST_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   endif()
@@ -65,7 +68,7 @@ function(dune_python_add_test)
 
   # Actually run the command
   add_custom_target(target_${PYTEST_NAME}
-                    COMMAND ${Python3_EXECUTABLE} ${PYTEST_SCRIPT}
+                    COMMAND ${PYTEST_INTERPRETER} ${PYTEST_SCRIPT}
                     WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY})
 
   # Build this during make test_python
@@ -75,7 +78,7 @@ function(dune_python_add_test)
   dune_declare_test_label(LABELS ${PYTEST_LABELS})
   # Also build this during ctest
   _add_test(NAME ${PYTEST_NAME}
-            COMMAND ${Python3_EXECUTABLE} ${PYTEST_SCRIPT}
+            COMMAND ${PYTEST_INTERPRETER} ${PYTEST_SCRIPT}
             WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY}
             )
   # Set the labels on the test
