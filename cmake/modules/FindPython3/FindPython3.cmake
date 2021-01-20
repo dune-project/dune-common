@@ -395,7 +395,7 @@ set (_PYTHON_PREFIX Python3)
 
 set (_Python3_REQUIRED_VERSION_MAJOR 3)
 
-include (${CMAKE_CURRENT_LIST_DIR}/FindPython/Support.cmake)
+include (${CMAKE_CURRENT_LIST_DIR}/Support.cmake)
 
 if (COMMAND __Python3_add_library)
   macro (Python3_add_library)
