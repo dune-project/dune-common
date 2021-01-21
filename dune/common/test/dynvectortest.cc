@@ -18,6 +18,20 @@ void dynamicVectorTest(int d) {
   DynamicVector<ct> v(d,1);
   DynamicVector<ct> w(d,2);
   DynamicVector<ct> z(d,2);
+
+  DynamicVector<ct> v2(v); // copy constructor
+  if (v!=v2)
+    DUNE_THROW(Dune::InvalidStateException,"Copy constructor does not work properly");
+
+  DynamicVector<ct> v3(std::move(v2)); // move constructor
+  if (v!=v3)
+    DUNE_THROW(Dune::InvalidStateException,"Move constructor does not work properly");
+
+  v2 = std::move(v3); // move assignment
+  if (v!=v2)
+    DUNE_THROW(Dune::InvalidStateException,"Move assignment does not work properly");
+
+
   bool b DUNE_UNUSED;
 
   // Test whether the norm methods compile
