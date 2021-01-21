@@ -307,7 +307,7 @@ function(dune_add_test)
   endif()
 
   # Discard all parallel tests if MPI was not found
-  if(NOT MPI_FOUND)
+  if(NOT HAVE_MPI)
     set(DUNE_MAX_TEST_CORES 1)
   endif()
 
