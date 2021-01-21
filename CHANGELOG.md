@@ -28,6 +28,12 @@
 - Eigenvectors of symmetric 2x2 `FieldMatrix`es are now computed correctly
   even when they have zero eigenvalues.
 
+- Added class `FlatVectorView` that wraps a blocked container to provide a minimal flat container interface.
+
+- Added a routine `indexedForEach` that iterates over a (blocked) container. Currently the special case
+  of `FlatVectorView` is implemented which loops over all scalar entries of the container and calls a given functor
+  at each entry.
+
 ## build-system
 
 - The name mangling for Fortran libraries like BLAS and LAPACK is now done
