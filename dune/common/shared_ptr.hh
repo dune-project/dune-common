@@ -119,5 +119,76 @@ namespace Dune
     return stackobject_to_shared_ptr(t);
   }
 
+
+
+  /**
+   * \brief Copy const L-value references into new shared_ptr
+   *
+   * This will invoke the copy constructor in the make_shared
+   * call to create a new shared_ptr storing t
+   **/
+  template<class T>
+  std::shared_ptr<T> copy_or_wrap_or_share(const T& t)
+  {
+    return std::make_shared<T>(t);
+  }
+
+  /**
+   * \brief Capture L-value reference to shared_ptr
+   *
+   * This will store a pointer for the passed reference
+   * in a non-owning shared_ptr.
+   **/
+  template<class T>
+  std::shared_ptr<T> copy_or_wrap_or_share(T& t)
+  {
+    return stackobject_to_shared_ptr(t);
+  }
+
+  /**
+   * \brief Capture R-value reference to shared_ptr
+   *
+   * This will store a copy of the passed object in
+   * a shared_ptr.
+   *
+   * This overload captures only real R-value references.
+   **/
+  template<class T,
+    std::enable_if_t<!std::is_lvalue_reference<T>::value, int> = 0>
+  auto copy_or_wrap_or_share(T&& t)
+  {
+    return std::make_shared<std::decay_t<T>>(std::forward<T>(t));
+  }
+
+  /// \brief Do not allow to wrap raw pointers
+  template<class T>
+  std::shared_ptr<T> copy_or_wrap_or_share(T* t)
+  {
+    static_assert(not std::is_pointer<T*>::value,
+      "Raw pointers must be wrapped into smart pointers or references to clarify ownership");
+    return {};
+  }
+
+  /**
+   * \brief Forward shared_ptr
+   *
+   * This will share the ownership with the argument t
+   **/
+  template<class T>
+  std::shared_ptr<T> copy_or_wrap_or_share(std::shared_ptr<T> t)
+  {
+    return std::move(t);
+  }
+
+  /**
+   * \brief move a unique_ptr into shared_ptr
+   *
+   * This will transform the unique_ptr into a shared_ptr, thus releasing the original ownership.
+   **/
+  template<class T>
+  std::shared_ptr<T> copy_or_wrap_or_share(std::unique_ptr<T> t)
+  {
+    return std::shared_ptr<T>(std::move(t));
+  }
 }
 #endif
