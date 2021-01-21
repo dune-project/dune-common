@@ -706,13 +706,15 @@ namespace Dune {
     //! Constructor making uninitialized vector
     DiagonalRowVectorConst() :
       p_(0),
-      row_(0)
+      row_(0),
+      zero_(0)
     {}
 
     //! Constructor making vector with identical coordinates
     explicit DiagonalRowVectorConst (K* p, int col) :
       p_(p),
-      row_(col)
+      row_(col),
+      zero_(0)
     {}
 
     //===== access to components
@@ -721,8 +723,7 @@ namespace Dune {
     const K& operator[] (size_type i) const
     {
       DUNE_UNUSED_PARAMETER(i);
-      DUNE_ASSERT_BOUNDS(i == row_);
-      return *p_;
+      return (i==row_)?*p_:zero_;
     }
 
     // check if row is identical to other row (not only identical values)
@@ -817,6 +818,7 @@ namespace Dune {
     // the data, very simply a pointer to the diagonal value and the row number
     K* p_;
     size_type row_;
+    K zero_;
   };
 
   template< class K, int n >
