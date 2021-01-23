@@ -381,7 +381,7 @@ def make_dune_py_module(dune_py_dir=None, deps=None):
 
         if deps is None:
             modules, _ = select_modules()
-            deps = modules.values()
+            deps = modules.keys()
 
         description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(deps))
         logger.debug('dune-py will depend on ' + ' '.join([m[0] + (' ' + str(c) if c else '') for m, c in description.depends]))
