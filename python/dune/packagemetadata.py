@@ -101,22 +101,29 @@ class VersionRequirement:
         else:
             return ''
 
-
 class Description:
     def __init__(self, fileName=None, **kwargs):
         data = kwargs.copy()
+
+        valid_entries = ['Module','Maintainer','Version','Maintainer',
+                         'Depends','Suggests',
+                         'Whitespace-Hook',
+                         'Author','Description','URL']
+
         if fileName is not None:
             with io.open(fileName, 'r', encoding='utf-8') as file:
+                import re
                 for line in file:
                     line = line.strip()
                     if not line or line[ 0 ] == '#':
                         continue
-
-                    pos = line.find(':')
-                    if pos < 0:
-                        raise ValueError('Invalid key:value pair (' + line + ').')
-                    data[line[:pos].strip().lower()] = line[pos+1:].strip()
-
+                    m = re.search(r'^(\w+):(.*)', line)
+                    if m:
+                        key = m.group(1)
+                        val = m.group(2)
+                        if not key in valid_entries:
+                            raise ValueError('Invalid dune.module entry %s (%s).' % (key,fileName))
+                        data[key.lower()] = val.strip()
         try:
             self.name = data['module']
         except KeyError:
