@@ -397,16 +397,17 @@ def make_dune_py_module(dune_py_dir=None, deps=None):
             raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
         logger.info('Using dune-py module in ' + dune_py_dir)
 
-def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, builddir=None):
+def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, builddir=None, deps=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     if definitions is None:
         definitions = cmakeFlags()
 
     modules, dirs = select_modules()
-    deps = resolve_dependencies(modules, None)
+    if deps is None:
+        deps = resolve_dependencies(modules)
 
-    desc = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(modules.values()))
+    desc = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(deps))
 
     with open(os.path.join(dune_py_dir, 'dune.module'), 'w') as file:
         file.write(repr(desc))
