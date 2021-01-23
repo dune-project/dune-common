@@ -105,7 +105,7 @@ def main(argv):
 
     foundModule = make_dune_py_module(dunepy, deps)
 
-    output = build_dune_py_module(dunepy, definitions, None, builddir)
+    output = build_dune_py_module(dunepy, definitions, None, builddir, deps)
 
     print("CMake output")
     print(output)
@@ -116,12 +116,10 @@ def main(argv):
     f.close()
 
     if execute == "install":
-        if deps is None:
-            deps = duneModules[0].items()
         for m in deps:
             moddir = duneModules[1][m]
             pythonModule = toBuildDir(builddir,moddir,m)
-            print("calling install_python in",moddir)
+            print("calling install_python for %s (%s)" % (m,pythonModule))
             command = ['cmake', '--build', '.', '--target', 'install_python']
             proc = subprocess.Popen(command, cwd=pythonModule, stdout = subprocess.PIPE)
             stdout, stderr = proc.communicate()
