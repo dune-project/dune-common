@@ -63,7 +63,14 @@ def main(argv):
         proc = subprocess.Popen(command, stdout = subprocess.PIPE)
         stdout, _ = proc.communicate()
         for arg in shlex.split(buffer_to_str(stdout)):
-            key, value = arg.split('=', 1)
+            arg = arg.split('=', 1)
+            key = arg[0]
+            if len(arg)==2:
+                value = arg[1]
+            elif len(arg)==1:
+                value = ""
+            else:
+                raise ValueError("Failed to parse $CMAKE_FLAGS from opts file")
             if key.startswith('-D'):
                 key = key[2:]
             definitions[key] = value
