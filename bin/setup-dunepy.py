@@ -62,18 +62,7 @@ def main(argv):
         command = ['bash', '-c', 'source ' + optsfile + ' && echo "$CMAKE_FLAGS"']
         proc = subprocess.Popen(command, stdout = subprocess.PIPE)
         stdout, _ = proc.communicate()
-        for arg in shlex.split(buffer_to_str(stdout)):
-            arg = arg.split('=', 1)
-            key = arg[0]
-            if len(arg)==2:
-                value = arg[1]
-            elif len(arg)==1:
-                value = ""
-            else:
-                raise ValueError("Failed to parse $CMAKE_FLAGS from opts file")
-            if key.startswith('-D'):
-                key = key[2:]
-            definitions[key] = value
+        cmake_args = shlex.split(buffer_to_str(stdout))
         if builddir is None:
             # get the build dir (check for BUILDDIR, DUNE_BUILDDIR in opts file
             # and then DUNE_BUILDDIR in environment variable
@@ -89,7 +78,7 @@ def main(argv):
                 if not builddir:
                     builddir = os.environ.get('DUNE_BUILDDIR', 'build-cmake')
     else:
-        definitions = None
+        cmake_args = None
         if builddir is None:
             builddir = os.environ.get('DUNE_BUILDDIR', 'build-cmake')
 
@@ -112,7 +101,7 @@ def main(argv):
 
     foundModule = make_dune_py_module(dunepy, deps)
 
-    output = build_dune_py_module(dunepy, definitions, None, builddir, deps)
+    output = build_dune_py_module(dunepy, cmake_args, None, builddir, deps)
 
     print("CMake output")
     print(output)

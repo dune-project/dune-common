@@ -16,12 +16,12 @@ if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
     from dune.packagemetadata import Version, VersionRequirement,\
-            Description, cmakeFlags
+            Description, cmakeFlags, cmakeArguments
 else:
     from utility import buffer_to_str
     import project
     from packagemetadata import Version, VersionRequirement,\
-            Description, cmakeFlags
+            Description, cmakeFlags, cmakeArguments
 
 logger = logging.getLogger(__name__)
 
@@ -209,12 +209,13 @@ def get_module_path():
     return path
 
 
-def select_modules(modules=None):
+def select_modules(modules=None, module=None):
     """choose one version of each module from a list of modules
 
     Args:
         modules (optional): List of (description, dir) pairs
             If not given, the find_modules(get_module_path()) is used
+        module (optional): 
 
     Returns:
         pair of dictionaries mapping module name to unique description and directory respectively
@@ -254,26 +255,20 @@ def default_build_dir(srcdir, module=None, builddir=None):
         return os.path.join(srcdir, builddir)
 
 
-def configure_module(srcdir, builddir, prefix_dirs, definitions=None):
+def configure_module(srcdir, builddir, prefix_dirs, cmake_args=None):
     """configure a given module by running CMake
 
     Args:
         srcdir:                  source directory of module
         builddir:                build directory for module (may equal srcdir for in-source builds)
         prefix_dirs:             dictionary mapping dependent modules to their prefix
-        definitions (optional):  dictionary of additional CMake definitions
+        cmake_args (optional):   list of additional CMake flags
 
     Returns:
         Output of CMake command
     """
     args = [ get_cmake_command() ]
-    if definitions is None:
-        pass
-    elif isinstance(definitions, dict):
-        args += ['-D' + key + '=' + value + '' for key, value in definitions.items() if value]
-        args += [key + '' for key, value in definitions.items() if not value]
-    else:
-        raise ValueError('definitions must be a dictionary.')
+    args += cmakeArguments(cmake_args)
     args += ['-D' + module + '_DIR=' + dir for module, dir in prefix_dirs.items()]
     args.append(srcdir)
     if not os.path.isdir(builddir):
@@ -397,11 +392,11 @@ def make_dune_py_module(dune_py_dir=None, deps=None):
             raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
         logger.info('Using dune-py module in ' + dune_py_dir)
 
-def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, builddir=None, deps=None):
+def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, builddir=None, deps=None):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
-    if definitions is None:
-        definitions = cmakeFlags()
+    if cmake_args is None:
+        cmake_args = cmakeFlags()
 
     modules, dirs = select_modules()
     if deps is None:
@@ -425,7 +420,7 @@ def build_dune_py_module(dune_py_dir=None, definitions=None, build_args=None, bu
         else:
             prefix[name] = default_build_dir(dir, name, builddir)
 
-    output = configure_module(dune_py_dir, dune_py_dir, {d: prefix[d] for d in deps}, definitions)
+    output = configure_module(dune_py_dir, dune_py_dir, {d: prefix[d] for d in deps}, cmake_args)
     output += build_module(dune_py_dir, build_args)
     return output
 

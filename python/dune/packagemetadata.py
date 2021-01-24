@@ -239,9 +239,21 @@ class Data:
     def asPythonRequirementString(self, requirements):
         return [(r[0]+str(r[1])).replace("("," ").replace(")","").replace(" ","") for r in requirements]
 
+def cmakeArguments(cmakeArgs):
+    if cmakeArgs is None:
+        return []
+    elif isinstance(cmakeArgs, list):
+        return cmakeArgs
+    elif isinstance(cmakeArgs, dict):
+        args = ['-D' + key + '=' + value + '' for key, value in cmakeArgs.items() if value]
+        args += [key + '' for key, value in cmakeArgs.items() if not value]
+        return args
+    else:
+        raise ValueError('definitions must be a list or a dictionary.')
+
 def cmakeFlags():
     # defaults
-    flags = dict([
+    flags = cmakeArguments(dict([
         ('CMAKE_BUILD_TYPE','Release'),
         ('CMAKE_INSTALL_RPATH_USE_LINK_PATH','TRUE'),
         ('DUNE_ENABLE_PYTHONBINDINGS','TRUE'),
@@ -250,31 +262,20 @@ def cmakeFlags():
         ('CMAKE_DISABLE_FIND_PACKAGE_LATEX','TRUE'),
         ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen','TRUE'),
         ('INKSCAPE','FALSE')
-    ])
+    ]))
     # test environment for additional flags
     cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
     if cmakeFlags is None:
         cmakeFlags = os.environ.get('CMAKE_FLAGS')
-    # split flags and store in dict
-    add = {}
+    # split cmakeFlags and add them to flags
     if cmakeFlags is not None:
-        for arg in shlex.split(cmakeFlags):
-            try:
-                key, value = arg.split('=', 1)
-                if key.startswith('-D'):
-                    key = key[2:]
-            except ValueError:
-                key, value = arg, None
-            add[key] = value
-    flags.update(add)
+        flags += shlex.split(cmakeFlags)
     return flags
 
 def metaData(version=None, dependencyCheck=True):
     data = Data(version)
 
-    flags = cmakeFlags()
-    cmake_flags  = ['-D' + key + '=' + value + '' for key, value in flags.items() if value]
-    cmake_flags += [key + '' for key, value in flags.items() if not value]
+    cmake_flags = cmakeFlags()
 
     # check if all dependencies are listed in pyproject.toml
     if dependencyCheck:
