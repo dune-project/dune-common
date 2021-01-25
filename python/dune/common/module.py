@@ -416,7 +416,7 @@ def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, bui
     prefix = {}
     for name, dir in dirs.items():
         if is_installed(dir, name):
-            prefix[name] = get_prefix(name)
+            prefix[name] = os.path.join(get_prefix(name),'lib','cmake',name)
         else:
             prefix[name] = default_build_dir(dir, name, builddir)
 
