@@ -113,7 +113,7 @@ def resolve_order(deps):
 
     def resolve(m):
         if m not in order:
-            for d in deps[m]:
+            for d, r in deps[m].depends:
                 if d not in order:
                     resolve(d)
             order.append(m)

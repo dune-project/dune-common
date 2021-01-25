@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 try:
-    from dune.common.module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies
+    from dune.common.module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies, resolve_order
 except ImportError:
     import os
     here = os.path.dirname(os.path.abspath(__file__))
@@ -19,7 +19,7 @@ except ImportError:
     sys.path.append(modsB)
     sys.path.append(modsA)
     if os.path.exists(os.path.join(modsB, "module.py")):
-        from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies
+        from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies, resolve_order
     else:
         raise
 
@@ -94,10 +94,12 @@ def main(argv):
     # use mod and all its dependencies only. Otherwise use all found modules
     # as dependencies.
     if masterModule is None:
-        deps = [m[0] for m in duneModules[0].items()]
+        deps = resolve_order(duneModules[0])
     else:
-        deps = resolve_dependencies(duneModules[0], masterModule)
-        deps.add(masterModule)
+        depsList = resolve_dependencies(duneModules[0], masterModule)
+        deps = {k:v for k,v in duneModules[0].items() if k in depsList}
+        deps = resolve_order(deps)
+        deps += [masterModule]
 
     foundModule = make_dune_py_module(dunepy, deps)
 

@@ -9,4 +9,5 @@ dune_add_test(SOURCES test_embed1.cc
               )
 
 add_executable(test_embed2 EXCLUDE_FROM_ALL test_embed2.cc)
-target_link_libraries(test_embed2 PUBLIC ${DUNE_LIBS} ${Python3_LIBRARIES})
+# target_link_libraries(test_embed2 PUBLIC ${DUNE_LIBS} ${Python3_LIBRARIES})
+target_link_libraries(test_embed2 PRIVATE Python3::Python)
