@@ -28,6 +28,12 @@
 #    Set this variable to have all installations of python packages use
 #    :code:`pip --editable`.
 #
+#
+# .. cmake_variable:: DUNE_PYTHON_ADDITIONAL_PIP_PARAMS
+#
+#    Use this variable to set additional flags for pip in this build. This can e.g.
+#    be used to point pip to alternative package indices in restricted environments.
+#
 
 function(dune_python_install_package)
   # Parse Arguments
@@ -79,7 +85,7 @@ function(dune_python_install_package)
   endif()
 
   set(INSTALL_CMDLINE -m pip install
-                      "${INSTALL_OPTION}" --upgrade "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS}
+                      "${INSTALL_OPTION}" --upgrade "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
                       "${PYINST_FULLPATH}")
 
 
