@@ -377,3 +377,9 @@ check_cxx_symbol_exists(
   "functional"
   DUNE_HAVE_CXX_STD_IDENTITY
   )
+
+check_cxx_source_compiles("
+  template<class T> concept C = false;
+  int main() {return C<int>;}"
+  DUNE_HAVE_CXX_CONCEPTS
+)
