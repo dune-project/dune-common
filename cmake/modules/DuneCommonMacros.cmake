@@ -1,6 +1,3 @@
-# enforce C++-14
-dune_require_cxx_standard(MODULE "dune-common" VERSION 14)
-
 include(DuneStreams)
 dune_set_minimal_debug_level()
 

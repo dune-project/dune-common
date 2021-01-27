@@ -1,5 +1,12 @@
 # Master (will become release 2.8)
 
+- Setting the minimal c++ standard in cmake is now done by a cmake feature-requirement
+  `cxx_std_17` on the `dunecommon` library target. This requirement is propagated to all
+  other modules by linking against `dunecommon`. The cmake options `CXX_MAX_STANDARD`,
+  `CXX_MAX_SUPPORTED_STANDARD` and `DISABLE_CXX_VERSION_CHECK` are removed. The cmake
+  function `dune_require_cxx_standard()` is now deprecated and will be removed after the
+  2.8 release.
+
 - Set minimal required MPI version in cmake to >= 3.0.
 
 - Previous versions of dune-common imported `std::shared_ptr` and `std::make_shared`

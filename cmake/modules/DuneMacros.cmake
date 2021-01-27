@@ -788,6 +788,65 @@ macro(dune_regenerate_config_cmake)
  endif()
 endmacro(dune_regenerate_config_cmake)
 
+# extract the required c++ standard from a given target
+macro(target_get_cxx_standard target var)
+  get_target_property(${var} ${target} CXX_STANDARD)
+  if(NOT ${var})
+    # detect standard version from compile features
+    get_target_property(_features ${target} INTERFACE_COMPILE_FEATURES)
+    get_target_property(_features2 ${target} COMPILE_FEATURES)
+    list(APPEND _features ${_features2})
+    list(FILTER _features INCLUDE REGEX "cxx_std_[0-9]+")
+    if(_features)
+      # if multiple features are set, use the highest standard
+      list(TRANSFORM _features REPLACE "cxx_std_([0-9]+)" "\\1")
+      list(SORT _features ORDER DESCENDING)
+      list(GET _features 0 ${var})
+    endif()
+    unset(_features)
+    unset(_features2)
+  endif()
+  if(NOT ${var})
+    # detect standard version from compile flags
+    get_target_property(_options ${target} INTERFACE_COMPILE_OPTIONS)
+    get_target_property(_options2 ${target} COMPILE_OPTIONS)
+    list(APPEND _options ${_options2})
+    list(FILTER _options INCLUDE REGEX "std=(c|gnu)\\+\\+[0-9a-z]+")
+    if(_options)
+      list(TRANSFORM _options REPLACE ".*std=(c|gnu)\\+\\+([0-9a-z]+).*" "\\2")
+      set(_map_key "98" "0x" "11" "1y" "14" "1z" "17" "2a" "20" "2b" "23" "2c" "26")
+      set(_map_val "98" "11" "11" "14" "14" "17" "17" "20" "20" "23" "23" "26" "26")
+      # if multiple options are set, use the highest standard
+      list(SORT _options ORDER DESCENDING)
+      list(GET _options 0 ${var})
+      list(FIND _map_key "${${var}}" _idx) # map the std flag to a valid standard version
+      list(GET _map_val ${_idx} ${var})
+    endif()
+    unset(_options)
+    unset(_options2)
+    unset(_idx)
+  endif()
+endmacro(target_get_cxx_standard)
+
+# function to check whether c++ standards for all modules are the same
+function(check_compatible_cxx_standard)
+  target_get_cxx_standard(dunecommon cxx_standard_dunecommon)
+
+  get_property(libraries GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
+  if(cxx_standard_dunecommon)
+    foreach(lib ${libraries})
+      target_get_cxx_standard(${lib} cxx_standard)
+      if(cxx_standard AND NOT ${cxx_standard} EQUAL ${cxx_standard_dunecommon})
+        message(WARNING "Library ${lib} requests cxx_std_${cxx_standard} whereas "
+                        "dunecommon requires cxx_std_${cxx_standard_dunecommon}. "
+                        "Mixing standards is undefined behaviour. Use a global "
+                        "CMAKE_CXX_STANDARD instead.")
+      endif()
+      unset(cxx_standard)
+    endforeach(lib)
+  endif()
+endfunction(check_compatible_cxx_standard)
+
 # macro that should be called at the end of the top level CMakeLists.txt.
 # Namely it creates config.h and the cmake-config files,
 # some install directives and exports the module.
@@ -798,6 +857,9 @@ macro(finalize_dune_project)
 
   #configure all headerchecks
   finalize_headercheck()
+
+  # check whether c++ standard flags are compatible to dunecommon
+  check_compatible_cxx_standard()
 
   #create cmake-config files for installation tree
   include(CMakePackageConfigHelpers)
