@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 try:
-    from dune.common.module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies
+    from dune.common.module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies, resolve_order
 except ImportError:
     import os
     here = os.path.dirname(os.path.abspath(__file__))
@@ -19,7 +19,7 @@ except ImportError:
     sys.path.append(modsB)
     sys.path.append(modsA)
     if os.path.exists(os.path.join(modsB, "module.py")):
-        from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies
+        from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies, resolve_order
     else:
         raise
 
@@ -62,11 +62,7 @@ def main(argv):
         command = ['bash', '-c', 'source ' + optsfile + ' && echo "$CMAKE_FLAGS"']
         proc = subprocess.Popen(command, stdout = subprocess.PIPE)
         stdout, _ = proc.communicate()
-        for arg in shlex.split(buffer_to_str(stdout)):
-            key, value = arg.split('=', 1)
-            if key.startswith('-D'):
-                key = key[2:]
-            definitions[key] = value
+        cmake_args = shlex.split(buffer_to_str(stdout))
         if builddir is None:
             # get the build dir (check for BUILDDIR, DUNE_BUILDDIR in opts file
             # and then DUNE_BUILDDIR in environment variable
@@ -82,7 +78,7 @@ def main(argv):
                 if not builddir:
                     builddir = os.environ.get('DUNE_BUILDDIR', 'build-cmake')
     else:
-        definitions = None
+        cmake_args = None
         if builddir is None:
             builddir = os.environ.get('DUNE_BUILDDIR', 'build-cmake')
 
@@ -98,14 +94,16 @@ def main(argv):
     # use mod and all its dependencies only. Otherwise use all found modules
     # as dependencies.
     if masterModule is None:
-        deps = [m[0] for m in duneModules[0].items()]
+        deps = resolve_order(duneModules[0])
     else:
-        deps = resolve_dependencies(duneModules[0], masterModule)
-        deps.add(masterModule)
+        depsList = resolve_dependencies(duneModules[0], masterModule)
+        deps = {k:v for k,v in duneModules[0].items() if k in depsList}
+        deps = resolve_order(deps)
+        deps += [masterModule]
 
     foundModule = make_dune_py_module(dunepy, deps)
 
-    output = build_dune_py_module(dunepy, definitions, None, builddir)
+    output = build_dune_py_module(dunepy, cmake_args, None, builddir, deps)
 
     print("CMake output")
     print(output)
@@ -116,16 +114,17 @@ def main(argv):
     f.close()
 
     if execute == "install":
-        if deps is None:
-            deps = duneModules[0].items()
         for m in deps:
             moddir = duneModules[1][m]
             pythonModule = toBuildDir(builddir,moddir,m)
-            print("calling install_python in",moddir)
-            command = ['cmake', '--build', '.', '--target', 'install_python']
-            proc = subprocess.Popen(command, cwd=pythonModule, stdout = subprocess.PIPE)
-            stdout, stderr = proc.communicate()
-            logger.debug(buffer_to_str(stdout))
+            print("calling install_python for %s (%s)" % (m,pythonModule))
+            try:
+                command = ['cmake', '--build', '.', '--target', 'install_python']
+                proc = subprocess.Popen(command, cwd=pythonModule, stdout = subprocess.PIPE)
+                stdout, stderr = proc.communicate()
+                logger.debug(buffer_to_str(stdout))
+            except FileNotFoundError:
+                print("Warning: build dir not found possibly module is installed then python bindings should be already available")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
