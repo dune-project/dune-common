@@ -85,7 +85,7 @@ function(dune_python_install_package)
   endif()
 
   set(INSTALL_CMDLINE -m pip install
-                      "${INSTALL_OPTION}" --upgrade "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
+                      "${INSTALL_OPTION}" "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
                       "${PYINST_FULLPATH}")
 
 
@@ -141,7 +141,7 @@ function(dune_python_install_package)
   #
 
   # Construct the wheel installation commandline
-  set(WHEEL_COMMAND ${Python3_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${PYINST_FULLPATH})
+  set(WHEEL_COMMAND ${Python3_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${PYINST_FULLPATH} ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS})
 
   # Add the installation rule
   install(CODE "message(\"Installing wheel for python package at ${PYINST_FULLPATH}...\")
