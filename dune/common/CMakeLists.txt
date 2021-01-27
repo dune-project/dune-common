@@ -57,6 +57,7 @@ install(FILES
         enumset.hh
         exceptions.hh
         filledarray.hh
+        flatvectorview.hh
         float_cmp.cc
         float_cmp.hh
         fmatrix.hh
@@ -70,6 +71,7 @@ install(FILES
         hash.hh
         hybridutilities.hh
         indent.hh
+        indexedforeach.hh
         indices.hh
         interfaces.hh
         ios_state.hh
