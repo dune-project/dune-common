@@ -49,3 +49,27 @@ debian-11-gcc-9-17-python:
     # finally set the python path to all modules
     PYTHONPATH:        $CI_PROJECT_DIR/build-cmake/python
   tags: [duneci]
+
+# Run tests for all downstream core modules
+debian-10-gcc-7-17-downstream:
+  image: registry.dune-project.org/docker/ci/debian:10
+  script:
+    - duneci-standard-test
+    - export PATH=$CI_PROJECT_DIR/bin:$PATH
+    - duneci-install-module https://gitlab.dune-project.org/core/dune-geometry.git
+    - duneci-install-module https://gitlab.dune-project.org/core/dune-grid.git
+    - duneci-install-module https://gitlab.dune-project.org/core/dune-istl.git
+    - duneci-install-module https://gitlab.dune-project.org/core/dune-localfunctions.git
+    - cd /duneci/modules/dune-geometry && duneci-standard-test
+    - cd /duneci/modules/dune-grid && duneci-standard-test
+    - cd /duneci/modules/dune-istl && duneci-standard-test
+    - cd /duneci/modules/dune-localfunctions && duneci-standard-test
+  variables:
+    DUNECI_TOOLCHAIN: gcc-7-17
+    DUNECI_TEST_LABELS: ""
+    DUNE_CONTROL_PATH: /duneci/modules:$CI_PROJECT_DIR
+    DUNE_PY_DIR: /duneci/modules/dune-py
+    DUNE_CMAKE_FLAGS: "-DDUNE_ENABLE_PYTHONBINDINGS=ON -DBUILD_SHARED_LIBS=TRUE -DDUNE_PYTHON_INSTALL_LOCATION=none"
+    DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
+    PYTHONPATH: $CI_PROJECT_DIR/build-cmake/python
+  tags: [duneci]
