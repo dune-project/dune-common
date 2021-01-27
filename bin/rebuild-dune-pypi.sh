@@ -42,16 +42,13 @@ fi
 TMPDIR=$(mktemp -d)
 pushd $TMPDIR
 
-# Clone the Dune modules that we gather Python dependencies from.
+# Clone the Dune modules that we gather Python dependencies from,
+# which are not already on PyPI. If they are on PyPI, we just mirror
+# what is available there.
 rm -rf dune
 mkdir dune
 cd dune
 git clone https://gitlab.dune-project.org/quality/dune-testtools.git
-git clone https://gitlab.dune-project.org/core/dune-common.git
-git clone https://gitlab.dune-project.org/core/dune-geometry.git
-git clone https://gitlab.dune-project.org/core/dune-grid.git
-git clone https://gitlab.dune-project.org/core/dune-istl.git
-git clone https://gitlab.dune-project.org/core/dune-localfunctions.git
 cd ..
 
 # Iterate over a range of Python versions to make sure that the index works
@@ -67,16 +64,16 @@ do
 
   # Collect the wheels of all dependencies for the Dune modules
   pip2pi packages ./dune/dune-testtools/python
-  pip2pi packages ./dune/dune-common
-  pip2pi packages ./dune/dune-geometry
-  pip2pi packages ./dune/dune-grid
-  pip2pi packages ./dune/dune-istl
-  pip2pi packages ./dune/dune-localfunctions
+  pip2pi packages dune-common
+  pip2pi packages dune-geometry
+  pip2pi packages dune-grid
+  pip2pi packages dune-istl
+  pip2pi packages dune-localfunctions
 done
 
 # Upload the packages to the index
 python -m pip install twine
-for filename in packages/*.whl
+for filename in packages/*.whl packages/*.tar.gz
 do
   # NB: The 133 here is the Gitlab project ID of dune-common.
   python -m twine upload --skip-existing --repository-url https://gitlab.dune-project.org/api/v4/projects/133/packages/pypi $filename
