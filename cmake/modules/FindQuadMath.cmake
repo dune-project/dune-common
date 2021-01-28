@@ -72,7 +72,7 @@ if(QuadMath_FOUND AND NOT TARGET QuadMath::QuadMath)
   target_compile_definitions(QuadMath::QuadMath INTERFACE
     _GLIBCXX_USE_FLOAT128
   )
-  target_compile_options(QuadMath::QuadMath INTERFACE
-    $<$<CXX_COMPILER_ID:GNU>:-fext-numeric-literals>
-  )
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_compile_options(QuadMath::QuadMath INTERFACE -fext-numeric-literals)
+  endif()
 endif()

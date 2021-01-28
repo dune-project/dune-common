@@ -872,7 +872,6 @@ endif()")
     PATH_VARS CMAKE_INSTALL_DATAROOTDIR DUNE_INSTALL_MODULEDIR CMAKE_INSTALL_INCLUDEDIR
     DOXYSTYLE_DIR SCRIPT_DIR)
 
-
   #create cmake-config files for build tree
   set(PACKAGE_CMAKE_INSTALL_INCLUDEDIR ${PROJECT_SOURCE_DIR})
   set(PACKAGE_CMAKE_INSTALL_DATAROOTDIR ${PROJECT_BINARY_DIR})
@@ -925,6 +924,11 @@ endif()
   if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
     install(FILES config.h.cmake DESTINATION share/${ProjectName})
   endif()
+
+  # join requirements handled by the dune.module mechanism
+  dune_add_pkg_config_requirement("${${ProjectName}_DEPENDS}")
+  dune_add_pkg_config_requirement("${${ProjectName}_SUGGESTS}")
+  dune_add_pkg_config_flags("${cxx_std_flag}")
 
   # install pkg-config files
   create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})

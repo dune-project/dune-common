@@ -4,12 +4,12 @@ libdir=@libdir@
 includedir=@includedir@
 CXX=@CXX@
 CC=@CC@
-DEPENDENCIES=@REQUIRES@
+requirements=@PKG_CFG_REQUIRES@
 
 Name: @PACKAGE_NAME@
 Version: @VERSION@
 Description: @DESCRIPTION@
 URL: @URL@
-Requires: ${DEPENDENCIES}
+Requires: ${requirements}
 Libs: -L${libdir} -ldunecommon
-Cflags: -I${includedir}
+Cflags: -I${includedir} @PKG_CFG_CFLAGS@

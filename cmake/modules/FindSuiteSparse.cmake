@@ -214,6 +214,9 @@ find_package_handle_standard_args("SuiteSparse"
 # if both headers and library for all required components are found,
 # then create imported targets for all components
 if(SuiteSparse_FOUND)
+  set(SuiteSparse_LIBRARIES ${SUITESPARSE_CONFIG_LIB})
+  set(SuiteSparse_INCLUDE_DIRS ${SUITESPARSE_INCLUDE_DIR})
+
   if(NOT TARGET SuiteSparse::SuiteSparse_config)
     add_library(SuiteSparse::SuiteSparse_config UNKNOWN IMPORTED)
     set_target_properties(SuiteSparse::SuiteSparse_config PROPERTIES
@@ -231,6 +234,8 @@ if(SuiteSparse_FOUND)
         INTERFACE_INCLUDE_DIRECTORIES ${${_component}_INCLUDE_DIR}
         INTERFACE_LINK_LIBRARIES SuiteSparse::SuiteSparse_config
       )
+      list(APPEND SuiteSparse_LIBRARIES ${${_component}_LIBRARY})
+      list(APPEND SuiteSparse_INCLUDE_DIRS ${${_component}_INCLUDE_DIR})
     endif()
   endforeach(_component)
 
@@ -286,3 +291,5 @@ if(SuiteSparse_FOUND)
     endif()
   endforeach(_component)
 endif()
+
+list(REMOVE_DUPLICATES SuiteSparse_INCLUDE_DIRS)
