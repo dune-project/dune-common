@@ -143,6 +143,7 @@ class Builder:
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
                         sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
                         if not os.path.isfile(sourceFileName):
+                            print("-- Compiling " + pythonName + "...")
                             logger.info("Loading " + pythonName + " (new)")
                             code = str(source)
                             # the CMakeLists.txt needs changing and cmake rerun - lock folder
@@ -159,6 +160,7 @@ class Builder:
                                 # update build system
                                 self.compile()
                         elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
+                            print("-- Compiling " + pythonName + "...")
                             logger.info("Loading " + pythonName + " (updated)")
                             code = str(source)
                             with open(os.path.join(sourceFileName), 'w') as out:
