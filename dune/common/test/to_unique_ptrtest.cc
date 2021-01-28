@@ -31,15 +31,6 @@ int main()
     // test assignment from makeToUnique
     ToUniquePtr<int> w2 = makeToUnique<int>(2);
 
-    // test conversion to pointer
-    DUNE_NO_DEPRECATED_BEGIN
-    int* p1 = f1();
-    A* p2 = g();
-    DUNE_NO_DEPRECATED_END
-
-    delete p1;
-    delete p2;
-
     // test conversion to unique_ptr
     {
       std::unique_ptr<int> u1 = f1();
