@@ -28,4 +28,4 @@ if(DUNE_ENABLE_PYTHONBINDINGS)
 endif()
 
 # finalize the dune project, e.g. generating config.h etc.
-finalize_dune_project()
+finalize_dune_project(MODULE_CONFIG_H)
