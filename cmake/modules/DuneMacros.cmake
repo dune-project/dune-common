@@ -681,8 +681,7 @@ macro(dune_project)
   include(DuneCxaDemangle)
 
   # set include path and link path for the current project.
-  include_directories("${CMAKE_SOURCE_DIR}")
-  include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+  include_directories("${PROJECT_SOURCE_DIR}")
 
   # Search for MPI and set the relevant variables.
   include(DuneMPI)
@@ -1206,11 +1205,13 @@ macro(dune_target_add_config_header _target _scope _config_h)
   install(FILES ${PROJECT_BINARY_DIR}/dune/internal/${ProjectName}.hh
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/internal/${ProjectName}.hh)
 
-  target_precompile_headers(${_target} ${_scope}
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/dune/internal/${ProjectName}.hh>
-    $<INSTALL_INTERFACE:dune/internal/${ProjectName}.hh>) # does not work
+  # Set the generated header as precompiled-header to be automatically included
+  # target_precompile_headers(${_target} ${_scope}
+  #   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/dune/internal/${ProjectName}.hh>
+  #   $<INSTALL_INTERFACE:dune/internal/${ProjectName}.hh>) # does not work
 
-  # target_compile_options(${_target} ${_scope}
-  #   $<BUILD_INTERFACE:-include ${PROJECT_BINARY_DIR}/dune/internal/${ProjectName}.hh>
-  #   $<INSTALL_INTERFACE:-include ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/dune/internal/${ProjectName}.hh>) # does not work
+  # force include of the generated config header
+  target_compile_options(${_target} ${_scope}
+    $<BUILD_INTERFACE:-include ${PROJECT_BINARY_DIR}/dune/internal/${ProjectName}.hh>
+    $<INSTALL_INTERFACE:-include ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/dune/internal/${ProjectName}.hh>) # does not work
 endmacro(dune_target_add_config_header)
