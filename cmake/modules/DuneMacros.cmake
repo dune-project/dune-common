@@ -931,7 +931,7 @@ endif()
   # install pkg-config files
   create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
 
-  if("${ARGC}" GREATER "1" AND "${ARGV0}" STREQUAL "GLOBAL_CONFIG_H")
+  if("${ARGC}" GREATER "1")
     message(STATUS "Adding custom target for config.h generation")
     dune_regenerate_config_cmake()
     # add a target to generate config.h.cmake
