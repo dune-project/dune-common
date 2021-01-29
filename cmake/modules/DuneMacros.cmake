@@ -1206,7 +1206,7 @@ macro(dune_target_add_config_header _target _scope _config_h)
   install(FILES ${PROJECT_BINARY_DIR}/dune/internal/${ProjectName}.hh
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/internal/${ProjectName}.hh)
 
-  target_precompile_headers(dunecommon PUBLIC
+  target_precompile_headers(${_target} ${_scope}
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/dune/internal/${ProjectName}.hh>
     $<INSTALL_INTERFACE:dune/internal/${ProjectName}.hh>) # does not work
 
