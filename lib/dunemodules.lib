@@ -232,6 +232,10 @@ setup_control_path() {
   local TMP=""
   # foreach dir in $@
   while read dir; do
+    if ! test -e "$dir"; then
+      echo "ERROR: The path \"$dir\" given in DUNE_CONTROL_PATH does not exist."
+      exit 1
+    fi
     TMP=$TMP:"$(canonicalname "$dir")"
   done <<EOF
     $(echo $DUNE_CONTROL_PATH | sed -e 's/:\+/:/g' | tr ':' '\n')
