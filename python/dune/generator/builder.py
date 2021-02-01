@@ -167,6 +167,11 @@ class Builder:
                                 out.write(code)
                         else:
                             logger.debug("Loading " + pythonName)
+                            line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
+                            # the CMakeLists file should already include this line
+                            with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
+                                found = line in out.read()
+                            assert found, "CMakeLists file does not contain an entry to build"+moduleName
                 # end of exclusive dune-py lock
 
                 # for compilation a shared lock is enough

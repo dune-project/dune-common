@@ -80,13 +80,6 @@ def make_project(dir, description, subdirs=None, enable_all_packages=True, is_du
     cmake_content += ['', 'include(DuneMacros)', 'dune_project()']
     if enable_all_packages:
         cmake_content += ['dune_enable_all_packages()']
-    if is_dunepy:
-        cmake_content += ['',
-                          'if( dune-uggrid_FOUND )',
-                          '  if( NOT BUILD_SHARED_LIBS )',
-                          '    message(SEND_ERROR "dune-uggrid found but shared libs disabled! Python bindings for UGGrid will only work with shared -DBUILD_SHARED_LIBS=ON")',
-                          '  endif()',
-                          'endif()']
     if subdirs is not None:
         cmake_content += [''] + ['add_subdirectory("' + d + '")' for d in subdirs]
     cmake_content += ['', 'finalize_dune_project(GENERATE_CONFIG_H_CMAKE)']
