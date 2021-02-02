@@ -1,467 +1,88 @@
-# Locate Intel Threading Building Blocks include paths and libraries
-#
-# .. cmake_module::
-#
-#    TBB is a little special because there are three different ways to provide it:
-#
-#    * It can be installed using a package manager and just be available on the system include
-#      and library paths.
-#    * It can be compiled from source. The package doesn't really provide an installation script
-#      for this, but expects you to source an environment file called :code:`tbbvars.sh` that updates the
-#      required variables like :code:`CPATH` etc.
-#    * TBB is shipped as part of the Intel compilers. This bundled version can be enabled by adding
-#      :code:`-tbb` to the compiler flags.
-#
-#    This module can find all three types of installations. They are looked for in the following
-#    order of preference: :code:`tbbvars.sh` file (for a custom installation), system paths and finally
-#    the built-in version if an Intel compiler is present.
-#
-#    .. note::
-#       If you provide a tbbvars.sh script (via the CMake variable :ref:`TBB_VARS_SH`), this module will
-#       not find any libraries installed in the system path! This is on purpose to avoid
-#       accidental fallbacks.
-#
-#    If the option :ref:`TBB_DEBUG` is set to ON, the module will look for the debug version of TBB. Note that
-#    this does not work for the built-in library of the Intel Compiler due to linking problems. You can
-#    however provide the module with the tbbvars.sh from that built-in installation (usually in the
-#    subdirectory :code:`tbb/` of the Intel compiler root path), which will fix that problem.
-#
-#    Variables used by this module which you may want to set:
-#
-#    :ref:`TBB_VARS_SH`
-#       Path to the :code:`tbbvars.sh` script
-#
-#    :ref:`TBB_INCLUDE_DIR`
-#       Path to the include directory with the TBB headers
-#
-#    :ref:`TBB_LIBRARY_DIR`
-#       Path to the library directory with the TBB libraries
-#
-#    :ref:`TBB_DEBUG`
-#       Option that turns on TBB debugging
-#
-#    This module supports additional components of TBB that can be listed in the :ref:`find_package` call:
-#
-#    :code:`cpf`
-#       Use comunity preview edition (links to :code:`libtbb_preview` instead of :code:`libtbb`). cpf
-#       is not available for the built-in version of the Intel Compiler, but see the note
-#       on debug mode above for a fix.
-#
-#    :code:`allocator`
-#       Use TBB's scalable allocator (links to libtbbmalloc).
-#
-#
-#    This module sets the following variables:
-#
-#    :code:`TBB_FOUND`
-#       True if TBB was found and is usable
-#
-#    :code:`TBB_cpf_FOUND`
-#       True if community preview edition was found and is usable
-#
-#    :code:`TBB_allocator_FOUND`
-#       True if scalable allocator library was found and is usable
-#
-#    :code:`TBB_INCLUDE_DIRS`
-#       Path to the TBB include dirs. This variable is empty if the
-#       internal TBB version of an Intel compiler is in use
-#
-#    :code:`TBB_LIBRARIES`
-#       List of the TBB libraries that a target must be linked to
-#
-#    :code:`TBB_COMPILE_DEFINITIONS`
-#       Required compile definitions to use TBB
-#
-#    :code:`TBB_COMPILE_OPTIONS`
-#       Required compile options to use TBB
-#
-#    :code:`TBB_INTEL_COMPILER_INTERNAL_TBB`
-#       True if internal TBB version of Intel compiler is in use
-#
-#    In addition, TBB is automatically registered with the :ref:`dune_enable_all_packages` facility. If you
-#    don't want to use that feature, the module also provides the function :ref:`add_dune_tbb_flags`.
-#
-# .. cmake_function:: add_dune_tbb_flags
-#
-#    .. cmake_param:: targets
-#       :positional:
-#       :single:
-#       :required:
-#
-#    Adds all flags required to use TBB to the listed targets
-#
-# .. cmake_variable:: TBB_VARS_SH
-#
-#       May be set to have the :ref:`FindTBB` module look for a :code:`tbbvars.sh` script
-#
-# .. cmake_variable:: TBB_INCLUDE_DIR
-#
-#       May be set to have the :ref:`FindTBB` module look for TBB includes in custom locations.
-#
-# .. cmake_variable:: TBB_LIBRARY_DIR
-#
-#       May be set to have the :ref:`FindTBB` module look for TBB libraries in custom locations.
-#
-# .. cmake_variable:: TBB_DEBUG
-#
-#       May be set to have the :ref:`FindTBB` module look for debug TBB libraries.
-#
+#[=======================================================================[.rst:
+FindTBB
+-------
 
-option(
-  TBB_DEBUG
-  "Turn on TBB debugging (modifies compiler flags and links against debug version of libraries)"
-  )
+Finds the Threading Building Blocks (TBB) library.
 
-# source for our little test program. We have to compile this multiple times, so
-# store it in a variable for DRY and better readability
-set(tbb_compile_source "
-#include <tbb/tbb.h>
-#include <numeric>
+This is a fallback implementation in case the TBB library does not provide
+itself a corresponding TBBConfig.cmake file.
 
-int main()
-{
-  int x[10] = {0};
-  tbb::parallel_for(0,10,[&](int i){ x[i] = i; });
-  return !(std::accumulate(x,x+10,0) == (9*10)/2);
-}
-")
+Imported Targets
+^^^^^^^^^^^^^^^^
 
+This module provides the following imported targets, if found:
 
-# Function to parse a tbbvars.sh file and extract include and library paths.
-# This function relies on the bash shell to source the tbbvars.sh file
-function(parse_tbb_vars_sh)
-  message(STATUS "Taking TBB location from ${TBB_VARS_SH}")
-  find_package(UnixCommands)
-  set(tbb_vars_works FALSE)
-  execute_process(
-    COMMAND ${BASH} -c ". ${TBB_VARS_SH} > /dev/null"
-    RESULT_VARIABLE shell_result
-    OUTPUT_VARIABLE shell_out
-    )
-  if (${shell_result} EQUAL 0)
-    set(tbb_vars_opt "")
-    set(tbb_vars_works TRUE)
-  else()
-    # try script from binary Linux installs that requires an 'intel64' argument
-    execute_process(
-      COMMAND ${BASH} -c ". ${TBB_VARS_SH} intel64 >/dev/null"
-      RESULT_VARIABLE shell_result
-      OUTPUT_VARIABLE shell_out
-      )
-    if (${shell_result} EQUAL 0)
-      set(tbb_vars_opt "intel64")
-      set(tbb_vars_works TRUE)
-    endif()
-  endif()
-  if(tbb_vars_works)
-    execute_process(
-      COMMAND ${BASH} -c "unset CPATH ; . ${TBB_VARS_SH} ${tbb_vars_opt} >/dev/null && echo -n $CPATH"
-      RESULT_VARIABLE shell_result
-      OUTPUT_VARIABLE shell_out
-      )
-    find_path(
-      TBB_INCLUDE_DIR
-      NAMES tbb/task_scheduler_init.h
-      PATHS ${shell_out}
-      DOC "Path to TBB include directory"
-      NO_DEFAULT_PATH
-      )
-    execute_process(
-      COMMAND ${BASH} -c "unset LIBRARY_PATH ; . ${TBB_VARS_SH} ${tbb_vars_opt} >/dev/null && echo -n $LIBRARY_PATH"
-      RESULT_VARIABLE shell_result
-      OUTPUT_VARIABLE shell_out
-      )
-    set(
-      TBB_LIBRARY_DIR ${shell_out}
-      CACHE PATH "Path to TBB library directory"
-      )
-  else()
-    message(WARNING "Could not parse tbbvars.sh file at {TBB_VARS_SH}")
-  endif()
-endfunction()
+``TBB::tbb``
+  Imported library to link against if TBB should be used.
 
+Result Variables
+^^^^^^^^^^^^^^^^
 
-# Check whether the user gave us an existing tbbvars.sh file
-find_file(
-  TBB_VARS_SH
-  tbbvars.sh
-  DOC "Path to tbbvars.sh script"
-  NO_DEFAULT_PATH
-  )
+This will define the following variables:
 
+``TBB_FOUND``
+  True if the TBB library was found.
 
-if (TBB_VARS_SH)
-  parse_tbb_vars_sh()
-else()
-  # Try to find TBB in standard include paths
-  find_path(
-    TBB_INCLUDE_DIR
-    tbb/task_scheduler_init.h
-    PATHS ENV CPATH
-    DOC "Path to TBB include directory"
-    )
-  # Try to find some version of the TBB library in standard library paths
-  find_path(
-    TBB_LIBRARY_DIR
-    "${CMAKE_SHARED_LIBRARY_PREFIX}tbb_preview${CMAKE_SHARED_LIBRARY_SUFFIX}"
-    "${CMAKE_SHARED_LIBRARY_PREFIX}tbb${CMAKE_SHARED_LIBRARY_SUFFIX}"
-    "${CMAKE_SHARED_LIBRARY_PREFIX}tbb_preview_debug${CMAKE_SHARED_LIBRARY_SUFFIX}"
-    "${CMAKE_SHARED_LIBRARY_PREFIX}tbb_debug${CMAKE_SHARED_LIBRARY_SUFFIX}"
-    PATHS ENV LIBRARY_PATH
-    DOC "Path to TBB library directory"
-    )
-  message(STATUS "Library dir: ${TBB_LIBRARY_DIR}")
-endif()
+Finding the TBB library
+^^^^^^^^^^^^^^^^^^^^^^^
 
+Two strategies are implemented for finding the TBB library:
 
-# helper function to invoke find_library() correctly
-# If we are using tbbvars.sh, we exclude system-default library search paths,
-# otherwise we leave them in
-function(find_tbb_library)
-  include(CMakeParseArguments)
-  set(OPTIONS)
-  set(SINGLEARGS VAR NAME DOC)
-  set(MULTIARGS)
-  cmake_parse_arguments(LIB "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
+1. Searching for the TBB cmake config file, typically named
+   ``TBBConfig.cmake``. In recent TBB versions, this file can be
+   created using a script provided by TBB itself. Simply set the
+   variable ``TBB_DIR`` to the directory containing the config file
+   in order to find TBB.
 
-  if(TBB_VARS_SH)
-    find_library(
-      ${LIB_VAR}
-      ${LIB_NAME}
-      PATHS ${TBB_LIBRARY_DIR}
-      DOC "${LIB_DOC}"
-      NO_DEFAULT_PATH
-      )
-  else()
-    find_library(
-      ${LIB_VAR}
-      ${LIB_NAME}
-      PATHS ${TBB_LIBRARY_DIR}
-      DOC "${LIB_DOC}"
-      )
-  endif()
-endfunction()
+2. Using pkg-config to configure TBB. Therefore it is necessary
+   to find the ``tbb.pc`` file. Several distributions provide this file
+   directly. In order to point pkg-config to the location of that file,
+   simply set the environmental variable ``PKG_CONFIG_PATH`` to include
+   the directory containing the .pc file, or add this path to the
+   ``CMAKE_PREFIX_PATH``.
 
+#]=======================================================================]
 
-# we always want to use TBB in C++11 mode
-set(TBB_COMPILE_DEFINITIONS _TBB_CPP0X)
-
-
-if(TBB_DEBUG)
-  message(STATUS "Linking against debug version of TBB")
-  set(tbb_debug_suffix "_debug")
-  # TBB requires this additional compile definition when used in debug mode
-  list(APPEND TBB_COMPILE_DEFINITIONS TBB_USE_DEBUG)
-else()
-  set(tbb_debug_suffix "")
-endif()
-
-# start looking for components
-# We first look for component libraries, because the "special component" cpf
-# actually replaces the standard libtbb
-
-set(TBB_cpf_FOUND FALSE)
-set(TBB_allocator_FOUND FALSE)
-
-foreach(component ${TBB_FIND_COMPONENTS})
-
-  if(component STREQUAL "cpf")
-    find_tbb_library(
-      VAR TBB_LIBTBB_PREVIEW
-      NAME "tbb_preview${tbb_debug_suffix}"
-      DOC "Path to TBB community preview library"
-      )
-    if(TBB_LIBTBB_PREVIEW)
-      list(APPEND TBB_LIBRARIES ${TBB_LIBTBB_PREVIEW})
-      list(APPEND TBB_COMPILE_DEFINITIONS TBB_PREVIEW_LOCAL_OBSERVER=1)
-      set(TBB_cpf_FOUND TRUE)
-    endif()
-
-  elseif(component STREQUAL "allocator")
-    find_tbb_library(
-      VAR TBB_LIBTBBMALLOC
-      NAME "tbbmalloc${tbb_debug_suffix}"
-      DOC "Path to TBB malloc library"
-      )
-    if(TBB_LIBTBBMALLOC)
-      list(APPEND TBB_LIBRARIES ${TBB_LIBTBBMALLOC})
-      set(TBB_allocator_FOUND TRUE)
-    endif()
-
-  else()
-    message(FATAL_ERROR "Unknown TBB component: ${component}")
-  endif()
-endforeach()
-
-
-# If we could not find libtbb_preview, look for plain libtbb instead
-if(NOT TBB_cpf_FOUND)
-  find_tbb_library(
-    VAR TBB_LIBTBB
-    NAME "tbb${tbb_debug_suffix}"
-    DOC "Path to TBB library"
-    )
-  if(TBB_LIBTBB)
-    list(APPEND TBB_LIBRARIES ${TBB_LIBTBB})
-  endif()
-else()
-  # This avoids special-casing later on
-  set(
-    TBB_LIBTBB ${TBB_LIBTBB_PREVIEW}
-    CACHE FILEPATH "Path to TBB library"
-    )
-endif()
-
-# Don't show these to the user, they are just confusing
-mark_as_advanced(
-  TBB_LIBTBB_PREVIEW
-  TBB_LIBTBB
-  TBB_LIBTBBMALLOC
-  )
-
-include(CheckCXXSourceCompiles)
-include(CMakePushCheckState)
-
-# make sure this variable always exists; it is only used if we pick the internal
-# TBB implementation from an Intel Compiler
-set(TBB_COMPILE_OPTIONS "")
-set(TBB_INTEL_COMPILER_INTERNAL_TBB OFF)
-
-# We didn't manage to find TBB yet, so try if we can fall back to the one shipped
-# as part of Intel's compiler
-if ((NOT TBB_LIBTBB) AND("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel"))
-
-  # This while doesn't work in debug mode because -tbb always injects -ltbb into the linker flags, and that clashes
-  # with -ltbb_debug
-  if(NOT TBB_DEBUG)
-    message(STATUS "Could not find TBB in normal places, trying to fall back to internal version of Intel Compiler")
-
-    # We'll just compile a program with -tbb and see whether that works
-    cmake_push_check_state(RESET)
-    set(CMAKE_REQUIRED_FLAGS -tbb)
-    foreach(_definition ${TBB_COMPILE_DEFINITIONS})
-      list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D${_definition}")
-    endforeach()
-    set(CMAKE_REQUIRED_QUIET ON)
-    check_cxx_source_compiles(
-      "${tbb_compile_source}"
-      TBB_INTEL_COMPILER_INTERNAL_TBB
-      )
-
-    if(TBB_INTEL_COMPILER_INTERNAL_TBB)
-      # yeah, success
-      set(TBB_COMPILE_OPTIONS -tbb)
-
-      # now check components
-      foreach(component ${TBB_FIND_COMPONENTS})
-
-        # again, this doesn't work because of the default -ltbb injected by -tbb
-        if(component STREQUAL "cpf")
-          message(STATUS "Cannot link to community preview version when using compiler-internal version of TBB. Please specify the tbbvars.sh script in TBB_VARS_SH")
-
-        elseif(component STREQUAL "allocator")
-          # we'll check for this by trying to link against the library
-          set(CMAKE_REQUIRED_LIBRARIES tbbmalloc)
-          check_cxx_source_compiles(
-            "${tbb_compile_source}"
-            TBB_INTEL_COMPILER_INTERNAL_TBBMALLOC
-            )
-          if(TBB_INTEL_COMPILER_INTERNAL_TBBMALLOC)
-            list(APPEND TBB_LIBRARIES tbbmalloc)
-            set(TBB_allocator_FOUND TRUE)
-          endif()
-        else()
-          message(FATAL_ERROR "Unknown TBB component: ${component}")
-        endif()
-      endforeach()
-
-      # clean up check state
-      cmake_pop_check_state()
-    endif()
-
-  else()
-    message(STATUS "Could not find TBB in normal places, and don't know how to fall back to internal version of Intel Compiler for debug version.
-You can either turn of the TBB_DEBUG option or point the TBB_VARS_SH variable at the tbbvars.sh script shipped with your compiler.")
-  endif()
-endif()
-
-# make sure everything works
-cmake_push_check_state(RESET)
-set(CMAKE_REQUIRED_INCLUDES ${TBB_INCLUDE_DIR})
-foreach(_definition ${TBB_COMPILE_DEFINITIONS})
-  list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D${_definition}")
-endforeach()
-set(CMAKE_REQUIRED_FLAGS ${TBB_COMPILE_OPTIONS})
-set(CMAKE_REQUIRED_LIBRARIES ${TBB_LIBRARIES})
-check_cxx_source_compiles(
-  "${tbb_compile_source}"
-  TBB_COMPILE_TEST
-  )
-cmake_pop_check_state()
-
-# we don't want to leak any helper variables
-unset(tbb_compile_source)
-
-# provide standard find_package() interface
-include(FindPackageHandleStandardArgs)
-
-if(TBB_INTEL_COMPILER_INTERNAL_TBB)
-  set(TBB_INCLUDE_DIRS "")
-  set(TBB_LIBRARIES "")
-
-  find_package_handle_standard_args(
-    TBB
-    REQUIRED_VARS TBB_COMPILE_OPTIONS TBB_COMPILE_TEST
-    HANDLE_COMPONENTS
-    )
-else()
-
-  set(TBB_INCLUDE_DIRS ${TBB_INCLUDE_DIR})
-
-  find_package_handle_standard_args(
-    TBB
-    REQUIRED_VARS TBB_INCLUDE_DIRS TBB_LIBRARIES TBB_COMPILE_TEST
-    HANDLE_COMPONENTS
-    )
-
-endif()
-
-# set variable for config.h
-set(HAVE_TBB ${TBB_FOUND})
-
-# perform DUNE-specific setup tasks
-if (TBB_FOUND)
-  set(TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT 128)
-  message(STATUS "defaulting TBB_CACHE_ALIGNED_ALLOCATOR_ALIGNMENT to 128")
-  dune_register_package_flags(
-    COMPILE_DEFINITIONS ENABLE_TBB=1 ${TBB_COMPILE_DEFINITIONS}
-    COMPILE_OPTIONS ${TBB_COMPILE_OPTIONS}
-    INCLUDE_DIRS ${TBB_INCLUDE_DIRS}
-    LIBRARIES ${TBB_LIBRARIES}
-    )
-endif()
-
-
-# function for adding TBB flags to a list of targets
-function(add_dune_tbb_flags _targets)
-  foreach(_target ${_targets})
-    target_compile_definitions(${_target} PUBLIC ENABLE_TBB=1)
-    if(TBB_COMPILE_DEFINITIONS)
-      target_compile_definitions(${_target} PUBLIC ${TBB_COMPILE_DEFINITIONS})
-    endif()
-    if(TBB_COMPILE_OPTIONS)
-      target_compile_options(${_target} PUBLIC ${TBB_COMPILE_OPTIONS})
-    endif()
-    if(TBB_INCLUDE_DIRS)
-      target_include_directories(${_target} PUBLIC ${TBB_INCLUDE_DIRS})
-    endif()
-    if(TBB_LIBRARIES)
-      target_link_libraries(${_target} PUBLIC ${TBB_LIBRARIES})
-    endif()
-  endforeach(_target)
-endfunction(add_dune_tbb_flags)
 
 # text for feature summary
+include(FeatureSummary)
 set_package_properties("TBB" PROPERTIES
-  DESCRIPTION "Threading Building Blocks library"
-  PURPOSE "Parallel programming on multi-core processors")
+  DESCRIPTION "Intel's Threading Building Blocks"
+)
+
+# first, try to find TBBs cmake configuration
+find_package(TBB ${TBB_FIND_VERSION} QUIET CONFIG)
+if(TBB_FOUND)
+  message(STATUS "Found TBB: using configuration from TBB_DIR=${TBB_DIR} (found version \"${TBB_VERSION}\")")
+  return()
+endif()
+
+# second, try to find TBBs pkg-config file
+find_package(PkgConfig)
+if(PkgConfig_FOUND)
+  if(TBB_FIND_VERSION)
+    pkg_check_modules(_TBB tbb>=${TBB_FIND_VERSION} QUIET IMPORTED_TARGET)
+  else()
+    pkg_check_modules(_TBB tbb QUIET IMPORTED_TARGET)
+  endif()
+endif()
+
+# check whether the static library was found
+if(_TBB_STATIC_FOUND)
+  set(_static _STATIC)
+endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args("TBB"
+  REQUIRED_VARS
+    _TBB${_static}_FOUND PkgConfig_FOUND
+  VERSION_VAR
+    _TBB${_static}_VERSION
+  FAIL_MESSAGE "Could NOT find TBB (set TBB_DIR to path containing TBBConfig.cmake or set PKG_CONFIG_PATH to include the location of the tbb.pc file)"
+)
+
+# create an alias for the imported target constructed by pkg-config
+if(TBB_FOUND AND NOT TARGET TBB::tbb)
+  message(STATUS "Found TBB: ${_TBB${_static}_LINK_LIBRARIES} (found version \"${_TBB${_static}_VERSION}\")")
+  add_library(TBB::tbb ALIAS PkgConfig::_TBB)
+endif()

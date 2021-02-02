@@ -1,5 +1,9 @@
 # Master (will become release 2.8)
 
+- Update the FindTBB cmake module to search for the `TBBConfig.cmake` or the `tbb.pc`
+  file containing the configuration. Add the `AddTBBFlags.cmake` file containing
+  the macro `add_dune_tbb_flags` that must be called to use TBB.
+
 - Set minimal required MPI version in cmake to >= 3.0.
 
 - Previous versions of dune-common imported `std::shared_ptr` and `std::make_shared`
