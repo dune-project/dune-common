@@ -123,11 +123,12 @@ def resolve_order(deps):
     return order
 
 
-def pkg_config(pkg, var=None):
+def pkg_config(pkg, var=None, paths=[]):
     args = ['pkg-config', pkg]
     if var is not None:
         args += ['--variable=' + var]
-    pkgconfig = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    pkgconfig = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                env={'PKG_CONFIG_PATH': ':'.join(paths)})
     pkgconfig.wait()
     if pkgconfig.returncode != 0:
         raise KeyError('package ' + pkg + ' not found.')
@@ -135,7 +136,8 @@ def pkg_config(pkg, var=None):
 
 
 def get_prefix(module):
-    return pkg_config(module, 'prefix')
+    paths = get_module_path("pkgconfig")
+    return pkg_config(module, var='prefix', paths=paths)
 
 
 def is_installed(dir, module=None):
@@ -154,9 +156,13 @@ def is_installed(dir, module=None):
     if isinstance(module, Description):
         module = module.name
     try:
-        return dir == os.path.join(get_prefix(module), 'lib', 'dunecontrol', module)
+        prefix = get_prefix(module)
     except KeyError:
         return False
+    for l in ['lib','lib32','lib64']:
+        if os.path.realpath(dir) == os.path.realpath(os.path.join(prefix, l, 'dunecontrol', module)):
+            return True
+    return False
 
 def get_cmake_command():
     try:
@@ -174,38 +180,42 @@ def get_local():
         pass
     return ''
 
-def get_module_path():
-    path = []
-    try:
-        path = path + [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
-        logger.debug('Module path [DUNE_CONTROL_PATH]: ' + ':'.join(path))
-        # return path
-    except KeyError:
-        pass
-
-    # try to guess module path using pkg-config
-    try:
-        prefix = pkg_config('dune-common', 'prefix').strip()
-        path = path + [p for p in ['.', os.path.join(prefix, 'lib', 'dunecontrol')] if os.path.isdir(p)]
-        logger.debug('Module path [pkg-config]: ' + ':'.join(path))
-        # return path
-    except KeyError:
-        pass
-
+def get_module_path(post="dunecontrol"):
+    path = ['.']
     # try to guess modules path for unix systems
-    path = path + [p for p in ['.',
-                        '/usr/local/lib/dunecontrol',
-                        '/usr/lib/dunecontrol',
-                        os.path.join(get_local(),'lib','dunecontrol') ]
+    for l in ['lib','lib32','lib64']:
+        path = path + [p for p in [
+                       os.path.join('usr','local',l,post),
+                       os.path.join('usr',l,post),
+                       os.path.join(get_local(),l,post),
+                     ]
                   if os.path.isdir(p)]
     try:
+        path = path + [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
+        if post == 'dunecontrol':
+            logger.debug('Module path [DUNE_CONTROL_PATH]: ' + ':'.join(path))
+    except KeyError:
+        pass
+
+    try:
         pkg_config_path = [p for p in os.environ['PKG_CONFIG_PATH'].split(':') if p and os.path.isdir(p)]
-        pkg_config_path = [os.path.join(p, '..', 'dunecontrol') for p in pkg_config_path]
+        if post == 'dunecontrol':
+            pkg_config_path = [os.path.join(p, '..', post) for p in pkg_config_path]
         path = path + [p for p in pkg_config_path if os.path.isdir(p)]
     except KeyError:
         pass
-
-    logger.debug('Module path [guessed]: ' + ':'.join(path))
+    # try to guess module path using pkg-config
+    try:
+        prefix = pkg_config('dune-common', 'prefix').strip()
+        path = path + [p for p in [ os.path.join(prefix, 'lib', post)] if os.path.isdir(p)]
+        path = path + [p for p in [ os.path.join(prefix, 'lib32', post)] if os.path.isdir(p)]
+        path = path + [p for p in [ os.path.join(prefix, 'lib64', post)] if os.path.isdir(p)]
+        if post == 'dunecontrol':
+            logger.debug('Module path [pkg-config]: ' + ':'.join(path))
+    except KeyError:
+        pass
+    if post == 'dunecontrol':
+        logger.debug('Module path [guessed]: ' + ':'.join(path))
     return path
 
 
@@ -225,6 +235,7 @@ def select_modules(modules=None, module=None):
     desc = {}
     dir = {}
     for d, p in modules:
+        p = os.path.realpath(p)
         n = d.name
         if n in dir:
             if p == dir[n]: continue
@@ -232,7 +243,7 @@ def select_modules(modules=None, module=None):
                 if is_installed(p, n):
                     raise KeyError('Multiple installed versions for module \'' + n + '\' found.')
                 else:
-                  desc[n], dir[n] = d, p
+                    desc[n], dir[n] = d, p
             else:
               if not is_installed(p, n):
                   raise KeyError('Multiple source versions for module \'' + n + '\' found.')
