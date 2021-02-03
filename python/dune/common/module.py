@@ -368,7 +368,7 @@ def make_dune_py_module(dune_py_dir=None, deps=None):
             raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
         logger.debug('Using dune-py module in ' + dune_py_dir)
 
-def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, builddir=None, deps=None):
+def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, builddir=None, deps=None, writetagfile=False):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     if cmake_args is None:
@@ -398,6 +398,12 @@ def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, bui
 
     output = configure_module(dune_py_dir, dune_py_dir, {d: prefix[d] for d in deps}, cmake_args)
     output += build_module(dune_py_dir, build_args)
+
+    if writetagfile:
+        # set a tag file to avoid automatic reconfiguration in builder
+        tagfile = os.path.join(dune_py_dir, ".noconfigure")
+        f = open(tagfile, 'w')
+        f.close()
     return output
 
 def getCXXFlags():

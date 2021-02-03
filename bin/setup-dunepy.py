@@ -103,15 +103,10 @@ def main(argv):
 
     foundModule = make_dune_py_module(dunepy, deps)
 
-    output = build_dune_py_module(dunepy, cmake_args, None, builddir, deps)
+    output = build_dune_py_module(dunepy, cmake_args, None, builddir, deps, writetagfile=True)
 
     print("CMake output")
     print(output)
-
-    # set a tag file to avoid automatic reconfiguration in builder
-    tagfile = os.path.join(dunepy, ".noconfigure")
-    f = open(tagfile, 'w')
-    f.close()
 
     if execute == "install":
         for m in deps:
