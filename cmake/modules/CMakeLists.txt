@@ -1,3 +1,4 @@
+add_subdirectory(FindPkgConfig)
 add_subdirectory(FindPython3)
 
 install(FILES

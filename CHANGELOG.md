@@ -1,5 +1,8 @@
 # Master (will become release 2.8)
 
+- Add backport of `FindPkgConfig.cmake` from cmake 3.19.4 since there was a bug in
+  an older find module leading to problems finding tbb in debian:10.
+
 - Update the FindTBB cmake module to search for the `TBBConfig.cmake` or the `tbb.pc`
   file containing the configuration. Add the `AddTBBFlags.cmake` file containing
   the macro `add_dune_tbb_flags` that must be called to use TBB.

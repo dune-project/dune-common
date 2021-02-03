@@ -52,7 +52,7 @@ set_package_properties("TBB" PROPERTIES
 
 # first, try to find TBBs cmake configuration
 find_package(TBB ${TBB_FIND_VERSION} QUIET CONFIG)
-if(TBB_FOUND)
+if(TBB_tbb_FOUND)
   message(STATUS "Found TBB: using configuration from TBB_DIR=${TBB_DIR} (found version \"${TBB_VERSION}\")")
   return()
 endif()
@@ -61,28 +61,28 @@ endif()
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
   if(TBB_FIND_VERSION)
-    pkg_check_modules(_TBB tbb>=${TBB_FIND_VERSION} QUIET IMPORTED_TARGET)
+    pkg_check_modules(PkgConfigTBB tbb>=${TBB_FIND_VERSION} QUIET IMPORTED_TARGET GLOBAL)
   else()
-    pkg_check_modules(_TBB tbb QUIET IMPORTED_TARGET)
+    pkg_check_modules(PkgConfigTBB tbb QUIET IMPORTED_TARGET GLOBAL)
   endif()
 endif()
 
 # check whether the static library was found
-if(_TBB_STATIC_FOUND)
-  set(_static _STATIC)
+if(PkgConfigTBB_STATIC_FOUND)
+  set(_tbb PkgConfigTBB_STATIC)
+else()
+  set(_tbb PkgConfigTBB)
 endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args("TBB"
   REQUIRED_VARS
-    _TBB${_static}_FOUND PkgConfig_FOUND
+    ${_tbb}_LINK_LIBRARIES ${_tbb}_FOUND PkgConfig_FOUND
   VERSION_VAR
-    _TBB${_static}_VERSION
+    ${_tbb}_VERSION
   FAIL_MESSAGE "Could NOT find TBB (set TBB_DIR to path containing TBBConfig.cmake or set PKG_CONFIG_PATH to include the location of the tbb.pc file)"
 )
 
-# create an alias for the imported target constructed by pkg-config
-if(TBB_FOUND AND NOT TARGET TBB::tbb)
-  message(STATUS "Found TBB: ${_TBB${_static}_LINK_LIBRARIES} (found version \"${_TBB${_static}_VERSION}\")")
-  add_library(TBB::tbb ALIAS PkgConfig::_TBB)
+if(${_tbb}_FOUND AND NOT TARGET TBB::tbb)
+  add_library(TBB::tbb ALIAS PkgConfig::PkgConfigTBB)
 endif()
