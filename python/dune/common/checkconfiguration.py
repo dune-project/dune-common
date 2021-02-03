@@ -27,6 +27,23 @@ def assertHave(identifier):
     elif matches.__len__() > 1:
         raise ConfigurationError(identifier + " found multiple times in dune-py's config.h")
 
+def assertCMakeVariable(identifier,value,defaultFails):
+    '''check if a variable in CMakeCache.txt in dune-py is defined and equal to 'value'
+    '''
+    cache = os.path.join(dune.common.module.get_dune_py_dir(), "CMakeCache.txt")
+
+    identifier = identifier.lower().strip()
+    matches = [line.lower() for line in open(cache) if re.match('^[ ]*'+identifier+':+', line.lower()) is not None]
+    if not matches and defaultFails:
+        raise ConfigurationError(identifier + " default behavior is used in dune-py and that is not allowed")
+    elif len(matches) > 1:
+        raise ConfigurationError(identifier + " found multiple times in dune-py's config.h")
+    elif matches:
+        # check for bool on/off type variables:
+        bools = {True:["on","true","1"], False:["off","false","0"]}
+        if not [x for x in bools[value] if x in matches[0]]:
+            raise ConfigurationError(identifier + " dune-py wrongly configured wrt "+identifier)
+
 def preprocessorAssert(tests):
     '''perform preprocessore checks.
        A list of checks can be provided each should contain a pair, the
