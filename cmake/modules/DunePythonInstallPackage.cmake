@@ -144,9 +144,9 @@ function(dune_python_install_package)
   set(WHEEL_COMMAND ${Python3_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${PYINST_FULLPATH} ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS})
 
   # Add the installation rule
-  install(CODE "message(\"Installing wheel for python package at ${PYINST_FULLPATH}...\")
-                dune_execute_process(COMMAND ${WHEEL_COMMAND}
-                                     ERROR_MESSAGE \"Error installing wheel for python package at ${PYINST_FULLPATH}\"
-                                     )"
-          )
+  # install(CODE "message(\"Installing wheel for python package at ${PYINST_FULLPATH}...\")
+  #               dune_execute_process(COMMAND ${WHEEL_COMMAND}
+  #                                    ERROR_MESSAGE \"Error installing wheel for python package at ${PYINST_FULLPATH}\"
+  #                                    )"
+  #         )
 endfunction()

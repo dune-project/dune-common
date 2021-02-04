@@ -132,9 +132,6 @@ def pkg_config(pkg, var=None, paths=[]):
     pkgconfig = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     pkgconfig.wait()
     prefix = pkgconfig.stdout.read()
-    print(dict(os.environ))
-    print("err:", pkgconfig.stderr.read() )
-    print("out:", prefix )
     if pkgconfig.returncode != 0:
         raise KeyError('package ' + pkg + ' not found.')
     return buffer_to_str(prefix).strip()
@@ -164,9 +161,7 @@ def is_installed(dir, module=None):
         prefix = get_prefix(module)
     except KeyError:
         return False
-    print("looking at", dir, "prefix=",prefix)
     for l in ['lib','lib32','lib64']:
-        print("comparing with",os.path.realpath(os.path.join(prefix, l, 'dunecontrol', module)))
         if os.path.realpath(dir) == os.path.realpath(os.path.join(prefix, l, 'dunecontrol', module)):
             return True
     return False

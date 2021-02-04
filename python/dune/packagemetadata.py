@@ -265,11 +265,15 @@ def cmakeFlags():
     ]))
     # test environment for additional flags
     cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
-    if cmakeFlags is None:
-        cmakeFlags = os.environ.get('CMAKE_FLAGS')
+    print("@@@@@ cmakeFlags=",cmakeFlags,flush=True)
     # split cmakeFlags and add them to flags
     if cmakeFlags is not None:
         flags += shlex.split(cmakeFlags)
+    cmakeFlags = os.environ.get('CMAKE_FLAGS')
+    print("@@@@@ cmakeFlags=",cmakeFlags,flush=True)
+    if cmakeFlags is not None:
+        flags += shlex.split(cmakeFlags)
+    print("@@@@@ flags=",flags,flush=True)
     return flags
 
 def inVEnv():
