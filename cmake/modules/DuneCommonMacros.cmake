@@ -38,7 +38,9 @@ include(AddThreadsFlags)
 set_package_properties("Threads" PROPERTIES
   DESCRIPTION "Multi-threading library")
 
-find_package(TBB OPTIONAL_COMPONENTS cpf allocator)
+# find library for Threading Building Blocks
+find_package(TBB)
+include(AddTBBFlags)
 
 # find libraries for graph partitioning
 find_package(METIS)
