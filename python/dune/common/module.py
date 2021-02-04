@@ -127,12 +127,17 @@ def pkg_config(pkg, var=None, paths=[]):
     args = ['pkg-config', pkg]
     if var is not None:
         args += ['--variable=' + var]
-    pkgconfig = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                env={'PKG_CONFIG_PATH': ':'.join(paths)})
+    env = dict(os.environ)
+    env.update({'PKG_CONFIG_PATH': ':'.join(paths)})
+    pkgconfig = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     pkgconfig.wait()
+    prefix = pkgconfig.stdout.read()
+    print(dict(os.environ))
+    print("err:", pkgconfig.stderr.read() )
+    print("out:", prefix )
     if pkgconfig.returncode != 0:
         raise KeyError('package ' + pkg + ' not found.')
-    return buffer_to_str(pkgconfig.stdout.read()).strip()
+    return buffer_to_str(prefix).strip()
 
 
 def get_prefix(module):
@@ -159,7 +164,9 @@ def is_installed(dir, module=None):
         prefix = get_prefix(module)
     except KeyError:
         return False
+    print("looking at", dir, "prefix=",prefix)
     for l in ['lib','lib32','lib64']:
+        print("comparing with",os.path.realpath(os.path.join(prefix, l, 'dunecontrol', module)))
         if os.path.realpath(dir) == os.path.realpath(os.path.join(prefix, l, 'dunecontrol', module)):
             return True
     return False
@@ -241,12 +248,14 @@ def select_modules(modules=None, module=None):
             if p == dir[n]: continue
             if is_installed(dir[n], n):
                 if is_installed(p, n):
-                    raise KeyError('Multiple installed versions for module \'' + n + '\' found.')
+                    foundVersions = " In " + p + " and in " + dir[n]
+                    raise KeyError('Multiple installed versions for module \'' + n + '\' found.'+foundVersions)
                 else:
                     desc[n], dir[n] = d, p
             else:
               if not is_installed(p, n):
-                  raise KeyError('Multiple source versions for module \'' + n + '\' found.')
+                  foundVersions = " In " + p + " and in " + dir[n]
+                  raise KeyError('Multiple source versions for module \'' + n + '\' found.'+foundVersions)
         else:
             desc[n], dir[n] = d, p
     return (desc, dir)
