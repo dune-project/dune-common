@@ -88,9 +88,9 @@ function(dune_python_install_package)
 
 
   # Leave this function if no installation rules are required
-  if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none" AND NOT DUNE_PYTHON_VIRTUALENV_SETUP)
-    return()
-  endif()
+  # if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none" AND NOT DUNE_PYTHON_VIRTUALENV_SETUP)
+  #   return()
+  # endif()
 
   # Check for the presence of the pip package
   if(NOT DUNE_PYTHON_pip_FOUND)
@@ -98,14 +98,20 @@ function(dune_python_install_package)
   endif()
 
   #
-  # If requested, install into the configure-time Dune virtualenv
+  # Define build rules that install the Python package into the Dune virtualenv at the build stage
   #
 
-  if(PYINST_PUREPYTHON AND DUNE_PYTHON_VIRTUALENV_SETUP)
-    message("-- Installing python package at ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH} into the virtualenv...")
-    dune_execute_process(COMMAND "${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}" "${INSTALL_CMDLINE}"
-                         ERROR_MESSAGE "dune_python_install_package: Error installing into virtualenv!")
-  endif()
+  # Determine a target name for installing this package into the env
+  string(REPLACE "/" "_" envtargetname "env_install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYINST_PATH}")
+
+  # Install the Python Package into the Dune virtual environment in the build stage
+  add_custom_target(
+    ${envtargetname}
+    ALL
+    COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} ${INSTALL_CMDLINE}
+    COMMENT "Installing Python package at ${PYINST_FULLPATH} into Dune virtual environment..."
+    DEPENDS _common _typeregistry
+  )
 
   #
   # Now define rules for `make install_python`.

@@ -149,10 +149,8 @@ function(dune_python_require_virtualenv_setup)
   endif()
 endfunction()
 
-# If requested, switch into DunePythonVirtualenv.cmake and setup the virtualenv.
-if(DUNE_PYTHON_VIRTUALENV_SETUP)
-  include(DunePythonVirtualenv)
-endif()
+# Set up the Dune-internal virtualenv
+include(DunePythonVirtualenv)
 
 # marcos used for the Python bindings
 include(DunePythonMacros)
