@@ -265,18 +265,21 @@ def cmakeFlags():
     ]))
     # test environment for additional flags
     cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
-    print("@@@@@ cmakeFlags=",cmakeFlags,flush=True)
     # split cmakeFlags and add them to flags
     if cmakeFlags is not None:
         flags += shlex.split(cmakeFlags)
     cmakeFlags = os.environ.get('CMAKE_FLAGS')
-    print("@@@@@ cmakeFlags=",cmakeFlags,flush=True)
     if cmakeFlags is not None:
         flags += shlex.split(cmakeFlags)
-    print("@@@@@ flags=",flags,flush=True)
     return flags
 
 def inVEnv():
+    # check whether we are in a anaconda environment
+    # were the checks based on prefix and base_prefix
+    # seem to fail
+    if "CONDA_DEFAULT_ENV" in os.environ:
+        return 1
+
     # If sys.real_prefix exists, this is a virtualenv set up with the virtualenv package
     real_prefix = hasattr(sys, 'real_prefix')
     if real_prefix:

@@ -4,6 +4,7 @@ add_python_targets(common
   compatibility
   deprecated            # deprecated 2.8
   hashit
+  locking
   module
   pickle                # deprecated 2.8
   project

@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from dune.common.module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies, resolve_order
+    from dune.common.locking import Lock, LOCK_EX
 except ImportError:
     import os
     here = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +21,7 @@ except ImportError:
     sys.path.append(modsA)
     if os.path.exists(os.path.join(modsB, "module.py")):
         from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies, resolve_order
+        from locking import Lock
     else:
         raise
 
@@ -82,11 +84,6 @@ def main(argv):
         if builddir is None:
             builddir = os.environ.get('DUNE_BUILDDIR', 'build-cmake')
 
-    dunepy = get_dune_py_dir()
-
-    if os.path.exists(dunepy):
-        shutil.rmtree(dunepy)
-
     # Generate list of all modules
     duneModules = select_modules()
 
@@ -101,9 +98,15 @@ def main(argv):
         deps = resolve_order(deps)
         deps += [masterModule]
 
-    foundModule = make_dune_py_module(dunepy, deps)
 
-    output = build_dune_py_module(dunepy, cmake_args, None, builddir, deps, writetagfile=True)
+    dunepy = get_dune_py_dir()
+    dunepyBase = os.path.realpath( os.path.join(dunepy,"..") )
+    with Lock(os.path.join(dunepyBase, 'lock-module.lock'), flags=LOCK_EX):
+        if os.path.exists(dunepy):
+            shutil.rmtree(dunepy)
+        os.makedirs(dunepy)
+        foundModule = make_dune_py_module(dunepy, deps)
+        output = build_dune_py_module(dunepy, cmake_args, None, builddir, deps, writetagfile=True)
 
     print("CMake output")
     print(output)
