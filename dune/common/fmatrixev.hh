@@ -71,9 +71,9 @@ namespace Dune {
                                     FieldVector<K, 2>& eigenvalues)
       {
         using std::sqrt;
-        const K detM = matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1];
         const K p = 0.5 * (matrix[0][0] + matrix [1][1]);
-        K q = p * p - detM;
+        const K p2 = p - matrix[1][1];
+        K q = p2 * p2 + matrix[1][0] * matrix[0][1];
         if( q < 0 && q > -1e-14 ) q = 0;
         if (q < 0)
         {
