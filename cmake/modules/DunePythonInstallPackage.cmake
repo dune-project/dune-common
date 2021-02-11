@@ -125,9 +125,12 @@ function(dune_python_install_package)
   # Determine a target name for installing this package
   string(REPLACE "/" "_" targetname "install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYINST_PATH}")
 
+  set(CONFIGURE_DUNEPY -m dune configure)
+
   # Add a custom target that globally installs this package if requested
   add_custom_target(${targetname}
                     COMMAND ${Python3_EXECUTABLE} ${INSTALL_CMDLINE}
+                    COMMAND ${Python3_EXECUTABLE} ${CONFIGURE_DUNEPY}
                     COMMENT "Installing the python package at ${PYINST_FULLPATH}"
                     )
 
