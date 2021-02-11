@@ -371,7 +371,7 @@ def metaData(version=None, dependencyCheck=True):
     class dunepyinstall(build_py):
         def run(self):
             build_py.run(self)
-            configure()
+            subprocess.call([sys.executable, '-m', 'dune', 'configure'])
 
     setupParams['cmdclass'] = {'build_py': dunepyinstall}
 
