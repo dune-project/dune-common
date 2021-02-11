@@ -371,11 +371,7 @@ def metaData(version=None, dependencyCheck=True):
     class dunepyinstall(build_py):
         def run(self):
             build_py.run(self)
-
-            # force a reconfiguration of dune-py by deleting tagfile
-            tagfile = os.path.join(get_dune_py_dir(), ".noconfigure")
-            if os.path.exists(tagfile):
-                os.remove(tagfile)
+            configure()
 
     setupParams['cmdclass'] = {'build_py': dunepyinstall}
 
