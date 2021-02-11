@@ -106,7 +106,7 @@ class Description:
         data = kwargs.copy()
 
         valid_entries = ['Module','Maintainer','Version','Maintainer',
-                         'Depends','Suggests',
+                         'Depends','Suggests','Python-Requires',
                          'Whitespace-Hook',
                          'Author','Description','URL']
 
@@ -117,7 +117,7 @@ class Description:
                     line = line.strip()
                     if not line or line[ 0 ] == '#':
                         continue
-                    m = re.search(r'^(\w+):(.*)', line)
+                    m = re.search(r'^([a-zA-Z0-9-_]+):(.*)', line)
                     if m:
                         key = m.group(1)
                         val = m.group(2)
@@ -333,5 +333,22 @@ def metaData(version=None, dependencyCheck=True):
             "install_requires":install_requires,
             "python_requires":'>=3.4',
          })
+
+    from skbuild.command.sdist import sdist
+    class DuneBuildSdist(sdist):
+        def run(self):
+            # append hash of current git commit to README
+            githash = ['git', 'rev-parse', 'HEAD']
+            hash = subprocess.check_output(githash, encoding='UTF-8')
+
+            with open("README.md", "a") as f:
+                f.write("\n\ngit-" + hash)
+
+            sdist.run(self)
+
+            checkout = ['git', 'checkout', 'README.md']
+            subprocess.call(checkout)
+
+    setupParams['cmdclass'] = {'sdist': DuneBuildSdist}
 
     return data, setupParams
