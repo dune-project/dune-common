@@ -274,15 +274,12 @@ def cmakeFlags():
     return flags
 
 def inVEnv():
-<<<<<<< HEAD
     # check whether we are in a anaconda environment
     # were the checks based on prefix and base_prefix
     # seem to fail
     if "CONDA_DEFAULT_ENV" in os.environ:
         return 1
 
-=======
->>>>>>> Add a .noconfigure tagfile to prevent dune-py from reconfiguration.
     # If sys.real_prefix exists, this is a virtualenv set up with the virtualenv package
     real_prefix = hasattr(sys, 'real_prefix')
     if real_prefix:
@@ -308,11 +305,7 @@ def get_dune_py_dir():
 
     # generate in home directory
     try:
-<<<<<<< HEAD
         home = os.path.expanduser("~")
-=======
-        home = expanduser("~")
->>>>>>> Add a .noconfigure tagfile to prevent dune-py from reconfiguration.
         return os.path.join(home, '.cache', 'dune-py')
     except KeyError:
         pass
