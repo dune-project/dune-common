@@ -131,13 +131,6 @@ function(dune_python_install_package)
                     COMMENT "Installing the python package at ${PYINST_FULLPATH}"
                     )
 
-  # Add a custom command that triggers the configuration of dune-py
-  set(CONFIGURE_DUNEPY -m dune configure)
-
-  add_custom_command(TARGET ${targetname} POST_BUILD
-                     COMMAND ${Python3_EXECUTABLE} ${CONFIGURE_DUNEPY}
-                     )
-
   add_dependencies(install_python ${targetname})
 
   # Define rules for `make install` that install a wheel into a central wheelhouse
