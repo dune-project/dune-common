@@ -103,18 +103,13 @@ class Builder:
                     # module must be generated so lock the source file
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
                         sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
-<<<<<<< HEAD
-                        if not os.path.isfile(sourceFileName):
-                            logger.info("Compiling " + pythonName)
-=======
                         line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
                         # first check if this line is already present in the CMakeLists file
                         # (possible if a previous script was stopped by user before module was compiled)
                         with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
                             found = line in out.read()
                         if not os.path.isfile(sourceFileName) or not found:
-                            logger.info("Loading " + pythonName + " (new)")
->>>>>>> b73437ddb... also make new module if line in CMakeLists is missing
+                            logger.info("Compiling " + pythonName)
                             code = str(source)
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
