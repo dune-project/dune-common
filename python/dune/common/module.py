@@ -400,6 +400,7 @@ def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, bui
         else:
             prefix[name] = default_build_dir(dir, name, builddir)
 
+    logger.info('Configuring dune-py module in ' + dune_py_dir)
     output = configure_module(dune_py_dir, dune_py_dir, {d: prefix[d] for d in deps}, cmake_args)
     output += build_module(dune_py_dir, build_args)
 
