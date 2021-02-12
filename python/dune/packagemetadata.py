@@ -305,7 +305,7 @@ def get_dune_py_dir():
 
     # generate in home directory
     try:
-        home = expanduser("~")
+        home = os.path.expanduser("~")
         return os.path.join(home, '.cache', 'dune-py')
     except KeyError:
         pass

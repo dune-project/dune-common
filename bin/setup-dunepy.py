@@ -101,6 +101,8 @@ def main(argv):
 
     dunepy = get_dune_py_dir()
     dunepyBase = os.path.realpath( os.path.join(dunepy,"..") )
+    if not os.path.exists(dunepyBase):
+        os.makedirs(dunepyBase)
     with Lock(os.path.join(dunepyBase, 'lock-module.lock'), flags=LOCK_EX):
         if os.path.exists(dunepy):
             shutil.rmtree(dunepy)
