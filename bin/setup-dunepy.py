@@ -98,6 +98,18 @@ def main(argv):
         deps = resolve_order(deps)
         deps += [masterModule]
 
+    if execute == "install":
+        for m in deps:
+            moddir = duneModules[1][m]
+            pythonModule = toBuildDir(builddir,moddir,m)
+            print("calling install_python for %s (%s)" % (m,pythonModule))
+            try:
+                command = ['cmake', '--build', '.', '--target', 'install_python']
+                proc = subprocess.Popen(command, cwd=pythonModule, stdout = subprocess.PIPE)
+                stdout, stderr = proc.communicate()
+                logger.debug(buffer_to_str(stdout))
+            except FileNotFoundError:
+                print("Warning: build dir not found possibly module is installed then python bindings should be already available")
 
     dunepy = get_dune_py_dir()
     dunepyBase = os.path.realpath( os.path.join(dunepy,"..") )
@@ -112,19 +124,6 @@ def main(argv):
 
     print("CMake output")
     print(output)
-
-    if execute == "install":
-        for m in deps:
-            moddir = duneModules[1][m]
-            pythonModule = toBuildDir(builddir,moddir,m)
-            print("calling install_python for %s (%s)" % (m,pythonModule))
-            try:
-                command = ['cmake', '--build', '.', '--target', 'install_python']
-                proc = subprocess.Popen(command, cwd=pythonModule, stdout = subprocess.PIPE)
-                stdout, stderr = proc.communicate()
-                logger.debug(buffer_to_str(stdout))
-            except FileNotFoundError:
-                print("Warning: build dir not found possibly module is installed then python bindings should be already available")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
