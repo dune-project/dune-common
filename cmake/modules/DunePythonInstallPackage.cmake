@@ -14,6 +14,12 @@
 #
 #       Parameters to add to any :code:`pip install` call (appended).
 #
+#    .. cmake_param:: DEPENDS
+#       :multi:
+#       :argname: dep
+#
+#       Other CMake targets that the installation of this target depends on.
+#
 #    This function installs the python package located at the given path. It
 #
 #    * installs it to the location specified with :ref:`DUNE_PYTHON_INSTALL_LOCATION` during
@@ -38,8 +44,11 @@ include_guard(GLOBAL)
 
 function(dune_python_install_package)
   # Parse Arguments
-  set(MULTI ADDITIONAL_PIP_PARAMS)
-  cmake_parse_arguments(PYINST "" "PATH" "${MULTI}" ${ARGN})
+  set(OPTION)
+  set(SINGLE PATH)
+  set(MULTI ADDITIONAL_PIP_PARAMS DEPENDS)
+  include(CMakeParseArguments)
+  cmake_parse_arguments(PYINST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYINST_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
   endif()
@@ -110,7 +119,7 @@ function(dune_python_install_package)
     ALL
     COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} ${INSTALL_CMDLINE}
     COMMENT "Installing Python package at ${PYINST_FULLPATH} into Dune virtual environment..."
-    DEPENDS _common _typeregistry
+    DEPENDS ${PYINST_DEPENDS}
   )
 
   #
