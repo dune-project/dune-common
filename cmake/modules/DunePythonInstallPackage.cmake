@@ -39,12 +39,6 @@
 #
 #    The package at the given location is expected to be a pip-installable package.
 #
-# .. cmake_variable:: DUNE_PYTHON_INSTALL_EDITABLE
-#
-#    Set this variable to have all installations of python packages use
-#    :code:`pip --editable`.
-#
-#
 # .. cmake_variable:: DUNE_PYTHON_ADDITIONAL_PIP_PARAMS
 #
 #    Use this variable to set additional flags for pip in this build. This can e.g.
@@ -63,53 +57,23 @@ function(dune_python_install_package)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
   endif()
 
+  # Configure setup.py.in if present
   set(PYINST_FULLPATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
   if(EXISTS ${PYINST_FULLPATH}/setup.py.in)
     configure_file(${PYINST_PATH}/setup.py.in ${PYINST_PATH}/setup.py)
     set(PYINST_FULLPATH ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH})
-    set(PYINST_PUREPYTHON FALSE)
-  elseif(EXISTS ${PYINST_FULLPATH}/setup.py)
-    set(PYINST_PUREPYTHON TRUE)
-  else()
-    message(FATAL_ERROR "dune_python_install_package: Requested installations, but neither setup.py nor setup.py.in found!")
   endif()
 
-  # Find out whether we should install in editable mode
-  set(INSTALL_EDITABLE ${DUNE_PYTHON_INSTALL_EDITABLE})
+  # Error out if setup.py is missing
+  if(NOT EXISTS ${PYINST_FULLPATH})
+    message(FATAL_ERROR "dune_python_install_package: Requested installations, but neither setup.py nor setup.py.in found!")
+  endif()
 
   # Construct the wheel house installation option string
   set(WHEEL_OPTION "")
   if(IS_DIRECTORY ${DUNE_PYTHON_WHEELHOUSE})
     set(WHEEL_OPTION "--find-links=${DUNE_PYTHON_WHEELHOUSE}")
-    #
-    # The following line is a bummer!
-    # We cannot have editable packages once we start using global installations!
-    # This is related to the nightmare that is https://github.com/pypa/pip/issues/3
-    #
-    set(INSTALL_EDITABLE FALSE)
   endif()
-
-  # Construct the editable option string
-  set(EDIT_OPTION "")
-  if(INSTALL_EDITABLE)
-    set(EDIT_OPTION "-e")
-  endif()
-
-  # Construct the installation location option string
-  set(INSTALL_OPTION "")
-  if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user")
-    set(INSTALL_OPTION "--user")
-  endif()
-
-  set(INSTALL_CMDLINE -m pip install
-                      "${INSTALL_OPTION}" --upgrade "${WHEEL_OPTION}" "${EDIT_OPTION}" ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
-                      "${PYINST_FULLPATH}")
-
-
-  # Leave this function if no installation rules are required
-  # if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none" AND NOT DUNE_PYTHON_VIRTUALENV_SETUP)
-  #   return()
-  # endif()
 
   # Check for the presence of the pip package
   if(NOT DUNE_PYTHON_pip_FOUND)
@@ -153,7 +117,12 @@ function(dune_python_install_package)
   add_custom_target(
     ${envtargetname}
     ALL
-    COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} ${INSTALL_CMDLINE}
+    COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
+      --upgrade               # TODO: Check with Andreas whether we really need --upgrade
+      --editable              # Installations into the internal env are always editable
+      "${WHEEL_OPTION}"
+      ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
+      "${PYINST_FULLPATH}"
     COMMENT "Installing Python package at ${PYINST_FULLPATH} into Dune virtual environment..."
     DEPENDS ${PYINST_DEPENDS}
   )
@@ -167,16 +136,21 @@ function(dune_python_install_package)
     return()
   endif()
 
-  dune_module_path(MODULE dune-common
-                   RESULT scriptdir
-                   SCRIPT_DIR)
-
-  # Determine a target name for installing this package
-  string(REPLACE "/" "_" targetname "install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYINST_PATH}")
+  # Construct the installation location option string
+  set(USER_INSTALL_OPTION "")
+  if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user")
+    set(USER_INSTALL_OPTION "--user")
+  endif()
 
   # Add a custom target that globally installs this package if requested
+  string(REPLACE "/" "_" targetname "install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYINST_PATH}")
   add_custom_target(${targetname}
-                    COMMAND ${Python3_EXECUTABLE} ${INSTALL_CMDLINE}
+                    COMMAND ${Python3_EXECUTABLE} -m pip install
+                      "${USER_INSTALL_OPTION}"
+                      --upgrade
+                      "${WHEEL_OPTION}"
+                      ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
+                      "${PYINST_FULLPATH}"
                     COMMENT "Installing the python package at ${PYINST_FULLPATH}"
                     )
 
