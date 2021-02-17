@@ -25,10 +25,10 @@ class Builder:
             # lock the whole dune-py module exclusively to possibly
             # generate and then build the module
             with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
-                dune.common.module.make_dune_py_module(self.dune_py_dir)
+                #dune.common.module.make_dune_py_module(self.dune_py_dir)
                 tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
                 if not os.path.isfile(tagfile):
-                    dune.common.module.build_dune_py_module(self.dune_py_dir)
+                    #dune.common.module.build_dune_py_module(self.dune_py_dir)
                     # create .noconfigure to disable configuration for future calls
                     open(tagfile, 'a').close()
                 else:

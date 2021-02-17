@@ -6,3 +6,5 @@ add_python_targets(generator
   exceptions
   generator
   )
+
+  dune_symlink_to_source_files(FILES template)
