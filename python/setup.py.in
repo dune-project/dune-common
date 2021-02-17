@@ -11,5 +11,6 @@ setup(name="${ProjectName}",
     packages = find_packages(),
     zip_safe = 0,
     package_data = {'': ['*.so']},
-    install_requires = pkg
+    install_requires = pkg,
+    include_package_data=True,
   )

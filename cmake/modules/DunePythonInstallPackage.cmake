@@ -20,6 +20,16 @@
 #
 #       Other CMake targets that the installation of this target depends on.
 #
+#    .. cmake_param:: CMAKE_METADATA_FILE
+#       :single:
+#       :argname: filename
+#
+#       A filename that CMake should export some meta data about this build to.
+#       The file will be installed together with the Python package. This mechanism
+#       is used by the Python bindings to transport information from CMake to
+#       the installed Python package. A module dune-mymodule that provides a Python
+#       package dune.mymodule should set this to dune/mymodule/metadata.cmake
+#
 #    This function installs the python package located at the given path. It
 #
 #    * installs it to the location specified with :ref:`DUNE_PYTHON_INSTALL_LOCATION` during
@@ -45,7 +55,7 @@ include_guard(GLOBAL)
 function(dune_python_install_package)
   # Parse Arguments
   set(OPTION)
-  set(SINGLE PATH)
+  set(SINGLE PATH CMAKE_METADATA_FILE)
   set(MULTI ADDITIONAL_PIP_PARAMS DEPENDS)
   include(CMakeParseArguments)
   cmake_parse_arguments(PYINST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
@@ -104,6 +114,32 @@ function(dune_python_install_package)
   # Check for the presence of the pip package
   if(NOT DUNE_PYTHON_pip_FOUND)
     message(FATAL_ERROR "dune_python_install_package: Requested installations, but pip was not found!")
+  endif()
+
+  #
+  # Add some CMake-exported metadata to the package
+  #
+
+  if(PYINST_CMAKE_METADATA_FILE)
+    # Add the metadata file to MANIFEST.in to enable its installation
+    file(
+      APPEND ${PYINST_FULLPATH}/MANIFEST.in
+      "include ${PYINST_CMAKE_METADATA_FILE}\n"
+    )
+
+    # Collect some variables that we would like to export
+    set(_export_builddirs ${CMAKE_BINARY_DIR})
+    foreach(mod ${ALL_DEPENDENCIES})
+      list(APPEND _export_builddirs ${${mod}_DIR})
+    endforeach()
+
+    # Write the actual file
+    file(
+      GENERATE
+      OUTPUT ${PYINST_FULLPATH}/${PYINST_CMAKE_METADATA_FILE}
+      CONTENT
+        "BUILDDIR=${CMAKE_BINARY_DIR}\nDEPBUILDDIRS=${_export_builddirs}\nDEPS=${ALL_DEPENDENCIES}\nMODULENAME=${PROJECT_NAME}\n"
+    )
   endif()
 
   #

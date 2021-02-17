@@ -27,6 +27,7 @@ if(DUNE_ENABLE_PYTHONBINDINGS)
   dune_python_install_package(
     PATH "python"
     DEPENDS _common _typeregistry
+    CMAKE_METADATA_FILE dune/common/metadata.cmake
   )
 endif()
 
