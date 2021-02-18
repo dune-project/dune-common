@@ -73,15 +73,34 @@ def dunepy_from_template(dunepy_dir):
     if os.path.exists(dunepy_dir):
         shutil.rmtree(dunepy_dir)
 
+    # Extract the raw data dictionary
+    data = extract_metadata()
+
+    # Define some data processing patterns
+    def combine_across_modules(key):
+        return list(m[key] for m in data.values())
+
+    def zip_across_modules(key, value):
+        result = {}
+        for moddata in data.values():
+            for k, v in zip(moddata[key].split(" "), moddata[value].split(";")):
+                result[k] = v
+        return result
+
+    def unique_value_across_modules(key, default=""):
+        values = set(m[key] for m in data.values())
+        if len(values) > 1:
+            raise ValueError(f"Key {key} is expected to be unique across the given metadata")
+        if len(values) == 0:
+            return default
+        value, = values
+        return value
+
     # Gather and reorganize meta data context that is used to write dune-py
     context = {}
-    context["data"] = extract_metadata()
-    context["modules"] = list(m["MODULENAME"] for m in context["data"].values())
-    context["builddirs"] = {}
-    for moddata in context["data"].values():
-        context["builddirs"][moddata["MODULENAME"]] = moddata["BUILDDIR"]
-        for name, builddir in zip(moddata["DEPS"], moddata["DEPBUILDDIRS"]):
-            context["builddirs"][name] = builddir
+    context["modules"] = combine_across_modules("MODULENAME")
+    context["builddirs"] = zip_across_modules("DEPS", "DEPBUILDDIRS")
+    context["install_prefix"] = unique_value_across_modules("INSTALL_PREFIX")
 
     # Find the correct template path
     path, _ = os.path.split(__file__)

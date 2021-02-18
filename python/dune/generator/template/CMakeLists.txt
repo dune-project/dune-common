@@ -3,6 +3,8 @@ project(dune-py C CXX)
 
 set(DUNE_ENABLE_PYTHONBINDINGS ON)
 
+set(CMAKE_PREFIX_PATH {{ install_prefix }})
+
 {% for mod, dir in builddirs.items() %}
 set({{ mod }}_DIR {{ dir }})
 {% endfor %}
