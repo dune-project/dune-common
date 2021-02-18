@@ -11,6 +11,7 @@ install(FILES
   pyversion.py
   RunDoxygen.cmake
   sphinx_cmake_dune.py
+  WritePythonCMakeMetadata.cmake
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
 
 # Install executable programs
