@@ -396,7 +396,21 @@ def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, bui
     prefix = {}
     for name, dir in dirs.items():
         if is_installed(dir, name):
-            prefix[name] = os.path.join(get_prefix(name),'lib','cmake',name)
+            found = False
+            # switch prefix to location of name-config.cmake
+            for l in ['lib','lib32','lib64']:
+                substr = l + '/cmake'
+                newpath = dir.replace('lib/dunecontrol', substr)
+                for _, _, files in os.walk(newpath):
+                    # if name-config.cmake is found
+                    # then this is the correct folder
+                    if name+'-config.cmake' in files:
+                        found = True
+                        prefix[name] = newpath
+                        break
+                if found: break
+            assert found
+            # store new module path
         else:
             prefix[name] = default_build_dir(dir, name, builddir)
 

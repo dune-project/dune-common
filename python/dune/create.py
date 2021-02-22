@@ -36,7 +36,7 @@ for importer, modname, ispkg in pkgutil.iter_modules(package.__path__, prefix):
         moduleRegistry = module.registry.items()
         logMsg = logMsg + modname + " "
     except AttributeError:
-        logger.debug('module ' + modname + ' does not provide a registry.')
+        logger.debug('Module ' + modname + ' does not provide a registry.')
         continue
 
     # combine all registries

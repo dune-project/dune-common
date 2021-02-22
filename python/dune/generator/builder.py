@@ -32,7 +32,7 @@ class Builder:
                     # create .noconfigure to disable configuration for future calls
                     open(tagfile, 'a').close()
                 else:
-                    logger.debug('using pre configured dune-py module')
+                    logger.debug('Using pre configured dune-py module')
         comm.barrier()
 
         self.build_args = dune.common.module.get_default_build_args()
@@ -66,9 +66,8 @@ class Builder:
             cmake_args += ["--"] + make_args
         cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = cmake.communicate()
-        logger.debug(buffer_to_str(stdout))
+        logger.debug("Compiler output: "+buffer_to_str(stdout))
         if cmake.returncode > 0:
-            logger.error(buffer_to_str(stderr))
             raise CompileError(buffer_to_str(stderr))
         if self.savedOutput is not None:
             out = buffer_to_str(stdout)
@@ -113,10 +112,16 @@ class Builder:
                             code = str(source)
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
-                            with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
-                                out.write(line+"\n")
-                            # update build system
-                            self.compile()
+                            if not found:
+                                with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
+                                    out.write(line+"\n")
+                                # update build system
+                                logger.debug("Rebuilding module")
+                                try:
+                                    self.compile()
+                                except KeyboardInterrupt:
+                                    os.remove(os.path.join(sourceFileName))
+                                    raise
                         elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
                             logger.info("Compiling " + pythonName + " (updated)")
                             code = str(source)
@@ -135,6 +140,7 @@ class Builder:
                 with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_SH):
                     # lock generated module
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
+                        logger.debug("Now compiling "+moduleName)
                         self.compile(moduleName)
             ## end if module is not None
 

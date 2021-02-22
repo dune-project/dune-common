@@ -117,6 +117,12 @@ def main(argv):
             print("Please install the pip package 'scikit-build' to build the source distribution.")
             sys.exit(2)
 
+        # append hash of current git commit to README
+        githash = ['git', 'rev-parse', 'HEAD']
+        hash = subprocess.check_output(githash, encoding='UTF-8')
+        with open("README.md", "a") as f:
+            f.write("\n\ngit-" + hash)
+
         print("Create source distribution")
         # make sure setup.py/pyproject.toml are tracked by git so that
         # they get added to the package by scikit
@@ -128,6 +134,10 @@ def main(argv):
         # undo the above git add
         gitreset = ['git', 'reset', 'setup.py', 'pyproject.toml']
         subprocess.call(gitreset)
+
+        # checkout README.md
+        gitcheckout = ['git', 'checkout', 'README.md']
+        subprocess.call(gitcheckout)
 
         if not onlysdist:
             # check if we have twine

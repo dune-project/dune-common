@@ -21,7 +21,7 @@ except ImportError:
     sys.path.append(modsA)
     if os.path.exists(os.path.join(modsB, "module.py")):
         from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies, resolve_order
-        from locking import Lock
+        from locking import Lock, LOCK_EX
     else:
         raise
 
@@ -50,9 +50,9 @@ def main(argv):
             sys.exit(2)
         elif opt in ("-o", "--opts"):
             optsfile = arg
-        elif opt in ("--builddir"):
+        elif opt in ("--builddir",):
             builddir = arg
-        elif opt in ("--module"):
+        elif opt in ("--module",):
             masterModule = arg
     if len(args) > 0:
         execute = args[0]

@@ -382,7 +382,6 @@ def metaData(version=None, dependencyCheck=True):
 
     setupParams['cmdclass'] = {
         'build_py': DunepyConfigure,
-        'sdist': DuneBuildSdist
     }
 
     return data, setupParams
