@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, io, getopt, re
+import sys, os, io, getopt, re, shutil
 import importlib, subprocess
 import email.utils
 import pkg_resources
@@ -118,6 +118,7 @@ def main(argv):
             sys.exit(2)
 
         # append hash of current git commit to README
+        shutil.copy('README.md', 'tmp_README.md')
         githash = ['git', 'rev-parse', 'HEAD']
         hash = subprocess.check_output(githash, encoding='UTF-8')
         with open("README.md", "a") as f:
@@ -135,9 +136,8 @@ def main(argv):
         gitreset = ['git', 'reset', 'setup.py', 'pyproject.toml']
         subprocess.call(gitreset)
 
-        # checkout README.md
-        gitcheckout = ['git', 'checkout', 'README.md']
-        subprocess.call(gitcheckout)
+        # restore README.md
+        shutil.move('tmp_README.md', 'README.md')
 
         if not onlysdist:
             # check if we have twine
