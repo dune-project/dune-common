@@ -264,54 +264,6 @@ check_cxx_source_compiles("
 "  HAS_ATTRIBUTE_DEPRECATED_MSG
 )
 
-# full support for is_indexable (checking whether a type supports operator[])
-check_cxx_source_compiles("
-  #include <utility>
-  #include <type_traits>
-  #include <array>
-
-  template <class T>
-  typename std::add_rvalue_reference<T>::type declval();
-
-  namespace detail {
-
-    template<typename T, typename I, typename = int>
-    struct _is_indexable
-      : public std::false_type
-    {};
-
-    template<typename T, typename I>
-    struct _is_indexable<T,I,typename std::enable_if<(sizeof(declval<T>()[declval<I>()]) > 0),int>::type>
-      : public std::true_type
-    {};
-
-  }
-
-  template<typename T, typename I = std::size_t>
-  struct is_indexable
-    : public detail::_is_indexable<T,I>
-  {};
-
-  struct foo_type {};
-
-  int main()
-  {
-    double x;
-    std::array<double,4> y;
-    double z[5];
-    foo_type f;
-
-    static_assert(not is_indexable<decltype(x)>::value,\"scalar type\");
-    static_assert(is_indexable<decltype(y)>::value,\"indexable class\");
-    static_assert(is_indexable<decltype(z)>::value,\"array\");
-    static_assert(not is_indexable<decltype(f)>::value,\"not indexable class\");
-    static_assert(not is_indexable<decltype(y),foo_type>::value,\"custom index type\");
-
-    return 0;
-  }
-" HAVE_IS_INDEXABLE_SUPPORT
-  )
-
 # ******************************************************************************
 #
 # Checks for standard library features
@@ -325,40 +277,6 @@ check_cxx_source_compiles("
 # does not require a complete type.
 #
 # ******************************************************************************
-
-# Check whether we have <experimental/type_traits> (for is_detected et. al.)
-check_include_file_cxx(
-  experimental/type_traits
-  DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS
-  )
-
-check_cxx_symbol_exists(
-  "std::move<std::bool_constant<true>>"
-  "utility;type_traits"
-  DUNE_HAVE_CXX_BOOL_CONSTANT
-  )
-
-if (NOT DUNE_HAVE_CXX_BOOL_CONSTANT)
-  check_cxx_symbol_exists(
-    "std::move<std::experimental::bool_constant<true>>"
-    "utility;experimental/type_traits"
-    DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT
-    )
-endif()
-
-check_cxx_symbol_exists(
-  "std::apply<std::negate<int>,std::tuple<int>>"
-  "functional;tuple"
-  DUNE_HAVE_CXX_APPLY
-  )
-
-if (NOT DUNE_HAVE_CXX_APPLY)
-  check_cxx_symbol_exists(
-    "std::experimental::apply<std::negate<int>,std::tuple<int>>"
-    "functional;experimental/tuple"
-    DUNE_HAVE_CXX_EXPERIMENTAL_APPLY
-  )
-endif()
 
 check_cxx_symbol_exists(
   "std::experimental::make_array<int,int>"
