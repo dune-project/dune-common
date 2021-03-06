@@ -708,7 +708,7 @@ namespace Dune
      * They are only used to implement SFINAE.
      */
     template<class Dummy=R,
-      class = void_t<decltype(std::declval<Dummy>().size())>>
+      class = std::void_t<decltype(std::declval<Dummy>().size())>>
     auto size() const
     {
       return rawRange_.size();
