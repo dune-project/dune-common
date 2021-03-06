@@ -16,12 +16,12 @@ if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
     from dune.packagemetadata import Version, VersionRequirement,\
-            Description, cmakeFlags, cmakeArguments
+            Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 else:
     from utility import buffer_to_str
     import project
     from packagemetadata import Version, VersionRequirement,\
-            Description, cmakeFlags, cmakeArguments
+            Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 
 logger = logging.getLogger(__name__)
 
@@ -123,19 +123,23 @@ def resolve_order(deps):
     return order
 
 
-def pkg_config(pkg, var=None):
+def pkg_config(pkg, var=None, paths=[]):
     args = ['pkg-config', pkg]
     if var is not None:
         args += ['--variable=' + var]
-    pkgconfig = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    env = dict(os.environ)
+    env.update({'PKG_CONFIG_PATH': ':'.join(paths)})
+    pkgconfig = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     pkgconfig.wait()
+    prefix = pkgconfig.stdout.read()
     if pkgconfig.returncode != 0:
         raise KeyError('package ' + pkg + ' not found.')
-    return buffer_to_str(pkgconfig.stdout.read()).strip()
+    return buffer_to_str(prefix).strip()
 
 
 def get_prefix(module):
-    return pkg_config(module, 'prefix')
+    paths = get_module_path("pkgconfig")
+    return pkg_config(module, var='prefix', paths=paths)
 
 
 def is_installed(dir, module=None):
@@ -154,9 +158,13 @@ def is_installed(dir, module=None):
     if isinstance(module, Description):
         module = module.name
     try:
-        return dir == os.path.join(get_prefix(module), 'lib', 'dunecontrol', module)
+        prefix = get_prefix(module)
     except KeyError:
         return False
+    for l in ['lib','lib32','lib64']:
+        if os.path.realpath(dir) == os.path.realpath(os.path.join(prefix, l, 'dunecontrol', module)):
+            return True
+    return False
 
 def get_cmake_command():
     try:
@@ -174,38 +182,42 @@ def get_local():
         pass
     return ''
 
-def get_module_path():
-    path = []
-    try:
-        path = path + [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
-        logger.debug('Module path [DUNE_CONTROL_PATH]: ' + ':'.join(path))
-        # return path
-    except KeyError:
-        pass
-
-    # try to guess module path using pkg-config
-    try:
-        prefix = pkg_config('dune-common', 'prefix').strip()
-        path = path + [p for p in ['.', os.path.join(prefix, 'lib', 'dunecontrol')] if os.path.isdir(p)]
-        logger.debug('Module path [pkg-config]: ' + ':'.join(path))
-        # return path
-    except KeyError:
-        pass
-
+def get_module_path(post="dunecontrol"):
+    path = ['.']
     # try to guess modules path for unix systems
-    path = path + [p for p in ['.',
-                        '/usr/local/lib/dunecontrol',
-                        '/usr/lib/dunecontrol',
-                        os.path.join(get_local(),'lib','dunecontrol') ]
+    for l in ['lib','lib32','lib64']:
+        path = path + [p for p in [
+                       os.path.join('usr','local',l,post),
+                       os.path.join('usr',l,post),
+                       os.path.join(get_local(),l,post),
+                     ]
                   if os.path.isdir(p)]
     try:
+        path = path + [p for p in os.environ['DUNE_CONTROL_PATH'].split(':') if p and os.path.isdir(p)]
+        if post == 'dunecontrol':
+            logger.debug('Module path [DUNE_CONTROL_PATH]: ' + ':'.join(path))
+    except KeyError:
+        pass
+
+    try:
         pkg_config_path = [p for p in os.environ['PKG_CONFIG_PATH'].split(':') if p and os.path.isdir(p)]
-        pkg_config_path = [os.path.join(p, '..', 'dunecontrol') for p in pkg_config_path]
+        if post == 'dunecontrol':
+            pkg_config_path = [os.path.join(p, '..', post) for p in pkg_config_path]
         path = path + [p for p in pkg_config_path if os.path.isdir(p)]
     except KeyError:
         pass
-
-    logger.debug('Module path [guessed]: ' + ':'.join(path))
+    # try to guess module path using pkg-config
+    try:
+        prefix = pkg_config('dune-common', 'prefix').strip()
+        path = path + [p for p in [ os.path.join(prefix, 'lib', post)] if os.path.isdir(p)]
+        path = path + [p for p in [ os.path.join(prefix, 'lib32', post)] if os.path.isdir(p)]
+        path = path + [p for p in [ os.path.join(prefix, 'lib64', post)] if os.path.isdir(p)]
+        if post == 'dunecontrol':
+            logger.debug('Module path [pkg-config]: ' + ':'.join(path))
+    except KeyError:
+        pass
+    if post == 'dunecontrol':
+        logger.debug('Module path [guessed]: ' + ':'.join(path))
     return path
 
 
@@ -215,7 +227,7 @@ def select_modules(modules=None, module=None):
     Args:
         modules (optional): List of (description, dir) pairs
             If not given, the find_modules(get_module_path()) is used
-        module (optional): 
+        module (optional):
 
     Returns:
         pair of dictionaries mapping module name to unique description and directory respectively
@@ -225,17 +237,20 @@ def select_modules(modules=None, module=None):
     desc = {}
     dir = {}
     for d, p in modules:
+        p = os.path.realpath(p)
         n = d.name
         if n in dir:
             if p == dir[n]: continue
             if is_installed(dir[n], n):
                 if is_installed(p, n):
-                    raise KeyError('Multiple installed versions for module \'' + n + '\' found.')
+                    foundVersions = " In " + p + " and in " + dir[n]
+                    raise KeyError('Multiple installed versions for module \'' + n + '\' found.'+foundVersions)
                 else:
-                  desc[n], dir[n] = d, p
+                    desc[n], dir[n] = d, p
             else:
               if not is_installed(p, n):
-                  raise KeyError('Multiple source versions for module \'' + n + '\' found.')
+                  foundVersions = " In " + p + " and in " + dir[n]
+                  raise KeyError('Multiple source versions for module \'' + n + '\' found.'+foundVersions)
         else:
             desc[n], dir[n] = d, p
     return (desc, dir)
@@ -304,41 +319,6 @@ def build_module(builddir, build_args=None):
         raise RuntimeError(buffer_to_str(stderr))
     return buffer_to_str(stdout)
 
-def inVEnv():
-    # If sys.real_prefix exists, this is a virtualenv set up with the virtualenv package
-    real_prefix = hasattr(sys, 'real_prefix')
-    if real_prefix:
-        return 1
-    # If a virtualenv is set up with pyvenv, we check for equality of base_prefix and prefix
-    if hasattr(sys, 'base_prefix'):
-        return (sys.prefix != sys.base_prefix)
-    # If none of the above conditions triggered, this is probably no virtualenv interpreter
-    return 0
-
-
-def get_dune_py_dir():
-    try:
-        basedir = os.path.realpath( os.environ['DUNE_PY_DIR'] )
-        basedir = os.path.join(basedir,'dune-py')
-        return basedir
-    except KeyError:
-        pass
-
-    # test if in virtual env
-    if inVEnv():
-        virtualEnvPath = sys.prefix
-        return os.path.join(virtualEnvPath, '.cache', 'dune-py')
-
-    # generate in home directory
-    try:
-        home = expanduser("~")
-        return os.path.join(home, '.cache', 'dune-py')
-    except KeyError:
-        pass
-
-    raise RuntimeError('Unable to determine location for dune-py module. Please set the environment variable "DUNE_PY_DIR".')
-
-
 def get_dune_py_version():
     # change this version on the following events:
     # - a release (major version numbers)
@@ -379,7 +359,7 @@ def make_dune_py_module(dune_py_dir=None, deps=None):
             deps = modules.keys()
 
         description = Description(module='dune-py', version=get_dune_py_version(),  maintainer='dune@lists.dune-project.org', depends=list(deps))
-        logger.debug('dune-py will depend on ' + ' '.join([m[0] + (' ' + str(c) if c else '') for m, c in description.depends]))
+        logger.debug('dune-py will depend on ' + ' '.join([m + (' ' + str(c) if c else '') for m, c in description.depends]))
         project.make_project(dune_py_dir, description,
                 subdirs=[generated_dir_rel], is_dunepy=True)
     else:
@@ -390,9 +370,9 @@ def make_dune_py_module(dune_py_dir=None, deps=None):
             logger.error('"' + dune_py_dir + '" contains version ' + str(description.version) + ' of the dune-py module, ' + str(get_dune_py_version()) + ' required.')
             logger.error('If you upgraded dune-python, you can safely remove "' + dune_py_dir + '" and retry.')
             raise RuntimeError('"' + dune_py_dir + '" contains a different version of the dune-py module.')
-        logger.info('Using dune-py module in ' + dune_py_dir)
+        logger.debug('Using dune-py module in ' + dune_py_dir)
 
-def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, builddir=None, deps=None):
+def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, builddir=None, deps=None, writetagfile=False):
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     if cmake_args is None:
@@ -416,12 +396,33 @@ def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, bui
     prefix = {}
     for name, dir in dirs.items():
         if is_installed(dir, name):
-            prefix[name] = get_prefix(name)
+            found = False
+            # switch prefix to location of name-config.cmake
+            for l in ['lib','lib32','lib64']:
+                substr = l + '/cmake'
+                newpath = dir.replace('lib/dunecontrol', substr)
+                for _, _, files in os.walk(newpath):
+                    # if name-config.cmake is found
+                    # then this is the correct folder
+                    if name+'-config.cmake' in files:
+                        found = True
+                        prefix[name] = newpath
+                        break
+                if found: break
+            assert found
+            # store new module path
         else:
             prefix[name] = default_build_dir(dir, name, builddir)
 
+    logger.info('Configuring dune-py module in ' + dune_py_dir)
     output = configure_module(dune_py_dir, dune_py_dir, {d: prefix[d] for d in deps}, cmake_args)
     output += build_module(dune_py_dir, build_args)
+
+    if writetagfile:
+        # set a tag file to avoid automatic reconfiguration in builder
+        tagfile = os.path.join(dune_py_dir, ".noconfigure")
+        f = open(tagfile, 'w')
+        f.close()
     return output
 
 def getCXXFlags():

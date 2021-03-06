@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from dune.common.module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies, resolve_order
+    from dune.common.locking import Lock, LOCK_EX
 except ImportError:
     import os
     here = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +21,7 @@ except ImportError:
     sys.path.append(modsA)
     if os.path.exists(os.path.join(modsB, "module.py")):
         from module import build_dune_py_module, get_dune_py_dir, make_dune_py_module, select_modules, resolve_dependencies, resolve_order
+        from locking import Lock, LOCK_EX
     else:
         raise
 
@@ -48,9 +50,9 @@ def main(argv):
             sys.exit(2)
         elif opt in ("-o", "--opts"):
             optsfile = arg
-        elif opt in ("--builddir"):
+        elif opt in ("--builddir",):
             builddir = arg
-        elif opt in ("--module"):
+        elif opt in ("--module",):
             masterModule = arg
     if len(args) > 0:
         execute = args[0]
@@ -82,11 +84,6 @@ def main(argv):
         if builddir is None:
             builddir = os.environ.get('DUNE_BUILDDIR', 'build-cmake')
 
-    dunepy = get_dune_py_dir()
-
-    if os.path.exists(dunepy):
-        shutil.rmtree(dunepy)
-
     # Generate list of all modules
     duneModules = select_modules()
 
@@ -101,18 +98,6 @@ def main(argv):
         deps = resolve_order(deps)
         deps += [masterModule]
 
-    foundModule = make_dune_py_module(dunepy, deps)
-
-    output = build_dune_py_module(dunepy, cmake_args, None, builddir, deps)
-
-    print("CMake output")
-    print(output)
-
-    # set a tag file to avoid automatic reconfiguration in builder
-    tagfile = os.path.join(dunepy, ".noconfigure")
-    f = open(tagfile, 'w')
-    f.close()
-
     if execute == "install":
         for m in deps:
             moddir = duneModules[1][m]
@@ -125,6 +110,20 @@ def main(argv):
                 logger.debug(buffer_to_str(stdout))
             except FileNotFoundError:
                 print("Warning: build dir not found possibly module is installed then python bindings should be already available")
+
+    dunepy = get_dune_py_dir()
+    dunepyBase = os.path.realpath( os.path.join(dunepy,"..") )
+    if not os.path.exists(dunepyBase):
+        os.makedirs(dunepyBase)
+    with Lock(os.path.join(dunepyBase, 'lock-module.lock'), flags=LOCK_EX):
+        if os.path.exists(dunepy):
+            shutil.rmtree(dunepy)
+        os.makedirs(dunepy)
+        foundModule = make_dune_py_module(dunepy, deps)
+        output = build_dune_py_module(dunepy, cmake_args, None, builddir, deps, writetagfile=True)
+
+    print("CMake output")
+    print(output)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

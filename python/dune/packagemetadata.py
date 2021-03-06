@@ -106,7 +106,7 @@ class Description:
         data = kwargs.copy()
 
         valid_entries = ['Module','Maintainer','Version','Maintainer',
-                         'Depends','Suggests',
+                         'Depends','Suggests','Python-Requires',
                          'Whitespace-Hook',
                          'Author','Description','URL']
 
@@ -117,7 +117,7 @@ class Description:
                     line = line.strip()
                     if not line or line[ 0 ] == '#':
                         continue
-                    m = re.search(r'^(\w+):(.*)', line)
+                    m = re.search(r'^([a-zA-Z0-9-_]+):(.*)', line)
                     if m:
                         key = m.group(1)
                         val = m.group(2)
@@ -265,12 +265,52 @@ def cmakeFlags():
     ]))
     # test environment for additional flags
     cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
-    if cmakeFlags is None:
-        cmakeFlags = os.environ.get('CMAKE_FLAGS')
     # split cmakeFlags and add them to flags
     if cmakeFlags is not None:
         flags += shlex.split(cmakeFlags)
+    cmakeFlags = os.environ.get('CMAKE_FLAGS')
+    if cmakeFlags is not None:
+        flags += shlex.split(cmakeFlags)
     return flags
+
+def inVEnv():
+    # check whether we are in a anaconda environment
+    # were the checks based on prefix and base_prefix
+    # seem to fail
+    if "CONDA_DEFAULT_ENV" in os.environ:
+        return 1
+
+    # If sys.real_prefix exists, this is a virtualenv set up with the virtualenv package
+    real_prefix = hasattr(sys, 'real_prefix')
+    if real_prefix:
+        return 1
+    # If a virtualenv is set up with pyvenv, we check for equality of base_prefix and prefix
+    if hasattr(sys, 'base_prefix'):
+        return (sys.prefix != sys.base_prefix)
+    # If none of the above conditions triggered, this is probably no virtualenv interpreter
+    return 0
+
+def get_dune_py_dir():
+    try:
+        basedir = os.path.realpath( os.environ['DUNE_PY_DIR'] )
+        basedir = os.path.join(basedir,'dune-py')
+        return basedir
+    except KeyError:
+        pass
+
+    # test if in virtual env
+    if inVEnv():
+        virtualEnvPath = sys.prefix
+        return os.path.join(virtualEnvPath, '.cache', 'dune-py')
+
+    # generate in home directory
+    try:
+        home = os.path.expanduser("~")
+        return os.path.join(home, '.cache', 'dune-py')
+    except KeyError:
+        pass
+
+    raise RuntimeError('Unable to determine location for dune-py module. Please set the environment variable "DUNE_PY_DIR".')
 
 def metaData(version=None, dependencyCheck=True):
     data = Data(version)
@@ -333,5 +373,15 @@ def metaData(version=None, dependencyCheck=True):
             "install_requires":install_requires,
             "python_requires":'>=3.4',
          })
+
+    from skbuild.command.build_py import build_py
+    class DunepyConfigure(build_py):
+        def run(self):
+            build_py.run(self)
+            subprocess.call([sys.executable, '-m', 'dune', 'configure'])
+
+    setupParams['cmdclass'] = {
+        'build_py': DunepyConfigure,
+    }
 
     return data, setupParams

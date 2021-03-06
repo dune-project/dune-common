@@ -12,13 +12,13 @@ env_save  = os.environ.get('DUNE_SAVE_BUILD' , 'FALSE').upper()
 builder = Builder( env_force in ('1', 'TRUE'), env_save )
 
 def setNoDependencyCheck():
-    logger.info("Switching off dependency check - modules will always be compiled")
+    logger.debug("Switching off dependency check - modules will always be compiled")
     builderModule.noDepCheck = True
 def setDependencyCheck():
-    logger.info("Switching on dependency check")
+    logger.debug("Switching on dependency check")
     builderModule.noDepCheck = False
 def setFlags(flags="-g",noChecks=None):
-    logger.info("Using compile flags '"+flags+"'")
+    logger.debug("Using compile flags '"+flags+"'")
     builderModule.cxxFlags = flags
     if noChecks is True:
         setNoDependencyCheck()
@@ -28,7 +28,7 @@ def addToFlags(pre="",post="",noChecks=None):
     setFlags(pre+" "+getCXXFlags()+" "+post,noChecks)
 
 def unsetFlags(noChecks=None):
-    logger.info("Using compile flags from configuration of dune-py")
+    logger.debug("Using compile flags from configuration of dune-py")
     builderModule.cxxFlags = None
     if noChecks is True:
         setNoDependencyCheck()

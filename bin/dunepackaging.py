@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, io, getopt, re
+import sys, os, io, getopt, re, shutil
 import importlib, subprocess
 import email.utils
 import pkg_resources
@@ -22,10 +22,10 @@ def main(argv):
 
     repositories = ["gitlab", "testpypi", "pypi"]
     def usage():
-        return 'usage: dunepackaging.py [--upload <'+"|".join(repositories)+'> | -c | --clean | --version <version> | --onlysdist]'
+        return 'usage: dunepackaging.py [--upload <'+"|".join(repositories)+'> | -c | --clean | --version <version> | --onlysdist | --bdist_conda]'
 
     try:
-        opts, args = getopt.getopt(argv, "hc", ["upload=", "clean", "version=", "onlysdist"])
+        opts, args = getopt.getopt(argv, "hc", ["upload=", "clean", "version=", "onlysdist", "bdist_conda"])
     except getopt.GetoptError:
         print(usage())
         sys.exit(2)
@@ -35,6 +35,7 @@ def main(argv):
     clean = False
     version = None
     onlysdist = False
+    bdistconda = False
     for opt, arg in opts:
         if opt == '-h':
             print(usage())
@@ -52,6 +53,9 @@ def main(argv):
             version = arg
         elif opt in ("--onlysdist"):
             onlysdist = True
+        elif opt in ("--bdist_conda"):
+            onlysdist  = True
+            bdistconda = True
 
     # Remove generated files
     def removeFiles():
@@ -93,7 +97,7 @@ def main(argv):
     print("Generate pyproject.toml")
     f = open("pyproject.toml", "w")
     requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "requests"]
-    requires += data.asPythonRequirementString(data.depends + data.python_requires)
+    requires += [r for r in data.asPythonRequirementString(data.depends + data.python_requires) if r not in requires]
     f.write("[build-system]\n")
     f.write("requires = "+requires.__str__()+"\n")
     f.write("build-backend = 'setuptools.build_meta'\n")
@@ -113,6 +117,13 @@ def main(argv):
             print("Please install the pip package 'scikit-build' to build the source distribution.")
             sys.exit(2)
 
+        # append hash of current git commit to README
+        shutil.copy('README.md', 'tmp_README.md')
+        githash = ['git', 'rev-parse', 'HEAD']
+        hash = subprocess.check_output(githash, encoding='UTF-8')
+        with open("README.md", "a") as f:
+            f.write("\n\ngit-" + hash)
+
         print("Create source distribution")
         # make sure setup.py/pyproject.toml are tracked by git so that
         # they get added to the package by scikit
@@ -124,6 +135,9 @@ def main(argv):
         # undo the above git add
         gitreset = ['git', 'reset', 'setup.py', 'pyproject.toml']
         subprocess.call(gitreset)
+
+        # restore README.md
+        shutil.move('tmp_README.md', 'README.md')
 
         if not onlysdist:
             # check if we have twine
@@ -139,6 +153,67 @@ def main(argv):
             subprocess.call(twine)
 
             removeFiles()
+
+        # create conda package meta.yaml (experimental)
+        if bdistconda:
+            import hashlib
+            remove = ['rm', '-rf', 'dist/'+data.name]
+            subprocess.call(remove)
+            mkdir  = ['mkdir', 'dist/'+data.name ]
+            subprocess.call(mkdir)
+
+            print("Create bdist_conda (experimental)")
+            distfile = 'dist/'+data.name+'-'+version+'.tar.gz'
+            datahash = ''
+            with open(distfile, "rb") as include:
+                source = include.read()
+                datahash = hashlib.sha256( source ).hexdigest()
+
+            print("Generate ",'dist/'+data.name+'/meta.yaml')
+            f = open('dist/'+data.name+'/meta.yaml', "w")
+            f.write('{% set name = "' + data.name + '" %}\n')
+            f.write('{% set version = "' + version + '" %}\n')
+            f.write('{% set hash = "' + datahash + '" %}\n\n')
+            f.write('package:\n')
+            f.write('  name: "{{ name|lower }}"\n')
+            f.write('  version: "{{ version }}"\n\n')
+            f.write('source:\n')
+            f.write('  path: ../{{ name }}-{{ version }}/\n')
+            f.write('  sha256: {{ hash }}\n\n')
+            f.write('build:\n')
+            f.write('  number: 1\n')
+            if 'TMPDIR' in os.environ:
+                f.write('  script_env:\n')
+                f.write('    - TMPDIR=' + os.environ['TMPDIR'] +'\n')
+            f.write('  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv "\n\n')
+            f.write('requirements:\n')
+
+            requirements = ['pip', 'python', 'mkl', 'tbb', 'intel-openmp',
+                            'libgcc-ng', 'libstdcxx-ng', 'gmp', 'scikit-build',
+                            'mpi4py', 'matplotlib', 'numpy', 'scipy', 'ufl']
+
+            for dep in data.depends:
+                requirements += [dep[0]]
+
+            f.write('  host:\n')
+            for dep in requirements:
+                f.write('    - ' + dep + '\n')
+
+            f.write('\n')
+            f.write('  run:\n')
+            for dep in requirements:
+                f.write('    - ' + dep + '\n')
+
+            f.write('\n')
+            f.write('test:\n')
+            f.write('  imports:\n')
+            f.write('    - ' + data.name.replace('-','.') + '\n\n')
+            f.write('about:\n')
+            f.write('  home: '+data.url+'\n')
+            f.write('  license: GPLv2 with linking exception.\n')
+            f.write('  license_family: GPL\n')
+            f.write('  summary: '+data.description+'\n')
+            f.close()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
