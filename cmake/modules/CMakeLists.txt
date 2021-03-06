@@ -17,7 +17,6 @@ install(FILES
   DuneAddPybind11Module.cmake
   DuneCMakeCompat.cmake
   DuneCommonMacros.cmake
-  DuneCxaDemangle.cmake
   DuneDoc.cmake
   DuneDoxygen.cmake
   DuneEnableAllPackages.cmake

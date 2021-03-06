@@ -71,13 +71,12 @@ dune_add_test(NAME check_fvector_size_fail2
 dune_add_test(NAME classnametest-demangled
               SOURCES classnametest.cc
               LINK_LIBRARIES dunecommon
-              CMAKE_GUARD HAVE_CXA_DEMANGLE
               LABELS quick)
 
 dune_add_test(NAME classnametest-fallback
               SOURCES classnametest.cc
               LINK_LIBRARIES dunecommon
-              COMPILE_DEFINITIONS BASICCHECK
+              COMPILE_DEFINITIONS DISABLE_CXA_DEMANGLE
               LABELS quick)
 
 dune_add_test(SOURCES concept.cc
