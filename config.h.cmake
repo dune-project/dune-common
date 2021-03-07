@@ -47,6 +47,15 @@
 /* Define if you have the MPI library.  */
 #cmakedefine HAVE_MPI ENABLE_MPI
 
+/* Deactivate cxx bindings for MPI */
+#if HAVE_MPI
+#define MPICH_SKIP_MPICXX 1
+#define OMPI_SKIP_MPICXX 1
+#define MPI_NO_CPPBIND 1
+#define MPIPP_H
+#define _MPICC_H
+#endif
+
 /* Define if you have the GNU GMP library. The value should be ENABLE_GMP
    to facilitate activating and deactivating GMP using compile flags. */
 #cmakedefine HAVE_GMP ENABLE_GMP
