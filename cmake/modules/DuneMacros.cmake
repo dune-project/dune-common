@@ -1108,7 +1108,7 @@ macro(replace_properties_for_one)
 endmacro(replace_properties_for_one)
 
 function(dune_target_link_libraries basename libraries)
-  target_link_libraries(${basename} ${libraries})
+  target_link_libraries(${basename} PUBLIC ${libraries})
 endfunction(dune_target_link_libraries basename libraries)
 
 function(replace_properties)
