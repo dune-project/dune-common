@@ -132,6 +132,7 @@
 # of all dependent modules.
 # Finally config.h is created from config_collected.h.cmake.
 #
+include_guard(GLOBAL)
 
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 

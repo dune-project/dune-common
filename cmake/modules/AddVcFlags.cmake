@@ -12,6 +12,7 @@
 #
 #       A list of targets to use VC with.
 #
+include_guard(GLOBAL)
 
 # text for feature summary
 set_package_properties("Vc" PROPERTIES

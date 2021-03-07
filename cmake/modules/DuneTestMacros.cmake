@@ -205,6 +205,7 @@
 #    build all tests during `make all`. Note, that this may take quite some time for some modules.
 #    If not in use, you have to build tests through the target :code:`build_tests`.
 #
+include_guard(GLOBAL)
 
 # enable the testing suite on the CMake side.
 enable_testing()

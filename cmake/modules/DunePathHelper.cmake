@@ -41,6 +41,7 @@
 #    requiring or suggesting this module. One and only one type of path
 #    may be requested.
 #
+include_guard(GLOBAL)
 
 function(dune_module_path)
   # Parse Arguments

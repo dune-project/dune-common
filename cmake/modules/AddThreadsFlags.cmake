@@ -1,4 +1,4 @@
-# Always link threading libraries to targets
+include_guard(GLOBAL)
 
 # text for feature summary
 set_package_properties("Threads" PROPERTIES

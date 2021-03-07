@@ -9,6 +9,7 @@
 #
 #       A list of targets to use ParMETIS with.
 #
+include_guard(GLOBAL)
 
 # set HAVE_PARMETIS for config.h
 set(HAVE_PARMETIS ${ParMETIS_FOUND})

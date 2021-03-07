@@ -140,6 +140,7 @@
 #
 #    Register sources for module exported library.
 #
+include_guard(GLOBAL)
 
 function(dune_register_package_flags)
   include(CMakeParseArguments)

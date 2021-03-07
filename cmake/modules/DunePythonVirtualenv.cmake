@@ -68,6 +68,7 @@
 #    not be necessary anymore, see https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
 #    for more information about the underlying distribution bug.
 #
+include_guard(GLOBAL)
 
 # If the user has not specified an absolute, we look through the dependency tree of this module
 # for a build directory that already contains a virtual environment.

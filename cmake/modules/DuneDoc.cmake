@@ -48,6 +48,7 @@
 #       target. See https://gitlab.kitware.com/cmake/cmake/issues/8438
 #       and https://gitlab.dune-project.org/core/dune-common/issues/36
 #
+include_guard(GLOBAL)
 
 include(UseLatexMk)
 

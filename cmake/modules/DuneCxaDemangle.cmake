@@ -4,6 +4,7 @@
 #
 # It sets the variable :code:`HAVE_CXA_DEMANGLE` with the result.
 #
+include_guard(GLOBAL)
 
 include(CheckCXXSourceCompiles)
 

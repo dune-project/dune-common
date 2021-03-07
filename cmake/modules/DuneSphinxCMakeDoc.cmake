@@ -52,6 +52,7 @@
 #      and a blank) are ignored. Any resulting content of lines most form valid rst.
 #    * TODO document more
 #
+include_guard(GLOBAL)
 
 find_package(Sphinx)
 # text for feature summary

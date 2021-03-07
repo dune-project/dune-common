@@ -23,6 +23,7 @@
 #    The documentation is built during the top-level :code:`make doc` call. We have added a dependency
 #    that makes sure it is built before running :code:`make install`.
 #
+include_guard(GLOBAL)
 
 find_package(Doxygen)
 set_package_properties("Doxygen" PROPERTIES

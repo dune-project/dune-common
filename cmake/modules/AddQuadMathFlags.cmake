@@ -9,6 +9,7 @@
 #
 #       A list of targets to use QuadMath with.
 #
+include_guard(GLOBAL)
 
 # set HAVE_QUADMATH for config.h
 set(HAVE_QUADMATH ${QuadMath_FOUND})

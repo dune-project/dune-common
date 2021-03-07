@@ -34,6 +34,7 @@
 #    Use this variable to set additional flags for pip in this build. This can e.g.
 #    be used to point pip to alternative package indices in restricted environments.
 #
+include_guard(GLOBAL)
 
 function(dune_python_install_package)
   # Parse Arguments

@@ -42,6 +42,7 @@
 #       Example: Write CMAKE_GUARD dune-foo_FOUND if you want your module to only
 #       build when the dune-foo module is present.
 #
+include_guard(GLOBAL)
 
 function(dune_add_pybind11_module)
   include(CMakeParseArguments)

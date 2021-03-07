@@ -9,6 +9,7 @@
 #
 #       A list of targets to use SuiteSparse with.
 #
+include_guard(GLOBAL)
 
 # set HAVE_SUITESPARSE for config.h
 set(HAVE_SUITESPARSE ${SuiteSparse_FOUND})

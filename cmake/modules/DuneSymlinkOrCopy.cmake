@@ -111,6 +111,7 @@
 #    a warning is issued and copying is used as a fallback to
 #    symlinking.
 #
+include_guard(GLOBAL)
 
 macro(dune_add_copy_command file_name)
     add_custom_command(
