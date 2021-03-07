@@ -4,7 +4,6 @@
 #include "config.h"
 #endif
 
-#include <dune/common/unused.hh>
 #include <dune/common/bitsetvector.hh>
 
 #if defined(__GNUC__) && ! defined(__clang__)
@@ -20,7 +19,7 @@ struct ConstReferenceOp
   typedef typename BBF::const_reference const_reference;
 
   void operator()(const_reference t){
-    DUNE_UNUSED bitset x = t;
+    [[maybe_unused]] bitset x = t;
   }
 };
 
@@ -78,24 +77,25 @@ void testContainer(BBF & bbf)
   testConstBitSetMethods(cbbf[2]);
 
   // equality
-  DUNE_UNUSED_PARAMETER(y == cbbf[2]);
-  DUNE_UNUSED_PARAMETER(y == bbf[3]);
-  DUNE_UNUSED_PARAMETER(y == x);
-  DUNE_UNUSED_PARAMETER(x == y);
-  DUNE_UNUSED_PARAMETER(x == z);
-  DUNE_UNUSED_PARAMETER(z == x);
-  DUNE_UNUSED_PARAMETER(z == y);
-  DUNE_UNUSED_PARAMETER(y == z);
+  [[maybe_unused]] bool res;
+  res = (y == cbbf[2]);
+  res = (y == bbf[3]);
+  res = (y == x);
+  res = (x == y);
+  res = (x == z);
+  res = (z == x);
+  res = (z == y);
+  res = (y == z);
 
   // inequality
-  DUNE_UNUSED_PARAMETER(y != cbbf[2]);
-  DUNE_UNUSED_PARAMETER(y != bbf[3]);
-  DUNE_UNUSED_PARAMETER(y != x);
-  DUNE_UNUSED_PARAMETER(x != y);
-  DUNE_UNUSED_PARAMETER(x != z);
-  DUNE_UNUSED_PARAMETER(z != x);
-  DUNE_UNUSED_PARAMETER(z != y);
-  DUNE_UNUSED_PARAMETER(y != z);
+  res = (y != cbbf[2]);
+  res = (y != bbf[3]);
+  res = (y != x);
+  res = (x != y);
+  res = (x != z);
+  res = (z != x);
+  res = (z != y);
+  res = (y != z);
 
   // &=
   y &= cbbf[2];
@@ -141,7 +141,7 @@ void testConstContainer(const BBF& bbf){
   const BBF & cbbf = bbf;
 
   bitset x = bbf[3];
-  value_type DUNE_UNUSED z;
+  [[maybe_unused]] value_type z;
   reference y = bbf[4];
 
   // assignement
@@ -149,16 +149,17 @@ void testConstContainer(const BBF& bbf){
   x = cbbf[1];
 
   // equality
-  DUNE_UNUSED_PARAMETER(y == cbbf[2]);
-  DUNE_UNUSED_PARAMETER(y == bbf[3]);
-  DUNE_UNUSED_PARAMETER(y == x);
-  DUNE_UNUSED_PARAMETER(x == y);
+  [[maybe_unused]] bool res;
+  res = (y == cbbf[2]);
+  res = (y == bbf[3]);
+  res = (y == x);
+  res = (x == y);
 
   // inequality
-  DUNE_UNUSED_PARAMETER(y != cbbf[2]);
-  DUNE_UNUSED_PARAMETER(y != bbf[3]);
-  DUNE_UNUSED_PARAMETER(y != x);
-  DUNE_UNUSED_PARAMETER(x != y);
+  res = (y != cbbf[2]);
+  res = (y != bbf[3]);
+  res = (y != x);
+  res = (x != y);
 }
 
 template<int block_size, class Alloc>

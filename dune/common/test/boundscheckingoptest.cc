@@ -1,7 +1,6 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
-#include <dune/common/unused.hh>
 
 int main() try {
   bool passed = true;
@@ -36,7 +35,7 @@ int main() try {
   try {
     Dune::FieldVector<double, 3> const v1 = {1, 2, 3};
     Dune::FieldVector<double, 2> const v2 = {1, 2};
-    DUNE_UNUSED_PARAMETER(v1 == v2);
+    [[maybe_unused]] bool res = (v1 == v2);
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
@@ -49,7 +48,7 @@ int main() try {
   try {
     Dune::FieldVector<double, 3> const v1 = {1, 2, 3};
     Dune::FieldVector<double, 2> const v2 = {1, 2};
-    DUNE_UNUSED_PARAMETER(v1 != v2);
+    [[maybe_unused]] bool res = (v1 != v2);
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
@@ -98,7 +97,7 @@ int main() try {
   try {
     Dune::FieldMatrix<double, 1, 3> m1 = {{1, 2, 3}};
     Dune::FieldMatrix<double, 2, 3> const m2 = {{1, 2, 3}, {10, 20, 30}};
-    DUNE_UNUSED_PARAMETER(m1 == m2);
+    [[maybe_unused]] bool res = (m1 == m2);
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
@@ -110,7 +109,7 @@ int main() try {
   try {
     Dune::FieldMatrix<double, 1, 3> m1 = {{1, 2, 3}};
     Dune::FieldMatrix<double, 2, 3> const m2 = {{1, 2, 3}, {10, 20, 30}};
-    DUNE_UNUSED_PARAMETER(m1 != m2);
+    [[maybe_unused]] bool res = (m1 != m2);
     std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
               << std::endl;
     passed = false;
