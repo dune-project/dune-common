@@ -114,17 +114,15 @@ namespace Impl {
     }
 
     /** \brief Random access operator, actually disregards its argument */
-    K& operator[] (size_type i)
+    K& operator[] ([[maybe_unused]] size_type i)
     {
-      DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
       return *dataP_;
     }
 
     /** \brief Const random access operator, actually disregards its argument */
-    const K& operator[] (size_type i) const
+    const K& operator[] ([[maybe_unused]] size_type i) const
     {
-      DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
       return *dataP_;
     }

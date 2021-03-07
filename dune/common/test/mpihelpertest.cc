@@ -6,7 +6,6 @@
 
 #include <iostream>
 
-#include <dune/common/unused.hh>
 #include <dune/common/parallel/mpihelper.hh>
 
 int main(int argc, char** argv)
@@ -23,14 +22,14 @@ int main(int argc, char** argv)
   {
     Helper& mpi = Helper::instance(argc, argv);
 
-    Helper::MPICommunicator comm DUNE_UNUSED = mpi.getCommunicator();
+    [[maybe_unused]] Helper::MPICommunicator comm = mpi.getCommunicator();
     comm= mpi.getCommunicator();
   }
 
   {
     Helper& mpi = Helper::instance(argc, argv);
 
-    Helper::MPICommunicator comm DUNE_UNUSED = mpi.getCommunicator();
+    [[maybe_unused]] Helper::MPICommunicator comm = mpi.getCommunicator();
     comm= mpi.getCommunicator();
 
 #ifdef MPIHELPER_PREINITIALIZE

@@ -29,7 +29,7 @@ template<class R>
 auto checkRangeSize(R&& r)
 {
   std::size_t counter = 0;
-  for(auto&& dummy DUNE_UNUSED : r)
+  for([[maybe_unused]] auto&& dummy : r)
     ++counter;
   return (r.size()==counter);
 }

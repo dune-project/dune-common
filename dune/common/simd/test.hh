@@ -27,7 +27,6 @@
 #include <dune/common/std/type_traits.hh>
 #include <dune/common/typelist.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/unused.hh>
 
 namespace Dune {
   namespace Simd {
@@ -316,7 +315,7 @@ namespace Dune {
         static_assert(std::is_same<T, std::decay_t<T> >::value, "Scalar types "
                       "must not be references, and must not include "
                       "cv-qualifiers");
-        T DUNE_UNUSED a{};
+        [[maybe_unused]] T a{};
       }
 
       template<class V>
@@ -385,7 +384,7 @@ namespace Dune {
                       "return type of lanes(V{}) should be std::size_t");
 
         // the result of lanes<V>() must be constexpr
-        constexpr auto DUNE_UNUSED size = lanes<V>();
+        [[maybe_unused]] constexpr auto size = lanes<V>();
         // but the result of lanes(vec) does not need to be constexpr
         DUNE_SIMD_CHECK(lanes<V>() == lanes(V{}));
       }
@@ -393,9 +392,9 @@ namespace Dune {
       template<class V>
       void checkDefaultConstruct()
       {
-        { V DUNE_UNUSED vec;      }
-        { V DUNE_UNUSED vec{};    }
-        { V DUNE_UNUSED vec = {}; }
+        { [[maybe_unused]] V vec;      }
+        { [[maybe_unused]] V vec{};    }
+        { [[maybe_unused]] V vec = {}; }
       }
 
       template<class V>

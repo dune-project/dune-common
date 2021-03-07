@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <dune/common/classname.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/unused.hh>
 
 /**
  * @brief Test whether the class Iter implements the interface of an STL output iterator
@@ -341,7 +340,7 @@ int testIterator(Container& c, Opt& opt)
 {
   typename Container::iterator begin=c.begin(), end=c.end();
   typename Container::const_iterator cbegin(begin);
-  typename Container::const_iterator cbegin1 DUNE_UNUSED = begin;
+  [[maybe_unused]] typename Container::const_iterator cbegin1 = begin;
   typename Container::const_iterator cend=c.end();
   int ret = 0;
 

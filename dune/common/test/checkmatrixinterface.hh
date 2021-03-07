@@ -269,7 +269,7 @@ namespace CheckMatrixInterface
     // check size methods
     static void checkSizes ( const Matrix &matrix )
     {
-      DUNE_UNUSED const size_type size = matrix.size();
+      [[maybe_unused]] const size_type size = matrix.size();
       const size_type rows = MatrixSizeHelper< Matrix >::rows( matrix );
       const size_type cols = MatrixSizeHelper< Matrix >::cols( matrix );
       const size_type N = matrix.N();
@@ -284,7 +284,7 @@ namespace CheckMatrixInterface
     {
       const size_type size = matrix.size();
       for( size_type i = size_type( 0 ); i < size; ++i )
-        DUNE_UNUSED const_row_reference row = matrix[ i ];
+        [[maybe_unused]] const_row_reference row = matrix[ i ];
 
       const size_type rows = MatrixSizeHelper< Matrix >::rows( matrix );
       const size_type cols = MatrixSizeHelper< Matrix >::cols( matrix );
@@ -292,8 +292,8 @@ namespace CheckMatrixInterface
       {
         for( size_type j = size_type( 0 ); j < cols; ++j )
         {
-          DUNE_UNUSED bool exists = matrix.exists( i, j );
-          DUNE_UNUSED const value_type &value = matrix[ i ][ j ];
+          [[maybe_unused]] bool exists = matrix.exists( i, j );
+          [[maybe_unused]] const value_type &value = matrix[ i ][ j ];
         }
       }
     }
@@ -337,7 +337,7 @@ namespace CheckMatrixInterface
     {
       const ConstIterator end = matrix.end();
       for( ConstIterator it = matrix.begin(); it != end; ++it )
-        DUNE_UNUSED const_row_reference row = *it;
+        [[maybe_unused]] const_row_reference row = *it;
     }
   };
 

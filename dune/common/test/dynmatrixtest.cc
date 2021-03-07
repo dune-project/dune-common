@@ -306,20 +306,20 @@ void test_matrix()
     for(size_type i=0; i<A2.N(); ++i)
       for(size_type j=0; j<A2.M(); ++j)
         A2[i][j] = i;
-    const DynamicMatrix<K>& Aref DUNE_UNUSED = A2;
+    [[maybe_unused]] const DynamicMatrix<K>& Aref = A2;
 
 
     DynamicMatrix<K> B(n+1,n+1);
     for(size_type i=0; i<B.N(); ++i)
       for(size_type j=0; j<B.M(); ++j)
         B[i][j] = i;
-    const DynamicMatrix<K>& Bref DUNE_UNUSED = B;
+    [[maybe_unused]] const DynamicMatrix<K>& Bref = B;
 
     DynamicMatrix<K> C(n,n);
     for(size_type i=0; i<C.N(); ++i)
       for(size_type j=0; j<C.M(); ++j)
         C[i][j] = i;
-    const DynamicMatrix<K>& Cref DUNE_UNUSED = C;
+    [[maybe_unused]] const DynamicMatrix<K>& Cref = C;
 
 #if 0
     DynamicMatrix<K> AB = Aref.rightmultiplyany(B);

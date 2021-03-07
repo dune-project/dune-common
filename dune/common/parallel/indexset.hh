@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <dune/common/arraylist.hh>
 #include <dune/common/exceptions.hh>
-#include <dune/common/unused.hh>
 #include <iostream>
 
 #include "localindex.hh"
@@ -614,9 +613,8 @@ namespace Dune
   template<typename T>
   struct LocalIndexComparator
   {
-    static bool compare(const T& t1, const T& t2){
-      DUNE_UNUSED_PARAMETER(t1);
-      DUNE_UNUSED_PARAMETER(t2);
+    static bool compare([[maybe_unused]] const T& t1, [[maybe_unused]] const T& t2)
+    {
       return false;
     }
   };

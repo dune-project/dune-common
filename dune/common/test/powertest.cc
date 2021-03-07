@@ -8,7 +8,6 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/math.hh>
 #include <dune/common/power.hh>
-#include <dune/common/unused.hh>
 
 using namespace Dune;
 

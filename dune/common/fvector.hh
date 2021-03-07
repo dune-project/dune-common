@@ -18,7 +18,6 @@
 
 #include "ftraits.hh"
 #include "densevector.hh"
-#include "unused.hh"
 #include "boundschecking.hh"
 
 #include <dune/common/math.hh>
@@ -166,9 +165,9 @@ namespace Dune {
      * \param[in]  dummy  A void* dummy argument needed by SFINAE.
      */
     template<class C>
-    FieldVector (const DenseVector<C> & x, typename std::enable_if<IsFieldVectorSizeCorrect<C,SIZE>::value>::type* dummy=0 )
+    FieldVector (const DenseVector<C> & x,
+                 [[maybe_unused]] typename std::enable_if<IsFieldVectorSizeCorrect<C,SIZE>::value>::type* dummy=0)
     {
-      DUNE_UNUSED_PARAMETER(dummy);
       // do a run-time size check, for the case that x is not a FieldVector
       assert(x.size() == SIZE); // Actually this is not needed any more!
       std::copy_n(x.begin(), std::min(static_cast<std::size_t>(SIZE),x.size()), _data.begin());
@@ -375,15 +374,13 @@ namespace Dune {
     //===== forward methods to container
     static constexpr size_type size () { return 1; }
 
-    K & operator[](size_type i)
+    K & operator[]([[maybe_unused]] size_type i)
     {
-      DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
-    const K & operator[](size_type i) const
+    const K & operator[]([[maybe_unused]] size_type i) const
     {
-      DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }

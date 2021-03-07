@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <new>
 #include <utility>
-#include <dune/common/unused.hh>
 
 /**
  * @file
@@ -52,9 +51,8 @@ namespace Dune
 
     //! allocate n objects of type T
     pointer allocate(size_type n,
-                     const void* hint = 0)
+                     [[maybe_unused]] const void* hint = 0)
     {
-      DUNE_UNUSED_PARAMETER(hint);
       if (n > this->max_size())
         throw std::bad_alloc();
 
@@ -65,9 +63,8 @@ namespace Dune
     }
 
     //! deallocate n objects of type T at address p
-    void deallocate(pointer p, size_type n)
+    void deallocate(pointer p, [[maybe_unused]] size_type n)
     {
-      DUNE_UNUSED_PARAMETER(n);
       std::free(p);
     }
 

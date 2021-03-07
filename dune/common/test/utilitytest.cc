@@ -59,7 +59,7 @@ int main(int, char**)
   Tuple1 t1(i,c,l,c);
   RefTuple1 refs(i, c, l, c);
 
-  DUNE_UNUSED RefTuple1 refs2(Dune::transformTuple<Dune::AddRefTypeEvaluator>(t1));
+  [[maybe_unused]] RefTuple1 refs2(Dune::transformTuple<Dune::AddRefTypeEvaluator>(t1));
   PointerTuple1 pointers1(Dune::transformTuple<Dune::AddPtrTypeEvaluator>(refs));
   if(&i != std::get<0>(pointers1) || &c != std::get<1>(pointers1) ||
      &l != std::get<2>(pointers1) || &c != std::get<3>(pointers1)) {
@@ -75,7 +75,7 @@ int main(int, char**)
 
   PointerTuple1 p(new int(), new char(), new long(), new char());
 
-  typedef Dune::ForEachType<Eval,PointerTuple1>::Type ConvertedType DUNE_UNUSED;
+  [[maybe_unused]] typedef Dune::ForEachType<Eval,PointerTuple1>::Type ConvertedType;
   Dune::PointerPairDeletor<PointerTuple1>::apply(p);
   if(p != PointerTuple1(nullptr,nullptr,nullptr,nullptr)){
     ret+=20;

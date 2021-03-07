@@ -54,8 +54,8 @@ struct FieldVectorMainTestCommons
     const FieldVector<ft,d> x(z);
     if (x.size()>0)
       a = x[0];
-    bool b DUNE_UNUSED;
-    rt n DUNE_UNUSED;
+    [[maybe_unused]] bool b;
+    [[maybe_unused]] rt n;
 
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 
@@ -92,7 +92,7 @@ struct FieldVectorMainTestCommons
     // test op(vec,vec)
     z = v + w;
     z = v - w;
-    FieldVector<ft,d> z2 DUNE_UNUSED = v + w;
+    [[maybe_unused]] FieldVector<ft,d> z2 = v + w;
     w -= v;
     w += v;
 
@@ -157,7 +157,7 @@ struct FieldVectorMainTest
     // assignment to vector of complex
     FieldVector< std::complex<rt> ,d> cv = v;
     cv = a;
-    const FieldVector< std::complex<rt> ,d> ccv DUNE_UNUSED = x;
+    [[maybe_unused]] const FieldVector< std::complex<rt> ,d> ccv = x;
   }
 };
 
@@ -180,7 +180,7 @@ struct ScalarOperatorTest
     testft c = 2;
     FieldVector<ft,1> v(2);
     FieldVector<ft,1> w(2);
-    bool b DUNE_UNUSED;
+    [[maybe_unused]] bool b;
 
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 
@@ -243,7 +243,7 @@ struct ScalarOrderingTest
     ft c = 2;
     FieldVector<ft,1> v(2);
     FieldVector<ft,1> w(2);
-    bool b DUNE_UNUSED;
+    [[maybe_unused]] bool b;
 
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 
@@ -293,7 +293,7 @@ struct DotProductTest
 {
   DotProductTest() {
     typedef std::complex<rt> ct;
-    DUNE_UNUSED const rt myEps = Epsilon<rt>::value();
+    [[maybe_unused]] const rt myEps = Epsilon<rt>::value();
 
     static_assert(
       ( std::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
@@ -361,7 +361,7 @@ template <class rt, int d>
 struct DotProductTest<rt, d, false>
 {
   DotProductTest() {
-    DUNE_UNUSED const rt myEps = Epsilon<rt>::value();
+    [[maybe_unused]] const rt myEps = Epsilon<rt>::value();
 
     static_assert(
       ( std::is_same< typename Dune::FieldTraits<rt>::real_type, rt>::value ),
@@ -521,7 +521,7 @@ test_infinity_norms()
 void
 test_initialisation()
 {
-  DUNE_UNUSED Dune::FieldVector<int, 2> const b = { 1, 2 };
+  [[maybe_unused]] Dune::FieldVector<int, 2> const b = { 1, 2 };
 
   FVECTORTEST_ASSERT(b[0] == 1);
   FVECTORTEST_ASSERT(b[1] == 2);

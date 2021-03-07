@@ -12,7 +12,6 @@
 #include <cassert>
 
 #include <dune/common/exceptions.hh>
-#include <dune/common/unused.hh>
 
 #if HAVE_LAPACK
 

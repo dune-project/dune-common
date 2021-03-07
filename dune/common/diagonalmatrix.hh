@@ -23,7 +23,6 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/genericiterator.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/unused.hh>
 
 
 namespace Dune {
@@ -718,9 +717,8 @@ namespace Dune {
     //===== access to components
 
     //! same for read only access
-    const K& operator[] (size_type i) const
+    const K& operator[] ([[maybe_unused]] size_type i) const
     {
-      DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == row_);
       return *p_;
     }
@@ -797,15 +795,13 @@ namespace Dune {
 
   protected:
 
-    size_type realIndex(int i) const
+    size_type realIndex([[maybe_unused]] int i) const
     {
-      DUNE_UNUSED_PARAMETER(i);
       return rowIndex();
     }
 
-    K* pointer(size_type i) const
+    K* pointer([[maybe_unused]] size_type i) const
     {
-      DUNE_UNUSED_PARAMETER(i);
       return const_cast<K*>(p_);
     }
 
@@ -859,9 +855,8 @@ namespace Dune {
     //===== access to components
 
     //! random access
-    K& operator[] (size_type i)
+    K& operator[] ([[maybe_unused]] size_type i)
     {
-      DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == row_);
       return *p_;
     }

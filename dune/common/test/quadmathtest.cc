@@ -11,7 +11,6 @@
 #include <dune/common/float_cmp.hh>
 #include <dune/common/quadmath.hh>
 #include <dune/common/test/testsuite.hh>
-#include <dune/common/unused.hh>
 
 using namespace Dune;
 
@@ -44,10 +43,10 @@ int main()
   Float128 x3 = 1.0;
   Float128 x4 = 1.0l;
 
-  int DUNE_UNUSED z1 = x1;
-  float DUNE_UNUSED z2 = x2;
-  double DUNE_UNUSED z3 = x3;
-  long double DUNE_UNUSED z4 = x4;
+  [[maybe_unused]] int z1 = x1;
+  [[maybe_unused]] float z2 = x2;
+  [[maybe_unused]] double z3 = x3;
+  [[maybe_unused]] long double z4 = x4;
 
   // field-vector
   FieldVector<Float128,3> v{1,2,3}, x;
@@ -78,8 +77,8 @@ int main()
 
   M.solve(v, x);  // x = M^(-1)*v
 
-  auto DUNE_UNUSED M3 = M.leftmultiplyany(M2);
-  auto DUNE_UNUSED M4 = M.rightmultiplyany(M2);
+  [[maybe_unused]] auto M3 = M.leftmultiplyany(M2);
+  [[maybe_unused]] auto M4 = M.rightmultiplyany(M2);
 
   using namespace FMatrixHelp;
 

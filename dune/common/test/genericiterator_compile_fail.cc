@@ -13,8 +13,8 @@ int main(){
   Container bidicontainer;
 
   Container::const_iterator cit = bidicontainer.begin();
-  //This should fail since makeing a mutable iterator from a const iterator
+  //This should fail since making a mutable iterator from a const iterator
   //discard qualifiers
-  Container::iterator it DUNE_UNUSED;
+  [[maybe_unused]] Container::iterator it;
   it = cit;
 }

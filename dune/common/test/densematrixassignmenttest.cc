@@ -9,7 +9,6 @@
 #include <dune/common/dynmatrix.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/gmpfield.hh>
-#include <dune/common/unused.hh>
 
 template <class M>
 void populateMatrix(M &A, int rows, int cols) {
@@ -136,7 +135,7 @@ bool run() {
       }
     }
     {
-      DUNE_UNUSED M const fieldT = constant;
+      [[maybe_unused]] M const fieldT = constant;
     }
   }
 
@@ -197,7 +196,7 @@ bool run() {
   {
     using M = Dune::FieldMatrix<ft, 3, 3>;
     Dune::DiagonalMatrix<ft, 3> diagM({1, 2, 3});
-    { DUNE_UNUSED M const fieldT = diagM; }
+    { [[maybe_unused]] M const fieldT = diagM; }
     {
       M fieldT;
       fieldT = diagM;
@@ -206,7 +205,7 @@ bool run() {
   {
     using M = Dune::DynamicMatrix<ft>;
     Dune::DiagonalMatrix<ft, 3> diagM({1, 2, 3});
-    { DUNE_UNUSED M const dynT = diagM; }
+    { [[maybe_unused]] M const dynT = diagM; }
     {
       M dynT;
       dynT = diagM;
@@ -321,24 +320,24 @@ bool run() {
 #ifdef FAILURE3
     {
       // Should fail at compile-time
-      DUNE_UNUSED M const fieldT = fieldMWrong11;
+      [[maybe_unused]] M const fieldT = fieldMWrong11;
     }
 #endif
 #ifdef FAILURE4
     {
       // Should fail at compile-time
-      DUNE_UNUSED M const fieldT = fieldMWrong22;
+      [[maybe_unused]] M const fieldT = fieldMWrong22;
     }
 #endif
 #ifdef FAILURE5
     {
       // Should fail at compile-time
-      DUNE_UNUSED M const fieldT = fieldMWrong33;
+      [[maybe_unused]] M const fieldT = fieldMWrong33;
     }
 #endif
     try {
       // Should fail at run-time with RangeError
-      DUNE_UNUSED M const fieldT = dynMWrong11;
+      [[maybe_unused]] M const fieldT = dynMWrong11;
       std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
                 << std::endl;
       passed = false;
@@ -348,7 +347,7 @@ bool run() {
     }
     try {
       // Should fail at run-time with RangeError
-      DUNE_UNUSED M const fieldT = dynMWrong22;
+      [[maybe_unused]] M const fieldT = dynMWrong22;
       std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
                 << std::endl;
       passed = false;
@@ -358,7 +357,7 @@ bool run() {
     }
     try {
       // Should fail at run-time with RangeError
-      DUNE_UNUSED M const fieldT = dynMWrong33;
+      [[maybe_unused]] M const fieldT = dynMWrong33;
       std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
                 << std::endl;
       passed = false;
@@ -372,7 +371,7 @@ bool run() {
     using M = Dune::DynamicMatrix<ft>;
     {
       // Should fail at compile-time
-      DUNE_UNUSED M const dynT = constant;
+      [[maybe_unused]] M const dynT = constant;
     }
 #endif
   }
