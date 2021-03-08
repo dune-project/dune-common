@@ -52,7 +52,7 @@ set_package_properties("TBB" PROPERTIES
 
 # first, try to find TBBs cmake configuration
 find_package(TBB ${TBB_FIND_VERSION} QUIET CONFIG)
-if(TBB_tbb_FOUND)
+if(TBB_FOUND AND TARGET TBB::tbb)
   message(STATUS "Found TBB: using configuration from TBB_DIR=${TBB_DIR} (found version \"${TBB_VERSION}\")")
   return()
 endif()
