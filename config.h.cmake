@@ -29,21 +29,6 @@
 /* does the compiler support __attribute__((unused))? */
 #cmakedefine HAS_ATTRIBUTE_UNUSED 1
 
-/* does the standard library provide <experimental/type_traits> ? */
-#cmakedefine DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS 1
-
-/* does the standard library provide bool_constant ? */
-#cmakedefine DUNE_HAVE_CXX_BOOL_CONSTANT 1
-
-/* does the standard library provide experimental::bool_constant ? */
-#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT 1
-
-/* does the standard library provide apply() ? */
-#cmakedefine DUNE_HAVE_CXX_APPLY 1
-
-/* does the standard library provide experimental::apply() ? */
-#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_APPLY 1
-
 /* does the standard library provide experimental::make_array() ? */
 #cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY 1
 
@@ -129,10 +114,12 @@
 #define DUNE_HAVE_CXX_VARIANT 1
 #define DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
 #define DUNE_HAVE_C_ALIGNED_ALLOC 1
-
-
-/* Define to 1 if the compiler properly supports testing for operator[] */
-#cmakedefine HAVE_IS_INDEXABLE_SUPPORT 1
+#define DUNE_HAVE_CXX_BOOL_CONSTANT 1
+#define DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT 0
+#define DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS 0
+#define DUNE_HAVE_CXX_APPLY 1
+#define DUNE_HAVE_CXX_EXPERIMENTAL_APPLY 0
+#define HAVE_IS_INDEXABLE_SUPPORT 1
 
 /* Define to ENABLE_UMFPACK if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE

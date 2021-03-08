@@ -13,6 +13,7 @@ namespace Std {
 
 #if DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
 
+  /// \deprecated Use deduction guide of `std::array` or `std::to_array`.
   using std::experimental::make_array;
 
 #else // DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
@@ -30,6 +31,7 @@ namespace Std {
    *       give a diagnostic when anyone happens to do that.
    *
    * \ingroup CxxUtilities
+   * \deprecated Use deduction guide of `std::array` or `std::to_array`.
    */
   template <typename... Args>
   std::array<typename std::common_type<Args...>::type, sizeof...(Args)>

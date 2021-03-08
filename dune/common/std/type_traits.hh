@@ -97,27 +97,9 @@ namespace Std
   struct to_true_type : public std::true_type {};
 
 
-#if DUNE_HAVE_CXX_BOOL_CONSTANT
-
-    using std::bool_constant;
-
-#elif DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT
-
-    using std::experimental::bool_constant;
-
-#else
-
-    /**
-     *  \brief A template alias for std::integral_constant<bool, value>
-     *
-     *  \tparam value Boolean value to encode as std::integral_constant<bool, value>
-     *
-     * \ingroup CxxUtilities
-     */
-    template <bool value>
-    using bool_constant = std::integral_constant<bool, value>;
-
-#endif
+  /// A helper alias template std::bool_constant imported into the namespace Dune::Std
+  /// \deprecated Use the `std::bool_constant` directly.
+  using std::bool_constant;
 
 
   namespace Impl {

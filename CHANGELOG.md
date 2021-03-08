@@ -1,5 +1,14 @@
 # Master (will become release 2.8)
 
+- Deprecate fallback implementations `Dune::Std::apply`, `Dune::Std::bool_constant`, and
+  `Dune::Std::make_array` in favor of std c++ implementations.
+
+- Remove c++ feature tests in cmake for existing c++-17 standards. Add default
+  defines for `DUNE_HAVE_CXX_BOOL_CONSTANT`, `DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT`,
+  `DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS`, `DUNE_HAVE_CXX_APPLY`,
+  `DUNE_HAVE_CXX_EXPERIMENTAL_APPLY`, `HAVE_IS_INDEXABLE_SUPPORT` in `config.h` for one
+  more release.
+
 - Add backport of `FindPkgConfig.cmake` from cmake 3.19.4 since there was a bug in
   an older find module leading to problems finding tbb in debian:10.
 
