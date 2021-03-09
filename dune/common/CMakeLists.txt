@@ -5,13 +5,9 @@ add_subdirectory("test")
 
 #build the library dunecommon
 
-if(HAVE_MPROTECT)
-  set(debugallocator_src "debugallocator.cc")
-endif(HAVE_MPROTECT)
-
 dune_add_library("dunecommon"
   debugalign.cc
-  ${debugallocator_src}
+  debugallocator.cc
   exceptions.cc
   fmatrixev.cc
   ios_state.cc

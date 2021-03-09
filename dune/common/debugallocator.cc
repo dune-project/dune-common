@@ -6,6 +6,8 @@
 
 #include "debugallocator.hh"
 
+#if HAVE_MPROTECT
+
 #include <iostream>
 #include <unistd.h>
 #include <cstdlib>
@@ -29,3 +31,5 @@ namespace Dune
 
   }   // end namespace DebugMemory
 } // end namespace Dune
+
+#endif // HAVE_MPROTECT

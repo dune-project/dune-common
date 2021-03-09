@@ -16,7 +16,6 @@ include(AddQuadMathFlags)
 # find program for image manipulation
 find_package(Inkscape)
 include(UseInkscape)
-include(FindMProtect)
 
 # find the threading library
 find_package(Threads)

@@ -8,6 +8,7 @@
 #define DEBUG_NEW_DELETE 3
 
 #include <dune/common/debugallocator.hh>
+#if HAVE_MPROTECT
 
 #include <iostream>
 #include <csignal>
@@ -88,6 +89,8 @@ void new_delete_tests()
   z4 = 0;
 }
 
+#endif // HAVE_MPROTECT
+
 int main(int, char**)
 {
 #if EXPECTED_SIGNAL
@@ -97,9 +100,12 @@ int main(int, char**)
   std::signal(EXPECTED_ALT_SIGNAL, std::_Exit);
 #endif
 
+#if HAVE_MPROTECT
   basic_tests();
   allocator_tests();
   new_delete_tests();
+#endif
+
 #ifdef EXPECTED_SIGNAL
   return 1;
 #else
