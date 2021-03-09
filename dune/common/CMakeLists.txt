@@ -4,11 +4,6 @@ add_subdirectory("std")
 add_subdirectory("test")
 
 #build the library dunecommon
-if(LAPACK_FOUND)
-  set(_additional_libs ${LAPACK_LIBRARIES})
-elseif(BLAS_FOUND)
-  set(_additional_libs ${BLAS_LIBRARIES})
-endif(LAPACK_FOUND)
 
 if(HAVE_MPROTECT)
   set(debugallocator_src "debugallocator.cc")
@@ -25,10 +20,11 @@ dune_add_library("dunecommon"
   path.cc
   simd/test.cc
   stdstreams.cc
-  stdthread.cc
-  ADD_LIBS "${_additional_libs}")
+  stdthread.cc)
 
+add_dune_blas_lapack_flags(dunecommon)
 add_dune_tbb_flags(dunecommon)
+
 #install headers
 install(FILES
         alignedallocator.hh

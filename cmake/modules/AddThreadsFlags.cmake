@@ -1,5 +1,9 @@
 # Always link threading libraries to targets
 
+# text for feature summary
+set_package_properties("Threads" PROPERTIES
+  DESCRIPTION "Multi-threading library")
+
 # set HAVE_THREADS for config.h
 set(HAVE_THREADS ${Threads_FOUND})
 

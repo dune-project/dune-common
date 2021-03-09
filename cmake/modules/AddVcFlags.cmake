@@ -13,6 +13,12 @@
 #       A list of targets to use VC with.
 #
 
+# text for feature summary
+set_package_properties("Vc" PROPERTIES
+  DESCRIPTION "C++ Vectorization library"
+  URL "https://github.com/VcDevel/Vc"
+  PURPOSE "For use of SIMD instructions")
+
 function(add_dune_vc_flags _targets)
   if(Vc_FOUND)
     foreach(_target ${_targets})
