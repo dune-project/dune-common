@@ -43,6 +43,8 @@ find_package(TBB)
 include(AddTBBFlags)
 
 # find libraries for graph partitioning
+find_package(PTScotch)
+include(AddPTScotchFlags)
 find_package(METIS)
 include(AddMETISFlags)
 find_package(ParMETIS 4.0)

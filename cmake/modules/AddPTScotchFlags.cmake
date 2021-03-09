@@ -15,7 +15,7 @@ set(HAVE_PTSCOTCH ${PTScotch_FOUND})
 
 # register all PTScotch related flags
 if(PTScotch_FOUND)
-  dune_register_package_flags(LIBRARIES "PTScotch::PTScotch")
+  dune_register_package_flags(LIBRARIES PTScotch::PTScotch)
 endif()
 
 function(add_dune_ptscotch_flags _targets)
