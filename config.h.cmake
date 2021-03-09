@@ -47,9 +47,6 @@
 /* Define if you have LAPACK library. */
 #cmakedefine HAVE_LAPACK 1
 
-/* Define to 1 if you have the <malloc.h> header file. */
-// Not used! #cmakedefine01 HAVE_MALLOC_H
-
 /* Define if you have the MPI library.  */
 #cmakedefine HAVE_MPI ENABLE_MPI
 
@@ -67,9 +64,6 @@
 
 /* Define to 1 if you have the symbol mprotect. */
 #cmakedefine HAVE_MPROTECT 1
-
-/* Define to 1 if you have the <stdint.h> header file. */
-#cmakedefine HAVE_STDINT_H 1
 
 /* Define to 1 if you have <sys/mman.h>. */
 #cmakedefine HAVE_SYS_MMAN_H 1
