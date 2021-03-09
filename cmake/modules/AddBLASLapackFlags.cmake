@@ -9,13 +9,14 @@
 #
 #       A list of targets to use BLAS/Lapack with.
 #
+include_guard(GLOBAL)
 
 set_package_properties("BLAS" PROPERTIES
   DESCRIPTION "fast linear algebra routines")
 set_package_properties("LAPACK" PROPERTIES
   DESCRIPTION "fast linear algebra routines")
 
-# register HAVE_METIS for config.h
+# register HAVE_BLAS and HAVE_LAPACK for config.h
 set(HAVE_BLAS ${BLAS_FOUND})
 set(HAVE_LAPACK ${LAPACK_FOUND})
 
