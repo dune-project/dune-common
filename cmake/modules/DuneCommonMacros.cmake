@@ -6,20 +6,7 @@ dune_set_minimal_debug_level()
 
 # search for lapack
 find_package(LAPACK)
-set(HAVE_LAPACK ${LAPACK_FOUND})
-if(${HAVE_LAPACK})
-  dune_register_package_flags(LIBRARIES "${LAPACK_LIBRARIES}")
-  cmake_push_check_state()
-  set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES})
-  check_function_exists("dsyev_" LAPACK_NEEDS_UNDERLINE)
-  cmake_pop_check_state()
-endif(${HAVE_LAPACK})
-set(HAVE_BLAS ${BLAS_FOUND})
-
-set_package_properties("BLAS" PROPERTIES
-  DESCRIPTION "fast linear algebra routines")
-set_package_properties("LAPACK" PROPERTIES
-  DESCRIPTION "fast linear algebra routines")
+include(AddBLASLapackFlags)
 
 find_package(GMP)
 include(AddGMPFlags)
@@ -34,9 +21,6 @@ include(FindMProtect)
 # find the threading library
 find_package(Threads)
 include(AddThreadsFlags)
-# text for feature summary
-set_package_properties("Threads" PROPERTIES
-  DESCRIPTION "Multi-threading library")
 
 # find library for Threading Building Blocks
 find_package(TBB)
@@ -57,11 +41,6 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) AND
 endif()
 find_package(Vc ${MINIMUM_VC_VERSION} NO_MODULE)
 include(AddVcFlags)
-# text for feature summary
-set_package_properties("Vc" PROPERTIES
-  DESCRIPTION "C++ Vectorization library"
-  URL "https://github.com/VcDevel/Vc"
-  PURPOSE "For use of SIMD instructions")
 
 # Run the python extension of the Dune cmake build system
 include(DunePythonCommonMacros)

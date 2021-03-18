@@ -2,6 +2,7 @@ add_subdirectory(FindPkgConfig)
 add_subdirectory(FindPython3)
 
 install(FILES
+  AddBLASLapackFlags.cmake
   AddGMPFlags.cmake
   AddMETISFlags.cmake
   AddParMETISFlags.cmake
