@@ -9,6 +9,7 @@
 #
 #       A list of targets to use GMP with.
 #
+include_guard(GLOBAL)
 
 # set HAVE_GMP for the config.h file
 set(HAVE_GMP ${GMP_FOUND})

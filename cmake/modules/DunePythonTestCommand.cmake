@@ -46,6 +46,7 @@
 #    build system. Added commands are run, when the target
 #    :code:`test_python` is built and during :code:`ctest`.
 #
+include_guard(GLOBAL)
 
 function(dune_python_add_test)
   # Parse Arguments

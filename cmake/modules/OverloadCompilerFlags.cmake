@@ -22,6 +22,7 @@
 #    .. note::
 #       If you don't know what this is or what it's good for, don't use it.
 #
+include_guard(GLOBAL)
 
 option(ALLOW_CXXFLAGS_OVERWRITE OFF)
 option(ALLOW_CFLAGS_OVERWRITE OFF)

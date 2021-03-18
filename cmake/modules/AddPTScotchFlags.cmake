@@ -9,6 +9,7 @@
 #
 #       A list of targets to use PTScotch with.
 #
+include_guard(GLOBAL)
 
 # set HAVE_PTSCOTCH for config.h
 set(HAVE_PTSCOTCH ${PTScotch_FOUND})

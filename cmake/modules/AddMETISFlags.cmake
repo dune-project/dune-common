@@ -9,6 +9,7 @@
 #
 #       A list of targets to use METIS with.
 #
+include_guard(GLOBAL)
 
 # register HAVE_METIS for config.h
 set(HAVE_METIS ${METIS_FOUND})

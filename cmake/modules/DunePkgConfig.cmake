@@ -2,6 +2,7 @@
 # file <module-name>.pc from <module-name>.pc.in,
 # and adds installation directives.
 #
+include_guard(GLOBAL)
 
 find_package(PkgConfig)
 # text for feature summary

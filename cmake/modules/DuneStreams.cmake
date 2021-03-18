@@ -8,6 +8,7 @@
 #    :code:`vverb`, :code:`verb`, :code:`info`, :code:`warn` and :code:`grave`.
 #    Defaults to :code:`warn`.
 #
+include_guard(GLOBAL)
 
 macro(dune_set_minimal_debug_level)
 set(MINIMAL_DEBUG_LEVEL ON CACHE STRING "set the MINIMAL_DEBUG_LEVEL. Standard debug streams with level below MINIMAL_DEBUG_LEVEL will collapse to doing nothing if output is requested. (default=warn)")

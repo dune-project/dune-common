@@ -463,7 +463,6 @@
 #    :ref:`dune_instance_begin()
 #    <dune_instance_begin>`/:ref:`dune_instance_end() <dune_instance_end>`
 #    block.
-
 include_guard(GLOBAL)
 
 # macro to print additional information to the cmake output file.

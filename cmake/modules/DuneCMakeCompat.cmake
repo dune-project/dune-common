@@ -44,7 +44,7 @@
 #
 #    This is exactly the same as the ``list(FILTER ...)`` command available in
 #    cmake 3.7 and onward.
-
+include_guard(GLOBAL)
 
 # list(FILTER...) was introduced in cmake 3.6, this is a compatibility
 # implementation for earlier cmakes

@@ -22,6 +22,7 @@
 #
 #    TODO Switch to named arguments!
 #
+include_guard(GLOBAL)
 
 include(CMakeParseArguments)
 

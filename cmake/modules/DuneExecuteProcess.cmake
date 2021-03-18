@@ -13,6 +13,7 @@
 #    exits on non-zero exit codes. All arguments are forwarded to the actual
 #    cmake command.
 #
+include_guard(GLOBAL)
 
 function(dune_execute_process)
   include(CMakeParseArguments)

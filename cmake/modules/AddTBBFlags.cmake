@@ -9,6 +9,7 @@
 #
 #       A list of targets to use TBB with.
 #
+include_guard(GLOBAL)
 
 # set variable for config.h
 set(HAVE_TBB ${TBB_FOUND})

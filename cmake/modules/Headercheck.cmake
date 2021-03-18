@@ -5,6 +5,7 @@
 #    There has been a couple of issues with this implementation in
 #    the past, so it was deactivated by default.
 #
+include_guard(GLOBAL)
 
 # sets up a global property with the names of all header files
 # in the module and a global target depending on all checks

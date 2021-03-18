@@ -19,7 +19,7 @@
 #
 #       The target list to add the MPI flags to.
 #
-
+include_guard(GLOBAL)
 
 find_package(MPI 3.0 COMPONENTS C)
 

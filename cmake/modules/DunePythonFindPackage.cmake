@@ -41,6 +41,7 @@
 #
 #    Find a given python package on the system.
 #
+include_guard(GLOBAL)
 
 function(dune_python_find_package)
   # Parse Arguments

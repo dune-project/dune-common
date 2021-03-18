@@ -62,6 +62,7 @@
 #    Call this function from a downstream module, if that module relies on the
 #    the presence of the configure time virtualenv described in :ref:`DunePythonVirtualenv`.
 #
+include_guard(GLOBAL)
 
 # unless the user has defined the variable, unversioned names (like python3) are found
 # first, to match what users most probably use later on to call the executable
