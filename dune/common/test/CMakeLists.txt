@@ -341,7 +341,6 @@ dune_add_test(SOURCES stringutilitytest.cc
 
 dune_add_test(SOURCES testdebugallocator.cc
               LINK_LIBRARIES dunecommon
-              CMAKE_GUARD HAVE_MPROTECT
               LABELS quick)
 
 dune_add_test(NAME testdebugallocator_fail1
@@ -349,7 +348,6 @@ dune_add_test(NAME testdebugallocator_fail1
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE1;EXPECTED_SIGNAL=SIGSEGV;EXPECTED_ALT_SIGNAL=SIGBUS"
               EXPECT_FAIL
-              CMAKE_GUARD HAVE_MPROTECT
               LABELS quick)
 
 dune_add_test(NAME testdebugallocator_fail2
@@ -357,7 +355,6 @@ dune_add_test(NAME testdebugallocator_fail2
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE2;EXPECTED_SIGNAL=SIGABRT"
               EXPECT_FAIL
-              CMAKE_GUARD HAVE_MPROTECT
               LABELS quick)
 
 dune_add_test(NAME testdebugallocator_fail3
@@ -365,7 +362,6 @@ dune_add_test(NAME testdebugallocator_fail3
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE3;EXPECTED_SIGNAL=SIGABRT"
               EXPECT_FAIL
-              CMAKE_GUARD HAVE_MPROTECT
               LABELS quick)
 
 dune_add_test(NAME testdebugallocator_fail4
@@ -373,7 +369,6 @@ dune_add_test(NAME testdebugallocator_fail4
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE4;DEBUG_ALLOCATOR_KEEP=1;EXPECTED_SIGNAL=SIGSEGV;EXPECTED_ALT_SIGNAL=SIGBUS"
               EXPECT_FAIL
-              CMAKE_GUARD HAVE_MPROTECT
               LABELS quick)
 
 dune_add_test(NAME testdebugallocator_fail5
@@ -381,7 +376,6 @@ dune_add_test(NAME testdebugallocator_fail5
               LINK_LIBRARIES dunecommon
               COMPILE_DEFINITIONS "FAILURE5;EXPECTED_SIGNAL=SIGSEGV;EXPECTED_ALT_SIGNAL=SIGBUS"
               EXPECT_FAIL
-              CMAKE_GUARD HAVE_MPROTECT
               LABELS quick)
 
 dune_add_test(SOURCES testfloatcmp.cc

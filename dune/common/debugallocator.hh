@@ -3,6 +3,12 @@
 #ifndef DUNE_DEBUG_ALLOCATOR_HH
 #define DUNE_DEBUG_ALLOCATOR_HH
 
+#if __has_include(<sys/mman.h>)
+
+#include <sys/mman.h>
+#define HAVE_SYS_MMAN_H 1
+#define HAVE_MPROTECT 1
+
 #include <dune/common/unused.hh>
 #include <exception>
 #include <typeinfo>
@@ -12,17 +18,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <new>
-#if HAVE_SYS_MMAN_H && HAVE_MPROTECT
-#include <sys/mman.h>
-#else
-enum DummyProtFlags { PROT_NONE, PROT_WRITE, PROT_READ };
-#endif
 
 #include "mallocallocator.hh"
-
-#if not HAVE_MPROTECT
-#error mprotect is required to use the DebugAllocator
-#else
 
 namespace Dune
 {
@@ -352,6 +349,6 @@ void operator delete(void * p, size_t size) noexcept
 
 #endif // DEBUG_NEW_DELETE
 
-#endif // HAVE_PROTECT
+#endif // __has_include(<sys/mman.h>)
 
 #endif // DUNE_DEBUG_ALLOCATOR_HH

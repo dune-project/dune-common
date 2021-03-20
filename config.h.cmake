@@ -59,12 +59,6 @@
    to facilitate activating and deactivating Vc using compile flags. */
 #cmakedefine HAVE_VC ENABLE_VC
 
-/* Define to 1 if you have the symbol mprotect. */
-#cmakedefine HAVE_MPROTECT 1
-
-/* Define to 1 if you have <sys/mman.h>. */
-#cmakedefine HAVE_SYS_MMAN_H 1
-
 /* Define to 1 if you have the Threading Building Blocks (TBB) library */
 #cmakedefine HAVE_TBB 1
 
