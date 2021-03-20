@@ -684,7 +684,6 @@ macro(dune_project)
 
   # check for C++ features, set compiler flags for C++14 or C++11 mode
   include(CheckCXXFeatures)
-  include(DuneCxaDemangle)
 
   # set include path and link path for the current project.
   include_directories("${CMAKE_BINARY_DIR}")

@@ -131,7 +131,7 @@ int main()
   checkname(t, Dune::className(Base{}), {}, R"(\bBase\b)");
   std::cout << std::endl;
 
-  #if BASICCHECK
+  #if !HAVE_CXA_DEMANGLE
   // in this case we only make sure that no segfault or similar happens
   return 0;
   #else

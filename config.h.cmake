@@ -41,9 +41,6 @@
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 
-/* does the compiler support abi::__cxa_demangle */
-#cmakedefine HAVE_CXA_DEMANGLE 1
-
 /* Define if you have LAPACK library. */
 #cmakedefine HAVE_LAPACK 1
 

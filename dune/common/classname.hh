@@ -14,7 +14,8 @@
 #include <typeinfo>
 #include <type_traits>
 
-#if HAVE_CXA_DEMANGLE
+#if __has_include(<cxxabi.h>) && !DISABLE_CXA_DEMANGLE
+#define HAVE_CXA_DEMANGLE 1
 #include <cxxabi.h>
 #endif // #if HAVE_CXA_DEMANGLE
 
