@@ -109,7 +109,7 @@ namespace Std
     // result_of_t is not defined and this overload is disabled.
     template<class R, class F, class... Args,
       std::enable_if_t<
-        std::is_same<void_t<std::result_of_t<F(Args...)>>, R>::value
+        std::is_same<std::void_t<std::result_of_t<F(Args...)>>, R>::value
       , int> = 0>
     std::true_type is_callable_helper(PriorityTag<2>)
     { return {}; }
@@ -246,7 +246,7 @@ namespace Std
 
     // specialization of detector that matches if Op<Args...> can be instantiated
     template<typename Default, template<typename...> class Op, typename... Args>
-    struct detector<Default, void_t<Op<Args...>>, Op, Args...>
+    struct detector<Default, std::void_t<Op<Args...>>, Op, Args...>
     {
       using value_t = std::true_type;
       using type = Op<Args...>;

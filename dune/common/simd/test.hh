@@ -39,14 +39,14 @@ namespace Dune {
       template<class Op, class... Args, class SFINAE>
       struct CanCall<Op(Args...), SFINAE> : std::false_type {};
       template<class Op, class... Args>
-      struct CanCall<Op(Args...), void_t<std::result_of_t<Op(Args...)> > >
+      struct CanCall<Op(Args...), std::void_t<std::result_of_t<Op(Args...)> > >
         : std::true_type
       {};
 
       template<class T, class SFINAE = void>
       struct LessThenComparable : std::false_type {};
       template<class T>
-      struct LessThenComparable<T, void_t<decltype(std::declval<T>()
+      struct LessThenComparable<T, std::void_t<decltype(std::declval<T>()
                                                    < std::declval<T>())> > :
         std::true_type
       {};

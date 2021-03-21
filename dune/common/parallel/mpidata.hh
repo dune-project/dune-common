@@ -93,9 +93,9 @@ namespace Dune{
   // specializations:
   // std::vector of static sized elements or std::string
   template<class T>
-  struct MPIData<T, void_t<std::tuple<decltype(std::declval<T>().data()),
-                                      decltype(std::declval<T>().size()),
-                                      typename std::decay_t<T>::value_type>>>{
+  struct MPIData<T, std::void_t<std::tuple<decltype(std::declval<T>().data()),
+                                           decltype(std::declval<T>().size()),
+                                           typename std::decay_t<T>::value_type>>>{
   private:
     template<class U>
     using hasResizeOp = decltype(std::declval<U>().resize(0));
