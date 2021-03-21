@@ -114,7 +114,9 @@ macro(add_doxygen_target)
           ${CMAKE_CURRENT_BINARY_DIR}/html/*.js
           ${CMAKE_CURRENT_BINARY_DIR}/html/*.png
           ${CMAKE_CURRENT_BINARY_DIR}/html/*.css
-          ${CMAKE_CURRENT_BINARY_DIR}/html/*.gif)
+          ${CMAKE_CURRENT_BINARY_DIR}/html/*.gif
+          ${CMAKE_CURRENT_BINARY_DIR}/*.tag
+          )
         set(doxygenfiles \"\${doxygenfiles}\")
         foreach(_file \${doxygenfiles})
            get_filename_component(_basename \${_file} NAME)
