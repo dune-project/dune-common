@@ -1,3 +1,7 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <dune/common/parallel/mpihelper.hh>
 int main(int argc, char** argv)
 {
@@ -28,14 +32,14 @@ int main(int argc, char** argv)
     Dune::MPIHelper::MPICommunicator comm = Dune::MPIHelper::getCommunication();
 
 #if HAVE_MPI
-    if (MPI_COMM_SELF !=  Dune::MPIHelper::getLocalCommunication())
+    if (MPI_COMM_SELF !=  Dune::MPIHelper::getLocalCommunicator())
     {
-        std::cerr<<"Dune::MPIHelper::getLocalCommunication() gives wrong result"<<std::endl;
+        std::cerr<<"Dune::MPIHelper::getLocalCommunicator() gives wrong result"<<std::endl;
         ++ret;
     }
-    if (MPI_COMM_WORLD !=  Dune::MPIHelper::getCommunication())
+    if (MPI_COMM_WORLD !=  Dune::MPIHelper::getCommunicator())
     {
-        std::cerr<<"Dune::MPIHelper::getCommunication() gives wrong result"<<std::endl;
+        std::cerr<<"Dune::MPIHelper::getCommunicator() gives wrong result"<<std::endl;
         ++ret;
     }
 #endif
