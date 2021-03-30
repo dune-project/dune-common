@@ -16,6 +16,14 @@
 
 #if HAVE_LAPACK
 
+#ifdef LAPACK_NEEDS_UNDERLINE
+  #define LAPACK_MANGLE(name,NAME) name##_
+#else
+  #define LAPACK_MANGLE(name,NAME) name
+#endif
+
+#define FC_FUNC LAPACK_MANGLE
+
 // symmetric matrices
 #define DSYEV_FORTRAN FC_FUNC (dsyev, DSYEV)
 #define SSYEV_FORTRAN FC_FUNC (ssyev, SSYEV)
