@@ -3,6 +3,8 @@
 - Remove the cmake check for `HAVE_MPROTECT` and also do not define this variable in the
   `config.h` file. It is defined only inside the header `debugallocator.hh`.
 
+- Remove deprecated type-traits `has_nan`, `is_indexable`, and `is_range`.
+
 - Deprecate fallback implementations `Dune::Std::apply`, `Dune::Std::bool_constant`, and
   `Dune::Std::make_array` in favor of std c++ implementations.
 
