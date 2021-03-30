@@ -188,15 +188,6 @@ namespace Dune
 
 #endif // DOXYGEN
 
-  //! \brief Whether this type has a value of NaN.
-  //! \deprecated has_nan is deprecated, use `Dune::HasNaN` instead
-  /**
-   * Internally, this is just a forward to `std::is_floating_point<T>`.
-   */
-  template <typename T>
-  struct [[deprecated("Has been renamed to 'HasNaN'.")]] has_nan
-    : HasNaN<T> {};
-
 #ifndef DOXYGEN
 
   namespace Impl {
@@ -224,12 +215,6 @@ namespace Dune
   struct IsIndexable
     : public Impl::IsIndexable<T,I>
   {};
-
-  //! Type trait to determine whether an instance of T has an operator[](I), i.e. whether it can be indexed with an index of type I.
-  //! \deprecated is_indexable is deprecated, use `Dune::IsIndexable` instead
-  template<typename T, typename I = std::size_t>
-  struct [[deprecated("Has been renamed to 'IsIndexable'.")]] is_indexable
-    : public IsIndexable<T,I> {};
 
 #ifndef DOXYGEN
 
@@ -268,14 +253,6 @@ namespace Dune
     : public std::true_type
   {};
 #endif
-
-  /**
-     \brief typetrait to check that a class has begin() and end() members
-     \deprecated is_range is deprecated, use `Dune::IsIterable` instead
-   */
-  template<typename T, typename = void>
-  struct [[deprecated("Has been renamed to 'IsIterable'.")]] is_range
-    : public IsIterable<T> {};
 
 #ifndef DOXYGEN
   // this is just a forward declaration
