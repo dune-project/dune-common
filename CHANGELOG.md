@@ -86,6 +86,12 @@
   `[[deprecated]]` but be aware that it is no drop-in replacement,
   as it must be sometimes placed at different position in the code.
 
+- The macros `DUNE_UNUSED` is deprecated and will be removed after
+  Dune 2.8. Use C++17's attribute `[[maybe_unused]]` instead, but be
+  aware that it is no drop-in replacement, as it must be sometimes
+  placed at different position in the code.
+  The use of `DUNE_UNUSED_PARAMETER` is discouraged.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.

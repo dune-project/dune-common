@@ -12,14 +12,22 @@
 //! A macro for marking variables that the compiler mistakenly flags as unused, which sometimes happens due to templates.
 /**
  * \ingroup CxxUtilities
+ * \deprecated Use C++17's \code[[maybe_unused]]\endcode instead. This
+ * macro will be removed after Dune 2.8. Be aware that it must be
+ * sometimes placed at a different position in the code.
  */
 #define DUNE_UNUSED
 #else
 #define DUNE_UNUSED __attribute__((unused))
 #endif
 
-/// A macro to mark intentionally unused function parameters with.
 /**
+ * A macro to mark intentionally unused function parameters with.
+ *
+ * If possible use C++17's \code[[maybe_unused]]\endcode instead.
+ * Due to a bug prior to GCC 9.3 it cannot be used for the first
+ * argument of a constructor (bug 81429).
+ *
  * \ingroup CxxUtilities
  */
 #define DUNE_UNUSED_PARAMETER(parm) static_cast<void>(parm)
