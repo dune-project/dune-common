@@ -18,7 +18,11 @@
  */
 #define DUNE_UNUSED
 #else
-#define DUNE_UNUSED __attribute__((unused))
+#ifdef __GNUC__
+#  define DUNE_UNUSED _Pragma("GCC warning \"DUNE_UNUSED is deprecated\"") __attribute__((unused))
+#else
+#  define DUNE_UNUSED _Pragma("message \"DUNE_UNUSED is deprecated\"") __attribute__((unused))
+#endif
 #endif
 
 /**
