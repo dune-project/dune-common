@@ -392,10 +392,6 @@ dune_add_test(SOURCES transposetest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
-dune_add_test(SOURCES to_unique_ptrtest.cc
-              LINK_LIBRARIES dunecommon
-              LABELS quick)
-
 dune_add_test(SOURCES tupleutilitytest.cc
               LABELS quick)
 
