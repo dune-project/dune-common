@@ -42,7 +42,7 @@ function(dune_sphinx_doc)
     add_custom_target(sphinx_doc_${type}
                       COMMAND ${SPHINX_EXECUTABLE}
                                 -b ${type}
-                                -w ${CMAKE_BINARY_DIR}/Sphinx-${type}.log
+                                -w ${PROJECT_BINARY_DIR}/Sphinx-${type}.log
                                 -c ${CMAKE_CURRENT_BINARY_DIR}
                                 ${CMAKE_CURRENT_BINARY_DIR}
                                 ${CMAKE_CURRENT_BINARY_DIR}/${type}
@@ -57,7 +57,7 @@ endfunction()
 function(add_sphinx_target base file)
   find_program(JUPYTER jupyter)
   get_filename_component(extension ${file} EXT)
-  set(SPHINXDIR ${CMAKE_BINARY_DIR}/doc/sphinx)
+  set(SPHINXDIR ${PROJECT_BINARY_DIR}/doc/sphinx)
   set(OUT ${SPHINXDIR}/${file})
   set(IN ${CMAKE_CURRENT_SOURCE_DIR}/${file})
   string(REGEX REPLACE "\\.[^.]*$" "" filebase ${file})

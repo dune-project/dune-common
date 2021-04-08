@@ -71,30 +71,30 @@ function(dune_module_path)
 
   # Set the requested paths for the cmake module path
   if(PATH_CMAKE_MODULES)
-    set(IF_CURRENT_MOD ${CMAKE_SOURCE_DIR}/cmake/modules)
+    set(IF_CURRENT_MOD ${PROJECT_SOURCE_DIR}/cmake/modules)
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_MODULE_PATH})
   endif()
 
   # Set the requested paths for the cmake script path
   if(PATH_SCRIPT_DIR)
-    set(IF_CURRENT_MOD ${CMAKE_SOURCE_DIR}/cmake/scripts)
+    set(IF_CURRENT_MOD ${PROJECT_SOURCE_DIR}/cmake/scripts)
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_SCRIPT_DIR})
   endif()
 
   # Set the requested paths for the build directory
   if(PATH_BUILD_DIR)
-    set(IF_CURRENT_MOD ${CMAKE_BINARY_DIR})
+    set(IF_CURRENT_MOD ${PROJECT_BINARY_DIR})
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_DIR})
   endif()
 
   # Set the requested paths for the include directory
   if(PATH_SOURCE_DIR)
-    set(IF_CURRENT_MOD ${CMAKE_SOURCE_DIR})
+    set(IF_CURRENT_MOD ${PROJECT_SOURCE_DIR})
     set(IF_NOT_CURRENT_MOD ${${PATH_MODULE}_PREFIX})
   endif()
 
   # Now set the path in the outer scope!
-  if(CMAKE_PROJECT_NAME STREQUAL ${PATH_MODULE})
+  if(PROJECT_NAME STREQUAL ${PATH_MODULE})
     set(${PATH_RESULT} ${IF_CURRENT_MOD} PARENT_SCOPE)
   else()
     set(${PATH_RESULT} ${IF_NOT_CURRENT_MOD} PARENT_SCOPE)

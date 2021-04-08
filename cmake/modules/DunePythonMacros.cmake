@@ -13,7 +13,7 @@ if( DUNE_ENABLE_PYTHONBINDINGS )
 
   function(add_python_targets base)
     include(DuneSymlinkOrCopy)
-    if( "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}" )
+    if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
       message(WARNING "Source and binary dir are the same, skipping symlink!")
     else()
       foreach(file ${ARGN})

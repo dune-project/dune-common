@@ -1,4 +1,4 @@
-.. title:: @CMAKE_PROJECT_NAME@ CMake reference
+.. title:: @PROJECT_NAME@ CMake reference
 
 .. role:: cmake(code)
    :language: cmake

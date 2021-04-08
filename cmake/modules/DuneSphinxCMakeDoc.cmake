@@ -114,8 +114,8 @@ function(dune_cmake_sphinx_doc)
 
   # Now treat the module dependent rst sources.
   set(CMAKE_DOC_DEPENDENCIES "")
-  set(${CMAKE_PROJECT_NAME}_PREFIX ${CMAKE_SOURCE_DIR})
-  foreach(dep ${DOC_CMAKE_MODULES} ${CMAKE_PROJECT_NAME})
+  set(${PROJECT_NAME}_PREFIX ${PROJECT_SOURCE_DIR})
+  foreach(dep ${DOC_CMAKE_MODULES} ${PROJECT_NAME})
     # Look for a build system documentation exported by the module dep
     set(RSTFILE "")
     # check in the correct path for non-installed modules
@@ -144,8 +144,8 @@ function(dune_cmake_sphinx_doc)
   # Generate the list of modules by looking through the module paths
   # of all dependencies for files matching *.cmake
   set(SPHINX_DOC_MODULE_LIST)
-  set(${CMAKE_PROJECT_NAME}_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
-  foreach(dep ${DOC_CMAKE_MODULES} ${CMAKE_PROJECT_NAME})
+  set(${PROJECT_NAME}_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
+  foreach(dep ${DOC_CMAKE_MODULES} ${PROJECT_NAME})
     file(GLOB modules "${${dep}_MODULE_PATH}/*.cmake")
     set(SPHINX_DOC_MODULE_LIST ${SPHINX_DOC_MODULE_LIST} ${modules})
   endforeach()
@@ -172,7 +172,7 @@ function(dune_cmake_sphinx_doc)
     add_custom_target(sphinx_${type}
                       COMMAND ${SPHINX_EXECUTABLE}
                                 -b ${type}
-                                -w ${CMAKE_BINARY_DIR}/SphinxError.log
+                                -w ${PROJECT_BINARY_DIR}/SphinxError.log
                                 -c ${CMAKE_CURRENT_BINARY_DIR}
                                 ${CMAKE_CURRENT_BINARY_DIR}
                                 ${CMAKE_CURRENT_BINARY_DIR}/${type}

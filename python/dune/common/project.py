@@ -70,7 +70,7 @@ def make_project(dir, description, subdirs=None, enable_all_packages=True, is_du
         cmake_content += ['', 'set(DUNE_ENABLE_PYTHONBINDINGS ON)']
     cmake_content += ['',
                       'if(NOT (dune-common_DIR OR dune-common_ROOT OR "${CMAKE_PREFIX_PATH}" MATCHES ".*dune-common.*"))',
-                      '  string(REPLACE ${CMAKE_PROJECT_NAME} dune-common dune-common_DIR ${PROJECT_BINARY_DIR})',
+                      '  string(REPLACE ${PROJECT_NAME} dune-common dune-common_DIR ${PROJECT_BINARY_DIR})',
                       'endif()']
     cmake_content += ['', 'find_package(dune-common REQUIRED)']
     if subdirs is not None and 'cmake/modules' in subdirs:
