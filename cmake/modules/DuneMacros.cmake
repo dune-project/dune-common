@@ -643,7 +643,7 @@ macro(dune_project)
   initialize_compiler_script()
 
   # extract information from dune.module
-  dune_module_information(${CMAKE_SOURCE_DIR})
+  dune_module_information(${PROJECT_SOURCE_DIR})
   set(ProjectName            "${DUNE_MOD_NAME}")
   set(ProjectVersion         "${DUNE_MOD_VERSION}")
   set(ProjectVersionString   "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
@@ -670,7 +670,7 @@ macro(dune_project)
   dune_create_dependency_tree()
 
   # assert the project names matches
-  if(NOT (ProjectName STREQUAL CMAKE_PROJECT_NAME))
+  if(NOT (ProjectName STREQUAL PROJECT_NAME))
     message(FATAL_ERROR "Module name from dune.module does not match the name given in CMakeLists.txt.")
   endif()
 
@@ -686,8 +686,8 @@ macro(dune_project)
   include(DuneCxaDemangle)
 
   # set include path and link path for the current project.
-  include_directories("${CMAKE_BINARY_DIR}")
-  include_directories("${CMAKE_SOURCE_DIR}")
+  include_directories("${PROJECT_BINARY_DIR}")
+  include_directories("${PROJECT_SOURCE_DIR}")
   include_directories("${CMAKE_CURRENT_BINARY_DIR}")
   include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
   add_definitions(-DHAVE_CONFIG_H)
@@ -735,9 +735,9 @@ endmacro(dune_project)
 
 # create a new config.h file and overwrite the existing one
 macro(dune_regenerate_config_cmake)
-  set(CONFIG_H_CMAKE_FILE "${CMAKE_BINARY_DIR}/config_collected.h.cmake")
-  if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
-    file(READ ${CMAKE_SOURCE_DIR}/config.h.cmake _file)
+  set(CONFIG_H_CMAKE_FILE "${PROJECT_BINARY_DIR}/config_collected.h.cmake")
+  if(EXISTS ${PROJECT_SOURCE_DIR}/config.h.cmake)
+    file(READ ${PROJECT_SOURCE_DIR}/config.h.cmake _file)
     string(REGEX MATCH
       "/[\\*/][ ]*begin[ ]+${ProjectName}.*\\/[/\\*][ ]*end[ ]*${ProjectName}[^\\*]*\\*/"
       _myfile "${_file}")
@@ -785,7 +785,7 @@ macro(dune_regenerate_config_cmake)
    endforeach()
  endforeach()
  # parse again dune.module file of current module to set PACKAGE_* variables
- dune_module_information(${CMAKE_SOURCE_DIR} QUIET)
+ dune_module_information(${PROJECT_SOURCE_DIR} QUIET)
  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_myfile}")
  # append CONFIG_H_BOTTOM section at the end if found
  if(CONFIG_H_BOTTOM)
@@ -927,7 +927,7 @@ endif()
     DESTINATION ${DUNE_INSTALL_LIBDIR}/cmake/${ProjectName})
 
   # install config.h
-  if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.cmake)
+  if(EXISTS ${PROJECT_SOURCE_DIR}/config.h.cmake)
     install(FILES config.h.cmake DESTINATION share/${ProjectName})
   endif()
 
@@ -950,7 +950,9 @@ endif()
     configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
   endif()
 
-  feature_summary(WHAT ALL)
+  if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
+    feature_summary(WHAT ALL)
+  endif()
 
   # check if CXX flag overloading has been enabled
   # and write compiler script (see OverloadCompilerFlags.cmake)

@@ -141,7 +141,7 @@ install(CODE "set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 function(dune_python_require_virtualenv_setup)
   if(NOT DUNE_PYTHON_VIRTUALENV_SETUP)
     message(FATAL_ERROR "\n
-    ${CMAKE_PROJECT_NAME} relies on a configure-time virtual environment being
+    ${PROJECT_NAME} relies on a configure-time virtual environment being
     set up by the Dune python build system. You have to set the CMake variable
     DUNE_PYTHON_VIRTUALENV_SETUP to allow that.\n
     ")

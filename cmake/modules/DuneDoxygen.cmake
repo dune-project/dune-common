@@ -82,7 +82,7 @@ macro(add_doxygen_target)
   endif()
 
   dune_module_path(MODULE dune-common RESULT scriptdir SCRIPT_DIR)
-  if("${CMAKE_PROJECT_NAME}" STREQUAL "dune-common")
+  if(PROJECT_NAME STREQUAL "dune-common")
     set(DOXYSTYLE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Doxystyle)
     set(DOXYGENMACROS_FILE ${CMAKE_CURRENT_SOURCE_DIR}/doxygen-macros)
   endif()

@@ -134,7 +134,7 @@ endmacro(dune_add_copy_dependency)
 
 function(dune_symlink_to_source_tree)
   # if source and binary dir are equal then the symlink will create serious problems
-  if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+  if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     return()
   endif()
 
@@ -153,16 +153,16 @@ function(dune_symlink_to_source_tree)
     endif()
   else()
     # get a list of all files in the current source directory and below.
-    file(GLOB_RECURSE files RELATIVE ${CMAKE_SOURCE_DIR} "*CMakeLists.txt")
+    file(GLOB_RECURSE files RELATIVE ${PROJECT_SOURCE_DIR} "*CMakeLists.txt")
 
     # iterate over all files, extract the directory name and write a symlink in the corresponding build directory
     foreach(f ${files})
       get_filename_component(dir ${f} DIRECTORY)
-      set(_target "${CMAKE_SOURCE_DIR}/${dir}")
+      set(_target "${PROJECT_SOURCE_DIR}/${dir}")
       if(DUNE_SYMLINK_RELATIVE_LINKS)
-        file(RELATIVE_PATH _target "${CMAKE_BINARY_DIR}/${dir}" "${_target}")
+        file(RELATIVE_PATH _target "${PROJECT_BINARY_DIR}/${dir}" "${_target}")
       endif()
-      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${_target}" "${CMAKE_BINARY_DIR}/${dir}/${ARG_NAME}")
+      execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${_target}" "${PROJECT_BINARY_DIR}/${dir}/${ARG_NAME}")
     endforeach()
   endif()
 endfunction(dune_symlink_to_source_tree)
@@ -170,7 +170,7 @@ endfunction(dune_symlink_to_source_tree)
 function(dune_symlink_to_source_files)
 
   # if source and binary dir are equal then the symlink will create serious problems
-  if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+  if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     return()
   endif()
 

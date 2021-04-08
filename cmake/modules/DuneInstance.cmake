@@ -472,7 +472,7 @@ macro(message_verbose TEXT)
   if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.15")
     message(VERBOSE "${TEXT}")
   else()
-    file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log "${TEXT}\n")
+    file(APPEND ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log "${TEXT}\n")
   endif()
 endmacro(message_verbose)
 
