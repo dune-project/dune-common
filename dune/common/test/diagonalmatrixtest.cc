@@ -14,7 +14,6 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/diagonalmatrix.hh>
-#include <dune/common/unused.hh>
 
 #include "checkmatrixinterface.hh"
 
@@ -23,7 +22,7 @@ using namespace Dune;
 template<class K, int n>
 void test_matrix()
 {
-  typedef typename DiagonalMatrix<K,n>::size_type size_type DUNE_UNUSED;
+  [[maybe_unused]] typedef typename DiagonalMatrix<K,n>::size_type size_type;
 
   DiagonalMatrix<K,n> A(1);
   FieldVector<K,n> f;
@@ -58,9 +57,9 @@ void test_matrix()
   std::cout << f << std::endl;
 
   // assign to FieldMatrix
-  DUNE_UNUSED FieldMatrix<K,n,n> AFM = FieldMatrix<K,n,n>(A);
-  DUNE_UNUSED FieldMatrix<K,n,n> AFM2 = A;
-  DUNE_UNUSED FieldMatrix<K,n,n> AFM3;
+  [[maybe_unused]] FieldMatrix<K,n,n> AFM = FieldMatrix<K,n,n>(A);
+  [[maybe_unused]] FieldMatrix<K,n,n> AFM2 = A;
+  [[maybe_unused]] FieldMatrix<K,n,n> AFM3;
   AFM3 = A;
 }
 
@@ -77,7 +76,7 @@ void test_interface()
 
 void test_initialisation()
 {
-  DUNE_UNUSED Dune::DiagonalMatrix<int, 2> const b = { 1, 2 };
+  [[maybe_unused]] Dune::DiagonalMatrix<int, 2> const b = { 1, 2 };
 
   assert(b.diagonal(0) == 1);
   assert(b.diagonal(1) == 2);

@@ -19,4 +19,4 @@ int init_Factory()
     return 0;
 }
 
-static const int DUNE_UNUSED init = init_Factory();
+[[maybe_unused]] static const int init = init_Factory();

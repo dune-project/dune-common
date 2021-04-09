@@ -9,7 +9,6 @@
 #define HAVE_SYS_MMAN_H 1
 #define HAVE_MPROTECT 1
 
-#include <dune/common/unused.hh>
 #include <exception>
 #include <typeinfo>
 #include <vector>
@@ -65,7 +64,9 @@ namespace Dune
       AllocationList allocation_list;
 
     private:
-      void memprotect(void* from, difference_type len, int prot)
+      void memprotect([[maybe_unused]] void* from,
+                      [[maybe_unused]] difference_type len,
+                      [[maybe_unused]] int prot)
       {
 #if HAVE_SYS_MMAN_H && HAVE_MPROTECT
         int result = mprotect(from, len, prot);
@@ -86,9 +87,6 @@ namespace Dune
           abort();
         }
 #else
-        DUNE_UNUSED_PARAMETER(from);
-        DUNE_UNUSED_PARAMETER(len);
-        DUNE_UNUSED_PARAMETER(prot);
         std::cerr << "WARNING: memory protection not available" << std::endl;
 #endif
       }
@@ -263,9 +261,8 @@ namespace Dune
 
     //! allocate n objects of type T
     pointer allocate(size_type n,
-                     DebugAllocator<void>::const_pointer hint = 0)
+                     [[maybe_unused]] DebugAllocator<void>::const_pointer hint = 0)
     {
-      DUNE_UNUSED_PARAMETER(hint);
       return DebugMemory::alloc_man.allocate<T>(n);
     }
 

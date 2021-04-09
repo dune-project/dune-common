@@ -19,7 +19,6 @@
 #include <dune/common/precision.hh>
 #include <dune/common/simd/simd.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/unused.hh>
 #include <dune/common/scalarvectorview.hh>
 
 namespace Dune
@@ -55,9 +54,8 @@ namespace Dune
     struct [[deprecated("VectorSize is deprecated; please call the 'size()' method directly instead")]] VectorSize< const FieldVector<K,N> >
     {
       typedef FieldVector<K,N> V;
-      static typename V::size_type size(const V & v)
+      static typename V::size_type size([[maybe_unused]] const V & v)
       {
-        DUNE_UNUSED_PARAMETER(v);
         return N;
       }
     };
@@ -750,10 +748,8 @@ namespace Dune
     //===== query
 
     //! return true when (i,j) is in pattern
-    bool exists (size_type i, size_type j) const
+    bool exists ([[maybe_unused]] size_type i, [[maybe_unused]] size_type j) const
     {
-      DUNE_UNUSED_PARAMETER(i);
-      DUNE_UNUSED_PARAMETER(j);
       DUNE_ASSERT_BOUNDS(i >= 0 && i < rows());
       DUNE_ASSERT_BOUNDS(j >= 0 && j < cols());
       return true;

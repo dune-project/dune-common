@@ -26,7 +26,6 @@
 #if HAVE_VC
 #include <dune/common/simd/vc.hh>
 #endif
-#include <dune/common/unused.hh>
 
 #include "checkmatrixinterface.hh"
 
@@ -377,7 +376,7 @@ void test_matrix()
       if (tmp.infinity_norm() > 1e-12)
         DUNE_THROW(FMatrixError, "Return value of Operator*= incorrect!");
     }
-    FM DUNE_UNUSED A3 = (A2 *= 3); // A2 == A3 == 6*A
+    [[maybe_unused]] FM A3 = (A2 *= 3); // A2 == A3 == 6*A
     FM A4 = (A2 /= 2); // A2 == A4 == 3*A;
     FM A5 = A;
     A5 *= 3;           // A5       == 3*A
@@ -494,7 +493,7 @@ void test_matrix()
         return AT;
       };
 
-      DUNE_UNUSED auto product = transposed(A) * A;
+      [[maybe_unused]] auto product = transposed(A) * A;
     }
 
   }
@@ -614,7 +613,7 @@ struct ScalarOperatorTest
     ft c = 2;
     FieldMatrix<ft,1,1> v(2);
     FieldMatrix<ft,1,1> w(2);
-    bool b DUNE_UNUSED;
+    [[maybe_unused]] bool b;
 
     std::cout << __func__ << "\t ( " << className(v) << " )" << std::endl;
 
@@ -832,7 +831,7 @@ void test_interface()
 
 void test_initialisation()
 {
-  DUNE_UNUSED Dune::FieldMatrix<int, 2, 2> const A = {
+  [[maybe_unused]] Dune::FieldMatrix<int, 2, 2> const A = {
     { 1, 2 },
     { 3, 4 }
   };

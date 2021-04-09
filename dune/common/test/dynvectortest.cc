@@ -8,7 +8,6 @@
 
 #include <dune/common/dynvector.hh>
 #include <dune/common/exceptions.hh>
-#include <dune/common/unused.hh>
 
 using Dune::DynamicVector;
 
@@ -18,7 +17,7 @@ void dynamicVectorTest(int d) {
   DynamicVector<ct> v(d,1);
   DynamicVector<ct> w(d,2);
   DynamicVector<ct> z(d,2);
-  bool b DUNE_UNUSED;
+  [[maybe_unused]] bool b;
 
   // Test whether the norm methods compile
   (w+v).two_norm();

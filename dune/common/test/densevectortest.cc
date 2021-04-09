@@ -9,7 +9,6 @@
 
 #include <dune/common/densevector.hh>
 #include <dune/common/exceptions.hh>
-#include <dune/common/unused.hh>
 
 class MyVector;
 

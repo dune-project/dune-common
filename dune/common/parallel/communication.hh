@@ -16,7 +16,6 @@
 
 #include <dune/common/binaryfunctions.hh>
 #include <dune/common/exceptions.hh>
-#include <dune/common/unused.hh>
 #include <dune/common/parallel/future.hh>
 
 /*! \defgroup ParallelCommunication Parallel Communication
@@ -131,10 +130,10 @@ namespace Dune
         @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<class T>
-    int send(const T& data, int dest_rank, int tag){
-      DUNE_UNUSED_PARAMETER(data);
-      DUNE_UNUSED_PARAMETER(dest_rank);
-      DUNE_UNUSED_PARAMETER(tag);
+    int send([[maybe_unused]] const T& data,
+             [[maybe_unused]] int dest_rank,
+             [[maybe_unused]] int tag)
+    {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
 
@@ -142,10 +141,10 @@ namespace Dune
         @returns Future<T> containing the send buffer, completes when data is send
      */
     template<class T>
-    PseudoFuture<T> isend(const T&& data, int dest_rank, int tag){
-      DUNE_UNUSED_PARAMETER(data);
-      DUNE_UNUSED_PARAMETER(dest_rank);
-      DUNE_UNUSED_PARAMETER(tag);
+    PseudoFuture<T> isend([[maybe_unused]] const T&& data,
+                          [[maybe_unused]] int dest_rank,
+                          [[maybe_unused]] int tag)
+    {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
 
@@ -153,11 +152,11 @@ namespace Dune
         @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<class T>
-    T recv(T&& data, int source_rank, int tag, void* status = 0){
-      DUNE_UNUSED_PARAMETER(data);
-      DUNE_UNUSED_PARAMETER(source_rank);
-      DUNE_UNUSED_PARAMETER(tag);
-      DUNE_UNUSED_PARAMETER(status);
+    T recv([[maybe_unused]] T&& data,
+           [[maybe_unused]] int source_rank,
+           [[maybe_unused]] int tag,
+           [[maybe_unused]] void* status = 0)
+    {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
 
@@ -165,20 +164,19 @@ namespace Dune
         @returns Future<T> containing the received data when complete
      */
     template<class T>
-    PseudoFuture<T> irecv(T&& data, int source_rank, int tag){
-      DUNE_UNUSED_PARAMETER(data);
-      DUNE_UNUSED_PARAMETER(source_rank);
-      DUNE_UNUSED_PARAMETER(tag);
+    PseudoFuture<T> irecv([[maybe_unused]] T&& data,
+                          [[maybe_unused]] int source_rank,
+                          [[maybe_unused]] int tag)
+    {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
 
     template<class T>
-    T rrecv(T&& data, int source_rank, int tag, void* status = 0) const
+    T rrecv([[maybe_unused]] T&& data,
+            [[maybe_unused]] int source_rank,
+            [[maybe_unused]] int tag,
+            [[maybe_unused]] void* status = 0) const
     {
-      DUNE_UNUSED_PARAMETER(data);
-      DUNE_UNUSED_PARAMETER(source_rank);
-      DUNE_UNUSED_PARAMETER(tag);
-      DUNE_UNUSED_PARAMETER(status);
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
     /** @brief  Compute the sum of the argument over all processes and
@@ -196,10 +194,8 @@ namespace Dune
         @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int sum (T* inout, int len) const
+    int sum ([[maybe_unused]] T* inout, [[maybe_unused]] int len) const
     {
-      DUNE_UNUSED_PARAMETER(inout);
-      DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
 
@@ -218,10 +214,8 @@ namespace Dune
         @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int prod (T* inout, int len) const
+    int prod ([[maybe_unused]] T* inout, [[maybe_unused]] int len) const
     {
-      DUNE_UNUSED_PARAMETER(inout);
-      DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
 
@@ -240,10 +234,8 @@ namespace Dune
         @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int min (T* inout, int len) const
+    int min ([[maybe_unused]] T* inout, [[maybe_unused]] int len) const
     {
-      DUNE_UNUSED_PARAMETER(inout);
-      DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
 
@@ -262,10 +254,8 @@ namespace Dune
         @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int max (T* inout, int len) const
+    int max ([[maybe_unused]] T* inout, [[maybe_unused]] int len) const
     {
-      DUNE_UNUSED_PARAMETER(inout);
-      DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
 
@@ -289,11 +279,10 @@ namespace Dune
         @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int broadcast (T* inout, int len, int root) const
+    int broadcast ([[maybe_unused]] T* inout,
+                   [[maybe_unused]] int len,
+                   [[maybe_unused]] int root) const
     {
-      DUNE_UNUSED_PARAMETER(inout);
-      DUNE_UNUSED_PARAMETER(len);
-      DUNE_UNUSED_PARAMETER(root);
       return 0;
     }
 
@@ -319,9 +308,8 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int gather (const T* in, T* out, int len, int root) const     // note out must have same size as in
+    int gather (const T* in, T* out, int len, [[maybe_unused]] int root) const     // note out must have same size as in
     {
-      DUNE_UNUSED_PARAMETER(root);
       for (int i=0; i<len; i++)
         out[i] = in[i];
       return 0;
@@ -357,10 +345,13 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int gatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
+    int gatherv (const T* in,
+                 int sendlen,
+                 T* out,
+                 [[maybe_unused]] int* recvlen,
+                 int* displ,
+                 [[maybe_unused]] int root) const
     {
-      DUNE_UNUSED_PARAMETER(recvlen);
-      DUNE_UNUSED_PARAMETER(root);
       for (int i=*displ; i<sendlen; i++)
         out[i] = in[i];
       return 0;
@@ -380,9 +371,8 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int scatter (const T* send, T* recv, int len, int root) const // note out must have same size as in
+    int scatter (const T* send, T* recv, int len, [[maybe_unused]] int root) const // note out must have same size as in
     {
-      DUNE_UNUSED_PARAMETER(root);
       for (int i=0; i<len; i++)
         recv[i] = send[i];
       return 0;
@@ -416,10 +406,9 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int scatterv (const T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
+    int scatterv (const T* send, int* sendlen, int* displ, T* recv,
+                  [[maybe_unused]] int recvlen, [[maybe_unused]] int root) const
     {
-      DUNE_UNUSED_PARAMETER(recvlen);
-      DUNE_UNUSED_PARAMETER(root);
       for (int i=*displ; i<*sendlen; i++)
         recv[i] = send[i];
       return 0;
@@ -472,9 +461,8 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int allgatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ) const
+    int allgatherv (const T* in, int sendlen, T* out, [[maybe_unused]] int* recvlen, int* displ) const
     {
-      DUNE_UNUSED_PARAMETER(recvlen);
       for (int i=*displ; i<sendlen; i++)
         out[i] = in[i];
       return 0;
@@ -493,10 +481,8 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename BinaryFunction, typename Type>
-    int allreduce(Type* inout, int len) const
+    int allreduce([[maybe_unused]] Type* inout, [[maybe_unused]] int len) const
     {
-      DUNE_UNUSED_PARAMETER(inout);
-      DUNE_UNUSED_PARAMETER(len);
       return 0;
     }
 

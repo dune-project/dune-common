@@ -4,7 +4,6 @@
 #define DUNE_ENUMSET_HH
 
 #include <iostream>
-#include <dune/common/unused.hh>
 
 namespace Dune
 {
@@ -113,16 +112,14 @@ namespace Dune
   };
 
   template<typename TA>
-  inline bool EmptySet<TA>::contains(const Type& attribute)
+  inline bool EmptySet<TA>::contains([[maybe_unused]] const Type& attribute)
   {
-    DUNE_UNUSED_PARAMETER(attribute);
     return false;
   }
 
   template<typename TA>
-  inline bool AllSet<TA>::contains(const Type& attribute)
+  inline bool AllSet<TA>::contains([[maybe_unused]] const Type& attribute)
   {
-    DUNE_UNUSED_PARAMETER(attribute);
     return true;
   }
 
@@ -158,10 +155,9 @@ namespace Dune
   }
 
   template<class TI1, class TI2>
-  inline Combine<TI1,TI2,typename TI1::Type> combine(const TI1& set1, const TI2& set2)
+  inline Combine<TI1,TI2,typename TI1::Type> combine([[maybe_unused]] const TI1& set1,
+                                                     [[maybe_unused]] const TI2& set2)
   {
-    DUNE_UNUSED_PARAMETER(set1);
-    DUNE_UNUSED_PARAMETER(set2);
     return Combine<TI1,TI2,typename TI1::Type>();
   }
 

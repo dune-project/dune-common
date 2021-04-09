@@ -4,8 +4,6 @@
 #ifndef DUNE_COMMON_STDTHREAD_HH
 #define DUNE_COMMON_STDTHREAD_HH
 
-#include <dune/common/unused.hh>
-
 namespace Dune
 {
 
@@ -36,7 +34,7 @@ namespace Dune
                              const char *function = nullptr)
   {
     // make sure to call this only the first time this function is invoked
-    static const bool DUNE_UNUSED works
+    [[maybe_unused]] static const bool works
       = (doAssertCallOnce(file, line, function), true);
   }
 

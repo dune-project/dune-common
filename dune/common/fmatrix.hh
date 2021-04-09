@@ -463,16 +463,14 @@ namespace Dune
     static constexpr size_type mat_rows() { return 1; }
     static constexpr size_type mat_cols() { return 1; }
 
-    row_reference mat_access ( size_type i )
+    row_reference mat_access ([[maybe_unused]] size_type i)
     {
-      DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
-    const_row_reference mat_access ( size_type i ) const
+    const_row_reference mat_access ([[maybe_unused]] size_type i) const
     {
-      DUNE_UNUSED_PARAMETER(i);
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }

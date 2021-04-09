@@ -19,7 +19,6 @@
 
 #include <dune/common/parallel/interface.hh>
 #include <dune/common/parallel/mpitraits.hh>
-#include <dune/common/unused.hh>
 
 /**
  * @addtogroup Common_Parallel
@@ -555,9 +554,8 @@ public:
   {
     return true;
   }
-  std::size_t size(std::size_t i)
+  std::size_t size([[maybe_unused]] std::size_t i)
   {
-    DUNE_UNUSED_PARAMETER(i);
     return 1;
   }
   template<class B>
@@ -645,9 +643,8 @@ struct PackEntries
 
   int operator()(DataHandle& handle, InterfaceTracker& tracker,
                  MessageBuffer<typename DataHandle::DataType>& buffer,
-                 int i) const
+                 [[maybe_unused]] int i) const
   {
-    DUNE_UNUSED_PARAMETER(i);
     return operator()(handle,tracker,buffer);
   }
 

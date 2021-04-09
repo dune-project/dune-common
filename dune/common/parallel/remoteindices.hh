@@ -1022,9 +1022,9 @@ namespace Dune {
                                               const ParallelIndexSet& indexSet,
                                               char* p_out, MPI_Datatype type,
                                               int bufferSize,
-                                              int *position, int n)
+                                              int *position,
+                                              [[maybe_unused]] int n)
   {
-    DUNE_UNUSED_PARAMETER(n);
     // fill with own indices
     typedef typename ParallelIndexSet::const_iterator const_iterator;
     typedef IndexPair<GlobalIndex,LocalIndex> PairType;

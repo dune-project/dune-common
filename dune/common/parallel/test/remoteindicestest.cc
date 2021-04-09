@@ -17,7 +17,6 @@
 #include <dune/common/parallel/interface.hh>
 #include <dune/common/parallel/plocalindex.hh>
 #include <dune/common/parallel/remoteindices.hh>
-#include <dune/common/unused.hh>
 
 enum GridFlags {
   owner, overlap, border
@@ -664,8 +663,7 @@ public:
   int errorcode;
 };
 
-void MPI_err_handler(MPI_Comm *comm, int *err_code, ...){
-  DUNE_UNUSED_PARAMETER(comm);
+void MPI_err_handler([[maybe_unused]] MPI_Comm *comm, int *err_code, ...){
   char *err_string=new char[MPI_MAX_ERROR_STRING];
   int err_length;
   MPI_Error_string(*err_code, err_string, &err_length);

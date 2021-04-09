@@ -12,7 +12,6 @@
 
 #include <dune/common/parallel/interface.hh>
 #include <dune/common/parallel/variablesizecommunicator.hh>
-#include <dune/common/unused.hh>
 
 // For each communicated index, send convert the index to a `double` and send
 // it three times on the sending side.  On the receiving side, simply print
@@ -118,9 +117,8 @@ struct MyDataHandle
         }
         std::cout<<std::endl;
     }
-    std::size_t size(int i)
+    std::size_t size([[maybe_unused]] int i)
     {
-        DUNE_UNUSED_PARAMETER(i);
         return 3;
     }
 };

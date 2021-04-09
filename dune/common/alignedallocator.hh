@@ -39,10 +39,8 @@ namespace Dune
     static constexpr int alignment = fixAlignment(sizeof(void*));
 
     //! allocate n objects of type T
-    pointer allocate(size_type n, const void* hint = 0)
+    pointer allocate(size_type n, [[maybe_unused]] const void* hint = 0)
     {
-
-      DUNE_UNUSED_PARAMETER(hint);
       if (n > this->max_size())
         throw std::bad_alloc();
 

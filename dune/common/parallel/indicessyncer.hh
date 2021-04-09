@@ -7,7 +7,6 @@
 #include "remoteindices.hh"
 #include <dune/common/stdstreams.hh>
 #include <dune/common/sllist.hh>
-#include <dune/common/unused.hh>
 #include <cassert>
 #include <cmath>
 #include <limits>
@@ -141,9 +140,8 @@ namespace Dune
        * std::numeric_limits<size_t>::max()
        * @param global The global index (ignored).
        */
-      std::size_t operator()(const GlobalIndex& global)
+      std::size_t operator()([[maybe_unused]] const GlobalIndex& global)
       {
-        DUNE_UNUSED_PARAMETER(global);
         return std::numeric_limits<size_t>::max();
       }
     };

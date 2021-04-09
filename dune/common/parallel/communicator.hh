@@ -18,7 +18,6 @@
 #include <dune/common/parallel/interface.hh>
 #include <dune/common/parallel/remoteindices.hh>
 #include <dune/common/stdstreams.hh>
-#include <dune/common/unused.hh>
 
 namespace Dune
 {
@@ -906,10 +905,8 @@ namespace Dune
   }
 
   template<class V>
-  inline int CommPolicy<V>::getSize(const V& v, int index)
+  inline int CommPolicy<V>::getSize([[maybe_unused]] const V& v, [[maybe_unused]] int index)
   {
-    DUNE_UNUSED_PARAMETER(v);
-    DUNE_UNUSED_PARAMETER(index);
     return 1;
   }
 
@@ -1262,9 +1259,8 @@ namespace Dune
 
 
   template<class Data, class GatherScatter, bool FORWARD>
-  inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const InterfaceMap& interfaces,const Data& data, Type* buffer, size_t bufferSize) const
+  inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,VariableSize>::operator()(const InterfaceMap& interfaces,const Data& data, Type* buffer, [[maybe_unused]] size_t bufferSize) const
   {
-    DUNE_UNUSED_PARAMETER(bufferSize);
     typedef typename InterfaceMap::const_iterator
     const_iterator;
 
@@ -1296,9 +1292,9 @@ namespace Dune
 
 
   template<class Data, class GatherScatter, bool FORWARD>
-  inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(const InterfaceMap& interfaces, const Data& data, Type* buffer, size_t bufferSize) const
+  inline void BufferedCommunicator::MessageGatherer<Data,GatherScatter,FORWARD,SizeOne>::operator()(
+    const InterfaceMap& interfaces, const Data& data, Type* buffer, [[maybe_unused]] size_t bufferSize) const
   {
-    DUNE_UNUSED_PARAMETER(bufferSize);
     typedef typename InterfaceMap::const_iterator
     const_iterator;
     const const_iterator end = interfaces.end();

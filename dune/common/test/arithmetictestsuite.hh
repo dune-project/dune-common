@@ -9,7 +9,6 @@
 
 #include <dune/common/classname.hh>
 #include <dune/common/test/testsuite.hh>
-#include <dune/common/unused.hh>
 
 namespace Dune {
 
@@ -95,13 +94,12 @@ namespace Dune {
 
     //! check the default constructors
     template<class T>
-    void checkDefaultConstruct(Arithmetic arithmetic_tag)
+    void checkDefaultConstruct([[maybe_unused]] Arithmetic arithmetic_tag)
     {
-      DUNE_UNUSED_PARAMETER(arithmetic_tag);
-      T DUNE_UNUSED t0;
+      [[maybe_unused]] T t0;
       (void)T();
-      T DUNE_UNUSED t1{};
-      T DUNE_UNUSED t2 = {};
+      [[maybe_unused]] T t1{};
+      [[maybe_unused]] T t2 = {};
     }
 
     //! check explicit conversion from and to int
