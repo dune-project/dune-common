@@ -938,8 +938,10 @@ endif()
     message(STATUS "Adding custom target for config.h generation")
     dune_regenerate_config_cmake()
     # add a target to generate config.h.cmake
-    add_custom_target(OUTPUT config_collected.h.cmake
-      COMMAND dune_regenerate_config_cmake())
+    if(NOT TARGET OUTPUT)
+      add_custom_target(OUTPUT config_collected.h.cmake
+        COMMAND dune_regenerate_config_cmake())
+    endif()
     # actually write the config.h file to disk
     # using generated file
     configure_file(${CMAKE_CURRENT_BINARY_DIR}/config_collected.h.cmake
