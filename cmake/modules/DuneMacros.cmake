@@ -692,10 +692,6 @@ macro(dune_project)
   include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
   add_definitions(-DHAVE_CONFIG_H)
 
-  # Search for MPI and set the relevant variables.
-  include(DuneMPI)
-
-
   # Create custom target for building the documentation
   # and provide macros for installing the docs and force
   # building them before.
