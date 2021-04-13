@@ -366,7 +366,7 @@ decltype(auto) ifElse(const Condition& condition, IfFunc&& ifFunc, ElseFunc&& el
 template<class Condition, class IfFunc>
 void ifElse(const Condition& condition, IfFunc&& ifFunc)
 {
-  ifElse(condition, std::forward<IfFunc>(ifFunc), [](auto&& i) { DUNE_UNUSED_PARAMETER(i); });
+  ifElse(condition, std::forward<IfFunc>(ifFunc), [](auto&&) {});
 }
 
 
