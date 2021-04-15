@@ -299,14 +299,10 @@ dune_add_test(SOURCES reservedvectortest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
-find_package(PTScotch)
 dune_add_test(SOURCES scotchtest.cc
               LINK_LIBRARIES dunecommon
               CMAKE_GUARD PTScotch_FOUND
               LABELS quick)
-if (PTScotch_FOUND)
-  target_link_libraries(scotchtest PUBLIC PTScotch::Scotch)
-endif ()
 
 dune_add_test(SOURCES shared_ptrtest.cc
               LABELS quick)
