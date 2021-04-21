@@ -257,7 +257,6 @@ def cmakeFlags():
         ('CMAKE_BUILD_TYPE','Release'),
         ('CMAKE_INSTALL_RPATH_USE_LINK_PATH','TRUE'),
         ('DUNE_ENABLE_PYTHONBINDINGS','TRUE'),
-        ('DUNE_PYTHON_INSTALL_LOCATION','none'),
         ('ALLOW_CXXFLAGS_OVERWRITE','ON'),
         ('CMAKE_DISABLE_FIND_PACKAGE_LATEX','TRUE'),
         ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen','TRUE'),

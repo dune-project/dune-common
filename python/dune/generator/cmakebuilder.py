@@ -4,44 +4,139 @@ import shlex
 import subprocess
 import os
 import sys
+import shutil
+import pkgutil
+import re
+import jinja2
+import dune
 
+from dune.packagemetadata import get_dune_py_dir
 from dune.common import comm
 from dune.common.locking import Lock, LOCK_EX,LOCK_SH
 from dune.common.utility import buffer_to_str, isString, reload_module
+from dune.common.module import select_modules, is_installed
 from dune.generator.exceptions import CompileError, ConfigurationError
 import dune.common.module
 
 logger = logging.getLogger(__name__)
+
 cxxFlags = None
 noDepCheck = False
 
 class Builder:
+    def extract_metadata():
+        """ Extract meta data that was exported by CMake.
+
+        This returns a dictionary that maps package names to the data associated
+        with the given metadata key. Currently the following metadata keys are
+        exported by Python packages created with the Dune CMake build system:
+        * MODULENAME: The name of the Dune module
+        * BUILDDIR: The build directory of the Dune module
+        * DEPS: The name of all the dependencies of the module
+        * DEPBUILDDIRS: The build directories of the dependencies
+        """
+        result = {}
+
+        for package in pkgutil.iter_modules(dune.__path__, dune.__name__ + "."):
+            # Avoid the dune.create module - it cannot be imported unconditionally!
+            if package.name == "dune.create":
+                continue
+
+            # Avoid the dune.utility module - it import dune.create
+            if package.name == "dune.utility":
+                continue
+
+            # Check for the existence of the metadata.cmake file in the package
+            mod = importlib.import_module(package.name)
+            path, filename = os.path.split(mod.__file__)
+
+            # Only consider sub-packages, not modules
+            if filename != "__init__.py":
+                continue
+
+            metadata_file = os.path.join(path, "metadata.cmake")
+            if os.path.exists(metadata_file):
+                # If it exists parse the line that defines the key that we are looking for
+                for line in open(metadata_file, "r"):
+                    match = re.match(f"(.*)=(.*)", line)
+                    if match:
+                        result.setdefault(package.name, {})
+                        key, value = match.groups()
+                        result[package.name][key] = value
+        return result
+
+    def dunepy_from_template(dunepy_dir):
+        # Remove any remnants of an old dune-py installation
+        if os.path.exists(dunepy_dir):
+            shutil.rmtree(dunepy_dir)
+
+        # Extract the raw data dictionary
+        data = Builder.extract_metadata()
+
+        # Define some data processing patterns
+        def combine_across_modules(key):
+            return list(m[key] for m in data.values())
+
+        def zip_across_modules(key, value):
+            result = {}
+            for moddata in data.values():
+                # todo: space is bad separator for list of paths - needs
+                # fixing in cmake module generating the metadata file
+                for k, v in zip(moddata[key].split(" "), moddata[value].split(" ")):
+                    # we don't store paths for module that have not been found (suggested)
+                    # and we also skip the path if it is empty (packaged module)
+                    if v.endswith("NOTFOUND") or v == "": continue
+                    # make sure build directory (if found) is unique across modules
+                    if k in result and not result[k] == v:
+                        raise ValueError(f"build dir {v} for module {k} is expected to be unique across the given metadata")
+                    result[k] = v
+            return result
+
+        def unique_value_across_modules(key, default=""):
+            values = set(m[key] for m in data.values())
+            if len(values) > 1:
+                raise ValueError(f"Key {key} is expected to be unique across the given metadata")
+            if len(values) == 0:
+                return default
+            value, = values
+            return value
+
+        modules   = combine_across_modules("MODULENAME")
+        builddirs = zip_across_modules("DEPS", "DEPBUILDDIRS")
+
+        # add dune modules which where available during the build of a
+        # python module but don't provide their own python module
+        for k,v in builddirs.items():
+            if k not in modules and not v.endswith("NOTFOUND"):
+                modules += [k]
+
+        # Gather and reorganize meta data context that is used to write dune-py
+        context = {}
+        context["modules"]        = modules
+        context["builddirs"]      = builddirs
+        context["install_prefix"] = unique_value_across_modules("INSTALL_PREFIX")
+
+        # Find the correct template path
+        path, _ = os.path.split(__file__)
+        template_path = os.path.join(path, "template")
+
+        # Run the template through Jinja2
+        env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(template_path),
+            keep_trailing_newline=True,
+        )
+        for root, dirs, files in os.walk(template_path):
+            for template_file in files:
+                full_template_file = os.path.join(root, template_file)
+                relative_template_file = os.path.relpath(full_template_file, start=template_path)
+                gen_file = os.path.join(dunepy_dir, relative_template_file.split(".template")[0])
+                os.makedirs(os.path.split(gen_file)[0], exist_ok=True)
+                with open(gen_file, "w") as outfile:
+                    outfile.write(env.get_template(relative_template_file).render(**context))
+
+
     def __init__(self, force=False, saveOutput=False):
         self.force = force
-        self.dune_py_dir = dune.common.module.get_dune_py_dir()
-        os.makedirs(self.dune_py_dir, exist_ok=True)
-
-        if comm.rank == 0:
-            # lock the whole dune-py module exclusively to possibly
-            # generate and then build the module
-            with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
-                #dune.common.module.make_dune_py_module(self.dune_py_dir)
-                tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
-                if not os.path.isfile(tagfile):
-                    #dune.common.module.build_dune_py_module(self.dune_py_dir)
-                    # create .noconfigure to disable configuration for future calls
-                    open(tagfile, 'a').close()
-                else:
-                    logger.debug('Using pre configured dune-py module')
-        comm.barrier()
-
-        self.build_args = dune.common.module.get_default_build_args()
-        self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
-        try:
-            dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
-        except:
-            dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
-
         if saveOutput is True or saveOutput.lower() == "write":
             self.savedOutput = [open("generatorCompiler.out","w+"), open("generatorCompiler.err","w+")]
         elif saveOutput.lower() == "append":
@@ -50,6 +145,40 @@ class Builder:
             self.savedOutput = [sys.stdout, sys.stderr]
         else:
             self.savedOutput = None
+        self.initialized = False
+
+    def initialize(self):
+        self.dune_py_dir = dune.common.module.get_dune_py_dir()
+        os.makedirs(self.dune_py_dir, exist_ok=True)
+
+        if comm.rank == 0:
+            # Trigger the generation of dune-py
+            from dune.common.locking import Lock, LOCK_EX,LOCK_SH
+            dunepy = get_dune_py_dir()
+            tagfile = os.path.join(dunepy, ".noconfigure")
+            if os.path.exists(dunepy):
+                # check for existence of .noconfigure tag file
+                with Lock(os.path.join(dunepy, 'lock-module.lock'), flags=LOCK_EX):
+                    if not os.path.isfile(tagfile):
+                        generateDunePy = True
+                    else:
+                        generateDunePy = False
+                        logger.debug('Using existing dune-py module in'+dunepy)
+            else:
+                generateDunePy = True
+            if generateDunePy:
+                Builder.dunepy_from_template(get_dune_py_dir())
+                subprocess.check_call("cmake .".split(), cwd=get_dune_py_dir())
+                open(tagfile, 'a').close()
+        comm.barrier()
+
+        self.build_args = dune.common.module.get_default_build_args()
+        self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
+        try:
+            dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
+        except:
+            dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
+        initialized = True
 
     def compile(self, target='all'):
         cmake_command = dune.common.module.get_cmake_command()
@@ -91,9 +220,10 @@ class Builder:
                 self.savedOutput[1].write("\n###############################\n")
 
     def load(self, moduleName, source, pythonName):
-
-        ## TODO replace if rank if something better
+        ## TODO replace if rank with something better
         ## and remove barrier further down
+        if not self.initialized:
+            self.initialize()
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)
             if module is None:

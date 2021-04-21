@@ -1,1 +1,3 @@
-# The builder will append rules for dynamically generated modules, here
+set(templatefiles CMakeLists.txt.template)
+dune_symlink_to_source_files(FILES ${templatefiles})
+install(FILES ${templatefiles} DESTINATION python/dune/generator/template/python/dune/generated)

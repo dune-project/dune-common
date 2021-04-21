@@ -167,32 +167,57 @@ function(dune_python_install_package)
     endforeach()
 
     # Make sure to generate the metadata for the build stage
+    # todo: _export_builddirs is written to the metadata file using space as
+    #       separator - this is not suitable for file paths.
+    #       Not using the '"' leads to only the first entry of the list being written
     add_custom_target(
       metadata_${envtargetname}
       COMMAND ${CMAKE_COMMAND}
         -Dmetadatafile=${metadatafile}
-        -DDEPBUILDDIRS=${_export_builddirs}
+        -DDEPBUILDDIRS="${_export_builddirs}"
         -DDEPS="${PROJECT_NAME};${ALL_DEPENDENCIES}"
         -DMODULENAME=${PROJECT_NAME}
         -P ${scriptdir}/WritePythonCMakeMetadata.cmake
       COMMENT "Generating the CMake metadata file at ${PYINST_CMAKE_METADATA_FILE}"
     )
     add_dependencies(${envtargetname} metadata_${envtargetname})
+    # Add a custom command that triggers the configuration of dune-py
+    add_custom_command(TARGET metadata_${envtargetname} POST_BUILD
+                       COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m dune configure
+                      )
 
     # Make sure to generate the metadata for the install stage
     if(NOT "${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")
-      add_custom_target(
-        metadata_${targetname}
-        COMMAND ${CMAKE_COMMAND}
-          -Dmetadatafile=${metadatafile}
-          -DDEPS="${PROJECT_NAME};${ALL_DEPENDENCIES}"
-          -DDEPBUILDDIRS=${_export_builddirs}
-          -DMODULENAME=${PROJECT_NAME}
-          -DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
-          -P ${scriptdir}/WritePythonCMakeMetadata.cmake
-        COMMENT "Generating the CMake metadata file at ${PYINST_CMAKE_METADATA_FILE}"
-      )
+      if(SKBUILD)
+        add_custom_target(
+          metadata_${targetname}
+          COMMAND ${CMAKE_COMMAND}
+            -Dmetadatafile=${metadatafile}
+            -DDEPS="${PROJECT_NAME};${ALL_DEPENDENCIES}"
+            -DDEPBUILDDIRS=
+            -DMODULENAME=${PROJECT_NAME}
+            -DINSTALL_PREFIX=
+            -P ${scriptdir}/WritePythonCMakeMetadata.cmake
+          COMMENT "Generating the CMake metadata file at ${PYINST_CMAKE_METADATA_FILE}"
+        )
+      else()
+        # todo: see previous remark
+        add_custom_target(
+          metadata_${targetname}
+          COMMAND ${CMAKE_COMMAND}
+            -Dmetadatafile=${metadatafile}
+            -DDEPS="${PROJECT_NAME};${ALL_DEPENDENCIES}"
+            -DDEPBUILDDIRS="${_export_builddirs}"
+            -DMODULENAME=${PROJECT_NAME}
+            -DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+            -P ${scriptdir}/WritePythonCMakeMetadata.cmake
+          COMMENT "Generating the CMake metadata file at ${PYINST_CMAKE_METADATA_FILE}"
+        )
+      endif()
       add_dependencies(${targetname} metadata_${targetname})
+      get_filename_component(PYINST_CMAKE_METADATA_PATH ${PYINST_CMAKE_METADATA_FILE} DIRECTORY)
+      # todo: not use python here but somehow use PATH parameter?
+      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_CMAKE_METADATA_FILE} DESTINATION python/${PYINST_CMAKE_METADATA_PATH})
     endif()
   endif()
 

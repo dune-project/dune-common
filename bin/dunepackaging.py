@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+try:
+    import skbuild
+except ImportError:
+    print("skbuild needed for packaging, run 'pip install scikit-build'")
+    import sys
+    sys.exit(0)
+
 import sys, os, io, getopt, re, shutil
 import importlib, subprocess
 import email.utils
@@ -80,8 +87,8 @@ def main(argv):
     # Generate setup.py
     print("Generate setup.py")
     f = open("setup.py", "w")
+    f.write("import os, sys\n")
     if data.name == 'dune-common':
-        f.write("import os, sys\n")
         f.write("here = os.path.dirname(os.path.abspath(__file__))\n")
         f.write("mods = os.path.join(here, \"python\", \"dune\")\n")
         f.write("sys.path.append(mods)\n\n")
@@ -90,6 +97,7 @@ def main(argv):
     f.write("except ImportError:\n")
     f.write("    from packagemetadata import metaData\n")
     f.write("from skbuild import setup\n")
+
     f.write("setup(**metaData('"+version+"')[1])\n")
     f.close()
 

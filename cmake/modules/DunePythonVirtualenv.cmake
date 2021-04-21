@@ -57,7 +57,7 @@
 #
 #    The Dune build system will try to build a virtualenv with pip installed into it,
 #    but this can fail in some situations, in particular on Debian and Ubuntu distributions.
-#    In this case, you will se a warning message in the CMake output. If you are on Debian
+#    In this case, you will see a warning message in the CMake output. If you are on Debian
 #    or Ubuntu, try installing the :code:`python3-venv` (for Python 3) and / or
 #    :code:`python-virtualenv` packages, delete your build directory and try configuring
 #    again.

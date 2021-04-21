@@ -1,27 +1,5 @@
-cmake_minimum_required(VERSION 3.13)
-project(dune-py C CXX)
+add_subdirectory(python)
 
-set(DUNE_ENABLE_PYTHONBINDINGS ON)
-
-set(CMAKE_PREFIX_PATH {{ install_prefix }})
-
-{% for mod, dir in builddirs.items() -%}
-{% if dir != "" %}
-set({{ mod }}_DIR {{ dir }})
-{% endif %}
-{%- endfor %}
-
-if(NOT (dune-common_DIR OR dune-common_ROOT OR "${CMAKE_PREFIX_PATH}" MATCHES ".*dune-common.*"))
-  string(REPLACE ${CMAKE_PROJECT_NAME} dune-common dune-common_DIR ${PROJECT_BINARY_DIR})
-endif()
-
-find_package(dune-common REQUIRED)
-list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH})
-
-include(DuneMacros)
-dune_project()
-dune_enable_all_packages()
-
-add_subdirectory(python/dune/generated)
-
-finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
+set(templatefiles CMakeLists.txt.template dune.module.template config.h.cmake dune-py.pc.in)
+dune_symlink_to_source_files(FILES ${templatefiles})
+install(FILES ${templatefiles} DESTINATION python/dune/generator/template)
