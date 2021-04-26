@@ -231,4 +231,7 @@ if(NOT pippresent)
                          the CMake variable DUNE_PYTHON_ALLOW_GET_PIP to allow Dune to use get-pip.py
                          from https://bootstrap.pypa.io/get-pip.py")
   endif()
+elseif(NOT DUNE_PYTHON_pip_FOUND)
+  # if pip was not found before then we can set it here since it was now found
+  set(DUNE_PYTHON_pip_FOUND pippresent)
 endif()

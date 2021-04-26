@@ -17,12 +17,12 @@ def assertHave(identifier):
        assertHave("HAVE_DUNE_COMMON")
     '''
     config = os.path.join(dune.common.module.get_dune_py_dir(), "config.h")
-    if not os.path.isfile(config): return False # dune-py wasn't build yet
+    if not os.path.isfile(config):
+        raise ConfigurationError("dune-py not configured yet")
 
     matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
     if not matches:
         matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+ENABLE', line) for line in open(config)] if match is not None]
-
     if not matches:
         raise ConfigurationError(identifier + " is not set in dune-py's config.h")
     elif matches.__len__() > 1:

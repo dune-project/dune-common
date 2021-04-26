@@ -58,11 +58,19 @@ class Builder:
             if os.path.exists(metadata_file):
                 # If it exists parse the line that defines the key that we are looking for
                 for line in open(metadata_file, "r"):
-                    match = re.match(f"(.*)=(.*)", line)
-                    if match:
+                    ## todo: issue is that it will split at final '=' which
+                    ## is a problem with CXXFLAGS
+                    # match = re.match(f"(.*)=(.*)", line)
+                    # if match:
+                    #     result.setdefault(package.name, {})
+                    #     key, value = match.groups()
+                    #     result[package.name][key] = value
+                    try:
+                        key, value = line.split("=",1)
                         result.setdefault(package.name, {})
-                        key, value = match.groups()
-                        result[package.name][key] = value
+                        result[package.name][key] = value.strip()
+                    except ValueError: # no '=' in line
+                        pass
         return result
 
     def dunepy_from_template(dunepy_dir):
@@ -82,7 +90,7 @@ class Builder:
             for moddata in data.values():
                 # todo: space is bad separator for list of paths - needs
                 # fixing in cmake module generating the metadata file
-                for k, v in zip(moddata[key].split(" "), moddata[value].split(" ")):
+                for k, v in zip(moddata[key].split(" "), moddata[value].split(";")):
                     # we don't store paths for module that have not been found (suggested)
                     # and we also skip the path if it is empty (packaged module)
                     if v.endswith("NOTFOUND") or v == "": continue
@@ -101,8 +109,20 @@ class Builder:
             value, = values
             return value
 
-        modules   = combine_across_modules("MODULENAME")
-        builddirs = zip_across_modules("DEPS", "DEPBUILDDIRS")
+        modules    = combine_across_modules("MODULENAME")
+        builddirs  = zip_across_modules("DEPS", "DEPBUILDDIRS")
+
+        # todo: improve on this - just getting the idea how this could work
+        cmakeflags = combine_across_modules("CMAKE_FLAGS")
+        cmakeFlags = {}
+        for x in cmakeflags:
+            for y in x.split(";"):
+                try:
+                    k,v = y.split(":=",1)
+                    cmakeFlags[k] = v.strip()
+                except ValueError: # no '=' in line
+                    pass
+        # print(cmakeFlags) # not used yet
 
         # add dune modules which where available during the build of a
         # python module but don't provide their own python module
@@ -115,6 +135,7 @@ class Builder:
         context["modules"]        = modules
         context["builddirs"]      = builddirs
         context["install_prefix"] = unique_value_across_modules("INSTALL_PREFIX")
+        context["cmake_flags"]    = cmakeFlags
 
         # Find the correct template path
         path, _ = os.path.split(__file__)

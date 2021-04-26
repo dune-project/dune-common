@@ -50,7 +50,7 @@ function(dune_python_install_package)
   # Parse Arguments
   set(OPTION)
   set(SINGLE PATH CMAKE_METADATA_FILE)
-  set(MULTI ADDITIONAL_PIP_PARAMS DEPENDS)
+  set(MULTI ADDITIONAL_PIP_PARAMS DEPENDS FLAGS)
   cmake_parse_arguments(PYINST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYINST_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
@@ -85,15 +85,19 @@ function(dune_python_install_package)
 
   # Install the Python Package into the Dune virtual environment in the build stage
   string(REPLACE "/" "_" envtargetname "env_install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYINST_PATH}")
+  # todo: the 'script-location' argument is to supress some warning about the dune-env/bin not in path
+  #       added extra-index-url to simplify use with ci (but it should hurt normal usage)
   add_custom_target(
     ${envtargetname}
     ALL
     COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
-      --upgrade               # TODO: Check with Andreas whether we really need --upgrade
+      --upgrade                 # todo: Check with Andreas whether we really need --upgrade A: we do because otherwise we can't reinstall a dune package after some source change without bumping the version number
+      --no-warn-script-location
+      --extra-index-url https://gitlab.dune-project.org/api/v4/projects/133/packages/pypi/simple
       "${WHEEL_OPTION}"
-      --editable              # Installations into the internal env are always editable
       ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
-      "${PYINST_FULLPATH}"
+      --editable              # Installations into the internal env are always editable
+      "${PYINST_FULLPATH}"    # todo: providing '--editable' as additional pip param causes problem - possible --editable needs to be last parameter?
     COMMENT "Installing Python package at ${PYINST_FULLPATH} into Dune virtual environment..."
     DEPENDS ${PYINST_DEPENDS}
   )
@@ -161,15 +165,24 @@ function(dune_python_install_package)
     set(metadatafile ${PYINST_FULLPATH}/${PYINST_CMAKE_METADATA_FILE})
 
     # Collect some variables that we would like to export
-    set(_export_builddirs ${CMAKE_BINARY_DIR})
+    set(_export_builddirs "${CMAKE_BINARY_DIR}")
     foreach(mod ${ALL_DEPENDENCIES})
-      list(APPEND _export_builddirs ${${mod}_DIR})
+      string(APPEND _export_builddirs "\;${${mod}_DIR}")
     endforeach()
 
+    # issue: with the cxx override the CMAKE_CXX_COMPILER is replace by the
+    # script name and the original compiler is lost (available as DEFAULT_CXXFLAGS)
+    # so this case needs to be checked
+    # todo: fix the leading ';'
+    set(_cmake_flags "")
+    FOREACH(cmd_line_loop IN ITEMS ${PYINST_FLAGS})
+      if(${cmd_line_loop})
+        string(APPEND _cmake_flags "\;${cmd_line_loop}:=\"${${cmd_line_loop}}\"")
+      endif()
+    ENDFOREACH(cmd_line_loop)
+
     # Make sure to generate the metadata for the build stage
-    # todo: _export_builddirs is written to the metadata file using space as
-    #       separator - this is not suitable for file paths.
-    #       Not using the '"' leads to only the first entry of the list being written
+    # todo: possible issue with empty _cmake_flags - missing separator error
     add_custom_target(
       metadata_${envtargetname}
       COMMAND ${CMAKE_COMMAND}
@@ -177,6 +190,7 @@ function(dune_python_install_package)
         -DDEPBUILDDIRS="${_export_builddirs}"
         -DDEPS="${PROJECT_NAME};${ALL_DEPENDENCIES}"
         -DMODULENAME=${PROJECT_NAME}
+        -DCMAKE_FLAGS="${_cmake_flags}"
         -P ${scriptdir}/WritePythonCMakeMetadata.cmake
       COMMENT "Generating the CMake metadata file at ${PYINST_CMAKE_METADATA_FILE}"
     )
@@ -197,6 +211,7 @@ function(dune_python_install_package)
             -DDEPBUILDDIRS=
             -DMODULENAME=${PROJECT_NAME}
             -DINSTALL_PREFIX=
+            -DCMAKE_FLAGS="${_cmake_flags}"
             -P ${scriptdir}/WritePythonCMakeMetadata.cmake
           COMMENT "Generating the CMake metadata file at ${PYINST_CMAKE_METADATA_FILE}"
         )
@@ -210,13 +225,14 @@ function(dune_python_install_package)
             -DDEPBUILDDIRS="${_export_builddirs}"
             -DMODULENAME=${PROJECT_NAME}
             -DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+            -DCMAKE_FLAGS="${_cmake_flags}"
             -P ${scriptdir}/WritePythonCMakeMetadata.cmake
           COMMENT "Generating the CMake metadata file at ${PYINST_CMAKE_METADATA_FILE}"
         )
       endif()
       add_dependencies(${targetname} metadata_${targetname})
       get_filename_component(PYINST_CMAKE_METADATA_PATH ${PYINST_CMAKE_METADATA_FILE} DIRECTORY)
-      # todo: not use python here but somehow use PATH parameter?
+      # todo: not use 'python' here but somehow use PATH parameter?
       install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_CMAKE_METADATA_FILE} DESTINATION python/${PYINST_CMAKE_METADATA_PATH})
     endif()
   endif()
