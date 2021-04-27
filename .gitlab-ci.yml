@@ -45,6 +45,19 @@ debian-11-gcc-9-17-python:
     # add some logging output from the python bindings
     DUNE_LOG_LEVEL:     DEBUG
   tags: [duneci]
+ubuntu-20.04-clang-10-17-python:
+  image: registry.dune-project.org/docker/ci/ubuntu:20.04
+  script: duneci-standard-test
+  stage: test
+  variables:
+    DUNECI_TOOLCHAIN: clang-10-17
+    # the CMAKE_FLAGS used to build the modules - set python bindings to on
+    DUNE_CMAKE_FLAGS:   '-DDUNE_ENABLE_PYTHONBINDINGS=ON'
+    # cmake flags we use for all dune module
+    DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
+    # add some logging output from the python bindings
+    DUNE_LOG_LEVEL:     DEBUG
+  tags: [duneci]
 
 system-test:
   stage: downstream
