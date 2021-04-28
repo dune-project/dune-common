@@ -15,16 +15,15 @@ if addPlot:
 
     try:
         s = os.environ['DUNEPY_BLOCK_PLOTTING']
-        block = s in ['TRUE','true', '1', 't', 'y', 'yes']
+        block = s in ['TRUE','True','true', '1', 't', 'y', 'yes']
     except KeyError:
         block = True
     try:
         s = os.environ['DUNEPY_DISABLE_PLOTTING']
-        disable = s in ['TRUE','true', '1', 't', 'y', 'yes']
+        disable = s in ['TRUE','True','true', '1', 't', 'y', 'yes']
     except KeyError:
         disable = False
     block = block and (not disable)
-
 
     def _plotGrid(fig, grid, gridLines="black"):
         for p in grid.polygons():

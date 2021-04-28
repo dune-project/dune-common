@@ -13,6 +13,7 @@ before_script:
 variables:
   DUNECI_TEST_LABELS: quick
   DUNE_TEST_EXPECTED_VC_IMPLEMENTATION: SSE2
+  PIP_DEFAULT_TIMEOUT: 0
 
 debian:10 gcc-7-17--expensive:
   # This image has Vc
@@ -39,20 +40,20 @@ debian-11-gcc-9-17-python:
   variables:
     DUNECI_TOOLCHAIN:  gcc-9-17
     # the CMAKE_FLAGS used to build the modules - set python bindings to on
-    DUNE_CMAKE_FLAGS:   '-DDUNE_ENABLE_PYTHONBINDINGS=ON'
+    DUNE_CMAKE_FLAGS:   '-DDUNE_ENABLE_PYTHONBINDINGS=ON -DALLOW_CXXFLAGS_OVERWRITE=ON'
     # cmake flags we use for all dune module
     DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
     # add some logging output from the python bindings
     DUNE_LOG_LEVEL:     DEBUG
   tags: [duneci]
-ubuntu-20.04-clang-10-17-python:
+ubuntu-20.04-clang-10-20-python:
   image: registry.dune-project.org/docker/ci/ubuntu:20.04
   script: duneci-standard-test
   stage: test
   variables:
-    DUNECI_TOOLCHAIN: clang-10-17
+    DUNECI_TOOLCHAIN: clang-10-20
     # the CMAKE_FLAGS used to build the modules - set python bindings to on
-    DUNE_CMAKE_FLAGS:   '-DDUNE_ENABLE_PYTHONBINDINGS=ON'
+    DUNE_CMAKE_FLAGS:   '-DDUNE_ENABLE_PYTHONBINDINGS=ON -DALLOW_CXXFLAGS_OVERWRITE=ON'
     # cmake flags we use for all dune module
     DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
     # add some logging output from the python bindings

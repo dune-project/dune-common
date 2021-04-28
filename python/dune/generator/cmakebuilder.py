@@ -166,35 +166,28 @@ class Builder:
             self.savedOutput = [sys.stdout, sys.stderr]
         else:
             self.savedOutput = None
+        self.dune_py_dir = dune.common.module.get_dune_py_dir()
+        self.build_args = dune.common.module.get_default_build_args()
+        self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         self.initialized = False
 
     def initialize(self):
-        self.dune_py_dir = dune.common.module.get_dune_py_dir()
-        os.makedirs(self.dune_py_dir, exist_ok=True)
-
         if comm.rank == 0:
-            # Trigger the generation of dune-py
-            from dune.common.locking import Lock, LOCK_EX,LOCK_SH
-            dunepy = get_dune_py_dir()
-            tagfile = os.path.join(dunepy, ".noconfigure")
-            if os.path.exists(dunepy):
-                # check for existence of .noconfigure tag file
-                with Lock(os.path.join(dunepy, 'lock-module.lock'), flags=LOCK_EX):
-                    if not os.path.isfile(tagfile):
-                        generateDunePy = True
-                    else:
-                        generateDunePy = False
-                        logger.debug('Using existing dune-py module in'+dunepy)
-            else:
-                generateDunePy = True
-            if generateDunePy:
-                Builder.dunepy_from_template(get_dune_py_dir())
-                subprocess.check_call("cmake .".split(), cwd=get_dune_py_dir())
-                open(tagfile, 'a').close()
+            os.makedirs(self.dune_py_dir, exist_ok=True)
+            # need to lock here so that multiple procersses don't try to
+            # generate a new dune-py at the same time
+            with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_EX):
+                # check for existence of tag file - this is removed if a
+                # new dune package is added
+                tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
+                if not os.path.isfile(tagfile):
+                    logger.info('Generating dune-py module in '+self.dune_py_dir)
+                    Builder.dunepy_from_template(get_dune_py_dir())
+                    subprocess.check_call("cmake .".split(), cwd=get_dune_py_dir())
+                    open(tagfile, 'a').close()
+                else:
+                    logger.debug('Using existing dune-py module in '+self.dune_py_dir)
         comm.barrier()
-
-        self.build_args = dune.common.module.get_default_build_args()
-        self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         try:
             dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         except:
@@ -249,7 +242,7 @@ class Builder:
             module = sys.modules.get("dune.generated." + moduleName)
             if module is None:
                 # make sure nothing (compilation, generating and building) is # taking place
-                with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_EX):
+                with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_EX):
                     # module must be generated so lock the source file
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
                         sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
@@ -295,7 +288,7 @@ class Builder:
                 # end of exclusive dune-py lock
 
                 # for compilation a shared lock is enough
-                with Lock(os.path.join(self.dune_py_dir, 'lock-module.lock'), flags=LOCK_SH):
+                with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_SH):
                     # lock generated module
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
                         logger.debug("Now compiling "+moduleName)
