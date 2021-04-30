@@ -82,6 +82,16 @@ set(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR ON CACHE BOOL
   "Place Python virtualenv in top-level directory \"dune-python-env\" when using an absolute build directory"
   )
 
+# check if we are in a venv already
+if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
+  dune_execute_process(COMMAND ${Python3_EXECUTABLE}
+                                ${scriptdir}/venvpath.py
+                       OUTPUT_VARIABLE DUNE_PYTHON_VIRTUALENV_PATH
+                       OUTPUT_STRIP_TRAILING_WHITESPACE
+                      )
+endif()
+
+# if no virtual env path set so far check dune modules
 if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
   foreach(mod ${ALL_DEPENDENCIES})
     if(IS_DIRECTORY ${${mod}_DIR}/dune-env)
