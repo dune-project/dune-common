@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 import sys, os, io, getopt, re, ast
 import shlex
 import importlib, subprocess
@@ -253,15 +253,18 @@ def cmakeArguments(cmakeArgs):
 
 def cmakeFlags():
     # defaults
-    flags = cmakeArguments(dict([
+    flags = dict([
         ('CMAKE_BUILD_TYPE','Release'),
         ('CMAKE_INSTALL_RPATH_USE_LINK_PATH','TRUE'),
         ('DUNE_ENABLE_PYTHONBINDINGS','TRUE'),
         ('ALLOW_CXXFLAGS_OVERWRITE','ON'),
         ('CMAKE_DISABLE_FIND_PACKAGE_LATEX','TRUE'),
         ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen','TRUE'),
-        ('INKSCAPE','FALSE')
-    ]))
+        ('INKSCAPE','FALSE'),
+    ])
+    # if inVEnv():
+    #     flags['DUNE_PYTHON_VIRTUALENV_PATH'] = sys.prefix
+    flags = cmakeArguments(flags) # make cmake command line out of dict
     # test environment for additional flags
     cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
     # split cmakeFlags and add them to flags
@@ -367,7 +370,7 @@ def metaData(version=None, dependencyCheck=True):
       }
     if os.path.isdir('python'):
       setupParams.update({
-            "packages":find_packages(where="python"),
+            "packages":find_namespace_packages(where="python"),
             "package_dir":{"": "python"},
             "install_requires":install_requires,
             "python_requires":'>=3.4',

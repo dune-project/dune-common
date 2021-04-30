@@ -1,14 +1,13 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 pkg = [m for m in "${ProjectPythonRequires}".split(' ') if "dune" not in m]
 
 setup(name="${ProjectName}",
-    namespace_packages=['dune'],
+    packages=find_namespace_packages(include=['dune.*']),
     description="${ProjectDescription}",
     version="${ProjectVersionString}",
     author="${ProjectAuthor}",
     author_email="${ProjectMaintainerEmail}",
-    packages = find_packages(),
     zip_safe = 0,
     package_data = {'': ['*.so']},
     install_requires = pkg,
