@@ -5,10 +5,10 @@
 if(DUNE_PYTHON_INSTALL_EDITABLE)
   message(WARNING
 "    The DUNE_PYTHON_INSTALL_EDITABLE variable is deprecated.
-     Installations into the Dune-internal virtualenv are always
-     editable. If you want to enable editable installation into
-     your system environment (e.g. because it is a virtual environment),
-     you can do so with `-DDUNE_PYTHON_ADDITIONAL_PIP_PARAMS=--editable`
+     Installations into the Dune-internal virtualenv (or active external
+     virtualenv are always editable. An editable installation e.g. into
+     your system environment is not supported at the moment since an
+     installation should not depend on the existence of a build directory.
 ")
 endif()
 

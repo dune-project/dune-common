@@ -1,3 +1,11 @@
+# A python script that determines whether the current interpreter is
+# running inside a virtual environment. For discussion of the implemented
+# methods, see http://stackoverflow.com/questions/1871549
+#
+# Meant to be run from DunePythonCommonMacros.cmake. For that reason, it
+# exits with either 1 or 0, where 1 indicates that the interpreter
+# runs inside a virtualenv. It also prints the path to the venv (if active) to stdout
+
 import sys,os
 
 def inVEnv():
@@ -19,6 +27,7 @@ def inVEnv():
 
 if __name__ == "__main__":
     if not inVEnv():
-        print("")
+        sys.exit(0)
     else:
         print(sys.prefix)
+        sys.exit(1)

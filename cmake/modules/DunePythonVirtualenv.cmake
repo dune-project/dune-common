@@ -3,18 +3,22 @@
 # .. cmake_module::
 #
 #    This module manages the creation of virtual python environment during
-#    configuration. Execution of this module must be explicitly enabled by
-#    setting the variable :ref:`DUNE_PYTHON_VIRTUALENV_SETUP`. Note that some
-#    downstream modules will require you to set this variable. The purpose
-#    of this virtual environment is to be able to run python code from cmake
-#    in situations such as python-based code generation, running postprocessing
-#    in python during testing etc.
+#    configuration. The purpose of this virtual environment is to be able to run
+#    python code from cmake in situations such as python-based code generation,
+#    running postprocessing in python during testing etc.
+#    If enabled the Python bindings are also installed (editable) into the
+#    internal virtual environment.
 #
-#    Although designed for internal use, this virtualenv can also be manually
-#    inspected. A symlink to the activation script is placed in the top level
-#    build directory of all Dune modules in the stack. To directly execute a
-#    command in the virtualenv, you can use the script :code:`run-in-dune-env <command>`,
-#    which is also placed into every build directory.
+#    The internal virtual environment is only generated if the
+#    configuration is not run with an active virtual environment. If an
+#    external environment is detected this will be used instead of the
+#    internal environment.
+#
+#    Although designed for internal use, the internal (or detected external)
+#    virtualenv can also be manually inspected. A symlink to the activation script is
+#    placed in the top level build directory of all Dune modules in the stack.
+#    To directly execute a command in the virtualenv, you can use the script
+#    :code:`run-in-dune-env <command>`, which is also placed into every build directory.
 #
 #    All packages installed with :ref:`dune_python_install_package` are automatically
 #    installed into the virtualenv.
@@ -70,28 +74,46 @@
 #
 include_guard(GLOBAL)
 
-# If the user has not specified an absolute, we look through the dependency tree of this module
-# for a build directory that already contains a virtual environment.
-
+# pre-populate DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
+set(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV "" CACHE PATH
+  "Running in an external activated virtual environment"
+  )
+# pre-populate DUNE_PYTHON_VIRTUALENV_PATH
 set(DUNE_PYTHON_VIRTUALENV_PATH "" CACHE PATH
   "Location of Python virtualenv created by the Dune build system"
   )
-
 # pre-populate DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR
 set(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR ON CACHE BOOL
   "Place Python virtualenv in top-level directory \"dune-python-env\" when using an absolute build directory"
   )
 
-# check if we are in a venv already
-if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
-  dune_execute_process(COMMAND ${Python3_EXECUTABLE}
-                                ${scriptdir}/venvpath.py
-                       OUTPUT_VARIABLE DUNE_PYTHON_VIRTUALENV_PATH
-                       OUTPUT_STRIP_TRAILING_WHITESPACE
-                      )
+# Determine whether the given interpreter is running inside a virtualenv
+dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/venvpath.py"
+                     RESULT_VARIABLE DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
+                     OUTPUT_VARIABLE DUNE_PYTHON_VIRTUALENV_PATH
+                     OUTPUT_STRIP_TRAILING_WHITESPACE
+                     )
+
+# Determine where to install python packages
+if(NOT DUNE_PYTHON_INSTALL_LOCATION)
+  if(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
+    set(DUNE_PYTHON_INSTALL_LOCATION "system")
+  else()
+    set(DUNE_PYTHON_INSTALL_LOCATION "none")
+  endif()
+endif()
+if(NOT(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") OR
+       ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "system") OR
+       ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")))
+  message(FATAL_ERROR "DUNE_PYTHON_INSTALL_LOCATION must be user|system|none.")
+endif()
+if(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") AND
+   DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
+  message(FATAL_ERROR "Specifying 'user' as install location is incomaptible with using virtual environments (as per pip docs)")
 endif()
 
-# if no virtual env path set so far check dune modules
+# If the user has not specified an absolute, we look through the dependency tree of this module
+# for a build directory that already contains a virtual environment.
 if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
   foreach(mod ${ALL_DEPENDENCIES})
     if(IS_DIRECTORY ${${mod}_DIR}/dune-env)
@@ -111,7 +133,6 @@ endif()
 
 if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
   # We didn't find anything, so figure out the correct location for building the virtualenv
-
   if(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR AND DUNE_BUILD_DIRECTORY_ROOT_PATH)
     # Use a dedicated directory not associated with any module
     set(DUNE_PYTHON_VIRTUALENV_PATH "${DUNE_BUILD_DIRECTORY_ROOT_PATH}/dune-python-env")

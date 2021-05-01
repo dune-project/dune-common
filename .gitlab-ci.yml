@@ -40,9 +40,8 @@ debian-11-gcc-9-17-python:
   variables:
     DUNECI_TOOLCHAIN:  gcc-9-17
     # the CMAKE_FLAGS used to build the modules - set python bindings to on
-    DUNE_CMAKE_FLAGS:   '-DDUNE_ENABLE_PYTHONBINDINGS=ON -DALLOW_CXXFLAGS_OVERWRITE=ON'
-    # cmake flags we use for all dune module
-    DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
+    # Note: DUNE_RUNNING_IN_CI only needed unti ci image updating fixed on gitlab
+    DUNECI_CMAKE_FLAGS: '-DDUNE_RUNNING_IN_CI=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=ON -DALLOW_CXXFLAGS_OVERWRITE=ON'
     # add some logging output from the python bindings
     DUNE_LOG_LEVEL:     DEBUG
   tags: [duneci]
@@ -53,9 +52,8 @@ ubuntu-20.04-clang-10-20-python:
   variables:
     DUNECI_TOOLCHAIN: clang-10-20
     # the CMAKE_FLAGS used to build the modules - set python bindings to on
-    DUNE_CMAKE_FLAGS:   '-DDUNE_ENABLE_PYTHONBINDINGS=ON -DALLOW_CXXFLAGS_OVERWRITE=ON'
-    # cmake flags we use for all dune module
-    DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
+    # Note: DUNE_RUNNING_IN_CI only needed unti ci image updating fixed on gitlab
+    DUNECI_CMAKE_FLAGS: '-DDUNE_RUNNING_IN_CI=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=ON -DALLOW_CXXFLAGS_OVERWRITE=ON'
     # add some logging output from the python bindings
     DUNE_LOG_LEVEL:     DEBUG
   tags: [duneci]

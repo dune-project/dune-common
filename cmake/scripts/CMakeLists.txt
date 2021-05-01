@@ -2,7 +2,6 @@
 install(FILES
   conf.py.in
   CreateDoxyFile.cmake
-  envdetect.py
   venvpath.py
   FinalizeHeadercheck.cmake
   index.rst.in

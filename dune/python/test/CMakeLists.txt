@@ -7,6 +7,7 @@ dune_add_test(SOURCES test_embed1.cc
               LINK_LIBRARIES ${DUNE_LIBS} ${Python3_LIBRARIES}
               LABELS quick
               COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env
+              CMD_ARGS $<TARGET_FILE:test_embed1>
 )
 
 # add_executable(test_embed1 EXCLUDE_FROM_ALL test_embed1.cc)
