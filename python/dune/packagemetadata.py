@@ -20,11 +20,11 @@ class Version:
             self.minor = s.minor
             self.revision = s.revision
         else:
-            match = re.match('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)([.](?P<revision>[0-9]+))?', s)
+            match = re.match('(?P<major>[0-9]+)([.](?P<minor>[0-9]+))?([.](?P<revision>[0-9]+))?', s)
             if not match:
                 raise ValueError('Invalid version: \'' + s + '\'.')
             self.major = int(match.group('major'))
-            self.minor = int(match.group('minor'))
+            self.minor = int(match.group('minor')) if match.group( 'minor' ) else 0
             self.revision = int(match.group('revision')) if match.group( 'revision' ) else 0
 
     def __str__(self):

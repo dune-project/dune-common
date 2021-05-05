@@ -109,7 +109,9 @@ function(dune_python_install_package)
     COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install -q
       --no-warn-script-location # supress warnings that dune-env/bin not in path
       "${WHEEL_OPTION}"
-      ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
+      # we can't use the same additional parameters for both internal
+      # install and normal install so not including these flags at the moment
+      # ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
       "${PACKAGE_INDEX}"          # stopgap solution until ci repo fixed
       --editable                  # Installations into the internal env are always editable
       "${PYINST_FULLPATH}"

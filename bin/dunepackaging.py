@@ -104,8 +104,9 @@ def main(argv):
     # Generate pyproject.toml
     print("Generate pyproject.toml")
     f = open("pyproject.toml", "w")
-    requires = ["pip", "setuptools", "wheel", "scikit-build", "cmake", "ninja", "requests"]
-    requires += [r for r in data.asPythonRequirementString(data.depends + data.python_requires) if r not in requires]
+    requires = data.asPythonRequirementString(data.depends + data.python_requires)
+    minimal = ["pip", "setuptools", "wheel", "scikit-build", "cmake", "ninja", "requests"]
+    requires += [r for r in minimal if not any([a.startswith(r) for a in requires])]
     f.write("[build-system]\n")
     f.write("requires = "+requires.__str__()+"\n")
     f.write("build-backend = 'setuptools.build_meta'\n")
