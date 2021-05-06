@@ -1,6 +1,6 @@
 from setuptools import setup, find_namespace_packages
 
-pkg = [m for m in "${ProjectPythonRequires}".split(' ') if "dune" not in m]
+pkg = [m for m in "${ProjectPythonRequires}".split(' ')]
 
 setup(name="${ProjectName}",
     # only add 'dune' here in dune-common other packages shouldn't add file # directly to 'dune'

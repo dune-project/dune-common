@@ -94,24 +94,6 @@ dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/venvpath.py"
                      OUTPUT_STRIP_TRAILING_WHITESPACE
                      )
 
-# Determine where to install python packages
-if(NOT DUNE_PYTHON_INSTALL_LOCATION)
-  if(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
-    set(DUNE_PYTHON_INSTALL_LOCATION "system")
-  else()
-    set(DUNE_PYTHON_INSTALL_LOCATION "none")
-  endif()
-endif()
-if(NOT(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") OR
-       ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "system") OR
-       ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")))
-  message(FATAL_ERROR "DUNE_PYTHON_INSTALL_LOCATION must be user|system|none.")
-endif()
-if(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") AND
-   DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
-  message(FATAL_ERROR "Specifying 'user' as install location is incomaptible with using virtual environments (as per pip docs)")
-endif()
-
 # If the user has not specified an absolute, we look through the dependency tree of this module
 # for a build directory that already contains a virtual environment.
 if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")

@@ -1,11 +1,6 @@
 import sys, os
 from argparse import Action, ArgumentParser
-try:
-    from dune.packagemetadata import get_dune_py_dir, extract_metadata
-except ImportError:
-    # calling from inside dune-common build dir before dune was installed -
-    # but that is not an error
-    sys.exit(0)
+from dune.packagemetadata import get_dune_py_dir, extract_metadata
 
 def configure():
     # force a reconfiguration of dune-py by deleting tagfile
@@ -20,7 +15,11 @@ def checkbuilddirs(args):
 
     # Extract the raw data dictionary
     data = extract_metadata(ignoreImportError=True)
-    instbuilddirs = data.zip_across_modules("DEPS", "DEPBUILDDIRS")
+    try:
+        instbuilddirs = data.zip_across_modules("DEPS", "DEPBUILDDIRS")
+    except ValueError as ex:
+        print(ex)
+        return 1
 
     for mod, bd in zip(modules, builddirs):
         instbd = instbuilddirs.get(mod, bd)
@@ -29,15 +28,15 @@ def checkbuilddirs(args):
             return 1
     return 0
 
-if __name__ == '__main__':
+def run(arguments=None):
     parser = ArgumentParser(description='Execute DUNE commands', prog='dune')
     parser.add_argument('command', choices=['configure','checkbuilddirs'], help="Command to be executed")
     parser.add_argument('--args', nargs='+', default=[], help='command arguments')
 
-    args = parser.parse_args()
+    args = parser.parse_args(arguments)
 
     if args.command == 'configure':
-        print('Configure dune-py module')
+        print('Set up dune-py module for reconfiguration')
         configure()
     elif args.command == 'checkbuilddirs':
         print('Comparing build directories of installed dune modules with given build directories')
@@ -45,3 +44,6 @@ if __name__ == '__main__':
         assert len(cmdArgs) > 0
         ret = checkbuilddirs(cmdArgs)
         sys.exit(ret)
+
+if __name__ == '__main__':
+    sys.exit( run() )

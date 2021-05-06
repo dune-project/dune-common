@@ -3,6 +3,7 @@ install(FILES
   conf.py.in
   CreateDoxyFile.cmake
   venvpath.py
+  checkvenvconf.py
   FinalizeHeadercheck.cmake
   index.rst.in
   InstallFile.cmake

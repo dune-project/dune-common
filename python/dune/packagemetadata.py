@@ -405,7 +405,7 @@ class MetaDataDict(dict):
                 if v.endswith("NOTFOUND") or v == "": continue
                 # make sure build directory (if found) is unique across modules
                 if k in result and not result[k] == v:
-                    raise ValueError(f"build dir {v} for module {k} is expected to be unique across the given metadata")
+                    raise ValueError(f"build dir {v} for module {k} is expected to be unique across the given metadata - found {result[k]}")
                 result[k] = v
         return result
     def unique_value_across_modules(self,key, default=""):

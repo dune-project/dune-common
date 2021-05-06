@@ -86,21 +86,6 @@ if(Python3_Interpreter_FOUND)
   add_custom_target(test_python)
   add_custom_target(install_python)
 
-  # Set the path to a Dune wheelhouse that is to be used during installation
-  # NB: Right now, the same logic is used to retrieve the location of the
-  #     wheelhouse (which means that you have to use the same CMAKE_INSTALL_PREFIX
-  #     when *using* installed modules, you used when *installing* them.
-  #     TODO: Replace this with a better mechanism (like writing the location into
-  #           dune-commons package config file)
-  set(DUNE_PYTHON_WHEELHOUSE ${CMAKE_INSTALL_PREFIX}/share/dune/wheelhouse)
-
-  # Have make install do the same as make install_python
-  install(CODE "set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
-                set(DUNE_PYTHON_WHEELHOUSE ${DUNE_PYTHON_WHEELHOUSE})
-                include(DuneExecuteProcess)
-                dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build . --target install_python --config $<CONFIG>)
-                ")
-
   # this option enables the build of Python bindings for DUNE modules
   option(DUNE_ENABLE_PYTHONBINDINGS "Enable Python bindings for DUNE" OFF)
 

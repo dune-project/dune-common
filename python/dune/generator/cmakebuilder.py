@@ -60,6 +60,8 @@ class Builder:
             description = Description(os.path.join(dunepy_dir,"dune.module"))
             deps = description.depends
             force = not modules == [d[0] for d in deps] # ignore version number in dependency for now
+            # todo also check if location of modules have changed to find
+            # modules moved from build to install - or tag that some other way
         else:
             force = True
 
