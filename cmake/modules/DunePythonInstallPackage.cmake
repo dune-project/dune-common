@@ -101,7 +101,6 @@ function(dune_python_install_package)
 
   # Install the Python Package into the Dune virtual environment in the build stage
   string(REPLACE "/" "_" envtargetname "env_install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYINST_PATH}")
-  # todo: added extra-index-url to simplify use with ci (but it should hurt normal usage)
 
   # A hack which shouldn't be necesary once the ci is updated
   # https://gitlab.dune-project.org/docker/ci/-/merge_requests/101
@@ -169,7 +168,7 @@ function(dune_python_install_package)
                       COMMAND ${Python3_EXECUTABLE} -m pip install
                         "${USER_INSTALL_OPTION}"
                        "${PACKAGE_INDEX}"
-                        --use-feature=in-tree-build
+                        # --use-feature=in-tree-build
                         --upgrade
                         "${WHEEL_OPTION}"
                         ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
@@ -291,7 +290,7 @@ function(dune_python_install_package)
       add_custom_command(TARGET metadata_${envtargetname} PRE_BUILD
                         COMMAND "${CMAKE_COMMAND}" -E echo "configured for interpreter ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}"
                         COMMAND "${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}" "${scriptdir}/checkvenvconf.py"
-                                 checkbuilddirs --args "${PROJECT_NAME} ${ALL_DEPENDENCIES} ${_export_builddirs}"
+                                 checkbuilddirs --args \"${PROJECT_NAME};${ALL_DEPENDENCIES}\" "${_export_builddirs}"
                         COMMENT checking if the modules used to confiugre this module match those from any installed dune packages
                         )
     endif()
@@ -309,8 +308,13 @@ function(dune_python_install_package)
   endif()
 
   # Construct the wheel installation commandline
-  set(WHEEL_COMMAND ${Python3_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS} ${PYINST_FULLPATH})
-
+  # TODO should the wheel be build for the internal env setup or for the external one?
+  set(WHEEL_COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE}
+                        "${PACKAGE_INDEX}"
+                        --use-feature=in-tree-build
+                        "${WHEEL_OPTION}"
+                        ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
+                        "${PYINST_FULLPATH}")
   #
   # Have make install do the same as make install_python plus
   # install a wheel into a central wheelhouse
@@ -323,9 +327,11 @@ function(dune_python_install_package)
                 set(DUNE_PYTHON_WHEELHOUSE ${DUNE_PYTHON_WHEELHOUSE})
                 include(DuneExecuteProcess)
                 message(\"Installing python package\")
-                dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build .  --target install_python --config $<CONFIG>)
-                message(\"Installing wheel for python package at ${PYINST_FULLPATH}...\")
-                dune_execute_process(COMMAND ${WHEEL_COMMAND})"
+                dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build .  --target install_python --config $<CONFIG>
+                                     WARNING_MESSAGE \"python package installation failed - ignored\")
+                message(\"Installing wheel for python package at ${PYINST_FULLPATH} into ${DUNE_PYTHON_WHEELHOUSE}...\")
+                dune_execute_process(COMMAND ${WHEEL_COMMAND}
+                                     WARNING_MESSAGE \"wheel installation failed - ignored\")"
           )
 
 endfunction()
