@@ -777,6 +777,7 @@ set(${ProjectName}_DEPENDS \"@${ProjectName}_DEPENDS@\")
 set(${ProjectName}_SUGGESTS \"@${ProjectName}_SUGGESTS@\")
 set(${ProjectName}_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
 set(${ProjectName}_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
+set(${ProjectName}_HASPYTHON @DUNE_MODULE_HASPYTHON@)
 
 # Lines that are set by the CMake build system via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
 ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
@@ -786,6 +787,7 @@ if(${ProjectName}_LIBRARIES)
   get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
   include(\"\${_dir}/${ProjectName}-targets.cmake\")
 endif()
+
 endif()")
       set(CONFIG_SOURCE_FILE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in)
   else()
@@ -809,6 +811,11 @@ endif()")
   # file section of dune-grid.
   set(DUNE_MODULE_SRC_DOCDIR "${PROJECT_SOURCE_DIR}/doc")
   set(MODULE_INSTALLED ON)
+  if(EXISTS ${PROJECT_SOURCE_DIR}/python)
+    set(DUNE_MODULE_HASPYTHON 1)
+  else()
+    set(DUNE_MODULE_HASPYTHON 0)
+  endif()
 
   configure_package_config_file(${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
@@ -833,6 +840,7 @@ macro(set_and_check _var _file)
   endif()
 endmacro()")
   set(MODULE_INSTALLED OFF)
+
   configure_file(
     ${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake @ONLY)

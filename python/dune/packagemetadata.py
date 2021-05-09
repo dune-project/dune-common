@@ -409,9 +409,9 @@ class MetaDataDict(dict):
                 result[k] = v
         return result
     def unique_value_across_modules(self,key, default=""):
-        values = set(m[key] for m in self.values())
+        values = set(m[key] for m in self.values() if not m[key] == "")
         if len(values) > 1:
-            raise ValueError(f"Key {key} is expected to be unique across the given metadata")
+            raise ValueError(f"Key {key} is expected to be unique across the given metadata. Got {values}")
         if len(values) == 0:
             return default
         value, = values

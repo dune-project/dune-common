@@ -65,6 +65,14 @@ function(dune_python_install_package)
   endif()
 
   # Configure setup.py.in if present
+
+  set(RequiredPythonModules "${ProjectPythonRequires}")
+  foreach(mod ${ALL_DEPENDENCIES})
+    if(${${mod}_HASPYTHON}) # module found and has python bindings
+      string(APPEND RequiredPythonModules " ${mod}")
+    endif()
+  endforeach()
+
   set(PYINST_FULLPATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
   if(EXISTS ${PYINST_FULLPATH}/setup.py.in)
     configure_file(${PYINST_PATH}/setup.py.in ${PYINST_PATH}/setup.py)

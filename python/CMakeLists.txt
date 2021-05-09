@@ -7,7 +7,6 @@ add_subdirectory(dune)
 # endif()
 
 configure_file(MANIFEST.in MANIFEST.in)
-configure_file(setup.py.in setup.py)
 configure_file(pyproject.toml.in pyproject.toml)
 
 dune_python_install_package(
