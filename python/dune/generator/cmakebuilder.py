@@ -117,12 +117,17 @@ class Builder:
 
     def __init__(self, force=False, saveOutput=False):
         self.force = force
+        self.skipTargetAll = False
         if saveOutput is True or saveOutput.lower() == "write":
             self.savedOutput = [open("generatorCompiler.out","w+"), open("generatorCompiler.err","w+")]
         elif saveOutput.lower() == "append":
             self.savedOutput = [open("generatorCompiler.out","a+"), open("generatorCompiler.err","a+")]
-        elif saveOutput.lower() == "console" or saveOutput.lower() == "terminal":
+        elif saveOutput.lower() == "console" or \
+             saveOutput.lower() == "terminal" or \
+             saveOutput.lower() == "console_nocmake":
             self.savedOutput = [sys.stdout, sys.stderr]
+            if saveOutput.lower() == "console_nocmake":
+                self.skipTargetAll = True
         else:
             self.savedOutput = None
         self.dune_py_dir = dune.common.module.get_dune_py_dir()
@@ -170,7 +175,8 @@ class Builder:
         logger.debug("Compiler output: "+buffer_to_str(stdout))
         if cmake.returncode > 0:
             raise CompileError(buffer_to_str(stderr))
-        if self.savedOutput is not None:
+        writeOutput = self.savedOutput is not None and target != 'all' if self.skipTargetAll else self.savedOutput is not None
+        if writeOutput:
             out = buffer_to_str(stdout)
             nlines = out.count('\n')
             if nlines > 1:
