@@ -1,0 +1,15 @@
+from setuptools import setup, find_namespace_packages
+
+pkg = '${RequiredPythonModules}'.replace(';',' ').split(' ')
+
+setup(name="${ProjectName}",
+    packages=find_namespace_packages(include=['dune.*']),
+    description="${ProjectDescription}",
+    version="${ProjectVersionString}",
+    author="${ProjectAuthor}",
+    author_email="${ProjectMaintainerEmail}",
+    zip_safe = 0,
+    package_data = {'': ['*.so']},
+    install_requires = pkg,
+    include_package_data=True,
+  )
