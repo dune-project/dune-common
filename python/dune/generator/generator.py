@@ -62,7 +62,7 @@ class SimpleGenerator(object):
     def main(self, nr, includes, duneType, *args,
             options=None, bufferProtocol=False, dynamicAttr=False,
             holder="default",
-            baseClasses=None ):
+            baseClasses=None):
         if options is None: options=[]
         if baseClasses is None: baseClasses=[]
         source = "  using pybind11::operator\"\"_a;\n"
@@ -116,7 +116,7 @@ class SimpleGenerator(object):
             source += postscript
         source += "}\n"
         source += '#endif'
-        module = builder.load(moduleName, source, self.typeName[0])
+        module = builder.load(moduleName, source, self.typeName[0], extraCMake)
         return module
 
     def load(self, includes, typeName, moduleName, *args,
@@ -126,6 +126,7 @@ class SimpleGenerator(object):
         if defines is None: defines = []
         if options is None: options = []
         if baseClasses is None: baseClasses = []
+        if extraCMake is None: extraCMake = []
         if self.single:
             typeName = (typeName,)
             options = (options,)
