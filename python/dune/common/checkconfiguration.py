@@ -16,6 +16,12 @@ def assertHave(identifier):
        provided the config file by calling
        assertHave("HAVE_DUNE_COMMON")
     '''
+    # the following simply will not work anymore - the issue is that the
+    # approach used here requires dune-py to have already been setup before
+    # calling 'assertHave' that is not guaranteed to be the case.
+    # Possibly we can use the 'metadata' file instead.
+    # We simply return for now
+    return
     config = os.path.join(dune.common.module.get_dune_py_dir(), "config.h")
     if not os.path.isfile(config):
         raise ConfigurationError("dune-py not configured yet")

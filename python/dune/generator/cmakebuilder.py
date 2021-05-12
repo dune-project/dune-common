@@ -197,7 +197,7 @@ class Builder:
             if nlines > 1:
                 self.savedOutput[1].write("\n###############################\n")
 
-    def load(self, moduleName, source, pythonName, extraCMake):
+    def load(self, moduleName, source, pythonName, extraCMake=None):
         ## TODO replace if rank with something better
         ## and remove barrier further down
         if not self.initialized:
@@ -227,8 +227,9 @@ class Builder:
                                     # store original file size
                                     origPos = out.tell()
                                     out.write(line+"\n")
-                                    for x in extraCMake:
-                                        out.write(x.replace("TARGET",moduleName)+"\n")
+                                    if extraCMake is not None:
+                                        for x in extraCMake:
+                                            out.write(x.replace("TARGET",moduleName)+"\n")
                                 # update build system
                                 logger.debug("Rebuilding module")
                                 try:
