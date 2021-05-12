@@ -65,7 +65,6 @@ function(dune_python_install_package)
   endif()
 
   # Configure setup.py.in if present
-
   set(RequiredPythonModules "${ProjectPythonRequires}")
   foreach(mod ${ALL_DEPENDENCIES})
     if(${${mod}_HASPYTHON}) # module found and has python bindings
@@ -107,13 +106,6 @@ function(dune_python_install_package)
     message(FATAL_ERROR "dune_python_install_package: Requested installations, but pip was not found!")
   endif()
 
-  #
-  # Define build rules that install the Python package into the Dune virtualenv at the build stage
-  #
-
-  # Install the Python Package into the Dune virtual environment in the build stage
-  string(REPLACE "/" "_" envtargetname "env_install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYINST_PATH}")
-
   # A hack which shouldn't be necesary once the ci is updated
   # https://gitlab.dune-project.org/docker/ci/-/merge_requests/101
   option(DUNE_RUNNING_IN_CI "This is turned on if running in dune gitlab ci" OFF)
@@ -122,21 +114,48 @@ function(dune_python_install_package)
   else()
       set(PACKAGE_INDEX "")
   endif()
+
+  # install external requirements (i.e. not dune packages) once at configure stage - install of package is
+  # only carried out if this succeeded and with --no-index, i.e., without using any package indices but only local wheels
+  string(REPLACE " " "\n" RequiredPypiModules "${ProjectPythonRequires}")
+  file(WRITE "${PYINST_FULLPATH}/requirements.txt" "${RequiredPypiModules}")
+  dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
+                                "${WHEEL_OPTION}"
+                                # we can't use the same additional parameters for both internal
+                                # install and normal install so not including these flags at the moment
+                                "${PACKAGE_INDEX}"          # stopgap solution until ci repo fixed
+                                -r "${PYINST_FULLPATH}/requirements.txt"
+                       RESULT_VARIABLE DUNE_PYTHON_DEPENDENCIES_FAILED
+                       WARNING_MESSAGE "python package requirements could not be installed - possibly connection to the python package index failed"
+                      )
+  if(NOT DUNE_PYTHON_DEPENDENCIES_FAILED)
+  #
+  # Define build rules that install the Python package into the Dune virtualenv at the build stage
+  #
+
+  # Install the Python Package into the Dune virtual environment in the build stage
+  string(REPLACE "/" "_" envtargetname "env_install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYINST_PATH}")
+
+  # installation target for dune package into local env - external requirements are already sorted and we want this step to not require
+  # internet access. Dune packages need to be installed at this stage and should not be optained from pypi (those packages include the C++ part
+  # of the module which we don't want to install. So only use available wheels.
   add_custom_target(
     ${envtargetname}
     ALL
     COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
+      --no-build-isolation      # avoid looking for packages during 'make' if they in the internal venv from previous 'make'
       --no-warn-script-location # supress warnings that dune-env/bin not in path
+      --no-index
       "${WHEEL_OPTION}"
       # we can't use the same additional parameters for both internal
       # install and normal install so not including these flags at the moment
       # ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
-      "${PACKAGE_INDEX}"          # stopgap solution until ci repo fixed
       --editable                  # Installations into the internal env are always editable
       "${PYINST_FULLPATH}"
     COMMENT "Installing Python package at ${PYINST_FULLPATH} into Dune virtual environment (${PACKAGE_INDEX})."
     DEPENDS ${PYINST_DEPENDS}
   )
+  endif()
 
   #
   # Now define rules for `make install_python`.
@@ -247,6 +266,7 @@ function(dune_python_install_package)
     #
 
     # Make sure to generate the metadata for the build stage
+    if(NOT DUNE_PYTHON_DEPENDENCIES_FAILED)
     if(SKBUILD)
       # this is the only version of the metadata we need for the package insallation
       add_custom_target(
@@ -311,6 +331,9 @@ function(dune_python_install_package)
     add_custom_command(TARGET ${envtargetname} POST_BUILD
                        COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m dune configure
                       )
+    endif() # NOT DUNE_PYTHON_DEPENDENCIES_FAILED)
+
+
     # Add a custom command that triggers the configuration of dune-py when installing package
     if(NOT "${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")
       add_custom_command(TARGET ${targetname} POST_BUILD
