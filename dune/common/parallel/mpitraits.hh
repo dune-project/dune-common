@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include <complex>
 
 #include <mpi.h>
 
@@ -78,6 +79,9 @@ namespace Dune
   ComposeMPITraits(float,MPI_FLOAT);
   ComposeMPITraits(double,MPI_DOUBLE);
   ComposeMPITraits(long double,MPI_LONG_DOUBLE);
+  ComposeMPITraits(std::complex<double>, MPI_CXX_DOUBLE_COMPLEX);
+  ComposeMPITraits(std::complex<long double>, MPI_CXX_LONG_DOUBLE_COMPLEX);
+  ComposeMPITraits(std::complex<float>, MPI_CXX_FLOAT_COMPLEX);
 
 
 #undef ComposeMPITraits
