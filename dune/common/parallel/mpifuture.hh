@@ -161,11 +161,11 @@ namespace Dune{
     }
 
     auto get_mpidata(){
-      return getMPIData<R>(*data_);
+      return getMPIData(*data_);
     }
 
     auto get_send_mpidata(){
-      return getMPIData<S>(*send_data_);
+      return getMPIData(*send_data_);
     }
   };
 
