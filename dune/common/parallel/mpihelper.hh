@@ -8,6 +8,8 @@
 #include <mpi.h>
 #endif
 
+#include <mutex>
+
 #include <dune/common/parallel/communication.hh>
 #if HAVE_MPI
 #include <dune/common/parallel/mpicommunication.hh>
@@ -135,10 +137,14 @@ namespace Dune
      * @param argc The number of arguments provided to main.
      * @param argv The arguments provided to main.
      */
-    DUNE_EXPORT static FakeMPIHelper& instance(int argc, char** argv)
+    DUNE_EXPORT static FakeMPIHelper& instance([[maybe_unused]] int argc,
+                                               [[maybe_unused]] char** argv)
     {
-      (void)argc; (void)argv;
-      // create singleton instance
+      return instance();
+    }
+
+    DUNE_EXPORT static FakeMPIHelper& instance()
+    {
       static FakeMPIHelper singleton;
       return singleton;
     }
@@ -234,8 +240,20 @@ namespace Dune
     DUNE_EXPORT static MPIHelper& instance(int& argc, char**& argv)
     {
       // create singleton instance
-      static MPIHelper singleton (argc, argv);
-      return singleton;
+      if (!instance_){
+        static std::mutex mutex;
+        std::lock_guard<std::mutex> guard(mutex);
+        if(!instance_)
+          instance_.reset(new MPIHelper(argc,argv));
+      }
+      return *instance_;
+    }
+
+    DUNE_EXPORT static MPIHelper& instance()
+    {
+      if(!instance_)
+        DUNE_THROW(InvalidStateException, "MPIHelper not initialized! Call MPIHelper::instance(argc, argv) with arguments first.");
+      return *instance_;
     }
 
     /**
@@ -247,11 +265,25 @@ namespace Dune
      */
     int size () const { return size_; }
 
+    //! \brief calls MPI_Finalize
+    ~MPIHelper()
+    {
+      int wasFinalized = -1;
+      MPI_Finalized( &wasFinalized );
+      if(!wasFinalized && initializedHere_)
+      {
+        MPI_Finalize();
+        dverb << "Called MPI_Finalize on p=" << rank_ << "!" <<std::endl;
+      }
+
+    }
+
   private:
     int rank_;
     int size_;
     bool initializedHere_;
     void prevent_warning(int){}
+    static inline std::unique_ptr<MPIHelper> instance_ = {};
 
     //! \brief calls MPI_Init with argc and argv as parameters
     MPIHelper(int& argc, char**& argv)
@@ -276,18 +308,7 @@ namespace Dune
 
       dverb << "Called  MPI_Init on p=" << rank_ << "!" << std::endl;
     }
-    //! \brief calls MPI_Finalize
-    ~MPIHelper()
-    {
-      int wasFinalized = -1;
-      MPI_Finalized( &wasFinalized );
-      if(!wasFinalized && initializedHere_)
-      {
-        MPI_Finalize();
-        dverb << "Called MPI_Finalize on p=" << rank_ << "!" <<std::endl;
-      }
 
-    }
     MPIHelper(const MPIHelper&);
     MPIHelper& operator=(const MPIHelper);
   };
