@@ -1,5 +1,8 @@
 # Master (will become release 2.8)
 
+- Add `instance` method to MPIHelper that does not expect arguments for access
+  to the singleton object after initialization.
+
 - Remove the cmake check for `HAVE_MPROTECT` and also do not define this variable in the
   `config.h` file. It is defined only inside the header `debugallocator.hh`.
 
