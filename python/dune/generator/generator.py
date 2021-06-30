@@ -111,14 +111,16 @@ class SimpleGenerator(object):
         source += '  }\n'
         return source
 
-    def post(self, moduleName, source):
+    def post(self, moduleName, source, postscript):
+        if postscript:
+            source += postscript
         source += "}\n"
         source += '#endif'
         module = builder.load(moduleName, source, self.typeName[0])
         return module
 
     def load(self, includes, typeName, moduleName, *args,
-            defines=None, preamble=None,
+            defines=None, preamble=None, postscript=None,
             options=None, bufferProtocol=False, dynamicAttr=False,
             baseClasses=None ):
         if defines is None: defines = []
@@ -156,7 +158,7 @@ class SimpleGenerator(object):
             source += self.main(nr, includes, tn, *a, options=o,
                                 bufferProtocol=b, dynamicAttr=d,
                                 baseClasses=bc)
-        return self.post(moduleName, source)
+        return self.post(moduleName, source, postscript)
 
 def simpleGenerator(inc, baseType, namespace, pythonname=None, filename=None):
     generator = SimpleGenerator(baseType, namespace, pythonname, filename)
