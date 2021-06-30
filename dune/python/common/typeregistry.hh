@@ -18,6 +18,8 @@
 #include <dune/python/pybind11/pybind11.h>
 #include <dune/python/pybind11/stl.h>
 
+#include <dune/python/pybind11/detail/internals.h>
+
 namespace Dune
 {
 
@@ -39,7 +41,7 @@ namespace Dune
       // using an unordered_map directly for the type registry leads to a compilation
       // error in the cast used in the typeRegistry function:
       //   assertion failed: Unable to cast type to reference: value is local to type caster
-      struct DUNE_PRIVATE TypeRegistry : public std::unordered_map< std::type_index, Entry >
+      struct DUNE_PRIVATE TypeRegistry : public pybind11::detail::type_map<Entry>
       {};
 
 
