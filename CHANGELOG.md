@@ -52,7 +52,7 @@
 - Eigenvectors of symmetric 2x2 `FieldMatrix`es are now computed correctly
   even when they have zero eigenvalues.
 
-- The ParameterTreeParser::readINITree can now directly construct and
+- The `ParameterTreeParser::readINITree` can now directly construct and
   return a parameter tree by using the new overload without parameter tree
   argument.
 
