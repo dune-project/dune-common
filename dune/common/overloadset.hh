@@ -5,10 +5,7 @@
 
 #include <utility>
 #include <type_traits>
-
-#include <dune/common/std/type_traits.hh>
-
-
+#include <dune/common/typetraits.hh>
 
 namespace Dune {
 
@@ -82,7 +79,7 @@ namespace Impl {
 
     // Forward to operator() of F0 if it can be called with the given arguments.
     template<class...  Args,
-        std::enable_if_t<Std::is_callable<F0(Args&&...)>::value, int> = 0>
+        std::enable_if_t<IsCallable<F0(Args&&...)>::value, int> = 0>
     decltype(auto) operator()(Args&&... args)
     {
       return F0::operator()(std::forward<Args>(args)...);
@@ -92,7 +89,7 @@ namespace Impl {
     // arguments. In this case the base class will successively try operator()
     // of all F... .
     template<class...  Args,
-        std::enable_if_t< not Std::is_callable<F0(Args&&...)>::value, int> = 0>
+        std::enable_if_t<not IsCallable<F0(Args&&...)>::value, int> = 0>
     decltype(auto) operator()(Args&&... args)
     {
       return Base::operator()(std::forward<Args>(args)...);
@@ -115,7 +112,8 @@ namespace Impl {
     template<class...  Args>
     decltype(auto) operator()(Args&&... args)
     {
-      static_assert(Std::is_callable<F0(Args&&...)>::value, "No matching overload found in OrderedOverloadSet");
+      static_assert(IsCallable<F0(Args&&...)>::value,
+                      "No matching overload found in OrderedOverloadSet");
       return F0::operator()(std::forward<Args>(args)...);
     }
   };
