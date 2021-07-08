@@ -150,7 +150,7 @@ namespace Std
    * \ingroup CxxUtilities
    */
   template <class D, class R= void>
-  struct is_callable;
+  struct [[deprecated("Use std::is_invocable from <type_traits>. Will be removed after release 2.8")]] is_callable;
 
   /**
    * \brief Traits class to check if function is callable
@@ -170,7 +170,7 @@ namespace Std
    * \ingroup CxxUtilities
    */
   template <class F, class... Args, class R>
-  struct is_callable< F(Args...), R> :
+  struct [[deprecated("Use std::is_invocable from <type_traits>. Will be removed after release 2.8")]] is_callable< F(Args...), R> :
       decltype(Impl::is_callable_helper<R, F, Args...>(PriorityTag<42>()))
   {};
 
@@ -189,7 +189,7 @@ namespace Std
    * \ingroup CxxUtilities
    */
   template <class F, class... Args>
-  struct is_invocable :
+  struct [[deprecated("Use std::is_invocable from <type_traits>. Will be removed after release 2.8")]] is_invocable :
       decltype(Impl::is_callable_helper<void, F, Args...>(PriorityTag<42>()))
   {};
 
@@ -209,7 +209,7 @@ namespace Std
    * \ingroup CxxUtilities
    */
   template <class R, class F, class... Args>
-  struct is_invocable_r :
+  struct [[deprecated("Use std::is_invocable_r from <type_traits>. Will be removed after release 2.8")]] is_invocable_r :
       decltype(Impl::is_callable_helper<R, F, Args...>(PriorityTag<42>()))
   {};
 
