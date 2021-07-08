@@ -38,7 +38,7 @@ Copyright holders:
 2017--2018    Daniel Kienle
 2013          Torbjörn Klatt
 2003--2021    Robert Klöfkorn
-2017--2020    Timo Koch
+2017--2021    Timo Koch
 2005--2007    Sreejith Pulloor Kuttanikkad
 2012--2016    Arne Morten Kvarving
 2010--2014    Andreas Lauser
