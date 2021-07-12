@@ -1845,7 +1845,7 @@ namespace Dune {
        */
       template<class V, class Rebinds,
                template<class> class RebindPrune = IsLoop,
-               template<class> class RebindAccept = Std::to_true_type>
+               template<class> class RebindAccept = Dune::AlwaysTrue>
       void check() {
         // check whether the test for this type already started
         if(seen_.emplace(typeid (V)).second == false)

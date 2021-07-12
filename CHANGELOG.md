@@ -11,6 +11,11 @@
 - Deprecate fallback implementations `Dune::Std::apply`, `Dune::Std::bool_constant`, and
   `Dune::Std::make_array` in favor of std c++ implementations.
 
+- Deprecate type traits `Dune::Std::to_false_type`, `Dune::Std::to_true_type`.
+  `Dune::AlwaysFalse` and `Dune::AlwaysTrue` (from header `dune/common/typetraits.hh`)
+  now inherit from `std::true_type` and `std::false_type` and are therefore
+  exact replacements for these two type traits.
+
 - Remove c++ feature tests in cmake for existing c++-17 standards. Add default
   defines for `DUNE_HAVE_CXX_BOOL_CONSTANT`, `DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT`,
   `DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS`, `DUNE_HAVE_CXX_APPLY`,
