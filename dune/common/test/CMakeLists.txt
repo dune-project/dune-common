@@ -320,10 +320,6 @@ dune_add_test(SOURCES stdapplytest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
-dune_add_test(SOURCES stdtypetraitstest.cc
-              LINK_LIBRARIES dunecommon
-              LABELS quick)
-
 dune_add_test(SOURCES streamoperatorstest.cc
               LABELS quick)
 
