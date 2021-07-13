@@ -14,8 +14,6 @@ namespace Dune {
 
 namespace Impl {
 
-#if __cpp_variadic_using >= 201611
-
   template<typename... F>
   class OverloadSet
     : public F...
@@ -31,45 +29,6 @@ namespace Impl {
     using F::operator()...;
 
   };
-
-#else // __cpp_variadic_using >= 201611
-
-  // This overload set derives from
-  // all passed functions. Since we
-  // cannot do argument pack expansion
-  // on using statements this is done recursively.
-  template<class F0, class... F>
-  class OverloadSet: public OverloadSet<F...>, F0
-  {
-    using Base = OverloadSet<F...>;
-  public:
-
-    template<class FF0, class... FF>
-    OverloadSet(FF0&& f0, FF&&... ff) :
-      Base(std::forward<FF>(ff)...),
-      F0(std::forward<FF0>(f0))
-    {}
-
-    // pull in operator() of F0 and of all F... via the base class
-    using F0::operator();
-    using Base::operator();
-  };
-
-  template<class F0>
-  class OverloadSet<F0>: public F0
-  {
-  public:
-
-    template<class FF0>
-    OverloadSet(FF0&& f0) :
-      F0(std::forward<FF0>(f0))
-    {}
-
-    // pull in operator() of F0
-    using F0::operator();
-  };
-
-#endif // __cpp_variadic_using >= 201611
 
 } // end namespace Impl
 
@@ -96,12 +55,6 @@ namespace Impl {
  *
  * Notice that the passed function objects are
  * stored by value and must be copy-constructible.
- *
- * On gcc 5 and gcc 6 mixing templated overloads
- * (i.e. using auto-parameter) and non-templated
- * ones may not compile if both they are captureless
- * lambdas. The problem can be avoided by capturing
- * a dummy value.
  *
  * \ingroup CxxUtilities
  */
@@ -190,12 +143,6 @@ namespace Impl {
  *
  * Notice that the passed function objects are
  * stored by value and must be copy-constructible.
- *
- * On gcc 5 and gcc 6 mixing templated overloads
- * (i.e. using auto-parameter) and non-templated
- * ones may not compile if both they are captureless
- * lambdas. The problem can be avoided by capturing
- * a dummy value.
  *
  * \ingroup CxxUtilities
  */
