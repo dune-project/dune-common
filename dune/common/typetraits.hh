@@ -133,6 +133,45 @@ namespace Dune
   template<typename T>
   struct AlwaysTrue : public std::true_type {};
 
+  /**
+   * \brief Check if a type is callable with ()-operator and given arguments
+   * \ingroup CxxUtilities
+   *
+   * \tparam D Function descriptor
+   * \tparam R Return value type
+   *
+   * If `D = F(Args...)` this checks if F can be called with an
+   * argument list of type `Args...`, and if the return value can
+   * be converted to R. If R is `void`, any return type is accepted.
+   *
+   * The result is encoded by deriving from
+   * either `std::true_type` or `std::false_type`
+   *
+   * If D is not of the form `F(Args...)` this class is not defined.
+   *
+   * \note This differs from `std::invocable_r` in the way that only
+   *       `FunctionObject` types are allowed here while `std::invocable_r`
+   *       also accepts pointers to member functions and pointers
+   *       to data members (i.e. more general `Callable` types)
+   * \note See https://en.cppreference.com/w/cpp/named_req/FunctionObject
+   *       for the description of the named requirement `FunctionObject`
+   *       and https://en.cppreference.com/w/cpp/named_req/Callable
+   *       for `Callable`.
+   */
+  template<typename D, typename R = void>
+  struct IsCallable;
+
+  /**
+   * \brief Check if a type is callable with ()-operator and given arguments
+   * \ingroup CxxUtilities
+   */
+  template<typename R, typename F, typename... Args>
+  struct IsCallable<F(Args...), R>
+  : public std::bool_constant<
+      std::is_invocable_r_v<R, F, Args...>
+        && !std::is_member_pointer_v<std::decay_t<F>>
+    > {};
+
   //! \brief Whether this type acts as a scalar in the context of
   //!        (hierarchically blocked) containers
   /**
