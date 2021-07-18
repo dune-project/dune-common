@@ -10,7 +10,6 @@
 #include <dune/common/iteratorrange.hh>
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/std/type_traits.hh>
 #include <dune/common/diagonalmatrix.hh>
 #include <dune/common/test/testsuite.hh>
 #include <dune/common/test/iteratortest.hh>
@@ -46,11 +45,11 @@ auto checkRandomAccessNumberRangeSums(R&& r, V sum, V first, V last)
 }
 
 template<class T>
-struct is_const_reference : public Dune::Std::conjunction<std::is_reference<T>, std::is_const<std::remove_reference_t<T>>>
+struct is_const_reference : public std::conjunction<std::is_reference<T>, std::is_const<std::remove_reference_t<T>>>
 {};
 
 template<class T>
-struct is_mutable_reference : public Dune::Std::conjunction<std::is_reference<T>, Dune::Std::negation<is_const_reference<T>>>
+struct is_mutable_reference : public std::conjunction<std::is_reference<T>, std::negation<is_const_reference<T>>>
 {};
 
 

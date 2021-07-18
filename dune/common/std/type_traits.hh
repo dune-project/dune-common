@@ -424,20 +424,20 @@ namespace Std
    * \ingroup CxxUtilities
    **/
   template< class... B >
-  struct conjunction;
+  struct [[deprecated("Will be removed after release 2.8. Use std::conjuction instead.")]] conjunction;
 
   template<>
-  struct conjunction<>
+  struct [[deprecated("Will be removed after release 2.8. Use std::conjuction instead.")]] conjunction<>
     : std::true_type
   {};
 
   template< class B >
-  struct conjunction< B >
+  struct [[deprecated("Will be removed after release 2.8. Use std::conjuction instead.")]] conjunction< B >
     : B
   {};
 
   template< class B1, class... Bn >
-  struct conjunction< B1, Bn... >
+  struct [[deprecated("Will be removed after release 2.8. Use std::conjuction instead.")]] conjunction< B1, Bn... >
     : std::conditional_t< static_cast< bool >( B1::value ), conjunction< Bn... >, B1 >
   {};
 
@@ -454,20 +454,20 @@ namespace Std
    * \ingroup CxxUtilities
    **/
   template< class... B >
-  struct disjunction;
+  struct [[deprecated("Will be removed after release 2.8. Use std::disjunction instead.")]] disjunction;
 
   template<>
-  struct disjunction<>
+  struct [[deprecated("Will be removed after release 2.8. Use std::disjunction instead.")]] disjunction<>
     : std::false_type
   {};
 
   template< class B >
-  struct disjunction< B >
+  struct [[deprecated("Will be removed after release 2.8. Use std::disjunction instead.")]] disjunction< B >
     : B
   {};
 
   template< class B1, class... Bn >
-  struct disjunction< B1, Bn... >
+  struct [[deprecated("Will be removed after release 2.8. Use std::disjunction instead.")]] disjunction< B1, Bn... >
     : std::conditional_t< static_cast< bool >( B1::value ), B1, disjunction< Bn... > >
   {};
 
@@ -482,7 +482,7 @@ namespace Std
    * \ingroup CxxUtilities
    **/
   template<class B>
-  struct negation : public bool_constant<!static_cast<bool>(B::value)>
+  struct [[deprecated("Will be removed after release 2.8. Use std::negation instead.")]] negation : public bool_constant<!static_cast<bool>(B::value)>
   {};
 
 } // namespace Std
