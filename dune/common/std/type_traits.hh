@@ -424,23 +424,9 @@ namespace Std
    * \ingroup CxxUtilities
    **/
   template< class... B >
-  struct [[deprecated("Will be removed after release 2.8. Use std::conjuction instead.")]] conjunction;
-
-  template<>
-  struct [[deprecated("Will be removed after release 2.8. Use std::conjuction instead.")]] conjunction<>
-    : std::true_type
+  struct [[deprecated("Will be removed after release 2.8. Use std::conjuction instead.")]] conjunction
+    : std::conjunction<B...>
   {};
-
-  template< class B >
-  struct [[deprecated("Will be removed after release 2.8. Use std::conjuction instead.")]] conjunction< B >
-    : B
-  {};
-
-  template< class B1, class... Bn >
-  struct [[deprecated("Will be removed after release 2.8. Use std::conjuction instead.")]] conjunction< B1, Bn... >
-    : std::conditional_t< static_cast< bool >( B1::value ), conjunction< Bn... >, B1 >
-  {};
-
 
 
   // disjunction
@@ -454,22 +440,10 @@ namespace Std
    * \ingroup CxxUtilities
    **/
   template< class... B >
-  struct [[deprecated("Will be removed after release 2.8. Use std::disjunction instead.")]] disjunction;
-
-  template<>
-  struct [[deprecated("Will be removed after release 2.8. Use std::disjunction instead.")]] disjunction<>
-    : std::false_type
+  struct [[deprecated("Will be removed after release 2.8. Use std::disjunction instead.")]] disjunction
+    : std::disjunction<B...>
   {};
 
-  template< class B >
-  struct [[deprecated("Will be removed after release 2.8. Use std::disjunction instead.")]] disjunction< B >
-    : B
-  {};
-
-  template< class B1, class... Bn >
-  struct [[deprecated("Will be removed after release 2.8. Use std::disjunction instead.")]] disjunction< B1, Bn... >
-    : std::conditional_t< static_cast< bool >( B1::value ), B1, disjunction< Bn... > >
-  {};
 
   // negation
   // --------
@@ -482,7 +456,8 @@ namespace Std
    * \ingroup CxxUtilities
    **/
   template<class B>
-  struct [[deprecated("Will be removed after release 2.8. Use std::negation instead.")]] negation : public bool_constant<!static_cast<bool>(B::value)>
+  struct [[deprecated("Will be removed after release 2.8. Use std::negation instead.")]] negation
+    : std::negation<B>
   {};
 
 } // namespace Std
