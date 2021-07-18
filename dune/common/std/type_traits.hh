@@ -134,6 +134,7 @@ namespace Std
 
   /**
    * \brief Traits class to check if function is callable
+   * \deprecated Use std::is_invocable from <type_traits>
    *
    * \tparam D Function descriptor
    * \tparam R Return value
@@ -150,10 +151,11 @@ namespace Std
    * \ingroup CxxUtilities
    */
   template <class D, class R= void>
-  struct [[deprecated("Use std::is_invocable from <type_traits>. Will be removed after release 2.8")]] is_callable;
+  struct is_callable;
 
   /**
    * \brief Traits class to check if function is callable
+   * \deprecated Use std::is_invocable from <type_traits>
    *
    * \tparam D Function descriptor
    * \tparam R Return value
@@ -177,6 +179,7 @@ namespace Std
 
   /**
    * \brief Traits class to check if function is invocable
+   * \deprecated Use std::is_invocable from <type_traits>
    *
    * \tparam F    Function to check
    * \tparam Args Function arguments to check
@@ -195,6 +198,7 @@ namespace Std
 
   /**
    * \brief Traits class to check if function is invocable and the return type is compatible
+   * \deprecated Use std::is_invocable_r from <type_traits>
    *
    * \tparam R    Desired result type
    * \tparam F    Function to check
