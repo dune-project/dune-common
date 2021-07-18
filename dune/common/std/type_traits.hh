@@ -33,7 +33,7 @@ namespace Std
   /** \class to_false_type
    *
    *  \brief template mapping a type to <tt>std::false_type</tt>
-   *
+   *  \deprecated Use Dune::AlwaysFalse (from dune/common/typetraits.hh) instead
    *  \tparam T Some type
    *
    *  Suppose you have a template class. You want to document the required
@@ -76,7 +76,7 @@ namespace Std
    * \ingroup CxxUtilities
    */
   template< typename T >
-  struct to_false_type : public std::false_type {};
+  struct [[deprecated("Will be removed after release 2.8. Use Dune::AlwaysFalse (from dune/common/typetraits.hh)")]] to_false_type : public std::false_type {};
 
 
 
@@ -86,7 +86,7 @@ namespace Std
   /** \class to_true_type
    *
    *  \brief template mapping a type to <tt>std::true_type</tt>
-   *
+   *  \deprecated Use Dune::AlwaysFalse (from dune/common/typetraits.hh) instead
    *  \tparam T Some type
    *
    *  \note This class exists mostly for consistency with to_false_type.
@@ -94,7 +94,7 @@ namespace Std
    * \ingroup CxxUtilities
    */
   template< typename T >
-  struct to_true_type : public std::true_type {};
+  struct [[deprecated("Will be removed after release 2.8. Use Dune::AlwaysTrue (from dune/common/typetraits.hh)")]] to_true_type : public std::true_type {};
 
 
   /// A helper alias template std::bool_constant imported into the namespace Dune::Std

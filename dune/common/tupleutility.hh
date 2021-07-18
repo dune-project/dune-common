@@ -10,7 +10,7 @@
 #include <utility>
 
 #include <dune/common/hybridutilities.hh>
-#include <dune/common/std/type_traits.hh>
+#include <dune/common/typetraits.hh>
 
 namespace Dune {
 
@@ -424,7 +424,7 @@ namespace Dune {
   template<class Tuple, template<class> class Predicate, std::size_t size>
   class FirstPredicateIndex<Tuple, Predicate, size, size>
   {
-    static_assert(Std::to_false_type<Tuple>::value, "None of the std::tuple element "
+    static_assert(AlwaysFalse<Tuple>::value, "None of the std::tuple element "
                        "types matches the predicate!");
   };
 #endif // !DOXYGEN

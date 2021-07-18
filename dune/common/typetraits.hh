@@ -121,10 +121,7 @@ namespace Dune
      type of T is known, that is, until Traits<T> is instantiated.
    */
   template<typename T>
-  struct AlwaysFalse {
-    //! always a false value
-    static const bool value = false;
-  };
+  struct AlwaysFalse : public std::false_type {};
 
   /**
      \brief template which always yields a true value
@@ -134,10 +131,7 @@ namespace Dune
      \note This class exists mostly for consistency with AlwaysFalse.
    */
   template<typename T>
-  struct AlwaysTrue {
-    //! always a true value
-    static const bool value = true;
-  };
+  struct AlwaysTrue : public std::true_type {};
 
   //! \brief Whether this type acts as a scalar in the context of
   //!        (hierarchically blocked) containers

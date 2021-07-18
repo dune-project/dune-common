@@ -10,7 +10,7 @@
 #include <dune/common/simd/loop.hh>
 #include <dune/common/simd/test.hh>
 #include <dune/common/simd/test/looptest.hh>
-#include <dune/common/std/type_traits.hh>
+#include <dune/common/typetraits.hh>
 
 template<class> struct RebindAccept : std::false_type {};
 #cmake @template@
@@ -32,11 +32,11 @@ int main()
 
 #cmake @template@
   test.check<Dune::LoopSIMD<@SCALAR@, 5>,
-             Rebinds, Dune::Std::to_false_type, RebindAccept>();
+             Rebinds, Dune::AlwaysFalse, RebindAccept>();
   test.check<Dune::LoopSIMD<@SCALAR@, 5, 64>,
-             Rebinds, Dune::Std::to_false_type, RebindAccept>();
+             Rebinds, Dune::AlwaysFalse, RebindAccept>();
   test.check<Dune::LoopSIMD<Dune::LoopSIMD<@SCALAR@, 2>, 5>,
-             Rebinds, Dune::Std::to_false_type, RebindAccept>();
+             Rebinds, Dune::AlwaysFalse, RebindAccept>();
 #cmake @endtemplate@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;

@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <type_traits>
 
+#include <dune/common/typetraits.hh>
 #include <dune/common/debugalign.hh>
 #include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/simd/test.hh>
@@ -30,7 +31,7 @@ int main(int argc, char **argv)
 
 #cmake @template@
   test.check<Dune::AlignedNumber<@SCALAR@>,
-             Rebinds, Dune::Std::to_false_type, RebindAccept>();
+             Rebinds, Dune::AlwaysFalse, RebindAccept>();
 #cmake @endtemplate@
 
   return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
