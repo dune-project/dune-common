@@ -16,6 +16,9 @@
   now inherit from `std::true_type` and `std::false_type` and are therefore
   exact replacements for these two type traits.
 
+- Deprecate fallback implementation `Dune::Std::conjunction`, `Dune::Std::disjunction`,
+  and `Dune::Std::negation`. Use std c++17 implementations.
+
 - Remove c++ feature tests in cmake for existing c++-17 standards. Add default
   defines for `DUNE_HAVE_CXX_BOOL_CONSTANT`, `DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT`,
   `DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS`, `DUNE_HAVE_CXX_APPLY`,

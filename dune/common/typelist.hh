@@ -7,8 +7,6 @@
 #include <tuple>
 #include <utility>
 
-#include <dune/common/std/type_traits.hh>
-
 namespace Dune {
 
   /**
@@ -185,7 +183,7 @@ namespace Dune {
     struct UniqueTypesHelper<Target, TypeList<T0, T...>, Processed...>
     {
       using type = std::conditional_t<
-        Dune::Std::disjunction<std::is_same<T0, Processed>...>::value,
+        std::disjunction<std::is_same<T0, Processed>...>::value,
         typename UniqueTypesHelper<Target, TypeList<T...>, Processed...>::type,
         typename UniqueTypesHelper<Target, TypeList<T...>, T0, Processed...>::type>;
     };
