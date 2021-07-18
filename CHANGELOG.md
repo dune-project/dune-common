@@ -19,6 +19,19 @@
 - Deprecate fallback implementation `Dune::Std::conjunction`, `Dune::Std::disjunction`,
   and `Dune::Std::negation`. Use std c++17 implementations.
 
+- Deprecate fallback implementations `Dune::Std::is_callable` and `Dune::Std::is_invocable`.
+  Use C++17 std implementation `std::is_invocable` instead. Be aware that
+  `Dune::Std::is_callable` and `std::is_invocable` are slightly different concepts,
+  since `std::is_invocable` also covers invocation of pointers to member functions
+  and pointers to data members. To additionally constrain for that case,
+  there is now `Dune::IsCallable` (in `dune/common/typetraits.hh`)
+
+- Added `Dune::IsCallable` (in `dune/common/typetraits.hh`) which is
+  an improved version of the deprecated `Dune::Std::is_callable` and allows
+  for checking if a type is a function object type,
+  i.e. has a ()-operator than can be invoked with the given argument types and
+  returns a specified return type.
+
 - Remove c++ feature tests in cmake for existing c++-17 standards. Add default
   defines for `DUNE_HAVE_CXX_BOOL_CONSTANT`, `DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT`,
   `DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS`, `DUNE_HAVE_CXX_APPLY`,
