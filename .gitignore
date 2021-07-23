@@ -8,3 +8,6 @@
 MANIFEST
 _skbuild/
 dist
+# ignore macOS filesystem
+.DS_Store
+
