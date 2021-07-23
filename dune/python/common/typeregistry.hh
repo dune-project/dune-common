@@ -193,7 +193,7 @@ namespace Dune
         {
           try
           {
-            return obj.attr( "_typeName" ).cast<std::string>();
+            return obj.attr( "cppTypeName" ).cast<std::string>();
           }
           catch(const pybind11::error_already_set& )
           {
@@ -219,7 +219,7 @@ namespace Dune
         {
           try
           {
-            return obj.attr( "_includes" ).cast<std::vector<std::string>>();
+            return obj.attr( "cppIncludes" ).cast<std::vector<std::string>>();
           }
           catch(const pybind11::error_already_set& )
           {
@@ -336,12 +336,12 @@ namespace Dune
      *   basically, so even double...)
      * - Dune::MetaType<T>, in which case the type T must be available in
      *   the type registry
-     * - pybind::object, in which case the attribute _typeName muse be
-     *   availablea
+     * - pybind::object, in which case the attribute `cppTypeName` must be
+     *   available
      * .
      *
      * In the last two cases the include files stored in the type registry
-     * for this type or attached to the object via the '_includes'
+     * for this type or attached to the object via the `cppIncludes`
      * attribute are collected.
      *
      * The main constructor is
@@ -432,8 +432,16 @@ namespace Dune
         auto cls = detail::generateClass_filter_impl< Type, options...>( scope, entry.first->second.pyName.c_str(), std::forward_as_tuple( std::forward< Args >( args )... ), detail::Filter< detail::notBaseTag, std::decay_t< Args >... >{} );
         entry.first->second.object = cls;
 
-        cls.def_property_readonly_static( "_typeName", [ entry ] ( pybind11::object ) { return entry.first->second.name; } );
-        cls.def_property_readonly_static( "_includes", [ entry ] ( pybind11::object ) { return entry.first->second.includes; } );
+        cls.def_property_readonly_static( "_typeName", [ entry ] ( pybind11::object ) {
+          PyErr_WarnEx(PyExc_DeprecationWarning, "attribute '_typeName' is deprecated, use 'cppTypeName' instead.", 2);
+          return entry.first->second.name;
+        });
+        cls.def_property_readonly_static( "_includes", [ entry ] ( pybind11::object ) {
+          PyErr_WarnEx(PyExc_DeprecationWarning, "attribute '_includes' is deprecated, use 'cppIncludes' instead.", 2);
+          return entry.first->second.includes;
+        });
+        cls.def_property_readonly_static( "cppTypeName", [ entry ] ( pybind11::object ) { return entry.first->second.name; } );
+        cls.def_property_readonly_static( "cppIncludes", [ entry ] ( pybind11::object ) { return entry.first->second.includes; } );
 
         return std::make_pair( cls, true );
       }
