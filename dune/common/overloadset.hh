@@ -5,16 +5,11 @@
 
 #include <utility>
 #include <type_traits>
-
-#include <dune/common/std/type_traits.hh>
-
-
+#include <dune/common/typetraits.hh>
 
 namespace Dune {
 
 namespace Impl {
-
-#if __cpp_variadic_using >= 201611
 
   template<typename... F>
   class OverloadSet
@@ -31,45 +26,6 @@ namespace Impl {
     using F::operator()...;
 
   };
-
-#else // __cpp_variadic_using >= 201611
-
-  // This overload set derives from
-  // all passed functions. Since we
-  // cannot do argument pack expansion
-  // on using statements this is done recursively.
-  template<class F0, class... F>
-  class OverloadSet: public OverloadSet<F...>, F0
-  {
-    using Base = OverloadSet<F...>;
-  public:
-
-    template<class FF0, class... FF>
-    OverloadSet(FF0&& f0, FF&&... ff) :
-      Base(std::forward<FF>(ff)...),
-      F0(std::forward<FF0>(f0))
-    {}
-
-    // pull in operator() of F0 and of all F... via the base class
-    using F0::operator();
-    using Base::operator();
-  };
-
-  template<class F0>
-  class OverloadSet<F0>: public F0
-  {
-  public:
-
-    template<class FF0>
-    OverloadSet(FF0&& f0) :
-      F0(std::forward<FF0>(f0))
-    {}
-
-    // pull in operator() of F0
-    using F0::operator();
-  };
-
-#endif // __cpp_variadic_using >= 201611
 
 } // end namespace Impl
 
@@ -97,12 +53,6 @@ namespace Impl {
  * Notice that the passed function objects are
  * stored by value and must be copy-constructible.
  *
- * On gcc 5 and gcc 6 mixing templated overloads
- * (i.e. using auto-parameter) and non-templated
- * ones may not compile if both they are captureless
- * lambdas. The problem can be avoided by capturing
- * a dummy value.
- *
  * \ingroup CxxUtilities
  */
 template<class... F>
@@ -129,7 +79,7 @@ namespace Impl {
 
     // Forward to operator() of F0 if it can be called with the given arguments.
     template<class...  Args,
-        std::enable_if_t<Std::is_callable<F0(Args&&...)>::value, int> = 0>
+        std::enable_if_t<IsCallable<F0(Args&&...)>::value, int> = 0>
     decltype(auto) operator()(Args&&... args)
     {
       return F0::operator()(std::forward<Args>(args)...);
@@ -139,7 +89,7 @@ namespace Impl {
     // arguments. In this case the base class will successively try operator()
     // of all F... .
     template<class...  Args,
-        std::enable_if_t< not Std::is_callable<F0(Args&&...)>::value, int> = 0>
+        std::enable_if_t<not IsCallable<F0(Args&&...)>::value, int> = 0>
     decltype(auto) operator()(Args&&... args)
     {
       return Base::operator()(std::forward<Args>(args)...);
@@ -162,7 +112,8 @@ namespace Impl {
     template<class...  Args>
     decltype(auto) operator()(Args&&... args)
     {
-      static_assert(Std::is_callable<F0(Args&&...)>::value, "No matching overload found in OrderedOverloadSet");
+      static_assert(IsCallable<F0(Args&&...)>::value,
+                      "No matching overload found in OrderedOverloadSet");
       return F0::operator()(std::forward<Args>(args)...);
     }
   };
@@ -190,12 +141,6 @@ namespace Impl {
  *
  * Notice that the passed function objects are
  * stored by value and must be copy-constructible.
- *
- * On gcc 5 and gcc 6 mixing templated overloads
- * (i.e. using auto-parameter) and non-templated
- * ones may not compile if both they are captureless
- * lambdas. The problem can be avoided by capturing
- * a dummy value.
  *
  * \ingroup CxxUtilities
  */

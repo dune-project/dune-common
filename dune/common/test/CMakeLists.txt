@@ -209,6 +209,10 @@ dune_add_test(SOURCES hybridutilitiestest.cc
 dune_add_test(SOURCES indicestest.cc
               LABELS quick)
 
+dune_add_test(SOURCES iscallabletest.cc
+              LINK_LIBRARIES dunecommon
+              LABELS quick)
+
 dune_add_test(SOURCES iteratorfacadetest2.cc
               LABELS quick)
 

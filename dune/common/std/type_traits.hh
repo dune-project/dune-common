@@ -134,6 +134,7 @@ namespace Std
 
   /**
    * \brief Traits class to check if function is callable
+   * \deprecated Use std::is_invocable from <type_traits>
    *
    * \tparam D Function descriptor
    * \tparam R Return value
@@ -154,6 +155,7 @@ namespace Std
 
   /**
    * \brief Traits class to check if function is callable
+   * \deprecated Use std::is_invocable from <type_traits>
    *
    * \tparam D Function descriptor
    * \tparam R Return value
@@ -170,13 +172,14 @@ namespace Std
    * \ingroup CxxUtilities
    */
   template <class F, class... Args, class R>
-  struct is_callable< F(Args...), R> :
+  struct [[deprecated("Use std::is_invocable from <type_traits>. Will be removed after release 2.8")]] is_callable< F(Args...), R> :
       decltype(Impl::is_callable_helper<R, F, Args...>(PriorityTag<42>()))
   {};
 
 
   /**
    * \brief Traits class to check if function is invocable
+   * \deprecated Use std::is_invocable from <type_traits>
    *
    * \tparam F    Function to check
    * \tparam Args Function arguments to check
@@ -189,12 +192,13 @@ namespace Std
    * \ingroup CxxUtilities
    */
   template <class F, class... Args>
-  struct is_invocable :
+  struct [[deprecated("Use std::is_invocable from <type_traits>. Will be removed after release 2.8")]] is_invocable :
       decltype(Impl::is_callable_helper<void, F, Args...>(PriorityTag<42>()))
   {};
 
   /**
    * \brief Traits class to check if function is invocable and the return type is compatible
+   * \deprecated Use std::is_invocable_r from <type_traits>
    *
    * \tparam R    Desired result type
    * \tparam F    Function to check
@@ -209,7 +213,7 @@ namespace Std
    * \ingroup CxxUtilities
    */
   template <class R, class F, class... Args>
-  struct is_invocable_r :
+  struct [[deprecated("Use std::is_invocable_r from <type_traits>. Will be removed after release 2.8")]] is_invocable_r :
       decltype(Impl::is_callable_helper<R, F, Args...>(PriorityTag<42>()))
   {};
 
