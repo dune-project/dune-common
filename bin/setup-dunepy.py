@@ -59,6 +59,10 @@ def main(argv):
     else:
         execute = ""
 
+    # see if the standard Dune enviroment variable for the opts file is defined
+    if optsfile is None:
+        optsfile = os.environ.get('DUNE_OPTS_FILE', None)
+
     if optsfile is not None:
         definitions = {}
         command = ['bash', '-c', 'source ' + optsfile + ' && echo "$CMAKE_FLAGS"']
