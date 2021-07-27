@@ -82,13 +82,13 @@ namespace Dune {
        * perfectly.
        */
       template<class V>
-      V lane(ADLTag<2>, std::size_t l, V v)
+      V lane(ADLTag<2>, std::size_t, V v)
       {
         return v;
       }
 
       template<class V>
-      V &lane(ADLTag<3>, std::size_t l, V &v)
+      V &lane(ADLTag<3>, std::size_t, V &v)
       {
         return v;
       }
