@@ -321,20 +321,20 @@ namespace Dune
 
     //! @copydoc Communication::gatherv()
     template<typename T>
-    int gatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ, int root) const
+    int gatherv (const T* in, int sendDataLen, T* out, int* recvDataLen, int* displ, int root) const
     {
-      return MPI_Gatherv(const_cast<T*>(in),sendlen,MPITraits<T>::getType(),
-                         out,recvlen,displ,MPITraits<T>::getType(),
+      return MPI_Gatherv(const_cast<T*>(in),sendDataLen,MPITraits<T>::getType(),
+                         out,recvDataLen,displ,MPITraits<T>::getType(),
                          root,communicator);
     }
 
     //! @copydoc Communication::scatter()
     //! @note out must have space for P*len elements
     template<typename T>
-    int scatter (const T* send, T* recv, int len, int root) const
+    int scatter (const T* sendData, T* recvData, int len, int root) const
     {
-      return MPI_Scatter(const_cast<T*>(send),len,MPITraits<T>::getType(),
-                         recv,len,MPITraits<T>::getType(),
+      return MPI_Scatter(const_cast<T*>(sendData),len,MPITraits<T>::getType(),
+                         recvData,len,MPITraits<T>::getType(),
                          root,communicator);
     }
 
@@ -354,10 +354,10 @@ namespace Dune
 
     //! @copydoc Communication::scatterv()
     template<typename T>
-    int scatterv (const T* send, int* sendlen, int* displ, T* recv, int recvlen, int root) const
+    int scatterv (const T* sendData, int* sendDataLen, int* displ, T* recvData, int recvDataLen, int root) const
     {
-      return MPI_Scatterv(const_cast<T*>(send),sendlen,displ,MPITraits<T>::getType(),
-                          recv,recvlen,MPITraits<T>::getType(),
+      return MPI_Scatterv(const_cast<T*>(sendData),sendDataLen,displ,MPITraits<T>::getType(),
+                          recvData,recvDataLen,MPITraits<T>::getType(),
                           root,communicator);
     }
 
@@ -393,10 +393,10 @@ namespace Dune
 
     //! @copydoc Communication::allgatherv()
     template<typename T>
-    int allgatherv (const T* in, int sendlen, T* out, int* recvlen, int* displ) const
+    int allgatherv (const T* in, int sendDataLen, T* out, int* recvDataLen, int* displ) const
     {
-      return MPI_Allgatherv(const_cast<T*>(in),sendlen,MPITraits<T>::getType(),
-                            out,recvlen,displ,MPITraits<T>::getType(),
+      return MPI_Allgatherv(const_cast<T*>(in),sendDataLen,MPITraits<T>::getType(),
+                            out,recvDataLen,displ,MPITraits<T>::getType(),
                             communicator);
     }
 
