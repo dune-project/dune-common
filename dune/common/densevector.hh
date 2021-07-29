@@ -455,9 +455,9 @@ namespace Dune {
     derived_type operator- () const
     {
       V result;
-      typedef typename decltype(result)::size_type size_type;
+      using idx_type = typename decltype(result)::size_type;
 
-      for (size_type i = 0; i < size(); ++i)
+      for (idx_type i = 0; i < size(); ++i)
         result[i] = -asImp()[i];
 
       return result;
