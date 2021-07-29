@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 
     nc1 = Dune::FakeMPIHelper::getCommunication();
 
-    Dune::MPIHelper::MPICommunicator comm = Dune::MPIHelper::getCommunication();
+    [[maybe_unused]] Dune::MPIHelper::MPICommunicator comm = Dune::MPIHelper::getCommunication();
 
 #if HAVE_MPI
     if (MPI_COMM_SELF !=  Dune::MPIHelper::getLocalCommunicator())

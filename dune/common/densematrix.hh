@@ -326,10 +326,10 @@ namespace Dune
     derived_type operator- () const
     {
       MAT result;
-      typedef typename decltype(result)::size_type size_type;
+      using idx_type = typename decltype(result)::size_type;
 
-      for (size_type i = 0; i < rows(); ++i)
-        for (size_type j = 0; j < cols(); ++j)
+      for (idx_type i = 0; i < rows(); ++i)
+        for (idx_type j = 0; j < cols(); ++j)
           result[i][j] = - asImp()[i][j];
 
       return result;
@@ -401,10 +401,10 @@ namespace Dune
       DUNE_ASSERT_BOUNDS(xx.N() == M());
       DUNE_ASSERT_BOUNDS(yy.N() == N());
 
-      using field_type = typename FieldTraits<Y>::field_type;
+      using y_field_type = typename FieldTraits<Y>::field_type;
       for (size_type i=0; i<rows(); ++i)
       {
-        yy[i] = field_type(0);
+        yy[i] = y_field_type(0);
         for (size_type j=0; j<cols(); j++)
           yy[i] += (*this)[i][j] * xx[j];
       }
@@ -420,10 +420,10 @@ namespace Dune
       DUNE_ASSERT_BOUNDS(xx.N() == N());
       DUNE_ASSERT_BOUNDS(yy.N() == M());
 
-      using field_type = typename FieldTraits<Y>::field_type;
+      using y_field_type = typename FieldTraits<Y>::field_type;
       for(size_type i = 0; i < cols(); ++i)
       {
-        yy[i] = field_type(0);
+        yy[i] = y_field_type(0);
         for(size_type j = 0; j < rows(); ++j)
           yy[i] += (*this)[j][i] * xx[j];
       }
