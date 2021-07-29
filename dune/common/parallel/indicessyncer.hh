@@ -1003,8 +1003,9 @@ namespace Dune
   template<typename T1>
   void IndicesSyncer<T>::recvAndUnpack(T1& numberer)
   {
-    auto iEnd   = indexSet_.end();
-    auto index  = indexSet_.begin();
+    const ParallelIndexSet& constIndexSet = indexSet_;
+    auto iEnd   = constIndexSet.end();
+    auto index  = constIndexSet.begin();
     int bpos   = 0;
     int publish;
 
