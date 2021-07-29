@@ -1026,13 +1026,11 @@ namespace Dune {
                                               [[maybe_unused]] int n)
   {
     // fill with own indices
-    typedef typename ParallelIndexSet::const_iterator const_iterator;
-    typedef IndexPair<GlobalIndex,LocalIndex> PairType;
-    const const_iterator end = indexSet.end();
+    const auto end = indexSet.end();
 
     //Now pack the source indices
     int i=0;
-    for(const_iterator index = indexSet.begin(); index != end; ++index)
+    for(auto index = indexSet.begin(); index != end; ++index)
       if(ignorePublic || index->local().isPublic()) {
 
         MPI_Pack(const_cast<PairType*>(&(*index)), 1,
@@ -1047,12 +1045,11 @@ namespace Dune {
   template<typename T, typename A>
   inline int RemoteIndices<T,A>::noPublic(const ParallelIndexSet& indexSet)
   {
-    typedef typename ParallelIndexSet::const_iterator const_iterator;
 
     int noPublic=0;
 
-    const const_iterator end=indexSet.end();
-    for(const_iterator index=indexSet.begin(); index!=end; ++index)
+    const auto end=indexSet.end();
+    for(auto index=indexSet.begin(); index!=end; ++index)
       if(index->local().isPublic())
         noPublic++;
 
@@ -1163,8 +1160,6 @@ namespace Dune {
     MPI_Allreduce(&publish, &maxPublish, 1, MPI_INT, MPI_MAX, comm_);
 
     // allocate buffers
-    typedef IndexPair<GlobalIndex,LocalIndex> PairType;
-
     PairType** destPairs;
     PairType** sourcePairs = new PairType*[sourcePublish>0 ? sourcePublish : 1];
 
@@ -1433,9 +1428,8 @@ namespace Dune {
   template<typename T, typename A>
   inline void RemoteIndices<T,A>::free()
   {
-    typedef typename RemoteIndexMap::iterator Iterator;
-    Iterator lend = remoteIndices_.end();
-    for(Iterator lists=remoteIndices_.begin(); lists != lend; ++lists) {
+    auto lend = remoteIndices_.end();
+    for(auto lists=remoteIndices_.begin(); lists != lend; ++lists) {
       if(lists->second.first==lists->second.second) {
         // there is only one remote index list.
         delete lists->second.first;
@@ -1544,12 +1538,9 @@ namespace Dune {
     if(neighbours()!=ri.neighbours())
       return false;
 
-    typedef RemoteIndexList RList;
-    typedef typename std::map<int,std::pair<RList*,RList*> >::const_iterator const_iterator;
+    const auto rend = remoteIndices_.end();
 
-    const const_iterator rend = remoteIndices_.end();
-
-    for(const_iterator rindex = remoteIndices_.begin(), rindex1=ri.remoteIndices_.begin(); rindex!=rend; ++rindex, ++rindex1) {
+    for(auto rindex = remoteIndices_.begin(), rindex1=ri.remoteIndices_.begin(); rindex!=rend; ++rindex, ++rindex1) {
       if(rindex->first != rindex1->first)
         return false;
       if(*(rindex->second.first) != *(rindex1->second.first))
@@ -1589,13 +1580,10 @@ namespace Dune {
       if(indexSet_->state()!=GROUND)
         DUNE_THROW(InvalidIndexSetState, "Index has to be in ground mode for repairing pointers to indices");
 #endif
-      typedef typename ParallelIndexSet::const_iterator IndexIterator;
-      typedef typename GlobalList::const_iterator GlobalIterator;
-      typedef typename RemoteIndexList::iterator Iterator;
-      GlobalIterator giter = glist_.begin();
-      IndexIterator index = indexSet_->begin();
+      auto giter = glist_.begin();
+      auto index = indexSet_->begin();
 
-      for(Iterator iter=rList_->begin(); iter != end_; ++iter) {
+      for(auto iter=rList_->begin(); iter != end_; ++iter) {
         while(index->global()<*giter) {
           ++index;
 #ifdef DUNE_ISTL_WITH_CHECKING
@@ -1714,25 +1702,22 @@ namespace Dune {
   template<typename T, typename A>
   CollectiveIterator<T,A>::CollectiveIterator(const RemoteIndexMap& pmap, bool send)
   {
-    typedef typename RemoteIndexMap::const_iterator const_iterator;
 
-    const const_iterator end=pmap.end();
-    for(const_iterator process=pmap.begin(); process != end; ++process) {
+    const auto end = pmap.end();
+    for(auto process = pmap.begin(); process != end; ++process) {
       const RemoteIndexList* list = send ? process->second.first : process->second.second;
-      typedef typename RemoteIndexList::const_iterator iterator;
+      using ri_iterator = typename RemoteIndexList::const_iterator;
       map_.insert(std::make_pair(process->first,
-                                 std::pair<iterator, const iterator>(list->begin(), list->end())));
+                                 std::pair<ri_iterator, const ri_iterator>(list->begin(), list->end())));
     }
   }
 
   template<typename T, typename A>
   inline void CollectiveIterator<T,A>::advance(const GlobalIndex& index)
   {
-    typedef typename Map::iterator iterator;
-    typedef typename Map::const_iterator const_iterator;
-    const const_iterator end = map_.end();
+    const auto end = map_.end();
 
-    for(iterator iter = map_.begin(); iter != end;) {
+    for(auto iter = map_.begin(); iter != end;) {
       // Step the iterator until we are >= index
       typename RemoteIndexList::const_iterator current = iter->second.first;
       typename RemoteIndexList::const_iterator rend = iter->second.second;
@@ -1758,11 +1743,9 @@ namespace Dune {
   inline void CollectiveIterator<T,A>::advance(const GlobalIndex& index,
                                                const Attribute& attribute)
   {
-    typedef typename Map::iterator iterator;
-    typedef typename Map::const_iterator const_iterator;
-    const const_iterator end = map_.end();
+    const auto end = map_.end();
 
-    for(iterator iter = map_.begin(); iter != end;) {
+    for(auto iter = map_.begin(); iter != end;) {
       // Step the iterator until we are >= index
       typename RemoteIndexList::const_iterator current = iter->second.first;
       typename RemoteIndexList::const_iterator rend = iter->second.second;
@@ -1795,14 +1778,12 @@ namespace Dune {
   template<typename T, typename A>
   inline CollectiveIterator<T,A>& CollectiveIterator<T,A>::operator++()
   {
-    typedef typename Map::iterator iterator;
-    typedef typename Map::const_iterator const_iterator;
-    const const_iterator end = map_.end();
+    const auto end = map_.end();
 
-    for(iterator iter = map_.begin(); iter != end;) {
+    for(auto iter = map_.begin(); iter != end;) {
       // Step the iterator until we are >= index
-      typename RemoteIndexList::const_iterator current = iter->second.first;
-      typename RemoteIndexList::const_iterator rend = iter->second.second;
+      auto current = iter->second.first;
+      auto rend = iter->second.second;
 
       // move all iterators pointing to the current global index to next value
       if(iter->second.first->localIndexPair().global()==index_ &&
@@ -1855,21 +1836,17 @@ namespace Dune {
   {
     int rank;
     MPI_Comm_rank(indices.comm_, &rank);
+    const auto rend = indices.remoteIndices_.end();
 
-    typedef typename RemoteIndices<T,A>::RemoteIndexList RList;
-    typedef typename std::map<int,std::pair<RList*,RList*> >::const_iterator const_iterator;
-
-    const const_iterator rend = indices.remoteIndices_.end();
-
-    for(const_iterator rindex = indices.remoteIndices_.begin(); rindex!=rend; ++rindex) {
+    for(auto rindex = indices.remoteIndices_.begin(); rindex!=rend; ++rindex) {
       os<<rank<<": Prozess "<<rindex->first<<":";
 
       if(!rindex->second.first->empty()) {
         os<<" send:";
 
-        const typename RList::const_iterator send= rindex->second.first->end();
+        const auto send= rindex->second.first->end();
 
-        for(typename RList::const_iterator index = rindex->second.first->begin();
+        for(auto index = rindex->second.first->begin();
             index != send; ++index)
           os<<*index<<" ";
         os<<std::endl;
