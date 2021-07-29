@@ -324,7 +324,7 @@ namespace Dune {
     template<bool ignorePublic>
     void rebuild();
 
-    bool operator==(const RemoteIndices& ri);
+    bool operator==(const RemoteIndices& ri) const;
 
     /**
      * @brief Checks whether the remote indices are synced with
@@ -780,7 +780,7 @@ namespace Dune {
     /**
      * @brief Checks whether there are still iterators in the map.
      */
-    inline bool empty();
+    inline bool empty() const;
 
     /**
      * @brief Iterator over the valid underlying iterators.
@@ -1533,7 +1533,7 @@ namespace Dune {
 
 
   template<typename T, typename A>
-  bool RemoteIndices<T,A>::operator==(const RemoteIndices& ri)
+  bool RemoteIndices<T,A>::operator==(const RemoteIndices& ri) const
   {
     if(neighbours()!=ri.neighbours())
       return false;
@@ -1801,7 +1801,7 @@ namespace Dune {
   }
 
   template<typename T, typename A>
-  inline bool CollectiveIterator<T,A>::empty()
+  inline bool CollectiveIterator<T,A>::empty() const
   {
     return map_.empty();
   }
