@@ -1,4 +1,6 @@
-# Master (will become release 2.8)
+# Master (will become release 2.9)
+
+# Release 2.8
 
 - Add `instance` method to MPIHelper that does not expect arguments for access
   to the singleton object after initialization.
