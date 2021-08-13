@@ -160,7 +160,7 @@ if(PTScotch_FOUND)
   endif()
 
   # Define an imported target for the parallel PTScotch library
-  if(PTScotch_PTSCOTCH_FOUND AND NOT TARGET PTScotch::PTScotch)
+  if(PTScotch_SCOTCH_FOUND AND PTScotch_PTSCOTCH_FOUND AND NOT TARGET PTScotch::PTScotch)
     add_library(PTScotch::PTScotch UNKNOWN IMPORTED)
     set_target_properties(PTScotch::PTScotch PROPERTIES
       IMPORTED_LOCATION ${PTSCOTCH_LIBRARY}
