@@ -91,9 +91,9 @@ set(PARMETIS_DEPENDENCIES METIS_FOUND MPI_FOUND)
 
 # If ptscotch-parmetis is requested, find package PTScotch
 if(IS_PTSCOTCH_PARMETIS_HEADER)
-  find_package(PTScotch COMPONENTS PTSCOTCH)
-  set(HAVE_PTSCOTCH_PARMETIS ${PTScotch_FOUND})
-  list(APPEND PARMETIS_DEPENDENCIES PTScotch_FOUND)
+  find_package(PTScotch)
+  set(HAVE_PTSCOTCH_PARMETIS ${PTScotch_PTSCOTCH_FOUND})
+  list(APPEND PARMETIS_DEPENDENCIES PTScotch_PTSCOTCH_FOUND)
 endif()
 
 # behave like a CMake module is supposed to behave
@@ -116,7 +116,7 @@ if(PARMETIS_FOUND AND NOT TARGET ParMETIS::ParMETIS)
   )
 
   # link against PTScotch if needed
-  if(IS_PTSCOTCH_PARMETIS_HEADER AND PTScotch_FOUND)
+  if(IS_PTSCOTCH_PARMETIS_HEADER AND PTScotch_PTSCOTCH_FOUND)
     set_property(TARGET ParMETIS::ParMETIS APPEND PROPERTY
       INTERFACE_LINK_LIBRARIES PTScotch::PTScotch)
   endif()
