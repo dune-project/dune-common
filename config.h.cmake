@@ -48,7 +48,7 @@
 #cmakedefine HAVE_MPI ENABLE_MPI
 
 /* Deactivate cxx bindings for MPI */
-#if HAVE_MPI
+#if defined(HAVE_MPI) && HAVE_MPI
 #define MPICH_SKIP_MPICXX 1
 #define OMPI_SKIP_MPICXX 1
 #define MPI_NO_CPPBIND 1
