@@ -8,6 +8,7 @@
 #include <limits>
 #include <iostream>
 
+#include <dune/common/typetraits.hh>
 #include <dune/common/bigunsignedint.hh>
 #include <dune/common/hash.hh>
 
@@ -25,6 +26,9 @@ int main()
 
   typedef Dune::bigunsignedint<16> ShortInteger;
   typedef Dune::bigunsignedint<128> BigInteger;
+
+  static_assert(Dune::IsNumber<ShortInteger>::value);
+  static_assert(Dune::IsNumber<BigInteger>::value);
 
   /* Test std::numeric_limits for ShortInteger (should be same as for uint16_t) */
   CHECK(std::numeric_limits<ShortInteger>::min() == std::numeric_limits<std::uint16_t>::min());

@@ -596,6 +596,12 @@ namespace Dune
     return temp%y;
   }
 
+  // Forward declare type-trait for numbers
+  template<class T> struct IsNumber;
+
+  //! Declare big unsigned int is a number
+  template <int k>
+  struct IsNumber<bigunsignedint<k>> : public std::true_type {};
 
   /** @} */
 }
