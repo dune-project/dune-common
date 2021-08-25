@@ -112,15 +112,22 @@ class Builder:
                             code = str(source)
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
+                            assert os.path.isfile(sourceFileName), "Error in writing module .cc file"
                             if not found:
+                                origPos = -1
                                 with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
+                                    # store original file size
+                                    origPos = out.tell()
                                     out.write(line+"\n")
                                 # update build system
                                 logger.debug("Rebuilding module")
                                 try:
                                     self.compile()
-                                except KeyboardInterrupt:
+                                except: # all exceptions will cause a problem here
                                     os.remove(os.path.join(sourceFileName))
+                                    # remove line from CMakeLists to avoid problems
+                                    with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
+                                        out.truncate(origPos)
                                     raise
                         elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
                             logger.info("Compiling " + pythonName + " (updated)")
