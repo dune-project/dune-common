@@ -111,7 +111,7 @@ class SimpleGenerator(object):
         source += '  }\n'
         return source
 
-    def post(self, moduleName, source, postscript):
+    def post(self, moduleName, source, postscript, extraCMake):
         if postscript:
             source += postscript
         source += "}\n"
@@ -120,6 +120,7 @@ class SimpleGenerator(object):
         return module
 
     def load(self, includes, typeName, moduleName, *args,
+            extraCMake=None,
             defines=None, preamble=None, postscript=None,
             options=None, bufferProtocol=False, dynamicAttr=False,
             baseClasses=None, holder="default" ):
@@ -162,7 +163,7 @@ class SimpleGenerator(object):
             source += self.main(nr, includes, tn, *a, options=o,
                                 bufferProtocol=b, dynamicAttr=d,
                                 baseClasses=bc, holder=h)
-        return self.post(moduleName, source, postscript)
+        return self.post(moduleName, source, postscript, extraCMake)
 
 def simpleGenerator(inc, baseType, namespace, pythonname=None, filename=None):
     generator = SimpleGenerator(baseType, namespace, pythonname, filename)
