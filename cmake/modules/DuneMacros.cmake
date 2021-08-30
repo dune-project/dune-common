@@ -140,11 +140,6 @@ enable_language(C) # Enable C to skip CXX bindings for some tests.
 # find_package(Threads) everywhere
 set(THREADS_PREFER_PTHREAD_FLAG TRUE CACHE BOOL "Prefer -pthread compiler and linker flag")
 
-# Add a backport of cmakes FindPkgConfig module
-if(${CMAKE_VERSION} VERSION_LESS "3.19.4")
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/FindPkgConfig")
-endif()
-
 include(FeatureSummary)
 include(DuneEnableAllPackages)
 include(DuneTestMacros)
