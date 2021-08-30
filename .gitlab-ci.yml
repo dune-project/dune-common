@@ -14,6 +14,9 @@ variables:
   DUNECI_TEST_LABELS: quick
   DUNE_TEST_EXPECTED_VC_IMPLEMENTATION: SSE2
   PIP_DEFAULT_TIMEOUT: 0
+  # Note: DUNE_RUNNING_IN_CI only needed unti ci image updating fixed on gitlab
+  DUNECI_CMAKE_FLAGS: '-DDUNE_RUNNING_IN_CI=TRUE'
+  DUNE_LOG_LEVEL:     DEBUG
 
 debian:10 gcc-7-17--expensive:
   # This image has Vc
@@ -33,29 +36,21 @@ debian:10 gcc-7-17--expensive:
   allow_failure: true
 
 
-debian-11-gcc-9-17-python:
+debian-11-gcc-9-17-nopython:
   image: registry.dune-project.org/docker/ci/debian:11
   script: duneci-standard-test
   stage: test
   variables:
     DUNECI_TOOLCHAIN:  gcc-9-17
-    # the CMAKE_FLAGS used to build the modules - set python bindings to on
-    # Note: DUNE_RUNNING_IN_CI only needed unti ci image updating fixed on gitlab
-    DUNECI_CMAKE_FLAGS: '-DDUNE_RUNNING_IN_CI=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=ON -DALLOW_CXXFLAGS_OVERWRITE=ON'
-    # add some logging output from the python bindings
-    DUNE_LOG_LEVEL:     DEBUG
+    DUNECI_CMAKE_FLAGS: '-DCMAKE_DISABLE_FIND_PACKAGE_Python3=TRUE'
   tags: [duneci]
-ubuntu-20.04-clang-10-20-python:
+ubuntu-20.04-clang-10-20-nobindings:
   image: registry.dune-project.org/docker/ci/ubuntu:20.04
   script: duneci-standard-test
   stage: test
   variables:
     DUNECI_TOOLCHAIN: clang-10-20
-    # the CMAKE_FLAGS used to build the modules - set python bindings to on
-    # Note: DUNE_RUNNING_IN_CI only needed unti ci image updating fixed on gitlab
-    DUNECI_CMAKE_FLAGS: '-DDUNE_RUNNING_IN_CI=TRUE -DDUNE_ENABLE_PYTHONBINDINGS=ON -DALLOW_CXXFLAGS_OVERWRITE=ON'
-    # add some logging output from the python bindings
-    DUNE_LOG_LEVEL:     DEBUG
+    DUNECI_CMAKE_FLAGS: '-DDUNE_ENABLE_PYTHONBINDINGS=OFF'
   tags: [duneci]
 
 system-test:

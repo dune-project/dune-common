@@ -441,6 +441,10 @@ def extract_metadata(ignoreImportError=False):
         if package.name == "dune.utility":
             continue
 
+        # Avoid the link created by setting -DDUNE_SYMLINK_TO_SOURCE_TREE=TRUE
+        if package.name == "dune.src_dir":
+            continue
+
         # Check for the existence of the metadata.cmake file in the package
         try:
             mod = importlib.import_module(package.name)

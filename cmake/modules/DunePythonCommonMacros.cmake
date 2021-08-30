@@ -87,7 +87,7 @@ if(Python3_Interpreter_FOUND)
   add_custom_target(install_python)
 
   # this option enables the build of Python bindings for DUNE modules
-  option(DUNE_ENABLE_PYTHONBINDINGS "Enable Python bindings for DUNE" OFF)
+  option(DUNE_ENABLE_PYTHONBINDINGS "Enable Python bindings for DUNE" ON)
 
   if( DUNE_ENABLE_PYTHONBINDINGS )
     if(NOT Python3_Interpreter_FOUND)
