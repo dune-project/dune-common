@@ -57,6 +57,11 @@ if(TBB_FOUND AND TARGET TBB::tbb)
   return()
 endif()
 
+# Add a backport of cmakes FindPkgConfig module
+if(${CMAKE_VERSION} VERSION_LESS "3.19.4")
+  list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}/FindPkgConfig")
+endif()
+
 # second, try to find TBBs pkg-config file
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
