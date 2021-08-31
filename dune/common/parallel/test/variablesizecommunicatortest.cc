@@ -29,7 +29,7 @@ struct MyDataHandle
 
     typedef double DataType;
 
-    bool fixedsize()
+    bool fixedSize()
     {
         return true;
     }
@@ -169,7 +169,7 @@ struct VarDataHandle
     {}
     int rank;
     typedef double DataType;
-    bool fixedsize()
+    bool fixedSize()
     {
         return false;
     }
