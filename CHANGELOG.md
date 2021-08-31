@@ -2,8 +2,11 @@
 
 - Set minimal required CMake version in cmake to >= 3.13.
 
-- Python bindings have been moved from dune-python to the core
-  respective core modules.
+- Python bindings have been moved from `dune-python` to the respective
+  core modules. `dune-python` is now obsolete. To activate Python bindings the
+  CMake flag `DUNE_ENABLE_PYTHONBINDINGS` needs to be turned on (default is off).
+  Furthermore, flags for either shared library or position independent code
+  need to be used.
 
 - Add `instance` method to MPIHelper that does not expect arguments for access
   to the singleton object after initialization.
