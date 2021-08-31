@@ -156,6 +156,10 @@
 - Dune::lcd and Dune::gcd are deprecated and will be removed. Please
   use std::lcd and std::gcd.
 
+- VariableSizeCommunicator::fixedsize has been renamed to FixedSize in
+  line with the communicator changes of dune-grid. The old method will
+  be removed in 2.9.
+
 # Release 2.7
 
 - Added fallback implementation to C++20 feature: `std::identity`.
