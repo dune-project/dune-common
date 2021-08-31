@@ -17,6 +17,7 @@
 
 #include <mpi.h>
 
+#include <dune/common/concept.hh>
 #include <dune/common/parallel/interface.hh>
 #include <dune/common/parallel/mpitraits.hh>
 
@@ -34,6 +35,33 @@
  */
 namespace Dune
 {
+
+namespace Concept {
+
+struct HasFixedSize {
+  template <typename H> auto require(H &&h) -> decltype(h.fixedSize());
+};
+
+} // namespace Concept
+
+namespace Impl {
+
+template <typename H,
+          std::enable_if_t<models<Concept::HasFixedSize, H>(), int> = 0>
+constexpr bool callFixedSize(H &&handle) {
+  return handle.fixedSize();
+}
+
+template <typename H,
+          std::enable_if_t<not models<Concept::HasFixedSize, H>(), int> = 0>
+[[deprecated("Using handles with fixedsize() (lower case s) is deprecated and "
+             "will be removed after release 2.8. Implement fixedSize() "
+             "(camelCase) instead!")]]
+constexpr bool callFixedSize(H &&handle) {
+  return handle.fixedsize();
+}
+
+} // namespace Impl
 
 namespace
 {
@@ -978,7 +1006,7 @@ std::size_t checkReceiveAndContinueReceiving(DataHandle& handle,
 {
   return checkAndContinue(handle, trackers, requests, requests, buffers, comm,
                           UnpackEntries<DataHandle>(), SetupRecvRequest<DataHandle>(),
-                          true, !handle.fixedSize());
+                          true, !Impl::callFixedSize(handle));
 }
 
 
@@ -1035,7 +1063,7 @@ void VariableSizeCommunicator<Allocator>::setupInterfaceTrackers(DataHandle& han
   recv_trackers.reserve(interface_->size());
 
   int fixedsize=0;
-  if(handle.fixedSize())
+  if(Impl::callFixedSize(handle))
     ++fixedsize;
 
 
@@ -1043,9 +1071,9 @@ void VariableSizeCommunicator<Allocator>::setupInterfaceTrackers(DataHandle& han
   for(IIter inf=interface_->begin(), end=interface_->end(); inf!=end; ++inf)
   {
 
-    if(handle.fixedSize() && InterfaceInformationChooser<FORWARD>::getSend(inf->second).size())
+    if(Impl::callFixedSize(handle) && InterfaceInformationChooser<FORWARD>::getSend(inf->second).size())
       fixedsize=handle.size(InterfaceInformationChooser<FORWARD>::getSend(inf->second)[0]);
-    assert(!handle.fixedSize()||fixedsize>0);
+    assert(!Impl::callFixedSize(handle)||fixedsize>0);
     send_trackers.push_back(InterfaceTracker(inf->first,
                                              InterfaceInformationChooser<FORWARD>::getSend(inf->second), fixedsize));
     recv_trackers.push_back(InterfaceTracker(inf->first,
@@ -1210,7 +1238,7 @@ void VariableSizeCommunicator<Allocator>::communicate(DataHandle& handle)
     // either for MPI_Wait_all or MPI_Test_some.
     return;
 
-  if(handle.fixedSize())
+  if(Impl::callFixedSize(handle))
     communicateFixedSize<FORWARD>(handle);
   else
     communicateVariableSize<FORWARD>(handle);
