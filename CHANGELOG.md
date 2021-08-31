@@ -1,4 +1,4 @@
-# Master (will become release 2.8)
+# Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
 
