@@ -2,13 +2,19 @@
 
 # Release 2.8
 
+- Set minimal required CMake version in cmake to >= 3.13.
+
+- Python bindings have been moved from dune-python to the core
+  respective core modules.
+
 - Add `instance` method to MPIHelper that does not expect arguments for access
   to the singleton object after initialization.
 
 - Remove the cmake check for `HAVE_MPROTECT` and also do not define this variable in the
   `config.h` file. It is defined only inside the header `debugallocator.hh`.
 
-- Remove deprecated type-traits `has_nan`, `is_indexable`, and `is_range`.
+- Remove deprecated type-traits `has_nan`, `is_indexable`, and
+  `is_range`, use the CamelCase versions instead.
 
 - Deprecate fallback implementations `Dune::Std::apply`, `Dune::Std::bool_constant`, and
   `Dune::Std::make_array` in favor of std c++ implementations.
@@ -47,7 +53,7 @@
   file containing the configuration. Add the `AddTBBFlags.cmake` file containing
   the macro `add_dune_tbb_flags` that must be called to use TBB.
 
-- Set minimal required MPI version in cmake to >= 3.0.
+- Set minimal required MPI version to >= 3.0.
 
 - Previous versions of dune-common imported `std::shared_ptr` and `std::make_shared`
   into the `Dune` namespace.  dune-common-2.8 stops doing that.
@@ -75,9 +81,20 @@
 - Eigenvectors of symmetric 2x2 `FieldMatrix`es are now computed correctly
   even when they have zero eigenvalues.
 
+- Eigenvectors and values are now also supported for matrices and
+  vectors with field_type being float.
+
 - The `ParameterTreeParser::readINITree` can now directly construct and
   return a parameter tree by using the new overload without parameter tree
   argument.
+
+- MPIHelper::instance can now be called without parameters if it was
+  already initialized.
+
+- MPITraits now support complex.
+
+- There is now a matrix wrapper transpose(M) that represents the
+  transpose of a matrix.
 
 ## build-system
 
@@ -102,6 +119,14 @@
   `dune_add_latex_document' is a redirection to `add_latex_document`
   which internally uses `latexmk`.
 
+- Many of the CMake find modules habe been rewritten to use CMake's
+  imported targets. These targets are also used in the DUNE CMake
+  package configuration files, where they might appear in e.g. the
+  dune-module_LIBRARIES. If you do not use the DUNE CMake build system
+  the linker might complain about e.g. METIS::METIS not being
+  found. In that case your either need to use the CMake modules shipped with
+  DUNE or create these targets manually.
+
 ## Deprecations and removals
 
 - Remove deprecated header `dune/common/std/memory.hh`; use `<memory>`
@@ -124,6 +149,12 @@
   aware that it is no drop-in replacement, as it must be sometimes
   placed at different position in the code.
   The use of `DUNE_UNUSED_PARAMETER` is discouraged.
+
+- Dune::void_t has been deprecated and will be removed. Please use
+  std::void_t
+
+- Dune::lcd and Dune::gcd are deprecated and will be removed. Please
+  use std::lcd and std::gcd.
 
 # Release 2.7
 
