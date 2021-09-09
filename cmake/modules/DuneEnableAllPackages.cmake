@@ -317,14 +317,11 @@ endfunction(dune_target_enable_all_packages)
 
 
 function(dune_library_add_sources lib)
-
   if (NOT (DEFINED DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES))
     message(FATAL_ERROR "You must call dune_enable_all_packages with the MODULE_LIBRARIES option before calling dune_library_add_sources")
   endif()
 
-  # This looks weird, but seems to be the most practical way to check for list membership,
-  # as list(FIND ...) does not work reliably in a macro...
-  if (NOT (";${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES};" MATCHES ";${lib};"))
+  if (NOT lib IN_LIST DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
     message(FATAL_ERROR
 "Attempt to add sources to library ${lib}, which has not been defined in dune_enable_all_packages.
 List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES}")
@@ -337,11 +334,5 @@ List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGE
     message(WARNING "Unrecognized arguments for dune_library_add_sources!")
   endif()
 
-  foreach(source ${DUNE_LIBRARY_ADD_SOURCES_SOURCES})
-    if(IS_ABSOLUTE ${source})
-      target_sources(${lib} PRIVATE ${source})
-    else()
-      target_sources(${lib} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${source})
-    endif()
-  endforeach()
-endfunction()
+  target_sources(${lib} PRIVATE ${DUNE_LIBRARY_ADD_SOURCES_SOURCES})
+endfunction(dune_library_add_sources)
