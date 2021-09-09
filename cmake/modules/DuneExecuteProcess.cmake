@@ -16,8 +16,8 @@
 include_guard(GLOBAL)
 
 function(dune_execute_process)
-  include(CMakeParseArguments)
-  cmake_parse_arguments(EXECUTE "" "ERROR_MESSAGE;RESULT_VARIABLE;OUTPUT_VARIABLE;ERROR_VARIABLE" "" ${ARGN})
+  set(SINGLEARGS ERROR_MESSAGE RESULT_VARIABLE OUTPUT_VARIABLE ERROR_VARIABLE)
+  cmake_parse_arguments(EXECUTE "" "${SINGLEARGS}" "" ${ARGN})
 
   # Decide whether stdout and stderr have to be split
   if(EXECUTE_OUTPUT_VARIABLE AND EXECUTE_ERROR_VARIABLE)

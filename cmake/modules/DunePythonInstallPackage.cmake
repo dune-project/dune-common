@@ -38,11 +38,8 @@ include_guard(GLOBAL)
 
 function(dune_python_install_package)
   # Parse Arguments
-  set(OPTION)
-  set(SINGLE PATH)
   set(MULTI ADDITIONAL_PIP_PARAMS)
-  include(CMakeParseArguments)
-  cmake_parse_arguments(PYINST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
+  cmake_parse_arguments(PYINST "" "PATH" "${MULTI}" ${ARGN})
   if(PYINST_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
   endif()

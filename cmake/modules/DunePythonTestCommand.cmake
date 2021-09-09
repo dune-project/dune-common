@@ -50,12 +50,9 @@ include_guard(GLOBAL)
 
 function(dune_python_add_test)
   # Parse Arguments
-  include(CMakeParseArguments)
-  set(OPTION)
   set(SINGLE WORKING_DIRECTORY NAME INTERPRETER)
   set(MULTI SCRIPT COMMAND LABELS MODULE)
-
-  cmake_parse_arguments(PYTEST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
+  cmake_parse_arguments(PYTEST "" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYTEST_COMMAND)
     message(FATAL_ERROR "dune_python_add_test: COMMAND argument should not be used, use SCRIPT instead providing only the Python script and not the Python interpreter")
   endif()

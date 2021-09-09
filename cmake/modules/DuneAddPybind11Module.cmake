@@ -45,7 +45,6 @@
 include_guard(GLOBAL)
 
 function(dune_add_pybind11_module)
-  include(CMakeParseArguments)
   cmake_parse_arguments(PYBIND11_MODULE "EXCLUDE_FROM_ALL" "NAME" "SOURCES;COMPILE_DEFINITIONS;CMAKE_GUARD" ${ARGN})
   if(PYBIND11_MODULE_UNPARSED_ARGUMENTS)
     message(WARNING "dune_add_pybind11_module: extra arguments provided (typos in named arguments?)")

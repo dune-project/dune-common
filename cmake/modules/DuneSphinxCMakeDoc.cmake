@@ -75,11 +75,8 @@ function(dune_cmake_sphinx_doc)
   endif()
 
   # Parse Arguments
-  set(OPTION MODULE_ONLY)
-  set(SINGLE SPHINX_CONF)
   set(MULTI BUILDTYPE RST_SOURCES)
-  include(CMakeParseArguments)
-  cmake_parse_arguments(SPHINX_CMAKE "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
+  cmake_parse_arguments(SPHINX_CMAKE "MODULE_ONLY" "SPHINX_CONF" "${MULTI}" ${ARGN})
   if(SPHINX_CMAKE_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_cmake_sphinx_doc: This often indicates typos!")
   endif()

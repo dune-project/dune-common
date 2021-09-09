@@ -174,7 +174,6 @@ macro(dune_module_to_uppercase _upper _module)
 endmacro(dune_module_to_uppercase _upper _module)
 
 macro(find_dune_package module)
-  include(CMakeParseArguments)
   cmake_parse_arguments(DUNE_FIND "REQUIRED" "VERSION" "" ${ARGN})
   if(DUNE_FIND_REQUIRED)
     set(required REQUIRED)
@@ -984,7 +983,6 @@ endfunction(dune_expand_object_libraries)
 # Creates shared and static libraries with the same basename.
 # More docu can be found at the top of this file.
 macro(dune_add_library basename)
-  include(CMakeParseArguments)
   cmake_parse_arguments(DUNE_LIB "APPEND;NO_EXPORT;OBJECT" "COMPILE_FLAGS"
     "ADD_LIBS;SOURCES" ${ARGN})
   list(APPEND DUNE_LIB_SOURCES ${DUNE_LIB_UNPARSED_ARGUMENTS})
@@ -1107,7 +1105,6 @@ function(dune_target_link_libraries basename libraries)
 endfunction(dune_target_link_libraries basename libraries)
 
 function(replace_properties)
-  include(CMakeParseArguments)
   set(_first_opts "GLOBAL;DIRECTORY;TARGET;SOURCE;CACHE")
   cmake_parse_arguments(REPLACE "GLOBAL"
     "DIRECTORY;PROPERTY" "TARGET;SOURCE;TEST;CACHE" ${ARGN})

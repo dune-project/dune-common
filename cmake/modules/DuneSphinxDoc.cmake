@@ -16,7 +16,6 @@ function(dune_sphinx_doc)
   endif()
 
   # Parse Arguments
-  include(CMakeParseArguments)
   cmake_parse_arguments(SPHINX_DOC "" "CONF" "BUILDTYPE" ${ARGN})
   if(SPHINX_DOC_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_sphinx_doc")

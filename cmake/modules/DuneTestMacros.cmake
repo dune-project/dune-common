@@ -216,11 +216,7 @@ include(CTest)
 add_custom_target(build_tests)
 
 function(dune_declare_test_label)
-  include(CMakeParseArguments)
-  set(OPTIONS)
-  set(SINGLEARGS)
-  set(MULTIARGS LABELS)
-  cmake_parse_arguments(arg "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
+  cmake_parse_arguments(arg "" "" "LABELS" ${ARGN})
 
   if( (DEFINED arg_UNPARSED_ARGUMENTS) AND NOT ( arg_UNPARSED_ARGUMENTS STREQUAL "" ) )
     message(FATAL_ERROR "Unhandled extra arguments given to dune_declare_test_label(): "
@@ -253,7 +249,6 @@ if(NOT DUNE_MAX_TEST_CORES)
 endif()
 
 function(dune_add_test)
-  include(CMakeParseArguments)
   set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY)
   set(SINGLEARGS NAME TARGET TIMEOUT)
   set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND CMAKE_GUARD LABELS)
