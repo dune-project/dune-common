@@ -33,16 +33,16 @@ namespace Dune
     typedef const typename FieldTraits< typename DenseMatVecTraits<M>::value_type >::real_type real_type;
   };
 
-  /**
-     work around a problem of FieldMatrix/FieldVector,
-     there is no unique way to obtain the size of a class
-
-     \deprecated VectorSize is deprecated; please call the 'size()' method directly instead.
-                 This will be removed after Dune 2.8.
-   */
   template<class K, int N, int M> class FieldMatrix;
   template<class K, int N> class FieldVector;
   namespace {
+    /**
+      work around a problem of FieldMatrix/FieldVector,
+      there is no unique way to obtain the size of a class
+
+      \deprecated VectorSize is deprecated; please call the 'size()' method directly instead.
+      This will be removed after Dune 2.8.
+      */
     template<class V>
     struct [[deprecated("VectorSize is deprecated; please call the 'size()' method directly instead")]] VectorSize
     {
