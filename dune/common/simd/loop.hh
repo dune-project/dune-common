@@ -63,6 +63,7 @@ namespace Dune {
     //Prefix operators
 #define DUNE_SIMD_LOOP_PREFIX_OP(SYMBOL)         \
     auto operator SYMBOL() {                     \
+      _Pragma("omp simd")                        \
       for(std::size_t i=0; i<S; i++){            \
         SYMBOL(*this)[i];                        \
       }                                          \
@@ -78,6 +79,7 @@ namespace Dune {
 #define DUNE_SIMD_LOOP_UNARY_OP(SYMBOL)          \
     auto operator SYMBOL() const {               \
       LoopSIMD<T,S,A> out;                        \
+      _Pragma("omp simd")                        \
       for(std::size_t i=0; i<S; i++){            \
         out[i] = SYMBOL((*this)[i]);             \
       }                                          \
@@ -91,6 +93,7 @@ namespace Dune {
 
     auto operator!() const {
       Simd::Mask<LoopSIMD<T,S,A>> out;
+#pragma omp simd
       for(std::size_t i=0; i<S; i++){
         out[i] = !((*this)[i]);
       }
@@ -114,6 +117,7 @@ namespace Dune {
     //Assignment operators
 #define DUNE_SIMD_LOOP_ASSIGNMENT_OP(SYMBOL)              \
     auto operator SYMBOL(const Simd::Scalar<T> s) {               \
+      _Pragma("omp simd")                                 \
       for(std::size_t i=0; i<S; i++){                     \
         (*this)[i] SYMBOL s;                              \
       }                                                   \
@@ -121,6 +125,7 @@ namespace Dune {
     }                                                     \
                                                           \
     auto operator SYMBOL(const LoopSIMD<T,S,A> &v) {      \
+      _Pragma("omp simd")                                 \
       for(std::size_t i=0; i<S; i++){                     \
         (*this)[i] SYMBOL v[i];                           \
       }                                                   \
@@ -146,6 +151,7 @@ namespace Dune {
   template<class T, std::size_t S, std::size_t A>                                \
   auto operator SYMBOL(const LoopSIMD<T,S,A> &v, const Simd::Scalar<T> s) { \
     LoopSIMD<T,S,A> out;                                                 \
+    _Pragma("omp simd")                                         \
     for(std::size_t i=0; i<S; i++){                             \
       out[i] = v[i] SYMBOL s;                                   \
     }                                                           \
@@ -154,6 +160,7 @@ namespace Dune {
   template<class T, std::size_t S, std::size_t A>                              \
   auto operator SYMBOL(const Simd::Scalar<T> s, const LoopSIMD<T,S,A> &v) { \
     LoopSIMD<T,S,A> out;                                                 \
+    _Pragma("omp simd")                                         \
     for(std::size_t i=0; i<S; i++){                             \
       out[i] = s SYMBOL v[i];                                   \
     }                                                           \
@@ -163,6 +170,7 @@ namespace Dune {
   auto operator SYMBOL(const LoopSIMD<T,S,A> &v,                         \
                        const LoopSIMD<T,S,A> &w) {                       \
     LoopSIMD<T,S,A> out;                                                 \
+    _Pragma("omp simd")                                         \
     for(std::size_t i=0; i<S; i++){                             \
       out[i] = v[i] SYMBOL w[i];                                \
     }                                                           \
@@ -187,6 +195,7 @@ namespace Dune {
   template<class T, std::size_t S, std::size_t A, class U>                       \
   auto operator SYMBOL(const LoopSIMD<T,S,A> &v, const U s) {            \
     LoopSIMD<T,S,A> out;                                                 \
+    _Pragma("omp simd")                                           \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = v[i] SYMBOL s;                                     \
     }                                                             \
@@ -196,6 +205,7 @@ namespace Dune {
   auto operator SYMBOL(const LoopSIMD<T,S,A> &v,                         \
                        const LoopSIMD<U,S,AU> &w) {                       \
     LoopSIMD<T,S,A> out;                                                 \
+    _Pragma("omp simd")                                           \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = v[i] SYMBOL w[i];                                  \
     }                                                             \
@@ -213,6 +223,7 @@ namespace Dune {
   template<class T, std::size_t S, std::size_t A, class U>                       \
   auto operator SYMBOL(const LoopSIMD<T,S,A> &v, const U s) {            \
     Simd::Mask<LoopSIMD<T,S,A>> out;                                     \
+    _Pragma("omp simd")                                           \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = v[i] SYMBOL s;                                     \
     }                                                             \
@@ -221,6 +232,7 @@ namespace Dune {
   template<class T, std::size_t S, std::size_t A>                                \
   auto operator SYMBOL(const Simd::Scalar<T> s, const LoopSIMD<T,S,A> &v) { \
     Simd::Mask<LoopSIMD<T,S,A>> out;                                     \
+    _Pragma("omp simd")                                           \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = s SYMBOL v[i];                                     \
     }                                                             \
@@ -230,6 +242,7 @@ namespace Dune {
   auto operator SYMBOL(const LoopSIMD<T,S,A> &v,                         \
                        const LoopSIMD<T,S,A> &w) {                       \
     Simd::Mask<LoopSIMD<T,S,A>> out;                                     \
+    _Pragma("omp simd")                                           \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = v[i] SYMBOL w[i];                                  \
     }                                                             \
@@ -250,6 +263,7 @@ namespace Dune {
   template<class T, std::size_t S, std::size_t A>                                \
   auto operator SYMBOL(const LoopSIMD<T,S,A> &v, const Simd::Scalar<T> s) { \
     Simd::Mask<LoopSIMD<T,S,A>> out;                                     \
+    _Pragma("omp simd")                                           \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = v[i] SYMBOL s;                                     \
     }                                                             \
@@ -258,6 +272,7 @@ namespace Dune {
   template<class T, std::size_t S, std::size_t A>                                \
   auto operator SYMBOL(const Simd::Mask<T> s, const LoopSIMD<T,S,A> &v) { \
     Simd::Mask<LoopSIMD<T,S,A>> out;                                     \
+    _Pragma("omp simd")                                           \
     for(std::size_t i=0; i<S; i++){                               \
       out[i] = s SYMBOL v[i];                                     \
     }                                                             \
@@ -267,6 +282,7 @@ namespace Dune {
   auto operator SYMBOL(const LoopSIMD<T,S,A> &v,                         \
                        const LoopSIMD<T,S,A> &w) {                       \
     Simd::Mask<LoopSIMD<T,S,A>> out;                                     \
+    _Pragma("omp simd")                                           \
       for(std::size_t i=0; i<S; i++){                             \
         out[i] = v[i] SYMBOL w[i];                                \
       }                                                           \
