@@ -84,7 +84,7 @@ class SimpleGenerator(object):
                 baseHolder = "," + holder + "<" + bc + ">"
             else:
                 baseHolder = ''
-            source += 'Dune::Python::insertClass' +\
+            source += '    Dune::Python::insertClass' +\
                            '< ' + bc + baseHolder + '>' +\
                            '( module, "cls' + str(i) + '"' +\
                            ', Dune::Python::GenerateTypeName("' + bc + '")' +\
@@ -93,7 +93,7 @@ class SimpleGenerator(object):
             options.append(bc)
 
         if not holder == "default":
-            options += [holder + "<" + className + ">"]
+            options += [holder + "<DuneType>"]
 
         source += '    auto cls = Dune::Python::insertClass' +\
                        '< DuneType' +\
@@ -122,7 +122,7 @@ class SimpleGenerator(object):
     def load(self, includes, typeName, moduleName, *args,
             defines=None, preamble=None, postscript=None,
             options=None, bufferProtocol=False, dynamicAttr=False,
-            baseClasses=None ):
+            baseClasses=None, holder="default" ):
         if defines is None: defines = []
         if options is None: options = []
         if baseClasses is None: baseClasses = []
@@ -133,11 +133,14 @@ class SimpleGenerator(object):
             dynamicAttr = (dynamicAttr,)
             args = (args,)
             baseClasses = (baseClasses,)
+            holder = (holder,)
         else:
             if len(args) == 0:
                 args=((),)*2
             else:
                 args = args[0]
+            if holder == "default":
+                holder = ("default",)*len(typeName)
         if len(options) == 0:
             options = ((),)*len(typeName)
         if len(baseClasses) == 0:
@@ -154,10 +157,10 @@ class SimpleGenerator(object):
         allIncludes = sorted(set(allIncludes))
         includes = sorted(set(includes))
         source  = self.pre(allIncludes, typeName[0], moduleName, defines, preamble)
-        for nr, (tn, a, o, b, d, bc)  in enumerate( zip(typeName, args, options, bufferProtocol, dynamicAttr, baseClasses) ):
+        for nr, (tn, a, o, b, d, bc, h)  in enumerate( zip(typeName, args, options, bufferProtocol, dynamicAttr, baseClasses, holder) ):
             source += self.main(nr, includes, tn, *a, options=o,
                                 bufferProtocol=b, dynamicAttr=d,
-                                baseClasses=bc)
+                                baseClasses=bc, holder=h)
         return self.post(moduleName, source, postscript)
 
 def simpleGenerator(inc, baseType, namespace, pythonname=None, filename=None):
