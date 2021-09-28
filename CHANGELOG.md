@@ -1,5 +1,7 @@
 # Master (will become release 2.9)
 
+- Add `pragma omp simd` annotations in the LoopSIMD class to improve compiler optimizations
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
