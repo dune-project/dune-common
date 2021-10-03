@@ -13,15 +13,21 @@
 
 namespace Dune {
 
+#  pragma GCC diagnostic push
+
 /*
  * silence warnings from GCC about using integer operands on a bool
  * (when instantiated for T=bool)
  */
 #if __GNUC__ >= 7
-#  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wbool-operation"
 #  pragma GCC diagnostic ignored "-Wint-in-bool-context"
 #endif
+
+/*
+ * silence warnings about unknown pragmas (e.g. opm simd)
+ */
+#  pragma GCC diagnostic ignored "-Wunknown-pragmas"
 
   /**
     *  This class specifies a vector-like type deriving from std::array
@@ -585,9 +591,7 @@ namespace Dune {
           public std::integral_constant<bool, IsNumber<T>::value>{
   };
 
-#if __GNUC__ >= 7
 #  pragma GCC diagnostic pop
-#endif
 
 } //namespace Dune
 
