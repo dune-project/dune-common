@@ -45,6 +45,11 @@
 #
 #       If omitted the library is exported for usage in other modules.
 #
+#    .. cmake_param:: NO_MODULE_LIBRARY
+#       :option:
+#
+#       If omitted the library is added to the global property DUNE_MODULE_LIBRARIES
+#
 #    .. cmake_param:: ADD_LIBS
 #       :multi:
 #
@@ -982,7 +987,7 @@ endfunction(dune_expand_object_libraries)
 # Creates shared and static libraries with the same basename.
 # More docu can be found at the top of this file.
 macro(dune_add_library basename)
-  cmake_parse_arguments(DUNE_LIB "APPEND;NO_EXPORT;OBJECT" "COMPILE_FLAGS"
+  cmake_parse_arguments(DUNE_LIB "APPEND;NO_EXPORT;NO_MODULE_LIBRARY;OBJECT" "COMPILE_FLAGS"
     "ADD_LIBS;SOURCES" ${ARGN})
   list(APPEND DUNE_LIB_SOURCES ${DUNE_LIB_UNPARSED_ARGUMENTS})
   if(DUNE_LIB_OBJECT)
@@ -1014,8 +1019,11 @@ macro(dune_add_library basename)
     dune_expand_object_libraries(DUNE_LIB_SOURCES DUNE_LIB_ADD_LIBS DUNE_LIB_COMPILE_FLAGS)
     #create lib
     add_library(${basename} ${DUNE_LIB_SOURCES})
-    get_property(_prop GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
-    set_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES ${_prop} ${basename})
+    # add library to DUNE_MODULE_LIBRARIES
+    if(NOT DUNE_LIB_NO_MODULE_LIBRARY)
+      get_property(_prop GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
+      set_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES ${_prop} ${basename})
+    endif()
     # link with specified libraries.
     if(DUNE_LIB_ADD_LIBS)
       target_link_libraries(${basename} PUBLIC "${DUNE_LIB_ADD_LIBS}")
