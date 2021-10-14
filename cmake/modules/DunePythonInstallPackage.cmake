@@ -277,7 +277,8 @@ function(dune_python_install_package)
           DEPENDS ${PYINST_DEPENDS}
         )
         # don't need an 'install' target for the metadata since we can use the build version
-        # but we need to make sure that skbuild correctly installs the # existing metadata file inot the site-package
+        # but we need to make sure that skbuild correctly installs the
+        # existing metadata file into the site-package
         get_filename_component(PYINST_CMAKE_METADATA_PATH ${PYINST_CMAKE_METADATA_FILE} DIRECTORY)
         # todo: not use 'python' here but somehow use PATH parameter?
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_CMAKE_METADATA_FILE} DESTINATION python/${PYINST_CMAKE_METADATA_PATH})
