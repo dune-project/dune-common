@@ -210,7 +210,7 @@ setup_control_path() {
         fi
       done
       for i in `echo $PKG_CONFIG_PATH | tr ':' ' '`; do
-        if test -d "$i/../dunecontrol"; then 
+        if test -d "$i/../dunecontrol"; then
           DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:"$i/../dunecontrol"
         fi
       done
@@ -264,7 +264,7 @@ EOFM
         parse_control "$dir"
 	  fi
     done <<EOF
-    $(echo $DUNE_CONTROL_PATH | sed -e 's/:\+/:/g' | tr ':' '\n') 
+    $(echo $DUNE_CONTROL_PATH | sed -e 's/:\+/:/g' | tr ':' '\n')
 EOF
     export MODULES="$LOCALMODULES$INSTMODULES"
     export FOUND_MODULES="$MODULES"
@@ -438,7 +438,7 @@ _check_deps()
 # $2 parser mode:
 #    DEPS: search for dependencies
 #    SUSG: search for suggestions (DEPS of SUGS are handled as SUGS)
-#    MAIN: primary invocation of a DEPS search, 
+#    MAIN: primary invocation of a DEPS search,
 #          MAIN modules are not added to the list of DEPS/SUGS
 #
 _sort_module() {
@@ -527,7 +527,7 @@ fix_variable_name() {
 fix_and_assign() {
   local name="$1"
   if ! check_modname $name; then
-    echo "ERROR: error in assignment. $name is not a valid variabel name." >&2
+    echo "ERROR: error in assignment. $name is not a valid variable name." >&2
   fi
   shift 1
   export $name=$(fix_variable_name $@)
@@ -619,7 +619,7 @@ check_version() {
   local v2=`echo "$2" | sed -e "s/$PATTERN/\2/"`
   local rest=`echo "$2" | sed -e "s/$PATTERN/\3/" -e 's/ //g'`
   local result=1
-  
+
   local rel=`compare_versions $v $v2`
 
   case $rel$op in
