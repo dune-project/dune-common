@@ -140,7 +140,6 @@ function(dune_symlink_to_source_tree)
   endif()
 
   # parse arguments
-  include(CMakeParseArguments)
   cmake_parse_arguments(ARG "" "NAME" "" ${ARGN})
   if(NOT ARG_NAME)
     set(ARG_NAME "src_dir")
@@ -176,7 +175,6 @@ function(dune_symlink_to_source_files)
   endif()
 
   # parse arguments
-  include(CMakeParseArguments)
   cmake_parse_arguments(ARG "" "DESTINATION" "FILES" ${ARGN})
   if(ARG_UNPARSED_ARGUMENTS)
     message(WARNING "You are using dune_symlink_to_source_files without named arguments (or have typos in your named arguments)!")

@@ -24,8 +24,6 @@
 #
 include_guard(GLOBAL)
 
-include(CMakeParseArguments)
-
 function(inkscape_generate_png_from_svg)
   if(NOT INKSCAPE)
     return()

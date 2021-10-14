@@ -132,7 +132,6 @@ function(add_latex_document)
   set(OPTION REQUIRED EXCLUDE_FROM_ALL BUILD_ON_INSTALL)
   set(SINGLE SOURCE TARGET INSTALL)
   set(MULTI FATHER_TARGET RCFILE)
-  include(CMakeParseArguments)
   cmake_parse_arguments(LMK "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
 
   if(LMK_UNPARSED_ARGUMENTS)

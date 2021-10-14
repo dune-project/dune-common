@@ -86,8 +86,6 @@ set(CXX_MAX_STANDARD 17
 
 
 function(dune_require_cxx_standard)
-  include(CMakeParseArguments)
-
   cmake_parse_arguments("" "" "MODULE;VERSION" "" ${ARGN})
 
   if(_UNPARSED_ARGUMENTS)
