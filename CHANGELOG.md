@@ -9,6 +9,7 @@
 - Deprecate cmake file `DuneCMakeCompat.cmake` that just contained the removed function
   `dune_list_filter`
 
+- Remove deprecated cmake file `DuneMPI.cmake`
 
 # Release 2.8
 
