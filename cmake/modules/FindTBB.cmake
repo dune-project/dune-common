@@ -48,6 +48,7 @@ Two strategies are implemented for finding the TBB library:
 include(FeatureSummary)
 set_package_properties("TBB" PROPERTIES
   DESCRIPTION "Intel's Threading Building Blocks"
+  URL "https://github.com/oneapi-src/oneTBB"
 )
 
 # first, try to find TBBs cmake configuration

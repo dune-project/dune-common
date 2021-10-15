@@ -2,16 +2,18 @@
 FindMETIS
 ---------
 
-Find Serial Graph Partitioning library METIS
-(see http://glaros.dtc.umn.edu/gkhome/metis/metis/overview)
+Find Serial Graph Partitioning library
+`METIS <http://glaros.dtc.umn.edu/gkhome/metis/metis/overview>`_
 
 Imported targets
 ^^^^^^^^^^^^^^^^
 
-This module defines the following :prop_tgt:`IMPORTED` target:
+This module defines the following `IMPORTED`_ target:
 
 ``METIS::METIS``
   The libraries, flags, and includes to use for METIS, if found.
+
+.. _IMPORTED: https://cmake.org/cmake/help/latest/command/add_library.html#id5
 
 Result Variables
 ^^^^^^^^^^^^^^^^
@@ -39,12 +41,14 @@ The following variables may be set to influence this module's behavior:
   for older Scotch versions), or it can be set to 5 to indicate that v5 of the METIS API
   is provided. This variable corresponds to the preprocessor flag `SCOTCH_METIS_VERSION`
   that is used when compiling Scotch from source.
+
 #]=======================================================================]
 
 # Text for feature summary
 include(FeatureSummary)
 set_package_properties("METIS" PROPERTIES
   DESCRIPTION "Serial Graph Partitioning"
+  URL "http://glaros.dtc.umn.edu/gkhome/metis/metis/overview"
 )
 
 # The METIS API version provided by the METIS or scotch-metis library
