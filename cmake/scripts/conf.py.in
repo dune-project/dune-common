@@ -2,7 +2,7 @@ import sys
 
 sys.path.append('@DUNE_SPHINX_EXT_PATH@')
 
-extensions = ['sphinx_cmake_dune']
+extensions = ['sphinx_cmake_dune','sphinxcontrib.moderncmakedomain']
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
