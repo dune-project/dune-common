@@ -266,7 +266,13 @@ class Builder:
                                 # update build system
                                 logger.debug("Rebuilding module")
                                 try:
-                                    self.compile()
+                                    # self.compile()
+                                    cmake = subprocess.Popen( "cmake .".split(),
+                                                       cwd=self.dune_py_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                    stdout, stderr = cmake.communicate()
+                                    logger.debug("Build output: "+buffer_to_str(stdout))
+                                    if cmake.returncode > 0:
+                                        raise CompileError(buffer_to_str(stderr))
                                 except: # all exceptions will cause a problem here
                                     os.remove(os.path.join(sourceFileName))
                                     # remove line from CMakeLists to avoid problems
