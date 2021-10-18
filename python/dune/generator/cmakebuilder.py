@@ -39,12 +39,16 @@ class Builder:
 
         # todo: improve on this - just getting the idea how this could work
         cmakeflags = data.combine_across_modules("CMAKE_FLAGS")
+
+        duneOptsFile = None
+
         cmakeFlags = {}
         for x in cmakeflags:
             for y in x.split(";"):
                 try:
                     k,v = y.split(":=",1)
-                    cmakeFlags[k] = v.strip()
+                    if k=="DUNE_OPTS_FILE": duneOptsFile=v
+                    else: cmakeFlags[k] = v.strip()
                 except ValueError: # no '=' in line
                     pass
 
@@ -74,6 +78,30 @@ class Builder:
                 os.remove(os.path.join(dunepy_dir, 'CMakeCache.txt'))
             except FileNotFoundError:
                 pass
+
+            # add flags from some opts file
+            duneOptsFile = os.environ.get('DUNE_OPTS_FILE', duneOptsFile)
+            if duneOptsFile:
+                # TODO: check here if the duneOptsFile exists and warn if not
+                #       Should be possible by checking return code of the subprocess
+                #       so that other bash errors are also caught and warned about
+                command = ['bash', '-c', 'source ' + duneOptsFile + ' && echo "$CMAKE_FLAGS"']
+                proc = subprocess.Popen(command, stdout = subprocess.PIPE)
+                stdout, _ = proc.communicate()
+                cmake_args = shlex.split(buffer_to_str(stdout))
+            else:
+                cmake_args = []
+
+            # check environment variable
+            cmake_args += shlex.split( os.environ.get('CMAKE_FLAGS','') )
+
+            for y in cmake_args:
+                try:
+                    k,v = y.split("=",1)
+                    if k.startswith('-D'): k = k[2:]
+                    cmakeFlags[k] = v.strip()
+                except ValueError: # no '=' in line
+                    pass
 
             # Gather and reorganize meta data context that is used to write dune-py
             context = {}
@@ -108,8 +136,10 @@ class Builder:
                     with open(gen_file, "w") as outfile:
                         outfile.write(env.get_template(relative_template_file).render(**context))
 
+
             # configure dune-py
-            cmake = subprocess.Popen("cmake .".split(), cwd=dunepy_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            cmake = subprocess.Popen( "cmake .".split(),
+                                     cwd=dunepy_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = cmake.communicate()
             logger.debug("Build output: "+buffer_to_str(stdout))
             if cmake.returncode > 0:
@@ -150,6 +180,8 @@ class Builder:
                     open(tagfile, 'a').close()
                 else:
                     logger.debug('Using existing dune-py module in '+self.dune_py_dir)
+                    self.compile()
+
         comm.barrier()
         try:
             dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
@@ -159,7 +191,8 @@ class Builder:
 
     def compile(self, target='all'):
         cmake_command = dune.common.module.get_cmake_command()
-        cmake_args = [cmake_command, "--build", self.dune_py_dir, "--target", target]
+        cmake_args = [cmake_command, "--build", self.dune_py_dir,
+                      "--target", target, "--parallel"]
         make_args = []
         if self.build_args is not None:
             make_args += self.build_args
