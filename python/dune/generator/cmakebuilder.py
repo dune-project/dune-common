@@ -65,7 +65,10 @@ class Builder:
             deps = description.depends
             force = not modules == [d[0] for d in deps] # ignore version number in dependency for now
             # todo also check if location of modules have changed to find
-            # modules moved from build to install - or tag that some other way
+            # modules moved from build to install or vice versa - or tag that some other way
+            # For now we simply always force a rebuild of the dune-py
+            # module which might lead to more work than required
+            force = True
         else:
             force = True
 
@@ -141,9 +144,10 @@ class Builder:
             cmake = subprocess.Popen( "cmake .".split(),
                                      cwd=dunepy_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = cmake.communicate()
-            logger.debug("Build output: "+buffer_to_str(stdout))
             if cmake.returncode > 0:
                 raise CompileError(buffer_to_str(stderr))
+            else:
+                logger.debug("Build output: "+buffer_to_str(stdout))
 
     def __init__(self, force=False, saveOutput=False):
         self.force = force
@@ -180,7 +184,7 @@ class Builder:
                     open(tagfile, 'a').close()
                 else:
                     logger.debug('Using existing dune-py module in '+self.dune_py_dir)
-                    self.compile()
+                    self.compile(verbose=True)
 
         comm.barrier()
         try:
@@ -189,7 +193,7 @@ class Builder:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         self.initialized = True
 
-    def compile(self, target='all'):
+    def compile(self, target='all', verbose=False):
         cmake_command = dune.common.module.get_cmake_command()
         cmake_args = [cmake_command, "--build", self.dune_py_dir,
                       "--target", target, "--parallel"]
@@ -205,9 +209,10 @@ class Builder:
             cmake_args += ["--"] + make_args
         cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = cmake.communicate()
-        logger.debug("Compiler output: "+buffer_to_str(stdout))
         if cmake.returncode > 0:
             raise CompileError(buffer_to_str(stderr))
+        elif verbose:
+            logger.debug("Compiler output: "+buffer_to_str(stdout))
         writeOutput = self.savedOutput is not None and target != 'all' if self.skipTargetAll else self.savedOutput is not None
         if writeOutput:
             out = buffer_to_str(stdout)
@@ -270,7 +275,7 @@ class Builder:
                                     cmake = subprocess.Popen( "cmake .".split(),
                                                        cwd=self.dune_py_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                                     stdout, stderr = cmake.communicate()
-                                    logger.debug("Build output: "+buffer_to_str(stdout))
+                                    # logger.debug("Build output: "+buffer_to_str(stdout))
                                     if cmake.returncode > 0:
                                         raise CompileError(buffer_to_str(stderr))
                                 except: # all exceptions will cause a problem here

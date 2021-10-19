@@ -23,7 +23,12 @@ mods = os.path.join(here, "..", "python", "dune")
 sys.path.append(mods)
 pythonpath  = mods + ":" + os.environ.get('PYTHONPATH','.')
 os.environ['PYTHONPATH'] = pythonpath
-from packagemetadata import metaData
+try:
+    from packagemetadata import metaData
+except ImportError:
+    # not calling from within a dune-common source module so use installed
+    # version after all
+    from dune.packagemetadata import metaData
 
 def main(argv):
 
