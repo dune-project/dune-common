@@ -398,7 +398,7 @@ _check_deps()
       # perhaps this module is installed,
       # then it should be handled via pkg-config
       if ! pkg-config $name; then
-        if test "$requires" == "requires"; then
+        if test "$requires" == "requires" || test "$DUNE_CONTROL_VERBOSE" == "yes"; then
           echo $'\n'"$report could not find module '$name'," >&2
           echo "       module is also unknown to pkg-config." >&2
           echo "       Maybe you need to adjust PKG_CONFIG_PATH!" >&2
