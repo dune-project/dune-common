@@ -6,6 +6,10 @@
 
 - Remove the variable `DUNE_DEFAULT_LIBS`
 
+- Deprecate cmake file `DuneCMakeCompat.cmake` that just contained the removed function
+  `dune_list_filter`
+
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
