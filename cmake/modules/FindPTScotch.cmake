@@ -2,10 +2,10 @@
 FindPTScotch
 ------------
 
-Find library PTScotch, i.e. Software package and libraries for sequential
-and parallel graph partitioning, static mapping and clustering, sequential
-mesh and hypergraph partitioning, and sequential and parallel sparse matrix
-block ordering
+Find library `PTScotch <https://gitlab.inria.fr/scotch/scotch>`_, i.e. Software
+package and libraries for sequential and parallel graph partitioning, static
+mapping and clustering, sequential mesh and hypergraph partitioning, and
+sequential and parallel sparse matrix block ordering
 
 Components
 ^^^^^^^^^^
@@ -20,12 +20,14 @@ The PTScotch module allows to search for the following components
 Imported targets
 ^^^^^^^^^^^^^^^^
 
-This module defines the following :prop_tgt:`IMPORTED` target:
+This module defines the following `IMPORTED`_ target:
 
 ``PTScotch::Scotch``
   The sequential Scotch library to link against
 ``PTScotch::PTScotch``
   The parallel PTScotch library to link against
+
+.. _IMPORTED: https://cmake.org/cmake/help/latest/command/add_library.html#id5
 
 Result Variables
 ^^^^^^^^^^^^^^^^
@@ -70,6 +72,7 @@ The following variables may be set to influence this module's behavior:
 include(FeatureSummary)
 set_package_properties("PTScotch" PROPERTIES
   DESCRIPTION "Sequential and Parallel Graph Partitioning"
+  URL "https://gitlab.inria.fr/scotch/scotch"
 )
 
 # find dependency for PTScotch

@@ -2,16 +2,18 @@
 FindParMETIS
 ------------
 
-Find Parallel Graph Partitioning library ParMETIS
-(see http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview)
+Find Parallel Graph Partitioning library
+`ParMETIS <http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview>`_
 
 Imported targets
 ^^^^^^^^^^^^^^^^
 
-This module defines the following :prop_tgt:`IMPORTED` target:
+This module defines the following `IMPORTED`_ target:
 
 ``ParMETIS::ParMETIS``
   The libraries, flags, and includes to use for ParMETIS, if found.
+
+.. _IMPORTED: https://cmake.org/cmake/help/latest/command/add_library.html#id5
 
 Result Variables
 ^^^^^^^^^^^^^^^^
@@ -38,6 +40,7 @@ The following variables may be set to influence this module's behavior:
 include(FeatureSummary)
 set_package_properties("ParMETIS" PROPERTIES
   DESCRIPTION "Parallel Graph Partitioning"
+  URL "http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview"
 )
 
 find_path(PARMETIS_INCLUDE_DIR parmetis.h
