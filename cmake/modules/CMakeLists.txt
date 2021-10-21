@@ -25,7 +25,6 @@ install(FILES
   DuneExecuteProcess.cmake
   DuneInstance.cmake
   DuneMacros.cmake
-  DuneMPI.cmake
   DunePathHelper.cmake
   DunePkgConfig.cmake
   DunePythonCommonMacros.cmake
