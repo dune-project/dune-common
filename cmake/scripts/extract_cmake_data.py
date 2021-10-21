@@ -24,10 +24,7 @@ def get_args():
 
 def write_line(f, line):
     if len(line) > 2:
-        if line.startswith('#'):
-            f.write(line[2:])
-        else:
-            f.write(line)
+        f.write(line[2:])
     else:
         f.write('\n')
 
@@ -45,57 +42,45 @@ def read_module(args=get_args()):
     makedirs_if_not_exists(modpath)
     modfile = os.path.join(modpath, modname + '.rst')
     with open(args['module'], 'r') as i:
+#         mod = open(modfile, 'w')
+#         # Write the first block into the module rst file
+#         mod.write(".. _" + modname + ":\n\n")
+#         mod.write(modname + "\n")
+#         mod.write("="*len(modname) + "\n\n")
+
+#         listHeader = False
         o = None
-        ml_block = 0
 
         for l in i:
-            if ml_block > 0 and l.startswith('#]=='):
-                ml_end = re.match(r'^#](=+)]', l)
-                if len(ml_end.group(0)) == ml_block:
-                    # end of multiline comment
-                    return
-            elif ml_block == 0 and l.startswith('#[==') and l.strip().endswith('.rst:'):
-                # start of multiline comments
-                ml_begin = re.match(r'^#\[(=+)\[', l)
-                ml_block = len(ml_begin.group(0))
-
-                # multiline comments always start the documentation of a module
-                if o:
-                    o.close()
-                modpath = os.path.join(args['builddir'], 'modules')
-                makedirs_if_not_exists(modpath)
-                modfile = os.path.join(modpath, modname + ".rst")
-                o = open(modfile, 'w')
-                continue
-            elif ml_block == 0 and not l.startswith('#'):
-                # a line after a contiguous sequence of comments
+            if not l.startswith('#'):
                 return
-
-            comment = re.sub(r'^#?[ \t]*', '', l) # strip comment sign an spaces
-
-            if comment.startswith('.. cmake_function'):
+            if l.startswith('# .. cmake_function'):
                 if o:
                     o.close()
                 cmdpath = os.path.join(args['builddir'], 'commands')
                 makedirs_if_not_exists(cmdpath)
                 try:
-                    cmd = re.findall(r'\.\. cmake_function:: (.*)', l)[0]
+                    cmd = re.findall(r'# .. cmake_function:: (.*)', l)[0]
                 except IndexError as e:
                     print("CMake doc syntax error in {}: cannot parse function on line {}".format(args['module'], l))
                     raise e
                 cmdfile = os.path.join(cmdpath, cmd + ".rst")
+#                 if not listHeader:
+#                     mod.write("\nThis module defines the following functions or macros:\n\n")
+#                     listHeader = True
+#                 mod.write("* :ref:`{}`\n".format(cmd))
                 o = open(cmdfile, 'w')
                 o.write(".. _" + cmd + ":\n\n")
                 o.write(cmd + "\n")
                 o.write("="*len(cmd) + "\n\n")
                 write_line(o, l)
-            elif comment.startswith('.. cmake_variable'):
+            elif l.startswith('# .. cmake_variable'):
                 if o:
                     o.close()
                 varpath = os.path.join(args['builddir'], 'variables')
                 makedirs_if_not_exists(varpath)
                 try:
-                    var = re.findall(r'\.\. cmake_variable:: (.*)', l)[0]
+                    var = re.findall(r'# .. cmake_variable:: (.*)', l)[0]
                 except IndexError as e:
                     print("CMake doc syntax error in {}: cannot parse variable on line".format(args['module'], l))
                     raise e
@@ -105,7 +90,7 @@ def read_module(args=get_args()):
                 o.write(var + "\n")
                 o.write("="*len(var) + "\n\n")
                 write_line(o, l)
-            elif comment.startswith('.. cmake_module'):
+            elif l.startswith('# .. cmake_module'):
                 if o:
                     o.close()
                 modpath = os.path.join(args['builddir'], 'modules')
