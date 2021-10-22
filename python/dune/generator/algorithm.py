@@ -6,7 +6,7 @@ from dune.common.utility import isString
 
 def cppType(arg):
     try:
-        t, i = arg._typeName + " &", arg._includes
+        t, i = arg.cppTypeName + " &", arg.cppIncludes
     except AttributeError:
         if isinstance(arg, bool):
             t, i = "bool", []

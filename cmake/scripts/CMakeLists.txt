@@ -2,7 +2,8 @@
 install(FILES
   conf.py.in
   CreateDoxyFile.cmake
-  envdetect.py
+  venvpath.py
+  checkvenvconf.py
   FinalizeHeadercheck.cmake
   index.rst.in
   InstallFile.cmake
@@ -10,7 +11,9 @@ install(FILES
   module_library.cc.in
   pyversion.py
   RunDoxygen.cmake
+  setup.py.in
   sphinx_cmake_dune.py
+  WritePythonCMakeMetadata.cmake
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
 
 # Install executable programs

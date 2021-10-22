@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 import sys, os, io, getopt, re, ast
 import shlex
+import pkgutil
 import importlib, subprocess
 import email.utils
 import pkg_resources
@@ -19,11 +20,11 @@ class Version:
             self.minor = s.minor
             self.revision = s.revision
         else:
-            match = re.match('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)([.](?P<revision>[0-9]+))?', s)
+            match = re.match('(?P<major>[0-9]+)([.](?P<minor>[0-9]+))?([.](?P<revision>[0-9]+))?', s)
             if not match:
                 raise ValueError('Invalid version: \'' + s + '\'.')
             self.major = int(match.group('major'))
-            self.minor = int(match.group('minor'))
+            self.minor = int(match.group('minor')) if match.group( 'minor' ) else 0
             self.revision = int(match.group('revision')) if match.group( 'revision' ) else 0
 
     def __str__(self):
@@ -253,16 +254,18 @@ def cmakeArguments(cmakeArgs):
 
 def cmakeFlags():
     # defaults
-    flags = cmakeArguments(dict([
+    flags = dict([
         ('CMAKE_BUILD_TYPE','Release'),
         ('CMAKE_INSTALL_RPATH_USE_LINK_PATH','TRUE'),
         ('DUNE_ENABLE_PYTHONBINDINGS','TRUE'),
-        ('DUNE_PYTHON_INSTALL_LOCATION','none'),
         ('ALLOW_CXXFLAGS_OVERWRITE','ON'),
         ('CMAKE_DISABLE_FIND_PACKAGE_LATEX','TRUE'),
         ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen','TRUE'),
-        ('INKSCAPE','FALSE')
-    ]))
+        ('INKSCAPE','FALSE'),
+    ])
+    # if inVEnv():
+    #     flags['DUNE_PYTHON_VIRTUALENV_PATH'] = sys.prefix
+    flags = cmakeArguments(flags) # make cmake command line out of dict
     # test environment for additional flags
     cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
     # split cmakeFlags and add them to flags
@@ -368,7 +371,7 @@ def metaData(version=None, dependencyCheck=True):
       }
     if os.path.isdir('python'):
       setupParams.update({
-            "packages":find_packages(where="python"),
+            "packages":find_namespace_packages(where="python"),
             "package_dir":{"": "python"},
             "install_requires":install_requires,
             "python_requires":'>=3.4',
@@ -385,3 +388,90 @@ def metaData(version=None, dependencyCheck=True):
     }
 
     return data, setupParams
+
+
+class MetaDataDict(dict):
+    # Define some data processing patterns
+    def combine_across_modules(self,key):
+        return list(m[key] for m in self.values())
+    def zip_across_modules(self,key, value):
+        result = {}
+        for moddata in self.values():
+            # todo: space is bad separator for list of paths - needs
+            # fixing in cmake module generating the metadata file
+            for k, v in zip(moddata[key].split(" "), moddata[value].split(";")):
+                # we don't store paths for module that have not been found (suggested)
+                # and we also skip the path if it is empty (packaged module)
+                if v.endswith("NOTFOUND") or v == "": continue
+                # make sure build directory (if found) is unique across modules
+                if k in result and not result[k] == v:
+                    raise ValueError(f"build dir {v} for module {k} is expected to be unique across the given metadata - found {result[k]}")
+                result[k] = v
+        return result
+    def unique_value_across_modules(self,key, default=""):
+        values = set(m[key] for m in self.values() if not m[key] == "")
+        if len(values) > 1:
+            raise ValueError(f"Key {key} is expected to be unique across the given metadata. Got {values}")
+        if len(values) == 0:
+            return default
+        value, = values
+        return value
+
+
+def extract_metadata(ignoreImportError=False):
+    """ Extract meta data that was exported by CMake.
+
+    This returns a dictionary that maps package names to the data associated
+    with the given metadata key. Currently the following metadata keys are
+    exported by Python packages created with the Dune CMake build system:
+    * MODULENAME: The name of the Dune module
+    * BUILDDIR: The build directory of the Dune module
+    * DEPS: The name of all the dependencies of the module
+    * DEPBUILDDIRS: The build directories of the dependencies
+    """
+    import dune
+    result = MetaDataDict()
+
+    for package in pkgutil.iter_modules(dune.__path__, dune.__name__ + "."):
+        # Avoid the dune.create module - it cannot be imported unconditionally!
+        if package.name == "dune.create":
+            continue
+
+        # Avoid the dune.utility module - it import dune.create
+        if package.name == "dune.utility":
+            continue
+
+        # Avoid the link created by setting -DDUNE_SYMLINK_TO_SOURCE_TREE=TRUE
+        if package.name == "dune.src_dir":
+            continue
+
+        # Check for the existence of the metadata.cmake file in the package
+        try:
+            mod = importlib.import_module(package.name)
+        except ImportError:
+            if ignoreImportError: continue
+            raise
+        path, filename = os.path.split(mod.__file__)
+
+        # Only consider sub-packages, not modules
+        if filename != "__init__.py":
+            continue
+
+        metadata_file = os.path.join(path, "metadata.cmake")
+        if os.path.exists(metadata_file):
+            # If it exists parse the line that defines the key that we are looking for
+            for line in open(metadata_file, "r"):
+                ## todo: issue is that it will split at final '=' which
+                ## is a problem with CXXFLAGS
+                # match = re.match(f"(.*)=(.*)", line)
+                # if match:
+                #     result.setdefault(package.name, {})
+                #     key, value = match.groups()
+                #     result[package.name][key] = value
+                try:
+                    key, value = line.split("=",1)
+                    result.setdefault(package.name, {})
+                    result[package.name][key] = value.strip()
+                except ValueError: # no '=' in line
+                    pass
+    return result

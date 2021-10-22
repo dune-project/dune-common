@@ -1,0 +1,6 @@
+Module: dune-py
+Version: 2.8-git
+Author: The Dune Core developers
+Maintainer: dune-devel@lists.dune-project.org
+Description: JIT Workspace for Python bindings
+Depends: {{ modules|join(" ") }}

@@ -1,9 +1,10 @@
-import os, logging
+import os
+import logging
 
 from dune.common.module import getCXXFlags
 from .exceptions import CompileError, ConfigurationError
-from .builder import Builder
-from . import builder as builderModule
+from . import cmakebuilder as builderModule
+from .cmakebuilder import Builder
 
 logger = logging.getLogger(__name__)
 

@@ -3,18 +3,22 @@
 # .. cmake_module::
 #
 #    This module manages the creation of virtual python environment during
-#    configuration. Execution of this module must be explicitly enabled by
-#    setting the variable :ref:`DUNE_PYTHON_VIRTUALENV_SETUP`. Note that some
-#    downstream modules will require you to set this variable. The purpose
-#    of this virtual environment is to be able to run python code from cmake
-#    in situations such as python-based code generation, running postprocessing
-#    in python during testing etc.
+#    configuration. The purpose of this virtual environment is to be able to run
+#    python code from cmake in situations such as python-based code generation,
+#    running postprocessing in python during testing etc.
+#    If enabled the Python bindings are also installed (editable) into the
+#    internal virtual environment.
 #
-#    Although designed for internal use, this virtualenv can also be manually
-#    inspected. A symlink to the activation script is placed in the top level
-#    build directory of all Dune modules in the stack. To directly execute a
-#    command in the virtualenv, you can use the script :code:`run-in-dune-env <command>`,
-#    which is also placed into every build directory.
+#    The internal virtual environment is only generated if the
+#    configuration is not run with an active virtual environment. If an
+#    external environment is detected this will be used instead of the
+#    internal environment.
+#
+#    Although designed for internal use, the internal (or detected external)
+#    virtualenv can also be manually inspected. A symlink to the activation script is
+#    placed in the top level build directory of all Dune modules in the stack.
+#    To directly execute a command in the virtualenv, you can use the script
+#    :code:`run-in-dune-env <command>`, which is also placed into every build directory.
 #
 #    All packages installed with :ref:`dune_python_install_package` are automatically
 #    installed into the virtualenv.
@@ -57,7 +61,7 @@
 #
 #    The Dune build system will try to build a virtualenv with pip installed into it,
 #    but this can fail in some situations, in particular on Debian and Ubuntu distributions.
-#    In this case, you will se a warning message in the CMake output. If you are on Debian
+#    In this case, you will see a warning message in the CMake output. If you are on Debian
 #    or Ubuntu, try installing the :code:`python3-venv` (for Python 3) and / or
 #    :code:`python-virtualenv` packages, delete your build directory and try configuring
 #    again.
@@ -70,18 +74,28 @@
 #
 include_guard(GLOBAL)
 
-# If the user has not specified an absolute, we look through the dependency tree of this module
-# for a build directory that already contains a virtual environment.
-
+# pre-populate DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
+set(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV "" CACHE PATH
+  "Running in an external activated virtual environment"
+  )
+# pre-populate DUNE_PYTHON_VIRTUALENV_PATH
 set(DUNE_PYTHON_VIRTUALENV_PATH "" CACHE PATH
   "Location of Python virtualenv created by the Dune build system"
   )
-
 # pre-populate DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR
 set(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR ON CACHE BOOL
   "Place Python virtualenv in top-level directory \"dune-python-env\" when using an absolute build directory"
   )
 
+# Determine whether the given interpreter is running inside a virtualenv
+dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/venvpath.py"
+                     RESULT_VARIABLE DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
+                     OUTPUT_VARIABLE DUNE_PYTHON_VIRTUALENV_PATH
+                     OUTPUT_STRIP_TRAILING_WHITESPACE
+                     )
+
+# If the user has not specified an absolute, we look through the dependency tree of this module
+# for a build directory that already contains a virtual environment.
 if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
   foreach(mod ${ALL_DEPENDENCIES})
     if(IS_DIRECTORY ${${mod}_DIR}/dune-env)
@@ -101,7 +115,6 @@ endif()
 
 if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
   # We didn't find anything, so figure out the correct location for building the virtualenv
-
   if(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR AND DUNE_BUILD_DIRECTORY_ROOT_PATH)
     # Use a dedicated directory not associated with any module
     set(DUNE_PYTHON_VIRTUALENV_PATH "${DUNE_BUILD_DIRECTORY_ROOT_PATH}/dune-python-env")
@@ -231,4 +244,7 @@ if(NOT pippresent)
                          the CMake variable DUNE_PYTHON_ALLOW_GET_PIP to allow Dune to use get-pip.py
                          from https://bootstrap.pypa.io/get-pip.py")
   endif()
+elseif(NOT DUNE_PYTHON_pip_FOUND)
+  # if pip was not found before then we can set it here since it was now found
+  set(DUNE_PYTHON_pip_FOUND pippresent)
 endif()

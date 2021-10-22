@@ -7,7 +7,16 @@
 #
 #       Error message to show if command exited with non-zero exit code.
 #       This also implies abortion of the current cmake run with a fatal error.
-#       Note, that if this is omitted, no return code checking is done.
+#
+#    .. cmake_param:: WARNING_MESSAGE
+#       :single:
+#
+#       A warning message to show if command exited with non-zero exit code.
+#       This will not abort the current cmake run.
+#
+#    Note, that if neither warning or error message is provided, no return
+#    code checking is done. If both are given the error message will be
+#    used and the cmake run aborted.
 #
 #    A thin wrapper around the cmake command :code:`execute_process`, that
 #    exits on non-zero exit codes. All arguments are forwarded to the actual
@@ -16,7 +25,7 @@
 include_guard(GLOBAL)
 
 function(dune_execute_process)
-  set(SINGLEARGS ERROR_MESSAGE RESULT_VARIABLE OUTPUT_VARIABLE ERROR_VARIABLE)
+  set(SINGLEARGS ERROR_MESSAGE WARNING_MESSAGE RESULT_VARIABLE OUTPUT_VARIABLE ERROR_VARIABLE)
   cmake_parse_arguments(EXECUTE "" "${SINGLEARGS}" "" ${ARGN})
 
   # Decide whether stdout and stderr have to be split
@@ -43,6 +52,14 @@ function(dune_execute_process)
         set(log "stdout:\n${log}\n\nstderr:\b${errlog}")
       endif()
       message(FATAL_ERROR "${EXECUTE_ERROR_MESSAGE}\nRun command:${ERR_COMMAND}\nReturn code: ${retcode}\nDetailed log:\n${log}")
+    endif()
+  elseif(EXECUTE_WARNING_MESSAGE)
+    if(NOT "${retcode}" STREQUAL "0")
+      cmake_parse_arguments(ERR "" "" "COMMAND" ${EXECUTE_UNPARSED_ARGUMENTS})
+      if(SPLIT_ERROR)
+        set(log "stdout:\n${log}")
+      endif()
+      message(WARNING "${EXECUTE_WARNING_MESSAGE}\nRun command:${ERR_COMMAND}\nReturn code: ${retcode}\nOutput:\n${log}")
     endif()
   endif()
 

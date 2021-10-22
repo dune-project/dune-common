@@ -16,12 +16,41 @@ def assertHave(identifier):
        provided the config file by calling
        assertHave("HAVE_DUNE_COMMON")
     '''
+    # the following simply will not work anymore - the issue is that the
+    # approach used here requires dune-py to have already been setup before
+    # calling 'assertHave' that is not guaranteed to be the case.
+    # Possibly we can use the 'metadata' file instead.
+    # We simply return for now
+    raise RuntimeError("DEPRECATED USE OF assertHave")
+    return
     config = os.path.join(dune.common.module.get_dune_py_dir(), "config.h")
+    if not os.path.isfile(config):
+        raise ConfigurationError("dune-py not configured yet")
 
     matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
     if not matches:
         matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+ENABLE', line) for line in open(config)] if match is not None]
+    if not matches:
+        raise ConfigurationError(identifier + " is not set in dune-py's config.h")
+    elif matches.__len__() > 1:
+        raise ConfigurationError(identifier + " found multiple times in dune-py's config.h")
+def assertCMakeHave(identifier):
+    '''check if an identifier is defined equal to 1 in the dune-py config.h file.
+       use this to check if for example #define HAVE_DUNE_COMMON 1 is
+       provided the config file by calling
+       assertHave("HAVE_DUNE_COMMON")
 
+       Note: note that this depends on a dune-py having been completely
+       configured so should be used with caution, e.g., avoid usage in any
+       code executed during import of a dune module
+    '''
+    config = os.path.join(dune.common.module.get_dune_py_dir(), "config.h")
+    if not os.path.isfile(config):
+        raise ConfigurationError("dune-py not configured yet")
+
+    matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
+    if not matches:
+        matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+ENABLE', line) for line in open(config)] if match is not None]
     if not matches:
         raise ConfigurationError(identifier + " is not set in dune-py's config.h")
     elif matches.__len__() > 1:

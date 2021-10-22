@@ -7,6 +7,8 @@
 #    rules for python packages in Dune modules and provides virtual environments to
 #    run python code from cmake.
 #
+#    To disable any python releated features use -DCMAKE_DISABLE_FIND_PACKAGE_Python3=TRUE
+#
 #    If you want to use Dune modules that provide Python functionality, you should be aware
 #    of some facts:
 #
@@ -47,21 +49,6 @@
 #    This rather unintuitive default originates from the strong belief, that installing
 #    python packages into the system locations at :code:`/usr/...` should be discouraged.
 #
-# .. cmake_variable:: DUNE_PYTHON_VIRTUALENV_SETUP
-#
-#    Set this variable to allow the Dune build system to set up a virtualenv at
-#    configure time. Such virtual environment is very useful, whenever python code
-#    is to be run at configure time, i.e. to implement code generation in Python or
-#    to use Python wrappers in testing. Some downstream modules will *require* you
-#    to set this variable. When setting this variable, you allow the Dune buildsystem
-#    to install packages through :code:`pip` into a virtualenv, that resides in a cmake
-#    build directory. For all the information on this virtualenv, see :ref:`DunePythonVirtualenv`.
-#
-# .. cmake_function:: dune_python_require_virtualenv_setup
-#
-#    Call this function from a downstream module, if that module relies on the
-#    the presence of the configure time virtualenv described in :ref:`DunePythonVirtualenv`.
-#
 include_guard(GLOBAL)
 
 # unless the user has defined the variable, unversioned names (like python3) are found
@@ -77,6 +64,7 @@ endif()
 
 # Include all the other parts of the python extension to avoid that users need
 # to explicitly include parts of our build system.
+include(DunePythonDeprecations)
 include(DunePythonFindPackage)
 include(DunePythonInstallPackage)
 include(DunePythonTestCommand)
@@ -84,8 +72,6 @@ include(DunePythonTestCommand)
 # Find the Python Interpreter and libraries
 find_package(Python3 COMPONENTS Interpreter Development)
 
-
-# Determine whether the given interpreter is running inside a virtualenv
 if(Python3_Interpreter_FOUND)
   include(DuneExecuteProcess)
   include(DunePathHelper)
@@ -93,66 +79,41 @@ if(Python3_Interpreter_FOUND)
                    RESULT scriptdir
                    SCRIPT_DIR)
 
-  dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/envdetect.py"
-                       RESULT_VARIABLE DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
-                       )
-endif()
+  # Check presence of python packages required by the buildsystem
+  dune_python_find_package(PACKAGE pip)
 
-# Determine where to install python packages
-if(NOT DUNE_PYTHON_INSTALL_LOCATION)
-  if(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
-    set(DUNE_PYTHON_INSTALL_LOCATION "system")
-  else()
-    set(DUNE_PYTHON_INSTALL_LOCATION "none")
+  # Add python related meta targets
+  add_custom_target(test_python)
+  add_custom_target(install_python)
+
+  # this option enables the build of Python bindings for DUNE modules
+  option(DUNE_ENABLE_PYTHONBINDINGS "Enable Python bindings for DUNE" ON)
+
+  if( DUNE_ENABLE_PYTHONBINDINGS )
+    if(NOT Python3_Interpreter_FOUND)
+      message(FATAL_ERROR "Python bindings require a Python 3 interpreter")
+    endif()
+    if(NOT Python3_INCLUDE_DIRS)
+      message(FATAL_ERROR "Found a Python interpreter but the Python bindings also requires the Python libraries (a package named like python-dev package or python3-devel)")
+    endif()
+
+    include_directories("${Python3_INCLUDE_DIRS}")
+
+    function(add_python_targets base)
+      include(DuneSymlinkOrCopy)
+      if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+        message(WARNING "Source and binary dir are the same, skipping symlink!")
+      else()
+        foreach(file ${ARGN})
+          dune_symlink_to_source_files(FILES ${file}.py)
+        endforeach()
+      endif()
+    endfunction()
+
+    include(DuneAddPybind11Module)
   endif()
-endif()
-if(NOT(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") OR
-       ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "system") OR
-       ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")))
-  message(FATAL_ERROR "DUNE_PYTHON_INSTALL_LOCATION must be user|system|none.")
-endif()
-if(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") AND
-   DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
-  message(FATAL_ERROR "Specifying 'user' as install location is incomaptible with using virtual environments (as per pip docs)")
-endif()
 
-# Check presence of python packages required by the buildsystem
-dune_python_find_package(PACKAGE pip)
 
-# Add python related meta targets
-add_custom_target(test_python)
-add_custom_target(install_python)
-
-# Set the path to a Dune wheelhouse that is to be used during installation
-# NB: Right now, the same logic is used to retrieve the location of the
-#     wheelhouse (which means that you have to use the same CMAKE_INSTALL_PREFIX
-#     when *using* installed modules, you used when *installing* them.
-#     TODO: Replace this with a better mechanism (like writing the location into
-#           dune-commons package config file)
-set(DUNE_PYTHON_WHEELHOUSE ${CMAKE_INSTALL_PREFIX}/share/dune/wheelhouse)
-
-# Have make install do the same as make install_python
-install(CODE "set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
-              set(DUNE_PYTHON_WHEELHOUSE ${DUNE_PYTHON_WHEELHOUSE})
-              include(DuneExecuteProcess)
-              dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build . --target install_python --config $<CONFIG>)
-              ")
-
-# Implement a check for the presence of the virtualenv
-function(dune_python_require_virtualenv_setup)
-  if(NOT DUNE_PYTHON_VIRTUALENV_SETUP)
-    message(FATAL_ERROR "\n
-    ${PROJECT_NAME} relies on a configure-time virtual environment being
-    set up by the Dune python build system. You have to set the CMake variable
-    DUNE_PYTHON_VIRTUALENV_SETUP to allow that.\n
-    ")
-  endif()
-endfunction()
-
-# If requested, switch into DunePythonVirtualenv.cmake and setup the virtualenv.
-if(DUNE_PYTHON_VIRTUALENV_SETUP)
+  # Set up the Dune-internal virtualenv
   include(DunePythonVirtualenv)
 endif()
-
-# marcos used for the Python bindings
-include(DunePythonMacros)

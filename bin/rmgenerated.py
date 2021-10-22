@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import glob, os, sys, re, fileinput
+import glob, os, sys, re, fileinput, shutil
 
 import dune.common.module
 dune_py_dir = dune.common.module.get_dune_py_dir()
@@ -19,18 +19,26 @@ except:
 
 moduleFiles = set()
 
+def rmJit(filename):
+    fileBase = os.path.splitext(os.path.basename(filename))[0]
+    filePath, fileName = os.path.split(filename)
+    os.remove( os.path.join(filePath,filename) )
+    os.remove( os.path.join(filePath,fileBase+'.cc') )
+    try:
+        shutil.rmtree( os.path.join(filePath,"CMakeFiles",fileBase+".dir") )
+    except:
+        pass
+    moduleFiles.update( [fileBase] )
+
 if args.all:
     base = os.path.join(generated_dir, '*.so')
     for filename in glob.iglob( base ):
-        os.remove( filename )
-        os.remove( os.path.splitext(filename)[0]+'.cc' )
-        moduleFiles.update( [os.path.splitext(os.path.basename(filename))[0]] )
+        rmJit(filename)
 elif len(args.modules)>0:
     for m in args.modules:
-        base = os.path.join(generated_dir, m+'*')
+        base = os.path.join(generated_dir, m+'*.so')
         for filename in glob.iglob( base ):
-            os.remove( filename )
-            moduleFiles.update( [os.path.splitext(os.path.basename(filename))[0]] )
+            rmJit(filename)
 else:
     parser.print_help()
     sys.exit(0)

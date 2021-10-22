@@ -3,8 +3,7 @@ from setuptools import setup, find_namespace_packages
 pkg = '${RequiredPythonModules}'.replace(';',' ').split(' ')
 
 setup(name="${ProjectName}",
-    # only add 'dune' here in dune-common other packages shouldn't add file # directly to 'dune'
-    packages=find_namespace_packages(include=['dune','dune.*']),
+    packages=find_namespace_packages(include=['dune.*']),
     description="${ProjectDescription}",
     version="${ProjectVersionString}",
     author="${ProjectAuthor}",

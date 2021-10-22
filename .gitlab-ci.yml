@@ -13,6 +13,10 @@ before_script:
 variables:
   DUNECI_TEST_LABELS: quick
   DUNE_TEST_EXPECTED_VC_IMPLEMENTATION: SSE2
+  PIP_DEFAULT_TIMEOUT: 0
+  # Note: DUNE_RUNNING_IN_CI only needed unti ci image updating fixed on gitlab
+  DUNECI_CMAKE_FLAGS: '-DDUNE_RUNNING_IN_CI=TRUE'
+  DUNE_LOG_LEVEL:     DEBUG
 
 debian:10 gcc-7-17--expensive:
   # This image has Vc
@@ -32,24 +36,21 @@ debian:10 gcc-7-17--expensive:
   allow_failure: true
 
 
-debian-11-gcc-9-17-python:
+debian-11-gcc-9-17-nopython:
   image: registry.dune-project.org/docker/ci/debian:11
   script: duneci-standard-test
   stage: test
   variables:
     DUNECI_TOOLCHAIN:  gcc-9-17
-    # so we need some variables to build the dune-py module during execution of the first python test:
-    # we need to find the dune mdoule
-    DUNE_CONTROL_PATH:  /duneci/modules:$CI_PROJECT_DIR
-    # the position for the dune-py module
-    DUNE_PY_DIR:       /duneci/modules/dune-py
-    # during dune-py build this variable is used - do know a way to access
-    # the CMAKE_FLAGS used to build the modules...
-    DUNE_CMAKE_FLAGS:   "CC=gcc-9 CXX=g++-9 -DCMAKE_CXX_FLAGS='-std=c++17 -O2 -g -Wall -fdiagnostics-color=always' -DDUNE_ENABLE_PYTHONBINDINGS=ON -DDUNE_MAX_TEST_CORES=4 -DBUILD_SHARED_LIBS=TRUE -DDUNE_PYTHON_INSTALL_LOCATION=none -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_LATEX=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Alberta=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Vc=TRUE -DCMAKE_DISABLE_DOCUMENTATION=TRUE"
-    # cmake flags we use for all dune moudle - important is that build shared libs is set (need some better way of doing this)
-    DUNECI_CMAKE_FLAGS: $DUNE_CMAKE_FLAGS
-    # finally set the python path to all modules
-    PYTHONPATH:        $CI_PROJECT_DIR/build-cmake/python
+    DUNECI_CMAKE_FLAGS: '-DCMAKE_DISABLE_FIND_PACKAGE_Python3=TRUE'
+  tags: [duneci]
+ubuntu-20.04-clang-10-20-nobindings:
+  image: registry.dune-project.org/docker/ci/ubuntu:20.04
+  script: duneci-standard-test
+  stage: test
+  variables:
+    DUNECI_TOOLCHAIN: clang-10-20
+    DUNECI_CMAKE_FLAGS: '-DDUNE_ENABLE_PYTHONBINDINGS=OFF'
   tags: [duneci]
 
 system-test:

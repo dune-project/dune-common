@@ -1,4 +1,8 @@
 #!@BASH@
 
 source @DUNE_PYTHON_VIRTUALENV_PATH@/bin/activate
+
+# test if build directory matches installed dune python packages
+python -m dune checkbuilddirs --args @PROJECT_NAME@ @CMAKE_BINARY_DIR@
+
 "$@"
