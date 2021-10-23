@@ -33,6 +33,7 @@ install(FILES
   DunePythonInstallPackage.cmake
   DunePythonTestCommand.cmake
   DunePythonVirtualenv.cmake
+  DuneReplaceProperties.cmake
   DuneSphinxDoc.cmake
   DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake
