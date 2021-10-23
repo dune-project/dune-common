@@ -49,12 +49,6 @@
 #
 # Documentation of internal macros in this module:
 #
-# dune_module_to_uppercase(upper_name module_name)
-#
-# Converts a module name given by module_name into an uppercase string
-# upper_name where all dashes (-) are replaced by underscores (_)
-# Example: dune-common -> DUNE_COMMON
-#
 # dune_module_information(MODULE_DIR [QUIET])
 #
 # Parse ${MODULE_DIR}/dune.module and provide that information.
@@ -63,12 +57,6 @@
 # dune_create_dependency_tree()
 #
 # Creates the dependency tree of the module.
-#
-# dune_module_to_macro(_macro_name, _dune_module)
-#
-# Converts a module name given by _dune_module into a string _macro_name
-# where all dashes (-) are removed and letters after a dash are capitalized
-# Example: dune-grid-howto -> DuneGridHowto
 #
 # _macro_name: variable where the name will be stored.
 # _dune_module: the name of the dune module.
