@@ -1,4 +1,3 @@
-include(DuneCMakeCompat)
 include(DuneInstance)
 
 dune_add_test(SOURCES arithmetictestsuitetest.cc
