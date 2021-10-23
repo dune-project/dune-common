@@ -32,7 +32,6 @@
 #
 #    .. cmake_param:: CMAKE_METADATA_FLAGS
 #       :multi:
-#       :argname:
 #
 #       A list of cmake flags to add to meta data file. For each flag given
 #       an entry of the form "flagname:=value" is added. These flags are
