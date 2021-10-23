@@ -65,6 +65,7 @@ class CMakeFunction(Directive):
                 sl.append(" "*5 + paramnode['argname'] + '\n')
 
         def render_optional(paramnode):
+            print(paramnode['name'],paramnode['argname'])
             if paramnode["multi"]:
                 sl.append(' '*4 + '[' + paramnode['name'] + ' ' + paramnode['argname'] + '1 [' + paramnode['argname'] + '2 ...]' + ']\n')
             if paramnode["single"]:
