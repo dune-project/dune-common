@@ -38,6 +38,7 @@ install(FILES
   DuneStreams.cmake
   DuneSymlinkOrCopy.cmake
   DuneTestMacros.cmake
+  DuneUtilities.cmake
   FindGMP.cmake
   FindInkscape.cmake
   FindLatexMk.cmake
