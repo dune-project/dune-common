@@ -325,7 +325,7 @@ def metaData(version=None, dependencyCheck=True):
         try:
             with io.open('pyproject.toml', 'r', encoding='utf-8') as f:
                 for line in f:
-                    if 'requires' in line:
+                    if not line.startswith("#") and 'requires' in line:
                         line = line.split('=',maxsplit=1)[1].strip()
                         modules = ast.literal_eval(line)
                         modules = [x for x in modules
