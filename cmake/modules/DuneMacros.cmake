@@ -2,16 +2,6 @@
 #
 # Documentation of the public API defined in this module:
 #
-# .. cmake_function:: target_link_libraries
-#
-#    .. cmake_brief::
-#
-#       Overwrite of CMake's :code:`target_link_libraries`. If no interface key
-#       word (like PUBLIC, INTERFACE, PRIVATE etc.) is given, PUBLIC is added.
-#       This is to fix problems with CMP0023.
-#
-#    .. cmake_param:: basename
-#
 # .. cmake_function:: dune_target_link_libraries
 #
 #    .. cmake_param:: BASENAME
@@ -52,23 +42,6 @@ include(DuneReplaceProperties)
 include(DuneSymlinkOrCopy)
 include(DuneTestMacros)
 include(DuneUtilities)
-
-macro(target_link_libraries)
-  # do nothing if not at least the two arguments target and scope are passed
-  if(${ARGC} GREATER_EQUAL 2)
-    target_link_libraries_helper(${ARGN})
-  endif()
-endmacro(target_link_libraries)
-
-# helper for overwritten target_link_libraries to handle arguments more easily
-macro(target_link_libraries_helper TARGET SCOPE)
-  if(${SCOPE} MATCHES "^(PRIVATE|INTERFACE|PUBLIC|LINK_PRIVATE|LINK_PUBLIC|LINK_INTERFACE_LIBRARIES)$")
-    _target_link_libraries(${TARGET} ${SCOPE} ${ARGN})
-  else()
-    message(DEPRECATION "Calling target_link_libraries without the <scope> argument is deprecated.")
-    _target_link_libraries(${TARGET} PUBLIC ${SCOPE} ${ARGN})
-  endif()
-endmacro(target_link_libraries_helper)
 
 macro(target_link_dune_default_libraries _target)
   foreach(_lib ${DUNE_LIBS})
