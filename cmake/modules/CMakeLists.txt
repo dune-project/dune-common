@@ -29,6 +29,7 @@ install(FILES
   DuneModuleInformation.cmake
   DunePathHelper.cmake
   DunePkgConfig.cmake
+  DuneProject.cmake
   DunePythonCommonMacros.cmake
   DunePythonDeprecations.cmake
   DunePythonFindPackage.cmake
