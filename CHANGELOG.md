@@ -11,6 +11,14 @@
 
 - Remove deprecated cmake file `DuneMPI.cmake`
 
+- Overhaul of the handling of Dune python packages:
+  python bindings are now enabled by default. Packages are automatically installed
+  either in an internal virtual environment or in an active environment during the
+  module build process.
+  See https://gitlab.dune-project.org/core/dune-common/-/merge_requests/960
+  which also contains a detailed set of instructions on how to update
+  existing python bindings.
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
