@@ -152,13 +152,13 @@ macro(find_dune_package module)
     find_package(${module} NO_CMAKE_PACKAGE_REGISTRY)
   endif()
   if(NOT ${module}_FOUND AND NOT CMAKE_DISABLE_FIND_PACKAGE_${module})
-    message(STATUS "No full CMake package configuration support available."
-      " Falling back to pkg-config.")
+    message(STATUS "Trying to find module ${module}. No full CMake package configuration support available."
+      " I will try to use pkg-config instead.")
     # use pkg-config
     find_package(PkgConfig)
     if(NOT PKG_CONFIG_FOUND AND required)
-      message(FATAL_ERROR "Could not find module ${module}. We tried to use"
-        "pkg-config but could not find it. ")
+      message(FATAL_ERROR "Could not find required module ${module}. (I tried to use"
+        " both CMake and pkg-config but could not find it.) ")
     endif()
         pkg_check_modules (${module} ${required} ${module}${DUNE_FIND_VERSION})
     set(${module}_FAKE_CMAKE_PKGCONFIG TRUE)

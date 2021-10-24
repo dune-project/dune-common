@@ -742,6 +742,7 @@ usage () {
     echo "OPTIONS:"
     echo "  -h, --help          show this help"
     echo "      --debug         enable debug output of this script"
+    echo "  -v, --verbose       print additional information when building up the dependency tree"
     echo "      --module=mod    apply the actions on module mod"
     echo "                      and all modules it depends on"
     echo "      --only=mod      only apply the actions on module mod"
@@ -847,6 +848,7 @@ export ONLY=""
 export RESUME_FLAG=no
 export REVERSE_FLAG=no
 export SKIPFIRST=no
+export DUNE_CONTROL_VERBOSE=no
 
 # parse commandline parameters
 while test $# -gt 0; do
@@ -966,6 +968,9 @@ while test $# -gt 0; do
     ;;
     --skipfirst)
       export SKIPFIRST=yes
+    ;;
+    -v|--verbose)
+      export DUNE_CONTROL_VERBOSE=yes
     ;;
     --debug) true ;; # ignore this option, it is handled right at the beginning
     --*)
