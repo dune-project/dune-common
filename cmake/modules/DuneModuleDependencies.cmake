@@ -299,6 +299,8 @@ endmacro(dune_process_dependency_leafs)
 
 
 function(remove_processed_modules modules versions is_required)
+  message(DEPRECATION "The cmake function remove_processed_modules() is deprecated and "
+                      "will be removed after release 2.9.")
   list(LENGTH ${modules} mlength)
   if(mlength GREATER 0)
     math(EXPR length "${mlength}-1")
