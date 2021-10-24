@@ -192,6 +192,7 @@ set(${ProjectName}_SUGGESTS \"@${ProjectName}_SUGGESTS@\")
 set(${ProjectName}_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
 set(${ProjectName}_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
 set(${ProjectName}_HASPYTHON @DUNE_MODULE_HASPYTHON@)
+set(${ProjectName}_PYTHONREQUIRES \"@DUNE_MODULE_PYTHONREQUIRES@\")
 
 # Lines that are set by the CMake build system via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
 ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
@@ -227,8 +228,10 @@ endif()")
   set(MODULE_INSTALLED ON)
   if(EXISTS ${PROJECT_SOURCE_DIR}/python)
     set(DUNE_MODULE_HASPYTHON 1)
+    set(DUNE_MODULE_PYTHONREQUIRES "${ProjectPythonRequires}")
   else()
     set(DUNE_MODULE_HASPYTHON 0)
+    set(DUNE_MODULE_PYTHONREQUIRES "")
   endif()
 
   configure_package_config_file(${CONFIG_SOURCE_FILE}

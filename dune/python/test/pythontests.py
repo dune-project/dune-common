@@ -29,9 +29,6 @@ def test_class_export():
     cls = load(clsName,StringIO(classBCode),cls,2)
     assert run("run",StringIO(runCode),cls) == 10**2*20**2
 if __name__ == "__main__":
-    try:
-        from dune.common.module import get_dune_py_dir
-        _ = get_dune_py_dir()
-        test_class_export()
-    except ImportError:
-        pass
+    from dune.common.module import get_dune_py_dir
+    _ = get_dune_py_dir()
+    test_class_export()
