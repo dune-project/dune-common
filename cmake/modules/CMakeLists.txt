@@ -33,11 +33,13 @@ install(FILES
   DunePythonInstallPackage.cmake
   DunePythonTestCommand.cmake
   DunePythonVirtualenv.cmake
+  DuneReplaceProperties.cmake
   DuneSphinxDoc.cmake
   DuneSphinxCMakeDoc.cmake
   DuneStreams.cmake
   DuneSymlinkOrCopy.cmake
   DuneTestMacros.cmake
+  DuneUtilities.cmake
   FindGMP.cmake
   FindInkscape.cmake
   FindLatexMk.cmake
