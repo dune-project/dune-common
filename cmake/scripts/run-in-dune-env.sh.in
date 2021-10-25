@@ -1,8 +1,18 @@
 #!@BASH@
 
-source @DUNE_PYTHON_VIRTUALENV_PATH@/bin/activate
+if [ -f "@DUNE_PYTHON_VIRTUALENV_PATH@/bin/activate" ]; then
+  source @DUNE_PYTHON_VIRTUALENV_PATH@/bin/activate
+else
+  echo "Dune internal virtual environment not found:"
+  echo "No activate script in @DUNE_PYTHON_VIRTUALENV_PATH@/bin"
+  exit 77
+fi
 
 # test if build directory matches installed dune python packages
 python -m dune checkbuilddirs --args @PROJECT_NAME@ @CMAKE_BINARY_DIR@
-
-"$@"
+if [ $? -eq 0 ] ; then
+  "$@"
+else
+  echo "Dune python package could not be found."
+  exit 77
+fi

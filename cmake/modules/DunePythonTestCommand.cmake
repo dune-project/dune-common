@@ -78,10 +78,15 @@ function(dune_python_add_test)
     string(REPLACE "/" "_" PYTEST_NAME ${commandstr})
   endif()
 
-  # Actually run the command
-  add_custom_target(target_${PYTEST_NAME}
-                    COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env python ${PYTEST_SCRIPT}
-                    WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY})
+  if(DUNE_PYTHON_VENVSETUP)
+    # Actually run the command
+    add_custom_target(target_${PYTEST_NAME}
+                      COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env python ${PYTEST_SCRIPT}
+                      WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY})
+  else()
+    add_custom_target(target_${PYTEST_NAME}
+                      COMMAND ${CMAKE_COMMAND} -E echo \"Test not run: python setup failed\")
+  endif()
 
   # Build this during make test_python
   add_dependencies(test_python target_${PYTEST_NAME})
@@ -94,6 +99,7 @@ function(dune_python_add_test)
             COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env python ${PYTEST_SCRIPT}
             WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY}
             )
+  set_tests_properties(${PYTEST_NAME} PROPERTIES SKIP_RETURN_CODE 77)
   # Set the labels on the test
   set_tests_properties(${PYTEST_NAME} PROPERTIES LABELS "${PYTEST_LABELS}")
 endfunction()
