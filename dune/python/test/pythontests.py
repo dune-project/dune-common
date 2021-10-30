@@ -1,20 +1,37 @@
 from io import StringIO
+from numpy import array
+
 classACode="""
 struct MyClassA {
   MyClassA(int a,int b) : a_(a), b_(b) {}
+  double b() { return b_; }
   int a_,b_;
 };
 """
 classBCode="""
+#include <iostream>
 #include <cmath>
+#include <numeric>
+#include <dune/python/common/numpyvector.hh>
 template <class T> struct MyClassB {
-  MyClassB(T &t, int p) : a_(std::pow(t.a_,p)), b_(std::pow(t.b_,p)) {}
-  int a_,b_;
+  // the following fails to work correctly
+  // MyClassB(T &t, int p, const Dune::Python::NumPyVector<double> &b)
+  // - with 'const NumPyVector<double> b_;':  call to deleter ctor
+  // - with 'const NumPyVector<double> &b_;': segfaults (this is expected
+  //        since array_t->NumPyArray in the __init__ function is explicit and
+  //        leads to dangling reference)
+  // The following has to be used:
+  MyClassB(T &t, int p, pybind11::array_t< double >& b)
+  : a_(std::pow(t.a_,p)), b_(b) {}
+  double b() { return std::accumulate(b_.begin(),b_.end(),0.); }
+  int a_;
+  const Dune::Python::NumPyVector<double> b_;
 };
 """
 runCode="""
+#include <iostream>
 template <class T> int run(T &t) {
-  return t.a_ * t.b_;
+  return t.a_ * t.b();
 }
 """
 
@@ -33,7 +50,6 @@ def test_numpyvector():
     """
     Test correct exchange of numpy arrays to C++ side.
     """
-    from numpy import array
     from dune.generator.algorithm import run
     x = array([0.]*100)
     run("run",StringIO(runVec),x)
@@ -45,12 +61,19 @@ def test_class_export():
     from dune.generator.algorithm   import run
     from dune.generator import path
     from dune.typeregistry import generateTypeName
+    a = 2.
+    x = array([2.]*10)
     cls = load("MyClassA",StringIO(classACode),10,20)
     assert run("run",StringIO(runCode),cls) == 10*20
     clsName,includes = generateTypeName("MyClassB",cls)
-    cls = load(clsName,StringIO(classBCode),cls,2)
-    assert run("run",StringIO(runCode),cls) == 10**2*20**2
-
+    cls = load(clsName,StringIO(classBCode),cls,2,x)
+    assert run("run",StringIO(runCode),cls) == 10**2*10*a
+    x[:] = array([3.]*10)[:]
+    assert run("run",StringIO(runCode),cls) == 10**2*10*3
+    # the following does not work
+    x = array([4.]*10)
+    # the 'B' class still keeps the old vector 'x' alive
+    assert run("run",StringIO(runCode),cls) == 10**2*10*3
 
 if __name__ == "__main__":
     from dune.common.module import get_dune_py_dir
