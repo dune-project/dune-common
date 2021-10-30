@@ -1,6 +1,7 @@
 #ifndef DUNE_PYTHON_COMMON_NUMPYVECTOR_HH
 #define DUNE_PYTHON_COMMON_NUMPYVECTOR_HH
 
+#include <dune/common/exceptions.hh>
 #include <dune/common/densevector.hh>
 #include <dune/common/ftraits.hh>
 
@@ -67,17 +68,21 @@ namespace Dune
         : array_( pybind11::buffer_info( nullptr, sizeof( T ),
                   pybind11::format_descriptor< T >::value, 1, { size }, { sizeof( T ) } )
                 ),
+          dataPtr_( static_cast< value_type * >( array_.request(true).ptr ) ),
           size_(size)
       {}
 
       NumPyVector ( pybind11::buffer buf )
         : array_( buf ),
+          dataPtr_( nullptr ),
           size_( 0 )
       {
         pybind11::buffer_info info = buf.request();
         if (info.ndim != 1)
           DUNE_THROW( InvalidStateException, "NumPyVector can only be created from one-dimensional array" );
         size_ = info.shape[0];
+
+        dataPtr_ = static_cast< value_type * >( array_.request(true).ptr );
       }
 
       NumPyVector ( const This &other ) = delete;
@@ -109,11 +114,13 @@ namespace Dune
 
       inline const value_type *data () const
       {
-        return static_cast< const value_type * >( const_cast<pybind11::array_t< T >&>(array_).request(false).ptr );
+        assert( dataPtr_ );
+        return dataPtr_;
       }
       inline value_type *data ()
       {
-        return static_cast< value_type * >( array_.request(true).ptr );
+        assert( dataPtr_ );
+        return dataPtr_;
       }
       pybind11::array_t< T > &coefficients()
       {
@@ -133,8 +140,9 @@ namespace Dune
         return size_;
       }
 
-    private:
+    protected:
       pybind11::array_t< T > array_;
+      value_type* dataPtr_;
       size_type size_;
     };
 
