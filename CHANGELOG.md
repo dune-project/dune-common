@@ -19,6 +19,9 @@
   which also contains a detailed set of instructions on how to update
   existing python bindings.
 
+- Remove deprecated cmake function overload `target_link_libraries`
+
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
