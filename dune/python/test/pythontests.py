@@ -18,6 +18,28 @@ template <class T> int run(T &t) {
 }
 """
 
+runVec="""
+#include <dune/python/common/numpyvector.hh>
+template <class T>
+void run(pybind11::array_t< T >& a)
+{
+  Dune::Python::NumPyVector< T > x( a );
+  for( size_t i=0; i<x.size(); ++i )
+    x[ i ] += i;
+}
+"""
+
+def test_numpyvector():
+    """
+    Test correct exchange of numpy arrays to C++ side.
+    """
+    from numpy import array
+    from dune.generator.algorithm import run
+    x = array([0.]*100)
+    run("run",StringIO(runVec),x)
+    for i in range(len(x)):
+        assert x[i] == float(i)
+
 def test_class_export():
     from dune.generator.importclass import load
     from dune.generator.algorithm   import run
@@ -28,7 +50,10 @@ def test_class_export():
     clsName,includes = generateTypeName("MyClassB",cls)
     cls = load(clsName,StringIO(classBCode),cls,2)
     assert run("run",StringIO(runCode),cls) == 10**2*20**2
+
+
 if __name__ == "__main__":
     from dune.common.module import get_dune_py_dir
     _ = get_dune_py_dir()
     test_class_export()
+    test_numpyvector()
