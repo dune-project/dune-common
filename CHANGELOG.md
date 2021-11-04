@@ -2,6 +2,8 @@
 
 - Add `pragma omp simd` annotations in the LoopSIMD class to improve compiler optimizations
 
+- deprecate Factorial in common/math.hh (use factorial function)
+
 ## Build System
 
 - Remove the variable `DUNE_DEFAULT_LIBS`
@@ -20,7 +22,6 @@
   existing python bindings.
 
 - Remove deprecated cmake function overload `target_link_libraries`
-
 
 # Release 2.8
 
