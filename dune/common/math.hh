@@ -86,19 +86,20 @@ namespace Dune
   }
 
   //! Calculates the factorial of m at compile time
+  //! \deprecated Will be removed after release 2.9
   template <int m>
   struct Factorial
   {
     //! factorial stores m!
-    enum { factorial = m * Factorial<m-1>::factorial };
+    static constexpr int factorial = m * Factorial<m-1>::factorial;
   };
 
   //! end of recursion of factorial via specialization
   template <>
-  struct Factorial<0>
+  struct [[deprecated("Use function factorial instead! Will be removed after Dune 2.9")]] Factorial<0>
   {
     // 0! = 1
-    enum { factorial = 1 };
+    static constexpr int factorial = 1;
   };
 
 

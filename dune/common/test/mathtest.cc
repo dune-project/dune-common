@@ -26,12 +26,14 @@ auto testStaticFactorial (std::integral_constant<T, k> _k = {}) -> TestSuite
 {
   TestSuite t;
 
-  std::cout << "test static factorial\n{";
+  std::cout << "test factorial\n{";
 
   forEach(integralRange(_k), [&](auto _i) {
-    auto value = Dune::factorial(_i);
 
-    t.check(decltype(value)::value == Dune::Factorial<decltype(_i)::value>::factorial);
+    const auto value = Dune::factorial(_i);
+    const auto control = _i() == 0 ? 1 : _i() * Dune::factorial(_i() - 1);
+
+    t.check( value() == control );
 
     std::cout<< ' ' << value() << ',';
   });
@@ -46,17 +48,16 @@ auto testStaticBinomial (std::integral_constant<T, k> _k = {}) -> TestSuite
 {
   TestSuite t;
 
-  std::cout << "test static binomial\n";
+  std::cout << "test binomial\n";
 
   forEach(integralRange(_k), [&](auto _i) {
     std::cout << "{";
     forEach(integralRange(next(_i)), [&](auto _j) {
-      const auto value = Dune::binomial(_i,_j);
 
-      auto control = Dune::Factorial<decltype(_i)::value>::factorial
-                     / Dune::Factorial<decltype(_j)::value>::factorial
-                     / Dune::Factorial<decltype(_i)::value - decltype(_j)::value>::factorial;
-      t.check(decltype(value)::value == control);
+      const auto value = Dune::binomial(_i, _j);
+      const auto control = Dune::factorial(_i) / ( Dune::factorial(_j) * Dune::factorial(_i() - _j()) );
+
+      t.check( value() == control );
 
       std::cout<< ' ' << value() << ',';
     });
