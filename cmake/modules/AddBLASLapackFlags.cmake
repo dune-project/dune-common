@@ -11,6 +11,7 @@
 #
 include_guard(GLOBAL)
 
+include(FeatureSummary)
 set_package_properties("BLAS" PROPERTIES
   DESCRIPTION "fast linear algebra routines")
 set_package_properties("LAPACK" PROPERTIES
