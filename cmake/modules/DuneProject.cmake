@@ -81,7 +81,7 @@ macro(dune_project)
     return()
   endif()
 
-  define_property(GLOBAL PROPERTY DUNE_MODULE_LIBRARIES
+  define_property(GLOBAL PROPERTY ${ProjectName}_LIBRARIES
         BRIEF_DOCS "List of libraries of the module. DO NOT EDIT!"
         FULL_DOCS "List of libraries of the module. Used to generate CMake's package configuration files. DO NOT EDIT!")
   dune_create_dependency_tree()
@@ -190,7 +190,7 @@ set(${ProjectName}_CXX_FLAGS_RELWITHDEBINFO \"${CMAKE_CXX_FLAGS_RELWITHDEBINFO}\
 set(${ProjectName}_DEPENDS \"@${ProjectName}_DEPENDS@\")
 set(${ProjectName}_SUGGESTS \"@${ProjectName}_SUGGESTS@\")
 set(${ProjectName}_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
-set(${ProjectName}_LIBRARIES \"@DUNE_MODULE_LIBRARIES@\")
+set(${ProjectName}_LIBRARIES \"@${ProjectName}_LIBRARIES@\")
 set(${ProjectName}_HASPYTHON @DUNE_MODULE_HASPYTHON@)
 set(${ProjectName}_PYTHONREQUIRES \"@DUNE_MODULE_PYTHONREQUIRES@\")
 
@@ -208,15 +208,15 @@ endif()")
   else()
     set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
   endif()
-  get_property(DUNE_MODULE_LIBRARIES GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
+  get_property(${ProjectName}_LIBRARIES GLOBAL PROPERTY ${ProjectName}_LIBRARIES)
 
   # compute under which libdir the package configuration files are to be installed.
   # If the module installs an object library we use CMAKE_INSTALL_LIBDIR
   # to capture the multiarch triplet of Debian/Ubuntu.
   # Otherwise we fall back to DUNE_INSTALL_NONOBJECTLIB which is lib
   # if not set otherwise.
-  get_property(DUNE_MODULE_LIBRARIES GLOBAL PROPERTY DUNE_MODULE_LIBRARIES)
-  if(DUNE_MODULE_LIBRARIES)
+  get_property(${ProjectName}_LIBRARIES GLOBAL PROPERTY ${ProjectName}_LIBRARIES)
+  if(${ProjectName}_LIBRARIES)
     set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
   else()
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
@@ -297,6 +297,16 @@ endif()
 
   # install pkg-config files
   create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
+
+  if(${ProjectName}_EXPORT_SET)
+    # install library export set
+    install(EXPORT ${${ProjectName}_EXPORT_SET}
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName})
+
+    # export libraries for use in build tree
+    export(EXPORT ${${ProjectName}_EXPORT_SET}
+      FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake)
+  endif()
 
   if("${ARGC}" EQUAL "1")
     message(STATUS "Adding custom target for config.h generation")

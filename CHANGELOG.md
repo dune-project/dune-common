@@ -6,6 +6,10 @@
 
 ## Build System
 
+- Improve the the function `dune_add_library` by separating the target types normal, interface, and
+  object. Additional properties can be passed to the cmake function like `LINK_LIBRARIES`,
+  `OUTPUT_NAME`, and `EXPORT_NAME`
+
 - Remove the variable `DUNE_DEFAULT_LIBS`
 
 - Deprecate cmake file `DuneCMakeCompat.cmake` that just contained the removed function
