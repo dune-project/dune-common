@@ -23,6 +23,8 @@
 
 - Remove deprecated cmake function overload `target_link_libraries`
 
+- Deprecate cmake function `remove_processed_modules`
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
