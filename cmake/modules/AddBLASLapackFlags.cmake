@@ -23,6 +23,8 @@ set(HAVE_LAPACK ${LAPACK_FOUND})
 # register Lapack library as dune package
 if(HAVE_LAPACK)
   dune_register_package_flags(LIBRARIES "${LAPACK_LIBRARIES}")
+
+  include(CMakePushCheckState)
   cmake_push_check_state()
   set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES})
   check_function_exists("dsyev_" LAPACK_NEEDS_UNDERLINE)
