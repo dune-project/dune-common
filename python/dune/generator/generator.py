@@ -8,7 +8,6 @@
 
 import logging
 
-from . import builder
 from dune.common.hashit import hashIt
 
 logger = logging.getLogger(__name__)
@@ -116,7 +115,11 @@ class SimpleGenerator(object):
             source += postscript
         source += "}\n"
         source += '#endif'
+
+        # make sure to reload the builder here in case it got updated
+        from . import builder
         module = builder.load(moduleName, source, self.typeName[0], extraCMake)
+
         return module
 
     def load(self, includes, typeName, moduleName, *args,

@@ -1,7 +1,6 @@
 import numpy
 
 from dune.common.hashit import hashIt
-from . import builder
 from dune.common.utility import isString
 
 def cppType(arg):
@@ -118,6 +117,8 @@ def load(functionName, includes, *args):
     source += "}\n"
     source += "#endif\n"
 
+    # make sure to reload the builder here in case it got updated
+    from . import builder
     return builder.load(moduleName, source, signature).run
 
 
