@@ -1,12 +1,7 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import email.utils
-import io
 import logging
 import os
 import re
 import shlex
-import string
 import subprocess
 import sys
 
@@ -15,16 +10,15 @@ from os.path import expanduser
 if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
-    from dune.packagemetadata import Version, VersionRequirement,\
+    from dune.packagemetadata import Version,\
             Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 else:
     from utility import buffer_to_str
     import project
-    from packagemetadata import Version, VersionRequirement,\
+    from packagemetadata import Version,\
             Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 
 logger = logging.getLogger(__name__)
-
 
 def find_modules(path):
     """find DUNE modules in given path
