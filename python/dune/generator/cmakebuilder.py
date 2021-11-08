@@ -179,8 +179,12 @@ class Builder:
                 # new dune package is added
                 tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
                 if not os.path.isfile(tagfile):
-                    logger.info('Generating dune-py module in '+self.dune_py_dir)
-                    Builder.dunepy_from_template(get_dune_py_dir())
+                    logger.info('Generating dune-py module in ' + self.dune_py_dir)
+                    # create module cache for external modules that have been registered with dune-py
+                    dune.common.externalmodule.cacheExternalModules(self.dune_py_dir)
+                    # create dune-py module
+                    Builder.dunepy_from_template(self.dune_py_dir)
+                    # create tag file so that dune-py is not rebuilt on the next build
                     open(tagfile, 'a').close()
                 else:
                     logger.debug('Using existing dune-py module in '+self.dune_py_dir)

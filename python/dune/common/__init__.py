@@ -24,6 +24,7 @@ except ImportError:
 
 from ._common import *
 from .deprecated import DeprecatedObject
+from .externalmodule import registerExternalModule
 
 import numpy
 def fvgetitem(self,index):
