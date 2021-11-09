@@ -4,8 +4,6 @@ import shlex
 import subprocess
 import os
 import sys
-import shutil
-import re
 import jinja2
 import dune
 
@@ -13,17 +11,15 @@ from dune.packagemetadata import get_dune_py_dir, extract_metadata, Description
 from dune.common import comm
 from dune.common.locking import Lock, LOCK_EX,LOCK_SH
 from dune.common.utility import buffer_to_str, isString, reload_module
-from dune.common.module import select_modules, is_installed
-from dune.generator.exceptions import CompileError, ConfigurationError
-import dune.common.module
+from dune.common.module import (
+    get_cmake_command,
+    get_default_build_args,
+    get_dune_py_dir,
+)
+import dune.common.externalmodule
+from dune.generator.exceptions import CompileError
 
 logger = logging.getLogger(__name__)
-
-import logging
-import threading
-import os
-import subprocess
-
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 cxxFlags = None
@@ -58,6 +54,8 @@ class Builder:
             if k not in modules and not v.endswith("NOTFOUND"):
                 modules += [k]
         modules.sort()
+
+        logger.debug("Found the following Dune module dependencies for dune-py: " + str(modules))
 
         # for an existing dune-py compare module dependencies to check if rebuild required
         if os.path.exists(os.path.join(dunepy_dir,"dune.module")):
@@ -122,7 +120,7 @@ class Builder:
                 loader=jinja2.FileSystemLoader(template_path),
                 keep_trailing_newline=True,
             )
-            for root, dirs, files in os.walk(template_path):
+            for root, _, files in os.walk(template_path):
                 # fix issues due to template taken from build dir
                 if root.endswith("CMakeFiles") or root.endswith("src_dir"): continue
 
@@ -141,13 +139,18 @@ class Builder:
 
 
             # configure dune-py
-            cmake = subprocess.Popen( "cmake .".split(),
-                                     cwd=dunepy_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            logger.debug("Configuring dune-py with CMake")
+            cmake = subprocess.Popen(
+                ["cmake", "."],
+                cwd=dunepy_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
             stdout, stderr = cmake.communicate()
             if cmake.returncode > 0:
                 raise CompileError(buffer_to_str(stderr))
             else:
-                logger.debug("Build output: "+buffer_to_str(stdout))
+                logger.debug("CMake configuration output: "+buffer_to_str(stdout))
 
     def __init__(self, force=False, saveOutput=False):
         self.force = force
@@ -164,26 +167,31 @@ class Builder:
                 self.skipTargetAll = True
         else:
             self.savedOutput = None
-        self.dune_py_dir = dune.common.module.get_dune_py_dir()
-        self.build_args = dune.common.module.get_default_build_args()
+        self.dune_py_dir = get_dune_py_dir()
+        self.build_args = get_default_build_args()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         self.initialized = False
 
     def initialize(self):
         if comm.rank == 0:
+            logger.debug("(Re-)Initializing JIT compilation module")
             os.makedirs(self.dune_py_dir, exist_ok=True)
-            # need to lock here so that multiple procersses don't try to
+            # need to lock here so that multiple processes don't try to
             # generate a new dune-py at the same time
             with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_EX):
                 # check for existence of tag file - this is removed if a
                 # new dune package is added
                 tagfile = os.path.join(self.dune_py_dir, ".noconfigure")
                 if not os.path.isfile(tagfile):
-                    logger.info('Generating dune-py module in '+self.dune_py_dir)
-                    Builder.dunepy_from_template(get_dune_py_dir())
+                    logger.info('Generating dune-py module in ' + self.dune_py_dir)
+                    # create module cache for external modules that have been registered with dune-py
+                    dune.common.externalmodule.cacheExternalModules(self.dune_py_dir)
+                    # create dune-py module
+                    Builder.dunepy_from_template(self.dune_py_dir)
+                    # create tag file so that dune-py is not rebuilt on the next build
                     open(tagfile, 'a').close()
                 else:
-                    logger.debug('Using existing dune-py module in '+self.dune_py_dir)
+                    logger.debug('Using existing dune-py module in ' + self.dune_py_dir)
                     self.compile(verbose=True)
 
         comm.barrier()
@@ -194,7 +202,7 @@ class Builder:
         self.initialized = True
 
     def compile(self, target='all', verbose=False):
-        cmake_command = dune.common.module.get_cmake_command()
+        cmake_command = get_cmake_command()
         cmake_args = [cmake_command, "--build", self.dune_py_dir,
                       "--target", target, "--parallel"]
         make_args = []
@@ -243,7 +251,8 @@ class Builder:
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)
             if module is None:
-                # make sure nothing (compilation, generating and building) is # taking place
+                logger.debug("Module {} not loaded".format(moduleName))
+                # make sure nothing (compilation, generating and building) is taking place
                 with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_EX):
                     # module must be generated so lock the source file
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
@@ -254,7 +263,8 @@ class Builder:
                         with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
                             found = line in out.read()
                         if not os.path.isfile(sourceFileName) or not found:
-                            logger.info("Compiling " + pythonName)
+                            logger.info("Generating " + pythonName)
+
                             code = str(source)
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
@@ -269,13 +279,17 @@ class Builder:
                                         for x in extraCMake:
                                             out.write(x.replace("TARGET",moduleName)+"\n")
                                 # update build system
-                                logger.debug("Rebuilding module")
+                                logger.debug(
+                                    "Configuring module {} ({}) with CMake".format(
+                                        pythonName, moduleName
+                                    )
+                                )
                                 try:
                                     # self.compile()
                                     cmake = subprocess.Popen( "cmake .".split(),
                                                        cwd=self.dune_py_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                                     stdout, stderr = cmake.communicate()
-                                    # logger.debug("Build output: "+buffer_to_str(stdout))
+                                    #logger.debug("CMake configuration output: "+buffer_to_str(stdout))
                                     if cmake.returncode > 0:
                                         raise CompileError(buffer_to_str(stderr))
                                 except: # all exceptions will cause a problem here
@@ -286,28 +300,36 @@ class Builder:
                                     raise
                         elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
                             logger.info("Compiling " + pythonName + " (updated)")
+
                             code = str(source)
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
                         else:
-                            logger.debug("Loading " + pythonName)
+                            # we only can directly load the module
+                            # sanity check
                             line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
                             # the CMakeLists file should already include this line
                             with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
                                 found = line in out.read()
-                            assert found, "CMakeLists file does not contain an entry to build"+moduleName
+                            assert found, "CMakeLists.txt file does not contain an entry to build"+moduleName
+
                 # end of exclusive dune-py lock
+
+                # we always compile even if the module is always compiled since it can happen
+                # that dune-py was updated in the mean time.
+                # This step is quite fast but there is room for optimization.
 
                 # for compilation a shared lock is enough
                 with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_SH):
                     # lock generated module
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                        logger.debug("Now compiling "+moduleName)
-                        self.compile(moduleName)
-            ## end if module is not None
+                        logger.info("Compiling "+pythonName)
+                        self.compile(target=moduleName)
 
         ## TODO remove barrier here
         comm.barrier()
+
+        logger.debug("Loading " + moduleName)
         module = importlib.import_module("dune.generated." + moduleName)
 
         if self.force:

@@ -6,7 +6,7 @@ import subprocess
 import dune.common.module
 
 from dune.common.utility import buffer_to_str
-from dune.generator import builder, ConfigurationError
+from dune.generator import ConfigurationError
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +93,7 @@ def preprocessorAssert(tests):
         i += 1
     source = source + "return 0;\n}\n"
 
+    from dune.generator import builder
     with open(os.path.join(builder.generated_dir, "generated_module.hh"), 'w') as out:
         out.write(source)
     builder.compile("generated_test")

@@ -1,7 +1,6 @@
 import os
 
 from dune.common.hashit import hashIt
-from . import builder
 from dune.common.utility import isString
 from dune.generator.algorithm import cppType
 
@@ -94,4 +93,6 @@ def load(className, includeFiles, *args,
              source+\
              "\n#endif\n"
 
+    # make sure to reload the builder here in case it got updated
+    from . import builder
     return builder.load(moduleName, source, signature).cls(*args)
