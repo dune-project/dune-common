@@ -69,6 +69,3 @@ def FieldVector(values):
 # def FieldMatrix(values):
 #     fm = "FieldMatrix_" + str(len(values)) + "_" + str(len(values[0]))
 #     return globals()[fm](values)
-
-def _raise(exception):
-    raise exception
