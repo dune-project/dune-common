@@ -10,11 +10,13 @@ from os.path import expanduser
 if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
+    import dune.generator as generator
     from dune.packagemetadata import Version,\
             Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 else:
     from utility import buffer_to_str
     import project
+    import generator
     from packagemetadata import Version,\
             Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 
@@ -428,5 +430,5 @@ def getCXXFlags():
     if not matches:
         return ''
     if matches.__len__() > 1:
-        raise ConfigurationError("found multiple entries for CXXFLAGS in CMakeCache.txt")
+        raise generator.ConfigurationError("found multiple entries for CXXFLAGS in CMakeCache.txt")
     return matches[0].string.partition('=')[2].rstrip()
