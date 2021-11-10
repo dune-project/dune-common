@@ -13,6 +13,8 @@ if __name__ == "dune.common.module":
     import dune.generator as generator
     from dune.packagemetadata import Version,\
             Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
+
+# this can also be used as a stand-alone script
 else:
     from utility import buffer_to_str
     import project
