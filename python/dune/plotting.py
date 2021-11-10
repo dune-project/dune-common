@@ -135,8 +135,7 @@ if addPlot:
                         else:
                             d = v[component]
                         data += [d]
-                        mind = amin(d)
-                        maxd = amax(d)
+
                 data = np.array(data)
                 minData = amin(data)
                 maxData = amax(data)
@@ -187,7 +186,6 @@ if addPlot:
             solution = None
         if not grid.dimension == 2:
             raise ValueError("inline plotting so far only available for 2d grids")
-            return
 
         if figure is None:
             figure = pyplot.figure(figsize=figsize)
@@ -219,7 +217,6 @@ if addPlot:
             solution = None
         if not grid.dimension == 2:
             raise ValueError("inline plotting so far only available for 2d grids")
-            return
 
         if figure is None:
             figure = pyplot.figure(figsize=figsize)
@@ -248,7 +245,6 @@ if addPlot:
             solution = None
         if not grid.dimension == 2:
             raise ValueError("inline plotting so far only available for 2d grids")
-            return
 
         if not show:
             show = range(solution.dimRange)
