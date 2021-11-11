@@ -6,6 +6,7 @@ import os
 import sys
 import jinja2
 import dune
+import signal
 
 from dune.packagemetadata import get_dune_py_dir, extract_metadata, Description
 from dune.common import comm
@@ -319,12 +320,22 @@ class Builder:
                 # that dune-py was updated in the mean time.
                 # This step is quite fast but there is room for optimization.
 
+                # use with-statement to log info if compiling takes some time
+                class printCompiling:
+                    def handle_signal(self, signum, frame):
+                        logger.info("Compiling "+pythonName)
+                    def __enter__(self):
+                        signal.signal(signal.SIGALRM, self.handle_signal)
+                        signal.alarm(1)
+                    def __exit__(self, type, value, traceback):
+                        signal.alarm(0)
+
                 # for compilation a shared lock is enough
                 with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_SH):
                     # lock generated module
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                        logger.info("Compiling "+pythonName)
-                        self.compile(target=moduleName)
+                        with printCompiling():
+                            self.compile(target=moduleName)
 
         ## TODO remove barrier here
         comm.barrier()
