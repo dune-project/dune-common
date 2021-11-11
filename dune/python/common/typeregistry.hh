@@ -433,11 +433,15 @@ namespace Dune
         entry.first->second.object = cls;
 
         cls.def_property_readonly_static( "_typeName", [ entry ] ( pybind11::object ) {
+#ifdef DUNE_DISABLE_PYTHON_DEPRECATION_WARNINGS
           PyErr_WarnEx(PyExc_DeprecationWarning, "attribute '_typeName' is deprecated, use 'cppTypeName' instead.", 2);
+#endif
           return entry.first->second.name;
         });
         cls.def_property_readonly_static( "_includes", [ entry ] ( pybind11::object ) {
+#ifdef DUNE_DISABLE_PYTHON_DEPRECATION_WARNINGS
           PyErr_WarnEx(PyExc_DeprecationWarning, "attribute '_includes' is deprecated, use 'cppIncludes' instead.", 2);
+#endif
           return entry.first->second.includes;
         });
         cls.def_property_readonly_static( "cppTypeName", [ entry ] ( pybind11::object ) { return entry.first->second.name; } );
