@@ -56,12 +56,17 @@ include_guard(GLOBAL)
 function(dune_python_install_package)
   # Parse Arguments
   set(OPTION)
+  # TODO deprecate CMAKE_METADATA_FILE
+  #      the file is now always `dune/data/packagename.cmake`
   set(SINGLE PATH CMAKE_METADATA_FILE)
   set(MULTI ADDITIONAL_PIP_PARAMS DEPENDS CMAKE_METADATA_FLAGS)
   cmake_parse_arguments(PYINST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYINST_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
   endif()
+
+  # set the new package name
+  set(PYINST_CMAKE_METADATA_FILE "dune/data/${ProjectName}.cmake")
 
   # Configure setup.py.in if present
   set(RequiredPythonModules "${ProjectPythonRequires}")

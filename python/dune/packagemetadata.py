@@ -6,6 +6,7 @@ import shlex
 import pkgutil
 import importlib, subprocess
 import email.utils
+import glob
 from datetime import date
 
 class Version:
@@ -431,66 +432,20 @@ def extract_metadata(ignoreImportError=False):
 
     result = MetaDataDict()
 
-    def add_package_metadata(package):
-        """Look for a metadata.cmake file in the package folder and add content"""
-
-        # Avoid the dune.create module - it cannot be imported unconditionally!
-        if package == "dune.create":
-            return
-
-        # Avoid the dune.utility module - it import dune.create
-        if package == "dune.utility":
-            return
-
-        # Avoid the link created by setting -DDUNE_SYMLINK_TO_SOURCE_TREE=TRUE
-        if package == "dune.src_dir":
-            return
-
-        # Check for the existence of the metadata.cmake file in the package
-        try:
-            mod = importlib.import_module(package)
-        except ImportError:
-            if ignoreImportError:
-                return
-            raise
-
-        # Only consider regular packages, not namespace packages
-        if mod.__file__ is None:
-            return
-
-        path, filename = os.path.split(mod.__file__)
-
-        # Make sure this is a regular regular package
-        if filename != "__init__.py":
-            return
-
-        metadata_file = os.path.join(path, "metadata.cmake")
-
-        if os.path.exists(metadata_file):
-            # If it exists parse the line that defines the key that we are looking for
-            for line in open(metadata_file, "r"):
-                ## todo: issue is that it will split at final '=' which
-                ## is a problem with CXXFLAGS
-                # match = re.match(f"(.*)=(.*)", line)
-                # if match:
-                #     result.setdefault(package.name, {})
-                #     key, value = match.groups()
-                #     result[package.name][key] = value
-                try:
-                    key, value = line.split("=", 1)
-                    result.setdefault(package, {})
-                    result[package][key] = value.strip()
-                except ValueError:  # no '=' in line
-                    pass
-
-
     # add meta data of packages from the dune namespace
-    import dune
-    for package in pkgutil.iter_modules(dune.__path__, dune.__name__ + "."):
-        add_package_metadata(package.name)
-
-    # possible add meta data from externally registered modules
-    for module in dune.common.externalmodule.EXTERNAL_PYTHON_MODULES:
-        add_package_metadata(module)
+    try:
+        import dune.data
+        for p in dune.data.__path__:
+            for metadata_file in glob.glob(os.path.join(p,"*.cmake")):
+                package = os.path.basename(metadata_file)
+                result.setdefault(package, {})
+                for line in open(metadata_file, "r"):
+                    try:
+                        key, value = line.split("=", 1)
+                        result[package][key] = value.strip()
+                    except ValueError:  # no '=' in line
+                        pass
+    except ImportError:  # no dune module was installed which can happen during packaging
+        pass
 
     return result
