@@ -58,7 +58,7 @@ function(dune_python_install_package)
   set(OPTION)
   # TODO deprecate CMAKE_METADATA_FILE
   #      the file is now always `dune/data/packagename.cmake`
-  set(SINGLE PATH CMAKE_METADATA_FILE)
+  set(SINGLE PATH CMAKE_METADATA_FILE PACKAGENAME)
   set(MULTI ADDITIONAL_PIP_PARAMS DEPENDS CMAKE_METADATA_FLAGS)
   cmake_parse_arguments(PYINST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYINST_UNPARSED_ARGUMENTS)
@@ -66,7 +66,10 @@ function(dune_python_install_package)
   endif()
 
   # set the new package name
-  set(PYINST_CMAKE_METADATA_FILE "dune/data/${ProjectName}.cmake")
+  if("${PYINST_PACKAGENAME}" STREQUAL "")
+      set(PYINST_PACKAGENAME "dune")
+  endif()
+  set(PYINST_CMAKE_METADATA_FILE "${PYINST_PACKAGENAME}/data/${ProjectName}.cmake")
 
   # Configure setup.py.in if present
   set(RequiredPythonModules "${ProjectPythonRequires}")

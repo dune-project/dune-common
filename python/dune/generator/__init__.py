@@ -13,10 +13,6 @@ env_save  = os.environ.get('DUNE_SAVE_BUILD' , 'FALSE').upper()
 
 builder = Builder(force=(env_force in ('1', 'TRUE')), saveOutput=env_save)
 
-def reloadBuilder():
-    builder.initialize()
-
-
 def setNoDependencyCheck():
     logger.debug("Switching off dependency check - modules will always be compiled")
     builderModule.noDepCheck = True

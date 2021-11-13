@@ -4,10 +4,15 @@ import subprocess
 import os
 import sys
 import jinja2
-import dune
 import signal
+import json
 
-from dune.packagemetadata import get_dune_py_dir, metadata, cmakeFlags, Description
+import dune
+
+from dune.packagemetadata import (
+     get_dune_py_dir, Description,
+     metadata, cmakeFlags, externalPythonModules
+)
 from dune.common import comm
 from dune.common.locking import Lock, LOCK_EX,LOCK_SH
 from dune.common.utility import buffer_to_str, isString, reload_module
@@ -16,7 +21,6 @@ from dune.common.module import (
     get_default_build_args,
     get_dune_py_dir,
 )
-import dune.common.externalmodule
 from dune.generator.exceptions import CompileError
 
 logger = logging.getLogger(__name__)
@@ -26,6 +30,8 @@ cxxFlags = None
 noDepCheck = False
 
 class Builder:
+
+    @staticmethod
     def dunepy_from_template(dunepy_dir,force=False):
         # Extract the raw data dictionary
 
@@ -97,7 +103,6 @@ class Builder:
                     with open(gen_file, "w") as outfile:
                         outfile.write(env.get_template(relative_template_file).render(**context))
 
-
             # configure dune-py
             logger.debug("Configuring dune-py with CMake")
             cmake = subprocess.Popen(
@@ -111,6 +116,7 @@ class Builder:
                 raise CompileError(buffer_to_str(stderr))
             else:
                 logger.debug("CMake configuration output: "+buffer_to_str(stdout))
+
 
     def __init__(self, force=False, saveOutput=False):
         self.force = force
@@ -131,8 +137,18 @@ class Builder:
         self.build_args = get_default_build_args()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         self.initialized = False
+        self.externalPythonModules = externalPythonModules.copy()
+
+    def cacheExternalModules(self):
+        """Store external modules in dune-py"""
+
+        externalModulesPath = os.path.join(self.dune_py_dir, ".externalmodules.json")
+        with open(externalModulesPath, "w") as externalModulesFile:
+            json.dump(self.externalPythonModules, externalModulesFile)
 
     def initialize(self):
+        self.externalPythonModules = externalPythonModules.copy()
+
         if comm.rank == 0:
             logger.debug("(Re-)Initializing JIT compilation module")
             os.makedirs(self.dune_py_dir, exist_ok=True)
@@ -145,7 +161,7 @@ class Builder:
                 if not os.path.isfile(tagfile):
                     logger.info('Generating dune-py module in ' + self.dune_py_dir)
                     # create module cache for external modules that have been registered with dune-py
-                    dune.common.externalmodule.cacheExternalModules(self.dune_py_dir)
+                    self.cacheExternalModules()
                     # create dune-py module
                     Builder.dunepy_from_template(self.dune_py_dir)
                     # create tag file so that dune-py is not rebuilt on the next build
@@ -159,7 +175,6 @@ class Builder:
             dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         except:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
-        self.initialized = True
 
     def compile(self, target='all', verbose=False):
         cmake_command = get_cmake_command()
@@ -202,6 +217,7 @@ class Builder:
                 self.savedOutput[1].write(err)
             if nlines > 1:
                 self.savedOutput[1].write("\n###############################\n")
+        self.initialized = True
 
     def load(self, moduleName, source, pythonName, extraCMake=None):
         # use with-statement to log info if compiling takes some time
@@ -219,7 +235,10 @@ class Builder:
 
         ## TODO replace if rank with something better
         ## and remove barrier further down
-        if not self.initialized:
+
+        # check if we need to initialize dune-py either because
+        # this is the first call to load or because an external module with metadata has been registered
+        if not self.initialized or not self.externalPythonModules == externalPythonModules:
             self.initialize()
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)

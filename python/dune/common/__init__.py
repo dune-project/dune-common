@@ -36,7 +36,6 @@ if 'HAVE_MPI' in cmakeFlags and cmakeFlags['HAVE_MPI']:
 
 from ._common import *
 from .deprecated import DeprecatedObject
-from .externalmodule import registerExternalModule
 
 
 def _fieldVectorGetItem(self,index):
