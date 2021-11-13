@@ -1,6 +1,6 @@
 import sys, os
 from argparse import ArgumentParser
-from dune.packagemetadata import get_dune_py_dir, extract_metadata
+from dune.packagemetadata import get_dune_py_dir, metadata
 
 def configure():
     # force a reconfiguration of dune-py by deleting tagfile
@@ -14,9 +14,8 @@ def checkbuilddirs(args):
     builddirs = args[-1].split(';')
 
     # Extract the raw data dictionary
-    data = extract_metadata(ignoreImportError=True)
     try:
-        instbuilddirs = data.zip_across_modules("DEPS", "DEPBUILDDIRS")
+        instbuilddirs = metadata.zip_across_modules("DEPS", "DEPBUILDDIRS")
     except ValueError as ex:
         print(ex)
         return 1

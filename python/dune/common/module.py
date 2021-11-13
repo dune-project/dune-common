@@ -10,17 +10,14 @@ from os.path import expanduser
 if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
-    import dune.generator as generator
     from dune.packagemetadata import Version,\
-            Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
-
+            Description, defaultCmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 # this can also be used as a stand-alone script
 else:
     from utility import buffer_to_str
     import project
-    import generator
     from packagemetadata import Version,\
-            Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
+            Description, defaultCmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 
 logger = logging.getLogger(__name__)
 
@@ -374,7 +371,7 @@ def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, bui
     if dune_py_dir is None:
         dune_py_dir = get_dune_py_dir()
     if cmake_args is None:
-        cmake_args = cmakeFlags()
+        cmake_args = defaultCmakeFlags()
 
     modules, dirs = select_modules()
     if deps is None:

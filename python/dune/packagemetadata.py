@@ -252,7 +252,7 @@ def cmakeArguments(cmakeArgs):
     else:
         raise ValueError('definitions must be a list or a dictionary.')
 
-def cmakeFlags():
+def defaultCmakeFlags():
     # defaults
     flags = dict([
         ('CMAKE_BUILD_TYPE','Release'),
@@ -318,7 +318,7 @@ def get_dune_py_dir():
 def metaData(version=None, dependencyCheck=True):
     data = Data(version)
 
-    cmake_flags = cmakeFlags()
+    cmake_flags = defaultCmakeFlags()
 
     # check if all dependencies are listed in pyproject.toml
     if dependencyCheck:
@@ -418,7 +418,7 @@ class MetaDataDict(dict):
         return value
 
 
-def extract_metadata(ignoreImportError=False):
+def extract_metadata():
     """ Extract meta data that was exported by CMake.
 
     This returns a dictionary that maps package names to the data associated
@@ -429,7 +429,6 @@ def extract_metadata(ignoreImportError=False):
     * DEPS: The name of all the dependencies of the module
     * DEPBUILDDIRS: The build directories of the dependencies
     """
-
     result = MetaDataDict()
 
     # add meta data of packages from the dune namespace
@@ -449,3 +448,52 @@ def extract_metadata(ignoreImportError=False):
         pass
 
     return result
+
+metadata = extract_metadata()
+
+def extractCMakeFlags():
+    duneOptsFile=None
+    cmakeFlags = {}
+    for x in metadata.combine_across_modules("CMAKE_FLAGS"):
+        for y in x.split(";"):
+            try:
+                k,v = y.split(":=",1)
+                if k=="DUNE_OPTS_FILE": duneOptsFile=v
+                else: cmakeFlags[k] = v.strip()
+            except ValueError: # no '=' in line
+                pass
+
+    # add flags from some opts file
+    duneOptsFile = os.environ.get('DUNE_OPTS_FILE', duneOptsFile)
+    if duneOptsFile:
+        # TODO: check here if the duneOptsFile exists and warn if not
+        #       Should be possible by checking return code of the subprocess
+        #       so that other bash errors are also caught and warned about
+        command = ['bash', '-c', 'source ' + duneOptsFile + ' && echo "$CMAKE_FLAGS"']
+        proc = subprocess.Popen(command, stdout = subprocess.PIPE)
+        stdout, _ = proc.communicate()
+        cmake_args = shlex.split( stdout.decode('utf-8') )
+    else:
+        cmake_args = []
+
+    # check environment variable
+    cmake_args += shlex.split( os.environ.get('CMAKE_FLAGS','') )
+
+    for y in cmake_args:
+        try:
+            k,v = y.split("=",1)
+            if k.startswith('-D'): k = k[2:]
+            cmakeFlags[k] = v.strip()
+        except ValueError: # no '=' in line
+            pass
+
+    # try to unify 'ON' and 'OFF' values
+    for k,v in cmakeFlags.items():
+        if v.upper() in ['ON','TRUE','T','1','YES',"Y"]:
+            cmakeFlags[k] = True
+        elif v.upper() in ['OFF','FALSE','F','0','NO','N']:
+            cmakeFlags[k] = False
+
+    return cmakeFlags
+
+cmakeFlags = extractCMakeFlags()

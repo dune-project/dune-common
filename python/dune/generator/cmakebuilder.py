@@ -1,6 +1,5 @@
 import importlib
 import logging
-import shlex
 import subprocess
 import os
 import sys
@@ -8,7 +7,7 @@ import jinja2
 import dune
 import signal
 
-from dune.packagemetadata import get_dune_py_dir, extract_metadata, Description
+from dune.packagemetadata import get_dune_py_dir, metadata, cmakeFlags, Description
 from dune.common import comm
 from dune.common.locking import Lock, LOCK_EX,LOCK_SH
 from dune.common.utility import buffer_to_str, isString, reload_module
@@ -29,25 +28,9 @@ noDepCheck = False
 class Builder:
     def dunepy_from_template(dunepy_dir,force=False):
         # Extract the raw data dictionary
-        data = extract_metadata()
 
-        modules    = data.combine_across_modules("MODULENAME")
-        builddirs  = data.zip_across_modules("DEPS", "DEPBUILDDIRS")
-
-        # todo: improve on this - just getting the idea how this could work
-        cmakeflags = data.combine_across_modules("CMAKE_FLAGS")
-
-        duneOptsFile = None
-
-        cmakeFlags = {}
-        for x in cmakeflags:
-            for y in x.split(";"):
-                try:
-                    k,v = y.split(":=",1)
-                    if k=="DUNE_OPTS_FILE": duneOptsFile=v
-                    else: cmakeFlags[k] = v.strip()
-                except ValueError: # no '=' in line
-                    pass
+        modules    = metadata.combine_across_modules("MODULENAME")
+        builddirs  = metadata.zip_across_modules("DEPS", "DEPBUILDDIRS")
 
         # add dune modules which where available during the build of a
         # python module but don't provide their own python module
@@ -81,35 +64,11 @@ class Builder:
             except FileNotFoundError:
                 pass
 
-            # add flags from some opts file
-            duneOptsFile = os.environ.get('DUNE_OPTS_FILE', duneOptsFile)
-            if duneOptsFile:
-                # TODO: check here if the duneOptsFile exists and warn if not
-                #       Should be possible by checking return code of the subprocess
-                #       so that other bash errors are also caught and warned about
-                command = ['bash', '-c', 'source ' + duneOptsFile + ' && echo "$CMAKE_FLAGS"']
-                proc = subprocess.Popen(command, stdout = subprocess.PIPE)
-                stdout, _ = proc.communicate()
-                cmake_args = shlex.split(buffer_to_str(stdout))
-            else:
-                cmake_args = []
-
-            # check environment variable
-            cmake_args += shlex.split( os.environ.get('CMAKE_FLAGS','') )
-
-            for y in cmake_args:
-                try:
-                    k,v = y.split("=",1)
-                    if k.startswith('-D'): k = k[2:]
-                    cmakeFlags[k] = v.strip()
-                except ValueError: # no '=' in line
-                    pass
-
             # Gather and reorganize meta data context that is used to write dune-py
             context = {}
             context["modules"]        = modules
             context["builddirs"]      = builddirs
-            context["install_prefix"] = data.unique_value_across_modules("INSTALL_PREFIX")
+            context["install_prefix"] = metadata.unique_value_across_modules("INSTALL_PREFIX")
             context["cmake_flags"]    = cmakeFlags
 
             # Find the correct template path
