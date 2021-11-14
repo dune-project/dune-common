@@ -1,12 +1,7 @@
 import sys, os
 from argparse import ArgumentParser
-from dune.packagemetadata import get_dune_py_dir, metadata
+from dune.packagemetadata import metadata, forceConfigure
 
-def configure():
-    # force a reconfiguration of dune-py by deleting tagfile
-    tagfile = os.path.join(get_dune_py_dir(), ".noconfigure")
-    if os.path.exists(tagfile):
-        os.remove(tagfile)
 def checkbuilddirs(args):
     # first arguments are the dune module name and last argument is a
     # string with builddirs separated by ';'
@@ -36,7 +31,7 @@ def run(arguments=None):
 
     if args.command == 'configure':
         print('Set up dune-py module for reconfiguration')
-        configure()
+        forceConfigure()
     elif args.command == 'checkbuilddirs':
         print('Comparing build directories of installed dune modules with given build directories')
         cmdArgs = args.args

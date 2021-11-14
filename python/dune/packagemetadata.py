@@ -320,6 +320,12 @@ def get_dune_py_dir():
 
     raise RuntimeError('Unable to determine location for dune-py module. Please set the environment variable "DUNE_PY_DIR".')
 
+def forceConfigure():
+    # force a reconfiguration of dune-py by deleting tagfile
+    tagfile = os.path.join(get_dune_py_dir(), ".noconfigure")
+    if os.path.exists(tagfile):
+        os.remove(tagfile)
+
 def metaData(version=None, dependencyCheck=True):
     data = Data(version)
 
@@ -539,8 +545,8 @@ def registerExternalModule(moduleName, modulePath):
 
     global cmakeFlags, metadata, externalPythonModules
 
-    # check if this module is being registered for the first time
-    if moduleName not in externalPythonModules:
+    # check if this module is being registered for the first time or if the location of its metafile has changed
+    if moduleName not in externalPythonModules or modulePath != externalPythonModules[moduleName]:
 
         externalPythonModules[moduleName]=modulePath
         logger.info("Registered external module {}".format(moduleName))
@@ -548,12 +554,7 @@ def registerExternalModule(moduleName, modulePath):
         # if dune-py has already been created
         # and we are registering a new module,
         # we need to make sure that dune-py is reconfigured
-        dunePyDir = get_dune_py_dir()
-        if os.path.isdir(dunePyDir):
-            # force (re-)configuration
-            tagfile = os.path.join(dunePyDir, ".noconfigure")
-            if os.path.exists(tagfile):
-                os.remove(tagfile)
+        forceConfigure()
 
         # update metadata structures
         metadata = extract_metadata()
