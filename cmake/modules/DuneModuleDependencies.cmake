@@ -105,10 +105,14 @@ macro(dune_process_dependency_macros)
         NO_DEFAULT_PATH
         NO_CMAKE_FIND_ROOT_PATH)
       if(_mod_cmake)
-        message(STATUS "Performing tests specific to ${_mod} from file ${_mod_cmake}.")
+        message(STATUS "Performing tests for ${_mod} (from ${_mod_cmake})")
         include(${_mod_cmake})
       else()
-        message(STATUS "No module specific tests performed for module '${_mod}' because macro file '${_macro}.cmake' not found in ${CMAKE_MODULE_PATH}.")
+        # only print output for found module dependencies
+        # otherwise it's obvious that we cannot find a ModuleMacros.cmake file
+        if (${${_mod}_FOUND}})
+          message(STATUS "No module specific tests for module '${_mod}' ('${_macro}.cmake' not found)")
+        endif()
       endif()
       dune_module_to_uppercase(_upper_case "${_mod}")
       if(${_mod}_INCLUDE_DIRS)
