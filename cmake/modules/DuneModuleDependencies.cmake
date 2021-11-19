@@ -99,7 +99,6 @@ macro(dune_process_dependency_macros)
       dune_module_to_macro(_cmake_mod_name "${_mod}")
       set(_macro "${_cmake_mod_name}Macros")
       set(_mod_cmake _mod_cmake-NOTFOUND) # Prevent false positives due to caching
-      message(STATUS "Searching for macro file '${_macro}' for module '${_mod}'.")
       find_file(_mod_cmake
         NAMES "${_macro}.cmake"
         PATHS ${CMAKE_MODULE_PATH}
