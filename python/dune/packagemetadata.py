@@ -469,16 +469,15 @@ def extract_metadata():
         import dune.data
         for p in dune.data.__path__:
             for metadata_file in glob.glob(os.path.join(p,"*.cmake")):
-                package = os.path.basename(metadata_file)
+                package = os.path.splitext(os.path.basename(metadata_file))[0]
                 add_package_metadata(package, metadata_file)
     except ImportError:  # no dune module was installed which can happen during packaging
         pass
 
     # possible add meta data from externally registered modules
     for module, metadataPath in externalPythonModules.items():
-        for p in metadataPath:
-            for metadata_file in glob.glob(os.path.join(p,'data',"*.cmake")):
-                add_package_metadata(module, metadata_file)
+        for metadata_file in glob.glob(os.path.join(metadataPath, "data", "*.cmake")):
+            add_package_metadata(module, metadata_file)
 
     return result
 
