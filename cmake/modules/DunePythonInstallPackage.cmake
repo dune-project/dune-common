@@ -117,14 +117,13 @@ function(dune_python_install_package)
   # only carried out if this succeeded and with --no-index, i.e., without using any package indices but only local wheels
   # Installing python modules here can lead to issues with versions o# module source packages and pypi packages and possible unexpected
   # version downgrades
-  string(REPLACE " " "\n" RequiredPypiModules "${ProjectPythonRequires}")
-  file(WRITE "${PYINST_FULLPATH}/requirements.txt" "${RequiredPypiModules}")
+  string(REPLACE " " ";" RequiredPypiModules "${ProjectPythonRequires}")
   dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
                                 "${WHEEL_OPTION}"
                                 # we can't use the same additional parameters for both internal
                                 # install and normal install so not including these flags at the moment
                                 "${PACKAGE_INDEX}"          # stopgap solution until ci repo fixed
-                                -r "${PYINST_FULLPATH}/requirements.txt"
+                                "${RequiredPypiModules}"
                        RESULT_VARIABLE DUNE_PYTHON_DEPENDENCIES_FAILED
                        WARNING_MESSAGE "python package requirements could not be installed - possibly connection to the python package index failed"
                       )
