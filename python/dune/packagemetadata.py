@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
 from setuptools import find_namespace_packages
-import sys, os, io, getopt, re, ast
+import sys, os, io, re, ast
 import shlex
 import pkgutil
 import importlib, subprocess
 import email.utils
-import pkg_resources
 from datetime import date
 
 class Version:

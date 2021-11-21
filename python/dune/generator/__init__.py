@@ -1,7 +1,7 @@
 import os
 import logging
 
-from dune.common.module import getCXXFlags
+import dune.common.module as moduleInfo
 from .exceptions import CompileError, ConfigurationError
 from . import cmakebuilder as builderModule
 from .cmakebuilder import Builder
@@ -15,6 +15,7 @@ builder = Builder(force=(env_force in ('1', 'TRUE')), saveOutput=env_save)
 
 def reloadBuilder():
     builder.initialize()
+
 
 def setNoDependencyCheck():
     logger.debug("Switching off dependency check - modules will always be compiled")
@@ -30,7 +31,7 @@ def setFlags(flags="-g",noChecks=None):
     elif noChecks is False:
         setDependencyCheck()
 def addToFlags(pre="",post="",noChecks=None):
-    setFlags(pre+" "+getCXXFlags()+" "+post,noChecks)
+    setFlags(pre+" " + moduleInfo.getCXXFlags() + " "+post, noChecks)
 
 def unsetFlags(noChecks=None):
     logger.debug("Using compile flags from configuration of dune-py")

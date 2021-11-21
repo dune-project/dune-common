@@ -1,12 +1,7 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import email.utils
-import io
 import logging
 import os
 import re
 import shlex
-import string
 import subprocess
 import sys
 
@@ -15,16 +10,19 @@ from os.path import expanduser
 if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
-    from dune.packagemetadata import Version, VersionRequirement,\
+    import dune.generator as generator
+    from dune.packagemetadata import Version,\
             Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
+
+# this can also be used as a stand-alone script
 else:
     from utility import buffer_to_str
     import project
-    from packagemetadata import Version, VersionRequirement,\
+    import generator
+    from packagemetadata import Version,\
             Description, cmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
 
 logger = logging.getLogger(__name__)
-
 
 def find_modules(path):
     """find DUNE modules in given path
@@ -434,5 +432,5 @@ def getCXXFlags():
     if not matches:
         return ''
     if matches.__len__() > 1:
-        raise ConfigurationError("found multiple entries for CXXFLAGS in CMakeCache.txt")
+        raise generator.ConfigurationError("found multiple entries for CXXFLAGS in CMakeCache.txt")
     return matches[0].string.partition('=')[2].rstrip()

@@ -1,5 +1,4 @@
 import importlib
-import sys
 from inspect import signature
 
 def buffer_to_str(b):

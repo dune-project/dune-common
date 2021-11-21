@@ -1,5 +1,5 @@
 import sys, os
-from argparse import Action, ArgumentParser
+from argparse import ArgumentParser
 from dune.packagemetadata import get_dune_py_dir, extract_metadata
 
 def configure():
