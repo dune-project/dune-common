@@ -18,7 +18,7 @@ Initialize and finalize a Dune module.
 
   This function needs to be called from every module top-level
   ``CMakeLists.txt`` file. It sets up the module, defines basic variables and
-  manages dependencies. Don't forget to call :command:`finalize_dune_project`
+  manages dependencies. Don't forget to call :cmake:command:`finalize_dune_project`
   at the end of that ``CMakeLists.txt`` file.
 
 

@@ -16,6 +16,7 @@ install(FILES
   RunDoxygen.cmake
   setup.py.in
   sphinx_cmake_dune.py
+  sphinx_moderncmakedomain.py
   WritePythonCMakeMetadata.cmake
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
 

@@ -12,9 +12,7 @@ the standard cmake signatures.
 
 Normal Libraries
 ^^^^^^^^^^^^^^^^
-
 .. cmake:command:: dune_add_library
-
 .. code-block:: cmake
 
   dune_add_library(<basename> [STATIC|SHARED|MODULE]
@@ -34,18 +32,22 @@ are automatically filled with the given (optional) arguments.
 
 A dune library is exported into a unique export set if the parameter
 ``NO_EXPORT`` is not given. This export set is automatically installed and
-exported in the ``dune_finalize_project()`` function.
+:cmake:command:`finalize_dune_project()` function.
 
 ``SOURCES``
   The source files from which to build the library.
 
 ``LINK_LIBRARIES`` (or ``ADD_LIBS``)
-  A list of dependency the libraries is explicitly linked against. The parameter ``ADD_LIBS``
-  is deprecated in version 2.9.
+  A list of dependency the libraries is explicitly linked against.
+
+  .. versionchanged:: 2.9
+    The parameter ``ADD_LIBS`` is deprecated.
 
 ``COMPILE_OPTIONS`` (or ``COMPILE_FLAGS``)
-  Any additional compile flags for building the library. The parameter ``COMPILE_FLAGS``
-  is deprecated in version 2.9.
+  Any additional compile flags for building the library.
+
+  .. versionchanged:: 2.9
+    The parameter ``COMPILE_FLAGS`` is deprecated.
 
 ``OUTPUT_NAME``
   Name of the library file, e.g. ``lib<libname>.so`` or ``lib<libname>.a``.
@@ -94,12 +96,16 @@ A dune library is exported into a unique export set if the parameter
 exported in the ``dune_finalize_project()`` function.
 
 ``LINK_LIBRARIES`` (or ``ADD_LIBS``)
-  A list of dependency the libraries is explicitly linked against. The parameter ``ADD_LIBS``
-  is deprecated in version 2.9.
+  A list of dependency the libraries is explicitly linked against.
+
+  .. versionchanged:: 2.9
+    The parameter ``ADD_LIBS`` is deprecated.
 
 ``COMPILE_OPTIONS`` (or ``COMPILE_FLAGS``)
-  Any additional compile flags for building the library. The parameter ``COMPILE_FLAGS``
-  is deprecated in version 2.9.
+  Any additional compile flags for building the library.
+
+  .. versionchanged:: 2.9
+    The parameter ``COMPILE_FLAGS`` is deprecated.
 
 ``NAMESPACE``
   Name to be prepended to the export name of the target.

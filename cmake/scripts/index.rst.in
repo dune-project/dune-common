@@ -33,6 +33,15 @@ Command reference
    :glob:
 
    commands/*
+   dune_add_library <modules/DuneAddLibrary>
+   dune_create_dependency_tree <modules/DuneModuleDependencies>
+   dune_module_information <modules/DuneModuleInformation>
+   dune_module_to_macro <modules/DuneUtilities>
+   dune_module_to_uppercase <modules/DuneUtilities>
+   dune_process_dependency_macros <modules/DuneModuleDependencies>
+   dune_project <modules/DuneProject>
+   finalize_dune_project <modules/DuneProject>
+   replace_properties <modules/DuneReplaceProperties>
 
 .. _moduleref:
 
