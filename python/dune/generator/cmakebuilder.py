@@ -3,6 +3,7 @@ import logging
 import subprocess
 import os
 import sys
+import shlex
 import jinja2
 import signal
 import json
@@ -14,14 +15,11 @@ from dune.packagemetadata import (
     get_dune_py_dir, Description,
     currentMetaData, cmakeFlags, externalPythonModules
 )
+
 from dune.common import comm
 from dune.common.locking import Lock, LOCK_EX,LOCK_SH
 from dune.common.utility import buffer_to_str, isString, reload_module
-from dune.common.module import (
-    get_cmake_command,
-    get_default_build_args,
-    get_dune_py_dir,
-)
+
 from dune.generator.exceptions import CompileError
 
 logger = logging.getLogger(__name__)
@@ -29,6 +27,21 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 cxxFlags = None
 noDepCheck = False
+
+
+def getCMakeCommand():
+    try:
+        return os.environ['DUNE_CMAKE']
+    except KeyError:
+        return 'cmake'
+
+
+def getDefaultBuildArgs():
+    try:
+        return shlex.split(os.environ['DUNE_BUILD_FLAGS'])
+    except KeyError:
+        return None
+
 
 class Builder:
 
@@ -136,7 +149,7 @@ class Builder:
         else:
             self.savedOutput = None
         self.dune_py_dir = get_dune_py_dir()
-        self.build_args = get_default_build_args()
+        self.build_args = getDefaultBuildArgs()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         self.initialized = False
         self.externalPythonModules = copy.deepcopy(externalPythonModules())
@@ -179,7 +192,7 @@ class Builder:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
 
     def compile(self, target='all', verbose=False):
-        cmake_command = get_cmake_command()
+        cmake_command = getCMakeCommand()
         cmake_args = [cmake_command, "--build", self.dune_py_dir,
                       "--target", target, "--parallel"]
         make_args = []
