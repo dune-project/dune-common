@@ -6,12 +6,13 @@ import sys
 import jinja2
 import signal
 import json
+import copy
 
 import dune
 
 from dune.packagemetadata import (
-     get_dune_py_dir, Description,
-     metadata, cmakeFlags, externalPythonModules
+    get_dune_py_dir, Description,
+    currentMetaData, cmakeFlags, externalPythonModules
 )
 from dune.common import comm
 from dune.common.locking import Lock, LOCK_EX,LOCK_SH
@@ -35,8 +36,9 @@ class Builder:
     def dunepy_from_template(dunepy_dir,force=False):
         # Extract the raw data dictionary
 
-        modules    = metadata.combine_across_modules("MODULENAME")
-        builddirs  = metadata.zip_across_modules("DEPS", "DEPBUILDDIRS")
+        metaData = currentMetaData()
+        modules = metaData.combine_across_modules("MODULENAME")
+        builddirs = metaData.zip_across_modules("DEPS", "DEPBUILDDIRS")
 
         # add dune modules which where available during the build of a
         # python module but don't provide their own python module
@@ -74,7 +76,7 @@ class Builder:
             context = {}
             context["modules"]        = modules
             context["builddirs"]      = builddirs
-            context["install_prefix"] = metadata.unique_value_across_modules("INSTALL_PREFIX")
+            context["install_prefix"] = metaData.unique_value_across_modules("INSTALL_PREFIX")
             context["cmake_flags"]    = cmakeFlags
 
             # Find the correct template path
@@ -137,7 +139,7 @@ class Builder:
         self.build_args = get_default_build_args()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         self.initialized = False
-        self.externalPythonModules = externalPythonModules.copy()
+        self.externalPythonModules = copy.deepcopy(externalPythonModules())
 
     def cacheExternalModules(self):
         """Store external modules in dune-py"""
@@ -147,7 +149,7 @@ class Builder:
             json.dump(self.externalPythonModules, externalModulesFile)
 
     def initialize(self):
-        self.externalPythonModules = externalPythonModules.copy()
+        self.externalPythonModules = copy.deepcopy(externalPythonModules())
 
         if comm.rank == 0:
             logger.debug("(Re-)Initializing JIT compilation module")
@@ -238,7 +240,7 @@ class Builder:
 
         # check if we need to initialize dune-py either because
         # this is the first call to load or because an external module with metadata has been registered
-        if not self.initialized or not self.externalPythonModules == externalPythonModules:
+        if not self.initialized or not self.externalPythonModules == externalPythonModules():
             self.initialize()
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)

@@ -440,7 +440,14 @@ def loadExternalModules():
                 mods = {}             # old version of external module cache
     return mods
 
-externalPythonModules = loadExternalModules()
+
+# registered external modules and their path are internally cached
+_externalPythonModules = loadExternalModules()
+
+
+def externalPythonModules():
+    return _externalPythonModules
+
 
 def extract_metadata():
     """ Extract meta data that was exported by CMake.
@@ -456,9 +463,9 @@ def extract_metadata():
     result = MetaDataDict()
 
     # add meta data of packages from the dune namespace
-    def add_package_metadata(package, metadata_file):
+    def add_package_metadata(package, metaDataFile):
         result.setdefault(package, {})
-        for line in open(metadata_file, "r"):
+        for line in open(metaDataFile, "r"):
             try:
                 key, value = line.split("=", 1)
                 result[package][key] = value.strip()
@@ -467,26 +474,33 @@ def extract_metadata():
 
     try:
         import dune.data
-        for p in dune.data.__path__:
-            for metadata_file in glob.glob(os.path.join(p,"*.cmake")):
-                package = os.path.splitext(os.path.basename(metadata_file))[0]
-                add_package_metadata(package, metadata_file)
+        for metadataPath in dune.data.__path__:
+            for metaDataFile in glob.glob(os.path.join(metadataPath, "*.cmake")):
+                package = os.path.splitext(os.path.basename(metaDataFile))[0]
+                add_package_metadata(package, metaDataFile)
     except ImportError:  # no dune module was installed which can happen during packaging
         pass
 
     # possible add meta data from externally registered modules
-    for module, metadataPath in externalPythonModules.items():
-        for metadata_file in glob.glob(os.path.join(metadataPath, "data", "*.cmake")):
-            add_package_metadata(module, metadata_file)
+    for module, metadataPath in _externalPythonModules.items():
+        for metaDataFile in glob.glob(os.path.join(metadataPath, "data", "*.cmake")):
+            add_package_metadata(module, metaDataFile)
 
     return result
 
-metadata = extract_metadata()
+# the current meta data is internally cached
+_metaData = extract_metadata()
+
+
+def currentMetaData():
+    """Return the current meta data object with information on all registered modules"""
+    return _metaData
+
 
 def extractCMakeFlags():
     duneOptsFile=None
     cmakeFlags = {}
-    for x in metadata.combine_across_modules("CMAKE_FLAGS"):
+    for x in _metaData.combine_across_modules("CMAKE_FLAGS"):
         for y in x.split(";"):
             try:
                 k,v = y.split(":=",1)
@@ -542,12 +556,12 @@ def registerExternalModule(moduleName, modulePath):
         - a path name, metadata files are searched for using 'path/data/*.cmake'
     """
 
-    global cmakeFlags, metadata, externalPythonModules
+    global cmakeFlags, _metaData, _externalPythonModules
 
     # check if this module is being registered for the first time or if the location of its metafile has changed
-    if moduleName not in externalPythonModules or modulePath != externalPythonModules[moduleName]:
+    if moduleName not in _externalPythonModules or modulePath != _externalPythonModules[moduleName]:
 
-        externalPythonModules[moduleName]=modulePath
+        _externalPythonModules[moduleName]=modulePath
         logger.info("Registered external module {}".format(moduleName))
 
         # if dune-py has already been created
@@ -556,5 +570,5 @@ def registerExternalModule(moduleName, modulePath):
         forceConfigure()
 
         # update metadata structures
-        metadata = extract_metadata()
+        _metaData = extract_metadata()
         cmakeFlags = extractCMakeFlags()

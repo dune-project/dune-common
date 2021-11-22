@@ -1,6 +1,6 @@
 import sys, os
 from argparse import ArgumentParser
-from dune.packagemetadata import metadata, forceConfigure
+from dune.packagemetadata import currentMetaData, forceConfigure
 
 def checkbuilddirs(args):
     # first arguments are the dune module name and last argument is a
@@ -10,7 +10,8 @@ def checkbuilddirs(args):
 
     # Extract the raw data dictionary
     try:
-        instbuilddirs = metadata.zip_across_modules("DEPS", "DEPBUILDDIRS")
+        metaData = currentMetaData()
+        instbuilddirs = metaData.zip_across_modules("DEPS", "DEPBUILDDIRS")
     except ValueError as ex:
         print(ex)
         return 1
