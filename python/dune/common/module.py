@@ -15,15 +15,21 @@ if __name__ == "dune.common.module":
         defaultCMakeFlags, cmakeArguments,
         inVirtualEnvironment, getDunePyDir,
     )
+    from dune.deprecate import deprecated
 # this can also be used as a stand-alone script
 else:
     from utility import buffer_to_str
-    import project
+    import project, deprecate
     from packagemetadata import (
         Version, Description,
         defaultCMakeFlags, cmakeArguments,
         inVirtualEnvironment, getDunePyDir,
     )
+    from dune.deprecate import deprecated
+
+@deprecated(name="dune.common.module.get_dune_py_dir", msg="Use 'dune.packagemetadata.getDunePyDir' instead")
+def get_dune_py_dir():
+    return getDunePyDir()
 
 logger = logging.getLogger(__name__)
 
