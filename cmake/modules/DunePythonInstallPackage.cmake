@@ -56,8 +56,6 @@ include_guard(GLOBAL)
 function(dune_python_install_package)
   # Parse Arguments
   set(OPTION)
-  # TODO deprecate CMAKE_METADATA_FILE
-  #      the file is now always `dune/data/packagename.cmake`
   set(SINGLE PATH CMAKE_METADATA_FILE PACKAGENAME)
   set(MULTI ADDITIONAL_PIP_PARAMS DEPENDS CMAKE_METADATA_FLAGS)
   cmake_parse_arguments(PYINST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
@@ -69,6 +67,15 @@ function(dune_python_install_package)
   if("${PYINST_PACKAGENAME}" STREQUAL "")
       set(PYINST_PACKAGENAME "dune")
   endif()
+
+  # This argument has been introduced after release 2.8 so no deprecation is necessary
+  # To ease the transition in downstream modules we print a warning. However, this
+  # can be removed anytime _before_ release 2.9 once most downstream modules have been adapted.
+  if(PYINST_CMAKE_METADATA_FILE)
+    message(WARNING "Argument CMAKE_METADATA_FILE is ignored and should be removed. The path is set to ${PYINST_PACKAGENAME}/data/${ProjectName}.cmake.")
+  endif()
+
+  # set the meta data file path for this package
   set(PYINST_CMAKE_METADATA_FILE "${PYINST_PACKAGENAME}/data/${ProjectName}.cmake")
 
   # 'ProjectPythonRequires' is used for pip install below
