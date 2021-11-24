@@ -2,7 +2,7 @@ import logging
 import numpy as np
 import os
 import textwrap
-from dune.packagemetadata import cmakeFlags
+from dune.packagemetadata import getCMakeFlags
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,8 @@ except AttributeError:
 logformat = os.environ.get('DUNE_LOG_FORMAT', 'DUNE-%(levelname)s: %(message)s')
 
 logging.basicConfig(format=logformat, level=loglevel)
+
+cmakeFlags = getCMakeFlags()
 
 if 'HAVE_MPI' in cmakeFlags and cmakeFlags['HAVE_MPI']:
     try:

@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 
+"""Module that helps with meta data for Dune Python packages
+
+This module implements helpers for two classes of meta data
+
+  - Classical package meta data such as maintainer email, description, ...
+  - Build meta data that is needed for the Dune generator module
+    and the just-in-time compilation of C++/Python bindings
+
+"""
+
 from setuptools import find_namespace_packages
 import sys
 import os
@@ -265,7 +275,7 @@ def cmakeArguments(cmakeArgs):
         raise ValueError('definitions must be a list or a dictionary.')
 
 
-def defaultCmakeFlags():
+def defaultCMakeFlags():
     # defaults
     flags = dict([
         ('CMAKE_BUILD_TYPE', 'Release'),
@@ -290,7 +300,7 @@ def defaultCmakeFlags():
     return flags
 
 
-def inVEnv():
+def inVirtualEnvironment():
     # check whether we are in a anaconda environment
     # were the checks based on prefix and base_prefix
     # seem to fail
@@ -308,7 +318,7 @@ def inVEnv():
     return 0
 
 
-def get_dune_py_dir():
+def getDunePyDir():
     try:
         basedir = os.path.realpath(os.environ['DUNE_PY_DIR'])
         basedir = os.path.join(basedir, 'dune-py')
@@ -316,8 +326,7 @@ def get_dune_py_dir():
     except KeyError:
         pass
 
-    # test if in virtual env
-    if inVEnv():
+    if inVirtualEnvironment():
         virtualEnvPath = sys.prefix
         return os.path.join(virtualEnvPath, '.cache', 'dune-py')
 
@@ -333,15 +342,13 @@ def get_dune_py_dir():
 
 def forceConfigure():
     # force a reconfiguration of dune-py by deleting tagfile
-    tagfile = os.path.join(get_dune_py_dir(), ".noconfigure")
+    tagfile = os.path.join(getDunePyDir(), ".noconfigure")
     if os.path.exists(tagfile):
         os.remove(tagfile)
 
 
 def metaData(version=None, dependencyCheck=True):
     data = Data(version)
-
-    cmake_flags = defaultCmakeFlags()
 
     # check if all dependencies are listed in pyproject.toml
     if dependencyCheck:
@@ -393,8 +400,8 @@ def metaData(version=None, dependencyCheck=True):
             "Programming Language :: Python :: 3",
             "License :: OSI Approved :: GNU General Public License (GPL)",
         ],
-        "cmake_args": cmake_flags,
-      }
+        "cmake_args": defaultCMakeFlags(),
+    }
     if os.path.isdir('python'):
         setupParams.update({
             "packages": find_namespace_packages(where="python"),
@@ -417,7 +424,7 @@ def metaData(version=None, dependencyCheck=True):
     return data, setupParams
 
 
-class MetaDataDict(dict):
+class BuildMetaData(dict):
     """Dictionary with some data processing patterns"""
 
     def combine_across_modules(self, key):
@@ -449,10 +456,10 @@ class MetaDataDict(dict):
         return value
 
 
-def loadExternalModules():
+def _loadExternalModules():
     """Check which external modules are currently registered in dune-py"""
 
-    externalModulesPath = os.path.join(get_dune_py_dir(), ".externalmodules.json")
+    externalModulesPath = os.path.join(getDunePyDir(), ".externalmodules.json")
     if os.path.exists(externalModulesPath):
         with open(externalModulesPath) as externalModulesFile:
             return json.load(externalModulesFile)
@@ -461,28 +468,24 @@ def loadExternalModules():
 
 
 # registered external modules and their path are internally cached
-_externalPythonModules = loadExternalModules()
+_externalPythonModules = _loadExternalModules()
 
 
-def externalPythonModules():
+def getExternalPythonModules():
+    """Get information on external modules
+
+    This returns a dictionary that maps from
+    the name of the external module to the module path
+    """
     return _externalPythonModules
 
 
-def extract_metadata():
-    """ Extract meta data that was exported by CMake.
-
-    This returns a dictionary that maps package names to the data associated
-    with the given metadata key. Currently the following metadata keys are
-    exported by Python packages created with the Dune CMake build system:
-    * MODULENAME: The name of the Dune module
-    * BUILDDIR: The build directory of the Dune module
-    * DEPS: The name of all the dependencies of the module
-    * DEPBUILDDIRS: The build directories of the dependencies
-    """
-    result = MetaDataDict()
+def _extractBuildMetaData():
+    """ Extract meta data that was exported by CMake."""
+    result = BuildMetaData()
 
     # add meta data of packages from the dune namespace
-    def add_package_metadata(package, metaDataFile):
+    def addPackageMetaData(package, metaDataFile):
         result.setdefault(package, {})
         for line in open(metaDataFile, "r"):
             try:
@@ -496,31 +499,39 @@ def extract_metadata():
         for metadataPath in dune.data.__path__:
             for metaDataFile in glob.glob(os.path.join(metadataPath, "*.cmake")):
                 package = os.path.splitext(os.path.basename(metaDataFile))[0]
-                add_package_metadata(package, metaDataFile)
+                addPackageMetaData(package, metaDataFile)
     except ImportError:  # no dune module was installed which can happen during packaging
         pass
 
     # possible add meta data from externally registered modules
     for module, metadataPath in _externalPythonModules.items():
         for metaDataFile in glob.glob(os.path.join(metadataPath, "data", "*.cmake")):
-            add_package_metadata(module, metaDataFile)
+            addPackageMetaData(module, metaDataFile)
 
     return result
 
 
 # the current meta data is internally cached
-_metaData = extract_metadata()
+_buildMetaData = _extractBuildMetaData()
 
 
-def currentMetaData():
-    """Return the current meta data object with information on all registered modules"""
-    return _metaData
+def getBuildMetaData():
+    """Return the current meta data object with information on all registered modules
+    This returns a dictionary that maps package names to the data associated
+    with the given metadata key. Currently the following metadata keys are
+    exported by Python packages created with the Dune CMake build system:
+    * MODULENAME: The name of the Dune module
+    * BUILDDIR: The build directory of the Dune module
+    * DEPS: The name of all the dependencies of the module
+    * DEPBUILDDIRS: The build directories of the dependencies
+    """
+    return _buildMetaData
 
 
-def extractCMakeFlags():
+def _extractCMakeFlags():
     duneOptsFile = None
     cmakeFlags = {}
-    for x in _metaData.combine_across_modules("CMAKE_FLAGS"):
+    for x in _buildMetaData.combine_across_modules("CMAKE_FLAGS"):
         for y in x.split(";"):
             try:
                 k, v = y.split(":=", 1)
@@ -533,6 +544,7 @@ def extractCMakeFlags():
 
     # add flags from some opts file
     duneOptsFile = os.environ.get('DUNE_OPTS_FILE', duneOptsFile)
+    cmakeArgs = []
     if duneOptsFile:
         # TODO: check here if the duneOptsFile exists and warn if not
         #       Should be possible by checking return code of the subprocess
@@ -540,14 +552,12 @@ def extractCMakeFlags():
         command = ['bash', '-c', 'source ' + duneOptsFile + ' && echo "$CMAKE_FLAGS"']
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         stdout, _ = proc.communicate()
-        cmake_args = shlex.split(stdout.decode('utf-8'))
-    else:
-        cmake_args = []
+        cmakeArgs = shlex.split(stdout.decode('utf-8'))
 
     # check environment variable
-    cmake_args += shlex.split(os.environ.get('CMAKE_FLAGS', ''))
+    cmakeArgs += shlex.split(os.environ.get('CMAKE_FLAGS', ''))
 
-    for y in cmake_args:
+    for y in cmakeArgs:
         try:
             k, v = y.split("=", 1)
             if k.startswith('-D'):
@@ -566,7 +576,13 @@ def extractCMakeFlags():
     return cmakeFlags
 
 
-cmakeFlags = extractCMakeFlags()
+# the CMake flags are internally cached
+_cmakeFlags = _extractCMakeFlags()
+
+
+def getCMakeFlags():
+    """Return the currently registered CMake flags"""
+    return _cmakeFlags
 
 
 def registerExternalModule(moduleName, modulePath):
@@ -581,7 +597,7 @@ def registerExternalModule(moduleName, modulePath):
         - a path name, metadata files are searched for using 'path/data/*.cmake'
     """
 
-    global cmakeFlags, _metaData, _externalPythonModules
+    global _cmakeFlags, _buildMetaData, _externalPythonModules
 
     # check if this module is being registered for the first time or if the location of its metafile has changed
     if moduleName not in _externalPythonModules or modulePath != _externalPythonModules[moduleName]:
@@ -595,5 +611,5 @@ def registerExternalModule(moduleName, modulePath):
         forceConfigure()
 
         # update metadata structures
-        _metaData = extract_metadata()
-        cmakeFlags = extractCMakeFlags()
+        _buildMetaData = _extractBuildMetaData()
+        _cmakeFlags = _extractCMakeFlags()

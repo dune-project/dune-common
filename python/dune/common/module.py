@@ -10,14 +10,20 @@ from os.path import expanduser
 if __name__ == "dune.common.module":
     from dune.common.utility import buffer_to_str
     from dune.common import project
-    from dune.packagemetadata import Version,\
-            Description, defaultCmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
+    from dune.packagemetadata import (
+        Version, Description,
+        defaultCMakeFlags, cmakeArguments,
+        inVirtualEnvironment, getDunePyDir,
+    )
 # this can also be used as a stand-alone script
 else:
     from utility import buffer_to_str
     import project
-    from packagemetadata import Version,\
-            Description, defaultCmakeFlags, cmakeArguments, inVEnv, get_dune_py_dir
+    from packagemetadata import (
+        Version, Description,
+        defaultCMakeFlags, cmakeArguments,
+        inVirtualEnvironment, getDunePyDir,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +174,7 @@ def get_cmake_command():
         return 'cmake'
 
 def get_local():
-    if inVEnv():
+    if inVirtualEnvironment():
         return sys.prefix
     try:
         home = expanduser("~")
@@ -323,7 +329,7 @@ def get_dune_py_version():
 
 def make_dune_py_module(dune_py_dir=None, deps=None):
     if dune_py_dir is None:
-        dune_py_dir = get_dune_py_dir()
+        dune_py_dir = getDunePyDir()
     os.makedirs(dune_py_dir, exist_ok=True)
 
     descFile = os.path.join(dune_py_dir, 'dune.module')
@@ -369,9 +375,9 @@ def make_dune_py_module(dune_py_dir=None, deps=None):
 
 def build_dune_py_module(dune_py_dir=None, cmake_args=None, build_args=None, builddir=None, deps=None, writetagfile=False):
     if dune_py_dir is None:
-        dune_py_dir = get_dune_py_dir()
+        dune_py_dir = getDunePyDir()
     if cmake_args is None:
-        cmake_args = defaultCmakeFlags()
+        cmake_args = defaultCMakeFlags()
 
     modules, dirs = select_modules()
     if deps is None:
@@ -424,10 +430,12 @@ def getCXXFlags():
     '''Return the CXXFLAGS used during configuration of dune-py.
        These are extracted from the CMackeCache.txt file.
     '''
-    cache = os.path.join(get_dune_py_dir(), "CMakeCache.txt")
+    cache = os.path.join(getDunePyDir(), "CMakeCache.txt")
     matches = [match for match in [re.match('DEFAULT_CXXFLAGS:STRING=', line) for line in open(cache)] if match is not None]
     if not matches:
         return ''
     if matches.__len__() > 1:
+        # TODO move this function to the generator
+        import generator
         raise generator.ConfigurationError("found multiple entries for CXXFLAGS in CMakeCache.txt")
     return matches[0].string.partition('=')[2].rstrip()
