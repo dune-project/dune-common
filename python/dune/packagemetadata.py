@@ -431,14 +431,12 @@ class MetaDataDict(dict):
 def loadExternalModules():
     """Check which external modules are currently registered in dune-py"""
 
-    mods = {}
     externalModulesPath = os.path.join(get_dune_py_dir(), ".externalmodules.json")
     if os.path.exists(externalModulesPath):
         with open(externalModulesPath) as externalModulesFile:
-            mods = json.load(externalModulesFile)
-            if type(mods) == list:
-                mods = {}             # old version of external module cache
-    return mods
+            return json.load(externalModulesFile)
+
+    return {}
 
 
 # registered external modules and their path are internally cached
