@@ -56,21 +56,51 @@ include_guard(GLOBAL)
 function(dune_python_install_package)
   # Parse Arguments
   set(OPTION)
-  set(SINGLE PATH CMAKE_METADATA_FILE)
+  set(SINGLE PATH CMAKE_METADATA_FILE PACKAGENAME)
   set(MULTI ADDITIONAL_PIP_PARAMS DEPENDS CMAKE_METADATA_FLAGS)
   cmake_parse_arguments(PYINST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYINST_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
   endif()
 
-  # Configure setup.py.in if present
+  # set the new package name
+  if("${PYINST_PACKAGENAME}" STREQUAL "")
+      set(PYINST_PACKAGENAME "dune")
+  endif()
+
+  # This argument has been introduced after release 2.8 so no deprecation is necessary
+  # To ease the transition in downstream modules we print a warning. However, this
+  # can be removed anytime _before_ release 2.9 once most downstream modules have been adapted.
+  if(PYINST_CMAKE_METADATA_FILE)
+    message(WARNING "Argument CMAKE_METADATA_FILE is ignored and should be removed. The path is set to ${PYINST_PACKAGENAME}/data/${ProjectName}.cmake.")
+  endif()
+
+  # set the meta data file path for this package
+  set(PYINST_CMAKE_METADATA_FILE "${PYINST_PACKAGENAME}/data/${ProjectName}.cmake")
+
+  # 'ProjectPythonRequires' is used for pip install below
+  # 'RequiredPythonModules' is added to the builddir/python/setup.py
+  #    This also contains the dependent dune modules which can be available
+  #    in the dune wheelhouse (e.g. used in the nightly-build)
   set(RequiredPythonModules "${ProjectPythonRequires}")
+  # Configure setup.py.in if present
   foreach(mod ${ALL_DEPENDENCIES})
     if(${${mod}_HASPYTHON}) # module found and has python bindings
       string(APPEND RequiredPythonModules " ${mod}")
       string(APPEND ProjectPythonRequires " ${${mod}_PYTHONREQUIRES}")
     endif()
   endforeach()
+
+  # if MPI is found dune-common will be linked to MPI
+  # in that case we require mpi4py for MPI support from the Python side
+  # This will not install mpi4py when installing in build-isolation but
+  # will install it into the (internal) venv during a source build.
+  # The case of a package installation is taken care of in
+  # `python/dune/common/__init__.py'.
+  if(HAVE_MPI AND NOT SKBUILD)
+    message(STATUS "Adding mpi4py to the Python requirements")
+    string(APPEND ProjectPythonRequires " mpi4py")
+  endif()
 
   set(PYINST_FULLPATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
   if(EXISTS ${PYINST_FULLPATH})
@@ -115,8 +145,8 @@ function(dune_python_install_package)
 
   # Install external requirements (i.e. not dune packages) once at configure stage - install of package is
   # only carried out if this succeeded and with --no-index, i.e., without using any package indices but only local wheels
-  # Installing python modules here can lead to issues with versions o# module source packages and pypi packages and possible unexpected
-  # version downgrades
+  # Installing python modules here can lead to issues with versions of module source packages and pypi packages
+  # and possible unexpected version downgrades
   string(REPLACE " " ";" RequiredPypiModules "${ProjectPythonRequires}")
   dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
                                 "${WHEEL_OPTION}"

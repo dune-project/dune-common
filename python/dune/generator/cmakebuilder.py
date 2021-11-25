@@ -1,23 +1,25 @@
 import importlib
 import logging
-import shlex
 import subprocess
 import os
 import sys
+import shlex
 import jinja2
-import dune
 import signal
+import json
+import copy
 
-from dune.packagemetadata import get_dune_py_dir, extract_metadata, Description
-from dune.common import comm
-from dune.common.locking import Lock, LOCK_EX,LOCK_SH
-from dune.common.utility import buffer_to_str, isString, reload_module
-from dune.common.module import (
-    get_cmake_command,
-    get_default_build_args,
-    get_dune_py_dir,
+import dune
+
+from dune.packagemetadata import (
+    getDunePyDir, Description,
+    getBuildMetaData, getCMakeFlags, getExternalPythonModules
 )
-import dune.common.externalmodule
+
+from dune.common import comm
+from dune.common.locking import Lock, LOCK_EX, LOCK_SH
+from dune.common.utility import buffer_to_str, isString, reload_module
+
 from dune.generator.exceptions import CompileError
 
 logger = logging.getLogger(__name__)
@@ -26,28 +28,30 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 cxxFlags = None
 noDepCheck = False
 
+
+def getCMakeCommand():
+    try:
+        return os.environ['DUNE_CMAKE']
+    except KeyError:
+        return 'cmake'
+
+
+def getDefaultBuildArgs():
+    try:
+        return shlex.split(os.environ['DUNE_BUILD_FLAGS'])
+    except KeyError:
+        return None
+
+
 class Builder:
+
+    @staticmethod
     def dunepy_from_template(dunepy_dir,force=False):
         # Extract the raw data dictionary
-        data = extract_metadata()
 
-        modules    = data.combine_across_modules("MODULENAME")
-        builddirs  = data.zip_across_modules("DEPS", "DEPBUILDDIRS")
-
-        # todo: improve on this - just getting the idea how this could work
-        cmakeflags = data.combine_across_modules("CMAKE_FLAGS")
-
-        duneOptsFile = None
-
-        cmakeFlags = {}
-        for x in cmakeflags:
-            for y in x.split(";"):
-                try:
-                    k,v = y.split(":=",1)
-                    if k=="DUNE_OPTS_FILE": duneOptsFile=v
-                    else: cmakeFlags[k] = v.strip()
-                except ValueError: # no '=' in line
-                    pass
+        metaData = getBuildMetaData()
+        modules = metaData.combine_across_modules("MODULENAME")
+        builddirs = metaData.zip_across_modules("DEPS", "DEPBUILDDIRS")
 
         # add dune modules which where available during the build of a
         # python module but don't provide their own python module
@@ -81,36 +85,12 @@ class Builder:
             except FileNotFoundError:
                 pass
 
-            # add flags from some opts file
-            duneOptsFile = os.environ.get('DUNE_OPTS_FILE', duneOptsFile)
-            if duneOptsFile:
-                # TODO: check here if the duneOptsFile exists and warn if not
-                #       Should be possible by checking return code of the subprocess
-                #       so that other bash errors are also caught and warned about
-                command = ['bash', '-c', 'source ' + duneOptsFile + ' && echo "$CMAKE_FLAGS"']
-                proc = subprocess.Popen(command, stdout = subprocess.PIPE)
-                stdout, _ = proc.communicate()
-                cmake_args = shlex.split(buffer_to_str(stdout))
-            else:
-                cmake_args = []
-
-            # check environment variable
-            cmake_args += shlex.split( os.environ.get('CMAKE_FLAGS','') )
-
-            for y in cmake_args:
-                try:
-                    k,v = y.split("=",1)
-                    if k.startswith('-D'): k = k[2:]
-                    cmakeFlags[k] = v.strip()
-                except ValueError: # no '=' in line
-                    pass
-
             # Gather and reorganize meta data context that is used to write dune-py
             context = {}
             context["modules"]        = modules
             context["builddirs"]      = builddirs
-            context["install_prefix"] = data.unique_value_across_modules("INSTALL_PREFIX")
-            context["cmake_flags"]    = cmakeFlags
+            context["install_prefix"] = metaData.unique_value_across_modules("INSTALL_PREFIX")
+            context["cmake_flags"]    = getCMakeFlags()
 
             # Find the correct template path
             path, _ = os.path.split(__file__)
@@ -138,7 +118,6 @@ class Builder:
                     with open(gen_file, "w") as outfile:
                         outfile.write(env.get_template(relative_template_file).render(**context))
 
-
             # configure dune-py
             logger.debug("Configuring dune-py with CMake")
             cmake = subprocess.Popen(
@@ -152,6 +131,7 @@ class Builder:
                 raise CompileError(buffer_to_str(stderr))
             else:
                 logger.debug("CMake configuration output: "+buffer_to_str(stdout))
+
 
     def __init__(self, force=False, saveOutput=False):
         self.force = force
@@ -168,12 +148,22 @@ class Builder:
                 self.skipTargetAll = True
         else:
             self.savedOutput = None
-        self.dune_py_dir = get_dune_py_dir()
-        self.build_args = get_default_build_args()
+        self.dune_py_dir = getDunePyDir()
+        self.build_args = getDefaultBuildArgs()
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         self.initialized = False
+        self.externalPythonModules = copy.deepcopy(getExternalPythonModules())
+
+    def cacheExternalModules(self):
+        """Store external modules in dune-py"""
+
+        externalModulesPath = os.path.join(self.dune_py_dir, ".externalmodules.json")
+        with open(externalModulesPath, "w") as externalModulesFile:
+            json.dump(self.externalPythonModules, externalModulesFile)
 
     def initialize(self):
+        self.externalPythonModules = copy.deepcopy(getExternalPythonModules())
+
         if comm.rank == 0:
             logger.debug("(Re-)Initializing JIT compilation module")
             os.makedirs(self.dune_py_dir, exist_ok=True)
@@ -186,7 +176,7 @@ class Builder:
                 if not os.path.isfile(tagfile):
                     logger.info('Generating dune-py module in ' + self.dune_py_dir)
                     # create module cache for external modules that have been registered with dune-py
-                    dune.common.externalmodule.cacheExternalModules(self.dune_py_dir)
+                    self.cacheExternalModules()
                     # create dune-py module
                     Builder.dunepy_from_template(self.dune_py_dir)
                     # create tag file so that dune-py is not rebuilt on the next build
@@ -200,10 +190,9 @@ class Builder:
             dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         except:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
-        self.initialized = True
 
     def compile(self, target='all', verbose=False):
-        cmake_command = get_cmake_command()
+        cmake_command = getCMakeCommand()
         cmake_args = [cmake_command, "--build", self.dune_py_dir,
                       "--target", target, "--parallel"]
         make_args = []
@@ -243,6 +232,7 @@ class Builder:
                 self.savedOutput[1].write(err)
             if nlines > 1:
                 self.savedOutput[1].write("\n###############################\n")
+        self.initialized = True
 
     def load(self, moduleName, source, pythonName, extraCMake=None):
         # use with-statement to log info if compiling takes some time
@@ -260,7 +250,10 @@ class Builder:
 
         ## TODO replace if rank with something better
         ## and remove barrier further down
-        if not self.initialized:
+
+        # check if we need to initialize dune-py either because
+        # this is the first call to load or because an external module with metadata has been registered
+        if not self.initialized or not self.externalPythonModules == getExternalPythonModules():
             self.initialize()
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)

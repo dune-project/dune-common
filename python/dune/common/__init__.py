@@ -1,6 +1,8 @@
 import logging
-import os
 import numpy as np
+import os
+import textwrap
+from dune.packagemetadata import getCMakeFlags
 
 logger = logging.getLogger(__name__)
 
@@ -17,16 +19,25 @@ logformat = os.environ.get('DUNE_LOG_FORMAT', 'DUNE-%(levelname)s: %(message)s')
 
 logging.basicConfig(format=logformat, level=loglevel)
 
-try:
-    from mpi4py import MPI
-    if MPI.COMM_WORLD.Get_rank() == 0:
-        logger.debug('MPI initialized successfully')
-except ImportError:
-    logger.debug('mpi4py not found, MPI not initialized')
+cmakeFlags = getCMakeFlags()
+
+if 'HAVE_MPI' in cmakeFlags and cmakeFlags['HAVE_MPI']:
+    try:
+        from mpi4py import MPI
+        if MPI.COMM_WORLD.Get_rank() == 0:
+            logger.debug('MPI initialized successfully')
+    except ImportError:
+        logger.debug('mpi4py not found but MPI used during configuration of dune-common')
+        raise RuntimeError(textwrap.dedent("""
+            The Dune modules were configured using MPI. For the Python bindings to work,
+            the Python package 'mpi4py' is required.
+            Please run
+                pip install mpi4py
+            before rerunning your Dune script.
+        """))
 
 from ._common import *
 from .deprecated import DeprecatedObject
-from .externalmodule import registerExternalModule
 
 
 def _fieldVectorGetItem(self,index):

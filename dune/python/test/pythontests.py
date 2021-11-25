@@ -59,13 +59,12 @@ def test_numpyvector():
 def test_class_export():
     from dune.generator.importclass import load
     from dune.generator.algorithm   import run
-    from dune.generator import path
     from dune.typeregistry import generateTypeName
     a = 2.
     x = array([2.]*10)
     cls = load("MyClassA",StringIO(classACode),10,20)
     assert run("run",StringIO(runCode),cls) == 10*20
-    clsName,includes = generateTypeName("MyClassB",cls)
+    clsName, _ = generateTypeName("MyClassB",cls)
     cls = load(clsName,StringIO(classBCode),cls,2,x)
     assert run("run",StringIO(runCode),cls) == 10**2*10*a
     x[:] = array([3.]*10)[:]
@@ -76,7 +75,7 @@ def test_class_export():
     assert run("run",StringIO(runCode),cls) == 10**2*10*3
 
 if __name__ == "__main__":
-    from dune.common.module import get_dune_py_dir
-    _ = get_dune_py_dir()
+    from dune.packagemetadata import getDunePyDir
+    _ = getDunePyDir()
     test_class_export()
     test_numpyvector()

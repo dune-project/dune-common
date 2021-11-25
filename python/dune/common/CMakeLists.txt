@@ -3,7 +3,6 @@ add_python_targets(common
   checkconfiguration
   compatibility
   deprecated            # deprecated 2.8
-  externalmodule
   hashit
   locking
   module

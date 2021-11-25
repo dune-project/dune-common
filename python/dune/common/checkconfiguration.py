@@ -23,7 +23,7 @@ def assertHave(identifier):
     # We simply return for now
     raise RuntimeError("DEPRECATED USE OF assertHave")
     return
-    config = os.path.join(dune.common.module.get_dune_py_dir(), "config.h")
+    config = os.path.join(dune.common.module.getDunePyDir(), "config.h")
     if not os.path.isfile(config):
         raise ConfigurationError("dune-py not configured yet")
 
@@ -44,7 +44,7 @@ def assertCMakeHave(identifier):
        configured so should be used with caution, e.g., avoid usage in any
        code executed during import of a dune module
     '''
-    config = os.path.join(dune.common.module.get_dune_py_dir(), "config.h")
+    config = os.path.join(dune.common.module.getDunePyDir(), "config.h")
     if not os.path.isfile(config):
         raise ConfigurationError("dune-py not configured yet")
 
@@ -59,7 +59,7 @@ def assertCMakeHave(identifier):
 def assertCMakeVariable(identifier,value,defaultFails):
     '''check if a variable in CMakeCache.txt in dune-py is defined and equal to 'value'
     '''
-    cache = os.path.join(dune.common.module.get_dune_py_dir(), "CMakeCache.txt")
+    cache = os.path.join(dune.common.module.getDunePyDir(), "CMakeCache.txt")
 
     identifier = identifier.lower().strip()
     matches = [line.lower() for line in open(cache) if re.match('^[ ]*'+identifier+':+', line.lower()) is not None]
