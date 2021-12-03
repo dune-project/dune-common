@@ -4,9 +4,6 @@ project(dune-common LANGUAGES C CXX)
 # make sure our own modules are found
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
-# set the script dir for the macros.
-set(DUNE_COMMON_SCRIPT_DIR ${PROJECT_SOURCE_DIR}/cmake/scripts)
-
 #include the dune macros
 include(DuneMacros)
 
