@@ -199,18 +199,14 @@ class Builder:
                               cwd=cwd,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE) as cmake:
-            # parse and/or print the output
-            for line_b in cmake.stdout:
-                line = buffer_to_str(line_b)
-                if verbose:
-                    logger.debug(line)
-                # are we actually building something?
-                elif not active and "Building" in line:
-                    if infoTxt:
-                        logger.log(logLevel, infoTxt + " ...")
-                    active = True
-            # wait for cmd to finish
-            cmake.wait()
+            try:
+                cmake.communicate(timeout=2) # no message if delay is <2sec
+            except subprocess.TimeoutExpired:
+                if infoTxt and not active:
+                    logger.log(logLevel, infoTxt + " ...")
+                    active = True # make sure 'done' is printed
+                # wait for cmd to finish
+                cmake.wait()
             if active:
                 logger.log(logLevel,"...done")
             # check return code
