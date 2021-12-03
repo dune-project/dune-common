@@ -13,7 +13,8 @@ import dune
 
 from dune.packagemetadata import (
     getDunePyDir, Description,
-    getBuildMetaData, getCMakeFlags, getExternalPythonModules
+    getBuildMetaData, getCMakeFlags, envCMakeFlags,
+    getExternalPythonModules
 )
 
 from dune.common import comm
@@ -119,7 +120,7 @@ class Builder:
                         outfile.write(env.get_template(relative_template_file).render(**context))
 
             # configure dune-py
-            Builder.callCMake(["cmake", "."],
+            Builder.callCMake(["cmake"]+envCMakeFlags()+["."],
                               cwd=dunepy_dir,
                               infoTxt="Configuring dune-py with CMake",
                               active=True, # print details anyway
