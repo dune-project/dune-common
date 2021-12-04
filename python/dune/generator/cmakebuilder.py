@@ -13,7 +13,7 @@ import dune
 
 from dune.packagemetadata import (
     getDunePyDir, Description,
-    getBuildMetaData, getCMakeFlags, envCMakeFlags,
+    getBuildMetaData, getCMakeFlags, envCMakeFlags, defaultCMakeFlags,
     getExternalPythonModules
 )
 
@@ -120,7 +120,7 @@ class Builder:
                         outfile.write(env.get_template(relative_template_file).render(**context))
 
             # configure dune-py
-            Builder.callCMake(["cmake"]+envCMakeFlags()+["."],
+            Builder.callCMake(["cmake"]+defaultCMakeFlags()+["."],
                               cwd=dunepy_dir,
                               infoTxt="Configuring dune-py with CMake",
                               active=True, # print details anyway
@@ -177,7 +177,7 @@ class Builder:
                     open(tagfile, 'a').close()
                 else:
                     logger.debug('Using existing dune-py module in ' + self.dune_py_dir)
-                    self.compile("Rebuilding dune-py module", verbose=True)
+                    self.compile("Rebuilding dune-py module")
 
         comm.barrier()
         try:
@@ -193,7 +193,7 @@ class Builder:
         active = active or verbose
         if active:
             if infoTxt:
-                logger.log(logLevel,infoTxt + " ...")
+                logger.log(logLevel,infoTxt) #  + " ...")
         # call the cmake process
         with subprocess.Popen(cmake_args,
                               cwd=cwd,
@@ -203,12 +203,13 @@ class Builder:
                 cmake.communicate(timeout=2) # no message if delay is <2sec
             except subprocess.TimeoutExpired:
                 if infoTxt and not active:
-                    logger.log(logLevel, infoTxt + " ...")
+                    logger.log(logLevel, infoTxt) #  + " ...")
                     active = True # make sure 'done' is printed
                 # wait for cmd to finish
                 cmake.wait()
-            if active:
-                logger.log(logLevel,"...done")
+            # could add 'done' to logger - would be nice to have in same # line as message though...
+            # if active:
+            #     logger.log(logLevel,"...done")
             # check return code
             if cmake.returncode > 0:
                 # retrieve stderr output
@@ -283,7 +284,7 @@ class Builder:
                         with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
                             found = line in out.read()
                         if not os.path.isfile(sourceFileName) or not found:
-                            logger.info("Generating " + pythonName)
+                            PrintCompiling = "Compiling " + pythonName + " (new)"
                             code = str(source)
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
@@ -304,7 +305,6 @@ class Builder:
                                                       infoTxt="Configuring module {} ({}) with CMake".format(
                                                           pythonName, moduleName
                                                       ),
-                                                      active=True, # print details anyway
                                                       )
                                 except: # all exceptions will cause a problem here
                                     os.remove(os.path.join(sourceFileName))
@@ -318,7 +318,8 @@ class Builder:
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
                         else:
-                            # we only can directly load the module
+                            # we can directly load the module - after # checking if headers have changed
+                            PrintCompiling = "Compiling " + pythonName + " (rebuilding)"
                             # sanity check
                             line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
                             # the CMakeLists file should already include this line
