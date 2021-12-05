@@ -91,10 +91,15 @@ if(Python3_Interpreter_FOUND)
 
   if( DUNE_ENABLE_PYTHONBINDINGS )
     if(NOT Python3_Interpreter_FOUND)
-      message(FATAL_ERROR "Python bindings require a Python 3 interpreter")
+      message(WARNING "Python bindings require a Python 3 interpreter")
+      set(DUNE_ENABLE_PYTHONBINDINGS OFF)
+      return()
     endif()
     if(NOT Python3_INCLUDE_DIRS)
-      message(FATAL_ERROR "Found a Python interpreter but the Python bindings also requires the Python libraries (a package named like python-dev package or python3-devel)")
+      message(WARNING "Found a Python interpreter but the Python bindings also requires the Python "
+                      "libraries (a package named like python-dev package or python3-devel)")
+      set(DUNE_ENABLE_PYTHONBINDINGS OFF)
+      return()
     endif()
 
     include_directories("${Python3_INCLUDE_DIRS}")
