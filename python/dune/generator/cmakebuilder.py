@@ -190,6 +190,7 @@ class Builder:
             dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         except:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
+        self.initialized = True
 
     def compile(self, target='all', verbose=False):
         cmake_command = getCMakeCommand()
@@ -232,7 +233,6 @@ class Builder:
                 self.savedOutput[1].write(err)
             if nlines > 1:
                 self.savedOutput[1].write("\n###############################\n")
-        self.initialized = True
 
     def load(self, moduleName, source, pythonName, extraCMake=None):
         # use with-statement to log info if compiling takes some time
