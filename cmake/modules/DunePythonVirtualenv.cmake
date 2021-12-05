@@ -96,25 +96,18 @@ dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/venvpath.py"
 
 # If the user has not specified an absolute, we look through the dependency tree of this module
 # for a build directory that already contains a virtual environment.
-if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
-  foreach(mod ${ALL_DEPENDENCIES})
+# if we haven't found it yet, check in the current build directory - this might be a reconfigure
+if(NOT DUNE_PYTHON_VIRTUALENV_PATH)
+  foreach(mod "${ALL_DEPENDENCIES};CMAKE_BINARY")
     if(IS_DIRECTORY ${${mod}_DIR}/dune-env)
       set(DUNE_PYTHON_VIRTUALENV_PATH ${${mod}_DIR}/dune-env)
       break()
     endif()
   endforeach()
-
-  # if we haven't found it yet, check in the current build directory - this might be a reconfigure
-  if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
-    if(IS_DIRECTORY ${CMAKE_BINARY_DIR}/dune-env)
-      set(DUNE_PYTHON_VIRTUALENV_PATH ${CMAKE_BINARY_DIR}/dune-env)
-    endif()
-  endif()
 endif()
 
-
-if(DUNE_PYTHON_VIRTUALENV_PATH STREQUAL "")
-  # We didn't find anything, so figure out the correct location for building the virtualenv
+# We didn't find anything, so figure out the correct location for building the virtualenv
+if(NOT DUNE_PYTHON_VIRTUALENV_PATH)
   if(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR AND DUNE_BUILD_DIRECTORY_ROOT_PATH)
     # Use a dedicated directory not associated with any module
     set(DUNE_PYTHON_VIRTUALENV_PATH "${DUNE_BUILD_DIRECTORY_ROOT_PATH}/dune-python-env")
@@ -130,7 +123,10 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   dune_python_find_package(PACKAGE virtualenv)
   dune_python_find_package(PACKAGE venv)
   if(NOT(DUNE_PYTHON_virtualenv_FOUND OR DUNE_PYTHON_venv_FOUND))
-    message(FATAL_ERROR "One of the python packages virtualenv/venv is needed on the host system!")
+    message(WARNING "One of the python packages virtualenv/venv is needed on the host system! "
+                    "If you are using Debian or Ubuntu, consider installing python3-venv "
+                    "and/or python-virtualenv")
+    return()
   endif()
 
   # Set some options depending on which virtualenv package is used
@@ -145,13 +141,15 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
     set(INTERPRETER_OPTION -p "${Python3_EXECUTABLE}")
   endif()
 
-  if(("${VIRTUALENV_PACKAGE_NAME}" STREQUAL "venv") AND DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
-    message("-- WARNING: You are using a system interpreter which is a virtualenv and the venv package.")
-    message("            You might want to consider installing the virtualenv package if you experience inconveniences.")
+  if(DUNE_PYTHON_venv_FOUND AND DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
+    message(WARNING "You are using a system python interpreter which is a virtualenv and the venv "
+                    "package. You might want to consider installing the virtualenv package if you "
+                    "experience inconveniences.")
   endif()
 
   # Set up the env itself
-  message("-- Building a virtualenv in ${DUNE_PYTHON_VIRTUALENV_PATH}")
+  message(STATUS "Building a virtualenv in ${DUNE_PYTHON_VIRTUALENV_PATH}")
+
   # First, try to build it with pip installed, but only if the user has not set DUNE_PYTHON_ALLOW_GET_PIP
   if(NOT DUNE_PYTHON_ALLOW_GET_PIP)
     dune_execute_process(COMMAND ${Python3_EXECUTABLE}
@@ -163,11 +161,11 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   endif()
 
   if(NOT "${venv_install_result}" STREQUAL "0")
-
     if(NOT DUNE_PYTHON_ALLOW_GET_PIP)
       # we attempted the default installation before, so issue a warning
-      message("-- WARNING: Failed to build a virtual env with pip installed, trying again without pip")
-      message("-- If you are using Debian or Ubuntu, consider installing python3-venv and / or python-virtualenv")
+      message(WARNING "Failed to build a virtual env with pip installed, trying again without "
+                      "pip. If you are using Debian or Ubuntu, consider installing python3-venv "
+                      "and/or python-virtualenv")
     endif()
 
     # remove the remainder of a potential first attempt
@@ -179,12 +177,15 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
                                   ${INTERPRETER_OPTION}
                                   ${NOPIP_OPTION}
                                   "${DUNE_PYTHON_VIRTUALENV_PATH}"
-                         ERROR_MESSAGE "Fatal error when setting up a virtualenv."
-                         )
+                         RESULT_VARIABLE venv_install_result2)
+    if(NOT "${venv_install_result2}" STREQUAL "0")
+      message(WARNING "Failed to build a virtual env without pip.")
+      return()
+    endif()
   endif()
 
 else()
-  message("-- Using existing virtualenv in ${DUNE_PYTHON_VIRTUALENV_PATH}")
+  message(STATUS "Using existing virtualenv in ${DUNE_PYTHON_VIRTUALENV_PATH}")
 endif()
 
 # Also store the virtual env interpreter directly
@@ -221,28 +222,31 @@ dune_python_find_package(PACKAGE pip
 if(NOT pippresent)
   if(DUNE_PYTHON_ALLOW_GET_PIP)
     # Fetch the get-pip.py script
-    message("-- Installing pip using https://bootstrap.pypa.io/get-pip.py...")
+    message(STATUS "Installing pip using https://bootstrap.pypa.io/get-pip.py...")
     file(DOWNLOAD https://bootstrap.pypa.io/get-pip.py ${CMAKE_CURRENT_BINARY_DIR}/get-pip.py)
 
     # Verify that the script was successfully fetched
     file(READ ${CMAKE_CURRENT_BINARY_DIR}/get-pip.py verify LIMIT 1)
     if(NOT verify)
-      message(FATAL_ERROR "
-      Fetching get-pip.py failed. This often happens when CMake is built from source without SSL/TLS support.
-      Consider using a different cmake version or fall back to manually installing pip into the virtualenv.
-                          ")
+      message(WARNING "Fetching get-pip.py failed. This often happens when CMake is built from "
+                      "source without SSL/TLS support. Consider using a different cmake version or "
+                      "fall back to manually installing pip into the virtualenv.")
+      return()
     endif()
 
     # Execute the script
-    dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/get-pip.py
-                         ERROR_MESSAGE "Fatal error when installing pip into the virtualenv."
-                         )
+    dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/get-pip.py RESULT_VARIABLE pip_install_result)
+    if(NOT "${pip_install_result}" STREQUAL "0")
+      message(WARNING "Fatal error when installing pip into the virtualenv.")
+      return()
+    endif()
   else()
-    message(FATAL_ERROR "dune-common set up a virtualenv, but needs pip to be installed into it.
-                         You can either install it yourself manually activating the virtualenv with
-                         the activate script in your build directory ${CMAKE_BINARY_DIR} or you set
-                         the CMake variable DUNE_PYTHON_ALLOW_GET_PIP to allow Dune to use get-pip.py
-                         from https://bootstrap.pypa.io/get-pip.py")
+    message(WARNING "dune-common set up a virtualenv, but needs pip to be installed into it. "
+                    "You can either install it yourself manually activating the virtualenv with "
+                    "the activate script in your build directory ${CMAKE_BINARY_DIR} or you set "
+                    "the CMake variable DUNE_PYTHON_ALLOW_GET_PIP to allow Dune to use get-pip.py "
+                    "from https://bootstrap.pypa.io/get-pip.py")
+    return()
   endif()
 elseif(NOT DUNE_PYTHON_pip_FOUND)
   # if pip was not found before then we can set it here since it was now found
