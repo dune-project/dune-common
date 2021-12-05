@@ -126,6 +126,7 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
     message(WARNING "One of the python packages virtualenv/venv is needed on the host system! "
                     "If you are using Debian or Ubuntu, consider installing python3-venv "
                     "and/or python-virtualenv")
+    set(DUNE_ENABLE_PYTHONBINDINGS OFF)
     return()
   endif()
 
@@ -180,6 +181,7 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
                          RESULT_VARIABLE venv_install_result2)
     if(NOT "${venv_install_result2}" STREQUAL "0")
       message(WARNING "Failed to build a virtual env without pip.")
+      set(DUNE_ENABLE_PYTHONBINDINGS OFF)
       return()
     endif()
   endif()
@@ -231,6 +233,7 @@ if(NOT pippresent)
       message(WARNING "Fetching get-pip.py failed. This often happens when CMake is built from "
                       "source without SSL/TLS support. Consider using a different cmake version or "
                       "fall back to manually installing pip into the virtualenv.")
+      set(DUNE_ENABLE_PYTHONBINDINGS OFF)
       return()
     endif()
 
@@ -238,6 +241,7 @@ if(NOT pippresent)
     dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/get-pip.py RESULT_VARIABLE pip_install_result)
     if(NOT "${pip_install_result}" STREQUAL "0")
       message(WARNING "Fatal error when installing pip into the virtualenv.")
+      set(DUNE_ENABLE_PYTHONBINDINGS OFF)
       return()
     endif()
   else()
@@ -246,9 +250,10 @@ if(NOT pippresent)
                     "the activate script in your build directory ${CMAKE_BINARY_DIR} or you set "
                     "the CMake variable DUNE_PYTHON_ALLOW_GET_PIP to allow Dune to use get-pip.py "
                     "from https://bootstrap.pypa.io/get-pip.py")
+    set(DUNE_ENABLE_PYTHONBINDINGS OFF)
     return()
   endif()
-elseif(NOT DUNE_PYTHON_pip_FOUND)
-  # if pip was not found before then we can set it here since it was now found
-  set(DUNE_PYTHON_pip_FOUND pippresent)
 endif()
+
+# if pip was not found before then we can set it here since it was now found
+set(DUNE_PYTHON_pip_FOUND ON)
