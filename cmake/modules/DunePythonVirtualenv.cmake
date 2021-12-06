@@ -98,7 +98,7 @@ dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/venvpath.py"
 # for a build directory that already contains a virtual environment.
 # if we haven't found it yet, check in the current build directory - this might be a reconfigure
 if(NOT DUNE_PYTHON_VIRTUALENV_PATH)
-  foreach(mod "${ALL_DEPENDENCIES};CMAKE_BINARY")
+  foreach(mod ${ALL_DEPENDENCIES} CMAKE_BINARY)
     if(IS_DIRECTORY ${${mod}_DIR}/dune-env)
       set(DUNE_PYTHON_VIRTUALENV_PATH ${${mod}_DIR}/dune-env)
       break()
