@@ -108,7 +108,11 @@ function(dune_create_inkscape_image_converter_target)
   endif()
 
   if(TARGET ${INKSCAPE_CONV_TARGET})
-    message(FATAL_ERROR "UseInkscape: provided TARGET already is an existing target. This function creates the target. Please provide a unique name.")
+    get_property(TARGET_SOURCE_DIR TARGET ${INKSCAPE_CONV_TARGET} PROPERTY SOURCE_DIR)
+    message(FATAL_ERROR "dune_create_inkscape_image_converter_target cannot create target "
+                        "\"${INKSCAPE_CONV_TARGET}\" because another target with the same "
+                        "name already exists. The existing target is a target created in "
+                        "source directory \"${TARGET_SOURCE_DIR}\".")
   endif()
 
   # we always create the target even if it stays empty
