@@ -274,6 +274,15 @@ def cmakeArguments(cmakeArgs):
     else:
         raise ValueError('definitions must be a list or a dictionary.')
 
+def envCMakeFlags(flags=[]):
+    cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
+    # split cmakeFlags and add them to flags
+    if cmakeFlags is not None:
+        flags += shlex.split(cmakeFlags)
+    cmakeFlags = os.environ.get('CMAKE_FLAGS')
+    if cmakeFlags is not None:
+        flags += shlex.split(cmakeFlags)
+    return flags
 
 def defaultCMakeFlags():
     # defaults
@@ -290,13 +299,7 @@ def defaultCMakeFlags():
     #     flags['DUNE_PYTHON_VIRTUALENV_PATH'] = sys.prefix
     flags = cmakeArguments(flags)  # make cmake command line out of dict
     # test environment for additional flags
-    cmakeFlags = os.environ.get('DUNE_CMAKE_FLAGS')
-    # split cmakeFlags and add them to flags
-    if cmakeFlags is not None:
-        flags += shlex.split(cmakeFlags)
-    cmakeFlags = os.environ.get('CMAKE_FLAGS')
-    if cmakeFlags is not None:
-        flags += shlex.split(cmakeFlags)
+    flags = envCMakeFlags(flags)
     return flags
 
 
@@ -554,6 +557,7 @@ def _extractCMakeFlags():
         stdout, _ = proc.communicate()
         cmakeArgs = shlex.split(stdout.decode('utf-8'))
 
+    """
     # check environment variable
     cmakeArgs += shlex.split(os.environ.get('CMAKE_FLAGS', ''))
 
@@ -565,6 +569,7 @@ def _extractCMakeFlags():
             cmakeFlags[k] = v.strip()
         except ValueError:  # no '=' in line
             pass
+    """
 
     # try to unify 'ON' and 'OFF' values
     for k, v in cmakeFlags.items():

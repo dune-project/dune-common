@@ -13,7 +13,8 @@ import dune
 
 from dune.packagemetadata import (
     getDunePyDir, Description,
-    getBuildMetaData, getCMakeFlags, getExternalPythonModules
+    getBuildMetaData, getCMakeFlags, envCMakeFlags, defaultCMakeFlags,
+    getExternalPythonModules
 )
 
 from dune.common import comm
@@ -119,18 +120,11 @@ class Builder:
                         outfile.write(env.get_template(relative_template_file).render(**context))
 
             # configure dune-py
-            logger.debug("Configuring dune-py with CMake")
-            cmake = subprocess.Popen(
-                ["cmake", "."],
-                cwd=dunepy_dir,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-            stdout, stderr = cmake.communicate()
-            if cmake.returncode > 0:
-                raise CompileError(buffer_to_str(stderr))
-            else:
-                logger.debug("CMake configuration output: "+buffer_to_str(stdout))
+            Builder.callCMake(["cmake"]+defaultCMakeFlags()+["."],
+                              cwd=dunepy_dir,
+                              infoTxt="Configuring dune-py with CMake",
+                              active=True, # print details anyway
+                              )
 
 
     def __init__(self, force=False, saveOutput=False):
@@ -183,7 +177,7 @@ class Builder:
                     open(tagfile, 'a').close()
                 else:
                     logger.debug('Using existing dune-py module in ' + self.dune_py_dir)
-                    self.compile(verbose=True)
+                    self.compile("Rebuilding dune-py module")
 
         comm.barrier()
         try:
@@ -192,7 +186,38 @@ class Builder:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         self.initialized = True
 
-    def compile(self, target='all', verbose=False):
+
+    @staticmethod
+    def callCMake(cmake_args, cwd, infoTxt, verbose=False, active=False, logLevel=logging.DEBUG):
+        # print initial info, if we are verbose
+        # or we know that we have to build someting
+        active = active or verbose
+        if active:
+            if infoTxt:
+                logger.log(logLevel,infoTxt) #  + " ...")
+        # call the cmake process
+        with subprocess.Popen(cmake_args,
+                              cwd=cwd,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE) as cmake:
+            try:
+                cmake.communicate(timeout=2) # no message if delay is <2sec
+            except subprocess.TimeoutExpired:
+                if infoTxt and not active:
+                    logger.log(logLevel, infoTxt) #  + " ...")
+                    active = True # make sure 'done' is printed
+                # wait for cmd to finish
+                cmake.wait()
+            # could add 'done' to logger - would be nice to have in same # line as message though...
+            # if active:
+            #     logger.log(logLevel,"...done")
+            # check return code
+            if cmake.returncode > 0:
+                # retrieve stderr output
+                _, stderr = cmake.communicate()
+                raise CompileError(buffer_to_str(stderr))
+
+    def compile(self, infoTxt, target='all', verbose=False):
         cmake_command = getCMakeCommand()
         cmake_args = [cmake_command, "--build", self.dune_py_dir,
                       "--target", target, "--parallel"]
@@ -206,12 +231,12 @@ class Builder:
 
         if cmake_args != []:
             cmake_args += ["--"] + make_args
-        cmake = subprocess.Popen(cmake_args, cwd=self.generated_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = cmake.communicate()
-        if cmake.returncode > 0:
-            raise CompileError(buffer_to_str(stderr))
-        elif verbose:
-            logger.debug("Compiler output: "+buffer_to_str(stdout))
+        Builder.callCMake(cmake_args,
+                          cwd=self.generated_dir,
+                          infoTxt=infoTxt,
+                          verbose=verbose,
+                          logLevel=logging.INFO
+                          )
         writeOutput = self.savedOutput is not None and target != 'all' if self.skipTargetAll else self.savedOutput is not None
         if writeOutput:
             out = buffer_to_str(stdout)
@@ -235,21 +260,10 @@ class Builder:
                 self.savedOutput[1].write("\n###############################\n")
 
     def load(self, moduleName, source, pythonName, extraCMake=None):
-        # use with-statement to log info if compiling takes some time
-        class PrintCompiling:
-            def handle_signal(self, signum, frame):
-                logger.info("Compiling "+pythonName)
-            def __enter__(self):
-                signal.signal(signal.SIGALRM, self.handle_signal)
-                signal.alarm(1)
-            def __exit__(self, type, value, traceback):
-                signal.alarm(0)
-        class EmptyPrintCompiling:
-            def __enter__(self): pass
-            def __exit__(self, type, value, traceback): pass
-
         ## TODO replace if rank with something better
         ## and remove barrier further down
+
+        PrintCompiling="Compiling "+pythonName
 
         # check if we need to initialize dune-py either because
         # this is the first call to load or because an external module with metadata has been registered
@@ -270,10 +284,7 @@ class Builder:
                         with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
                             found = line in out.read()
                         if not os.path.isfile(sourceFileName) or not found:
-                            logger.info("Generating " + pythonName)
-                            # don't print 'Compiling' twice
-                            PrintCompiling = EmptyPrintCompiling
-
+                            PrintCompiling = "Compiling " + pythonName + " (new)"
                             code = str(source)
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
@@ -288,19 +299,13 @@ class Builder:
                                         for x in extraCMake:
                                             out.write(x.replace("TARGET",moduleName)+"\n")
                                 # update build system
-                                logger.debug(
-                                    "Configuring module {} ({}) with CMake".format(
-                                        pythonName, moduleName
-                                    )
-                                )
                                 try:
-                                    # self.compile()
-                                    cmake = subprocess.Popen( "cmake .".split(),
-                                                       cwd=self.dune_py_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                                    stdout, stderr = cmake.communicate()
-                                    #logger.debug("CMake configuration output: "+buffer_to_str(stdout))
-                                    if cmake.returncode > 0:
-                                        raise CompileError(buffer_to_str(stderr))
+                                    Builder.callCMake(["cmake","."],
+                                                      cwd=self.dune_py_dir,
+                                                      infoTxt="Configuring module {} ({}) with CMake".format(
+                                                          pythonName, moduleName
+                                                      ),
+                                                      )
                                 except: # all exceptions will cause a problem here
                                     os.remove(os.path.join(sourceFileName))
                                     # remove line from CMakeLists to avoid problems
@@ -308,15 +313,13 @@ class Builder:
                                         out.truncate(origPos)
                                     raise
                         elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
-                            logger.info("Compiling " + pythonName + " (updated)")
-                            # don't print 'Compiling' twice
-                            PrintCompiling = EmptyPrintCompiling
-
+                            PrintCompiling = "Compiling " + pythonName + " (updated)"
                             code = str(source)
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
                         else:
-                            # we only can directly load the module
+                            # we can directly load the module - after # checking if headers have changed
+                            PrintCompiling = "Compiling " + pythonName + " (rebuilding)"
                             # sanity check
                             line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
                             # the CMakeLists file should already include this line
@@ -334,8 +337,7 @@ class Builder:
                 with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_SH):
                     # lock generated module
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                        with PrintCompiling():
-                            self.compile(target=moduleName)
+                        self.compile(infoTxt=PrintCompiling, target=moduleName)
 
         ## TODO remove barrier here
         comm.barrier()
