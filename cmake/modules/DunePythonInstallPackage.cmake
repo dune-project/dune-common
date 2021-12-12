@@ -285,13 +285,11 @@ function(dune_python_install_package)
         if(DEFINED DEFAULT_CXXFLAGS AND "${flags_loop}" STREQUAL "CMAKE_CXX_FLAGS")
           set(value "${DEFAULT_CXXFLAGS}")
         endif()
-        if(_cmake_flags STREQUAL "")
-          string(APPEND _cmake_flags "${flags_loop}:=\"${value}\"")
-        else()
-          string(APPEND _cmake_flags "\;${flags_loop}:=\"${value}\"")
-        endif()
+        list(APPEND _cmake_flags "${flags_loop}:=\"${value}\"")
       endif()
     endforeach()
+    # transform the list into an escaped string
+    string(REPLACE ";" "\;" _cmake_flags "${_cmake_flags}")
 
     #
     # Generate metadata - note that there is a metadata target for the
