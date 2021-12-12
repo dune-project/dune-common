@@ -282,6 +282,9 @@ function(dune_python_install_package)
       endif()
     endforeach()
 
+    # automatically add DUNE_OPTS_FILE
+    list(APPEND _cmake_flags "DUNE_OPTS_FILE:=${DUNE_OPTS_FILE}")
+
     # handle all manually added flags
     foreach(flags_loop IN ITEMS ${PYINST_CMAKE_METADATA_FLAGS})
       if(${flags_loop})
