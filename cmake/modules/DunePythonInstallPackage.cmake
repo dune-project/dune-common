@@ -273,7 +273,16 @@ function(dune_python_install_package)
       string(APPEND _export_builddirs "\;${${mod}_DIR}")
     endforeach()
 
+    # add the list of HAVE_{MODULE} flags to the meta data
     set(_cmake_flags "")
+    foreach(_dep ${ProjectName} ${ALL_DEPENDENCIES})
+      dune_module_to_uppercase(upper ${_dep})
+      if(NOT ${HAVE_${upper}} STREQUAL "")
+        list(APPEND _cmake_flags "HAVE_${upper}:=${HAVE_${upper}}")
+      endif()
+    endforeach()
+
+    # handle all manually added flags
     foreach(flags_loop IN ITEMS ${PYINST_CMAKE_METADATA_FLAGS})
       if(${flags_loop})
         set(value ${${flags_loop}})
