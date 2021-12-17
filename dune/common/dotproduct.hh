@@ -37,7 +37,7 @@ namespace Dune {
    */
   template<class A, class B>
   auto
-  dot(const A & a, const B & b) -> typename std::enable_if<!IsVector<A>::value && !std::is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type> ::value, decltype(conj(a)*b)>::type
+  dot(const A & a, const B & b) -> typename std::enable_if<IsNumber<A>::value && !IsVector<A>::value && !std::is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type> ::value, decltype(conj(a)*b)>::type
   {
     return conj(a)*b;
   }
@@ -54,7 +54,7 @@ namespace Dune {
   // fundamental type with A being a real type
   template<class A, class B>
   auto
-  dot(const A & a, const B & b) -> typename std::enable_if<!IsVector<A>::value && std::is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type>::value, decltype(a*b)>::type
+  dot(const A & a, const B & b) -> typename std::enable_if<IsNumber<A>::value && !IsVector<A>::value && std::is_same<typename FieldTraits<A>::field_type,typename FieldTraits<A>::real_type>::value, decltype(a*b)>::type
   {
     return a*b;
   }
