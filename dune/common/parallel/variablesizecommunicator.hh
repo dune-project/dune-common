@@ -52,15 +52,6 @@ constexpr bool callFixedSize(H &&handle) {
   return handle.fixedSize();
 }
 
-template <typename H,
-          std::enable_if_t<not models<Concept::HasFixedSize, H>(), int> = 0>
-[[deprecated("Using handles with fixedsize() (lower case s) is deprecated and "
-             "will be removed after release 2.8. Implement fixedSize() "
-             "(camelCase) instead!")]]
-constexpr bool callFixedSize(H &&handle) {
-  return handle.fixedsize();
-}
-
 } // namespace Impl
 
 namespace

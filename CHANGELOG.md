@@ -44,6 +44,9 @@
   replacement, as it must be sometimes placed at a different position
   in the code.
 
+- In `callFixedSize`, support handles with `fixedsize()` (lower case s)
+  is removed. Implement `fixedSize()` (camelCase) instead.
+
 - `CollectiveCommunication` and `getCollectiveCommunication` are deprecated
   and will be removed after Dune 2.9. Use `Communication` respectively
   `getCommunication` instead.
