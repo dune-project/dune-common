@@ -44,6 +44,10 @@
   replacement, as it must be sometimes placed at a different position
   in the code.
 
+- `CollectiveCommunication` and `getCollectiveCommunication` are deprecated
+  and will be removed after Dune 2.9. Use `Communication` respectively
+  `getCommunication` instead.
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
