@@ -54,6 +54,9 @@
 - The header `power.hh` is deprecated. Use `Dune::power` from
   `math.hh` instead.
 
+- The deprecated compatibility header `optional.hh` is removed. Include
+  `<optional>` instead.
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
