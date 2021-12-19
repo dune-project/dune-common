@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include <dune/common/deprecated.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/math.hh>
 #include <dune/common/power.hh>
@@ -40,6 +41,7 @@ int main (int argc, char** argv) try
   enum { dummy = power(2,2) };
 
   // Test legacy power implementation
+  DUNE_NO_DEPRECATED_BEGIN
   if (Power<0>::eval(4) != 1)
     DUNE_THROW(MathError, "Power implementation does not compute the correct result");
 
@@ -52,6 +54,7 @@ int main (int argc, char** argv) try
   if (Power<3>::eval(4) != 64)
     DUNE_THROW(MathError, "Power implementation does not compute the correct result");
 
+  DUNE_NO_DEPRECATED_END
   return 0;
 }
 catch (Exception& e)

@@ -3,6 +3,8 @@
 #ifndef DUNE_COMMON_POWER_HH
 #define DUNE_COMMON_POWER_HH
 
+#warning The header power.hh is deprecated. Use power from math.hh instead.
+
 /** \file
     \brief Various implementations of the power function for run-time and static arguments
  */

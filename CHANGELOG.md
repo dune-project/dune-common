@@ -48,6 +48,9 @@
   and will be removed after Dune 2.9. Use `Communication` respectively
   `getCommunication` instead.
 
+- The header `power.hh` is deprecated. Use `Dune::power` from
+  `math.hh` instead.
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
