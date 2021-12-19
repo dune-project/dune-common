@@ -31,6 +31,9 @@
 
 ## Deprecations and removals
 
+- The deprecated headers `gcd.hh` and `lcm.hh` are removed. Use `std::gcd`
+  and `std::lcm` instead.
+
 - Both deprecated macros `DUNE_DEPRECATED` and `DUNE_DEPRECATED_MSG(text)`
   are removed. Use C++14 attribute `[[deprecated]]`. However, be aware
   that it is no drop-in replacement, as it must be sometimes placed at
