@@ -12,7 +12,6 @@
 
 #include <dune/common/boundschecking.hh>
 #include <dune/common/classname.hh>
-#include <dune/common/deprecated.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/math.hh>
@@ -35,32 +34,6 @@ namespace Dune
 
   template<class K, int N, int M> class FieldMatrix;
   template<class K, int N> class FieldVector;
-  namespace {
-    /**
-      work around a problem of FieldMatrix/FieldVector,
-      there is no unique way to obtain the size of a class
-
-      \deprecated VectorSize is deprecated; please call the 'size()' method directly instead.
-      This will be removed after Dune 2.8.
-      */
-    template<class V>
-    struct [[deprecated("VectorSize is deprecated; please call the 'size()' method directly instead")]] VectorSize
-    {
-      static typename V::size_type size(const V & v) { return v.size(); }
-    };
-
-    DUNE_NO_DEPRECATED_BEGIN
-    template<class K, int N>
-    struct [[deprecated("VectorSize is deprecated; please call the 'size()' method directly instead")]] VectorSize< const FieldVector<K,N> >
-    {
-      typedef FieldVector<K,N> V;
-      static typename V::size_type size([[maybe_unused]] const V & v)
-      {
-        return N;
-      }
-    };
-    DUNE_NO_DEPRECATED_END
-  }
 
   /**
       @addtogroup DenseMatVec
