@@ -10,6 +10,7 @@
 
 #include <dune/common/std/make_array.hh>
 #include <dune/common/classname.hh>
+#include <dune/common/deprecated.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/streamoperators.hh>
 
@@ -21,6 +22,8 @@ void f(const std::array<T, n> &a)
 }
 
 int main() {
+  DUNE_NO_DEPRECATED_BEGIN
+
   // check that make_array works
   f(Dune::Std::make_array(1, 2));
   f(Dune::Std::make_array(1, 2, 3));
@@ -34,4 +37,6 @@ int main() {
 
   Dune::FieldVector<double, 2> x(0);
   f(Dune::Std::make_array(x, x));
+
+  DUNE_NO_DEPRECATED_END
 }

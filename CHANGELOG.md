@@ -57,6 +57,10 @@
 - The deprecated compatibility header `optional.hh` is removed. Include
   `<optional>` instead.
 
+- The compatibility header `make_array.hh` is deprecated and will be
+  removed after Dune 2.8. Use deduction guide of `std::array` or
+  `std::to_array`.
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
