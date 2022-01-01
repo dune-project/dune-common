@@ -8,6 +8,7 @@
  */
 
 #include <algorithm>
+#include <array>
 #include <iostream>
 #include <cstddef>
 #include <dune/common/genericiterator.hh>
@@ -73,7 +74,7 @@ namespace Dune
     {
       assert(l.size() <= n);// Actually, this is not needed any more!
       sz = l.size();
-      std::copy_n(l.begin(), sz, data);
+      std::copy_n(l.begin(), sz, data.data());
     }
 
     /** @} */
@@ -216,11 +217,11 @@ namespace Dune
 
     inline friend std::size_t hash_value(const ReservedVector& v) noexcept
     {
-      return hash_range(v.data,v.data+v.sz);
+      return hash_range(v.data.data(),v.data.data()+v.sz);
     }
 
   private:
-    T data[n] = {};
+    std::array<T,n> data = {};
     size_type sz = 0;
   };
 
