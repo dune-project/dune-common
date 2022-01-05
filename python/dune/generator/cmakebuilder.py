@@ -207,10 +207,7 @@ class Builder:
                     logger.log(logLevel, infoTxt) #  + " ...")
                     active = True # make sure 'done' is printed
                 # wait for cmd to finish
-                cmake.wait()
-            # could add 'done' to logger - would be nice to have in same # line as message though...
-            # if active:
-            #     logger.log(logLevel,"...done")
+                stdout, stderr = cmake.communicate()
             # check return code
             if cmake.returncode > 0:
                 # retrieve stderr output
