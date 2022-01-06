@@ -28,9 +28,12 @@ inline bool already_registered() {
 
 template <class F>
 inline void handle_buffer_format(const pybind11::buffer_info &info, F &&f) {
-  if(info.format.size() != 1)
+  if(info.format.size() > 2)
     throw std::runtime_error("Buffer format '" + info.format + "' not supported.");
-  switch(info.format[0]) {
+  char format = info.format[0];
+  if(format == '=' || format == '<')
+    format = info.format[1];
+  switch(format) {
   case 'h':
     return f(format_descriptor<short>());
   case 'H':
