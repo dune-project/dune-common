@@ -143,6 +143,9 @@ macro(dune_project)
   include(Headercheck)
   setup_headercheck()
 
+  # define that we found this module
+  set(${ProjectName}_FOUND 1)
+
 endmacro(dune_project)
 
 
@@ -359,8 +362,6 @@ macro(dune_regenerate_config_cmake)
    from the config.h.cmake files of modules this module depends on. */"
    )
 
-  # define that we found this module
-  set(${ProjectName}_FOUND 1)
   foreach(_dep ${ProjectName} ${ALL_DEPENDENCIES})
     dune_module_to_uppercase(upper ${_dep})
     set(HAVE_${upper} ${${_dep}_FOUND})

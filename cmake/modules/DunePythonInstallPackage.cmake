@@ -273,7 +273,19 @@ function(dune_python_install_package)
       string(APPEND _export_builddirs "\;${${mod}_DIR}")
     endforeach()
 
+    # add the list of HAVE_{MODULE} flags to the meta data
     set(_cmake_flags "")
+    foreach(_dep ${ProjectName} ${ALL_DEPENDENCIES})
+      dune_module_to_uppercase(upper ${_dep})
+      if(DEFINED ${HAVE_${upper}})
+        list(APPEND _cmake_flags "HAVE_${upper}:=${HAVE_${upper}}")
+      endif()
+    endforeach()
+
+    # automatically add DUNE_OPTS_FILE
+    list(APPEND _cmake_flags "DUNE_OPTS_FILE:=${DUNE_OPTS_FILE}")
+
+    # handle all manually added flags
     foreach(flags_loop IN ITEMS ${PYINST_CMAKE_METADATA_FLAGS})
       if(${flags_loop})
         set(value ${${flags_loop}})
@@ -285,13 +297,11 @@ function(dune_python_install_package)
         if(DEFINED DEFAULT_CXXFLAGS AND "${flags_loop}" STREQUAL "CMAKE_CXX_FLAGS")
           set(value "${DEFAULT_CXXFLAGS}")
         endif()
-        if(_cmake_flags STREQUAL "")
-          string(APPEND _cmake_flags "${flags_loop}:=\"${value}\"")
-        else()
-          string(APPEND _cmake_flags "\;${flags_loop}:=\"${value}\"")
-        endif()
+        list(APPEND _cmake_flags "${flags_loop}:=\"${value}\"")
       endif()
     endforeach()
+    # transform the list into an escaped string
+    string(REPLACE ";" "\;" _cmake_flags "${_cmake_flags}")
 
     #
     # Generate metadata - note that there is a metadata target for the
