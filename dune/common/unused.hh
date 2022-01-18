@@ -4,26 +4,8 @@
 #define DUNE_COMMON_UNUSED_HH
 
 /** \file
- * \brief Definition of the DUNE_UNUSED macro for the case that config.h
- *      is not available
+ * \brief Definition of the `DUNE_UNUSED_PARAMETER` macro.
  */
-
-#ifndef HAS_ATTRIBUTE_UNUSED
-//! A macro for marking variables that the compiler mistakenly flags as unused, which sometimes happens due to templates.
-/**
- * \ingroup CxxUtilities
- * \deprecated Use C++17's \code[[maybe_unused]]\endcode instead. This
- * macro will be removed after Dune 2.8. Be aware that it must be
- * sometimes placed at a different position in the code.
- */
-#define DUNE_UNUSED
-#else
-#ifdef __GNUC__
-#  define DUNE_UNUSED _Pragma("GCC warning \"DUNE_UNUSED is deprecated\"") __attribute__((unused))
-#else
-#  define DUNE_UNUSED _Pragma("message \"DUNE_UNUSED is deprecated\"") __attribute__((unused))
-#endif
-#endif
 
 /**
  * A macro to mark intentionally unused function parameters with.

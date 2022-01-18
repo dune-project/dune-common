@@ -20,9 +20,6 @@
 /* Standard debug streams with a level below will collapse to doing nothing */
 #define DUNE_MINIMAL_DEBUG_LEVEL ${DUNE_MINIMAL_DEBUG_LEVEL}
 
-/* does the compiler support __attribute__((unused))? */
-#cmakedefine HAS_ATTRIBUTE_UNUSED 1
-
 /* does the standard library provide experimental::make_array() ? */
 #cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY 1
 
@@ -97,6 +94,7 @@
 /* old feature support macros which were tested until 2.8, kept around for one more release */
 #define HAS_ATTRIBUTE_DEPRECATED 0
 #define HAS_ATTRIBUTE_DEPRECATED_MSG 0
+#define HAS_ATTRIBUTE_UNUSED 0
 
 /* Define to ENABLE_UMFPACK if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE

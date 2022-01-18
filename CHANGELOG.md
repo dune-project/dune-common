@@ -36,6 +36,11 @@
   that it is no drop-in replacement, as it must be sometimes placed at
   different position in the code.
 
+- The macros `DUNE_UNUSED` is removed Use C++17's attribute
+  `[[maybe_unused]]` instead, but be aware that it is no drop-in
+  replacement, as it must be sometimes placed at a different position
+  in the code.
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
