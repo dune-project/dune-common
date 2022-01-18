@@ -55,9 +55,9 @@ namespace Dune
   /**
      \brief Provides commonly used mathematical constants.
 
-     a struct that is specialized for types repesenting real or complex
+     a struct that is specialized for types representing real or complex
      numbers. It provides commonly used mathematical constants with the
-     required accuary for the specified type.
+     required accuracy for the specified type.
    */
   template< class Field >
   struct MathematicalConstants
@@ -291,7 +291,7 @@ namespace Dune
   namespace Impl {
     /* This helper has a math functor as a static constexpr member.  Doing
        this as a static member of a template struct means we can do this
-       without violating the ODR or putting the definition into a seperate
+       without violating the ODR or putting the definition into a separate
        compilation unit, while still still ensuring the functor is the same
        lvalue across all compilation units.
      */
@@ -313,28 +313,28 @@ namespace Dune
        they all resolve to the same lvalue.
     */
 
-    //! check wether the argument is NaN
+    //! check whether the argument is NaN
     /**
      * Dune-Semantic: for multi-valued types (complex, vectors), check whether
      * *any* value is NaN.
      */
     constexpr auto const &isNaN = Impl::MathDummy<MathImpl::isNaNImpl>::value;
 
-    //! check wether the argument is infinite or NaN
+    //! check whether the argument is infinite or NaN
     /**
      * Dune-Semantic: for multi-valued types (complex, vectors), check whether
      * *any* value is infinite or NaN.
      */
     constexpr auto const &isInf = Impl::MathDummy<MathImpl::isInfImpl>::value;
 
-    //! check wether the argument is finite and non-NaN
+    //! check whether the argument is finite and non-NaN
     /**
      * Dune-Semantic: for multi-valued types (complex, vectors), check whether
      * *all* values are finite and non-NaN.
      */
     constexpr auto const &isFinite = Impl::MathDummy<MathImpl::isFiniteImpl>::value;
 
-    //! check wether the arguments are ordered
+    //! check whether the arguments are ordered
     /**
      * Dune-Semantic: for multi-valued types (complex, vectors), there is
      * never an ordering, so at the moment these types are not supported as

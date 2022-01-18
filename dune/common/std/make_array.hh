@@ -29,7 +29,7 @@ namespace Std {
    *       accepted <a
    *       href="https://botondballo.wordpress.com/2015/06/05/trip-report-c-standards-meeting-in-lenexa-may-2015/">May
    *       2015</a>). The differences are that this version should
-   *       never be used with expliclitly given template arguments, or
+   *       never be used with explicitly given template arguments, or
    *       with std::reference_wrapper<...> arguments, and we do not
    *       give a diagnostic when anyone happens to do that.
    *
