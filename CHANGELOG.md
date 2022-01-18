@@ -29,6 +29,13 @@
 
 - Deprecate cmake function `remove_processed_modules`
 
+## Deprecations and removals
+
+- Both deprecated macros `DUNE_DEPRECATED` and `DUNE_DEPRECATED_MSG(text)`
+  are removed. Use C++14 attribute `[[deprecated]]`. However, be aware
+  that it is no drop-in replacement, as it must be sometimes placed at
+  different position in the code.
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.
