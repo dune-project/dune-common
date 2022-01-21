@@ -67,20 +67,20 @@ namespace Dune
 
   /** \brief Power method for integer exponents
    *
-   * \note Make sure that Mantissa is a non-integer type when using negative exponents!
+   * \note Make sure that Base is a non-integer type when using negative exponents!
    */
-  template <class Mantissa, class Exponent>
-  constexpr Mantissa power(Mantissa m, Exponent p)
+  template <class Base, class Exponent>
+  constexpr Base power(Base m, Exponent p)
   {
     static_assert(std::numeric_limits<Exponent>::is_integer, "Exponent must be an integer type!");
 
-    auto result = Mantissa(1);
+    auto result = Base(1);
     auto absp = (p<0) ? -p : p;   // This is simply abs, but std::abs is not constexpr
     for (Exponent i = Exponent(0); i<absp; i++)
       result *= m;
 
     if (p<0)
-      result = Mantissa(1)/result;
+      result = Base(1)/result;
 
     return result;
   }
