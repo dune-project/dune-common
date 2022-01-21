@@ -16,18 +16,18 @@ namespace Dune {
        @{
    */
 
-  /** \brief Calculates m^p at compile time
+  /** \brief Calculates b^p at compile time
    * \deprecated Please use the method `power` from `math.hh` instead!
    */
-  template <int m, int p>
+  template <int b, int p>
   struct StaticPower
   {
-    /** \brief power stores m^p */
-    static constexpr int power = Dune::power(m,p);
+    /** \brief power stores b^p */
+    static constexpr int power = Dune::power(b,p);
   };
 
 
-  /** \brief Compute power for a run-time mantissa and a compile-time integer exponent
+  /** \brief Compute power for a run-time base and a compile-time integer exponent
    *
    * \deprecated Please use the method `power` from `math.hh` instead!
    *
