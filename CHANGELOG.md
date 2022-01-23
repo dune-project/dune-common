@@ -29,6 +29,38 @@
 
 - Deprecate cmake function `remove_processed_modules`
 
+## Deprecations and removals
+
+- The deprecated headers `gcd.hh` and `lcm.hh` are removed. Use `std::gcd`
+  and `std::lcm` instead.
+
+- Both deprecated macros `DUNE_DEPRECATED` and `DUNE_DEPRECATED_MSG(text)`
+  are removed. Use C++14 attribute `[[deprecated]]`. However, be aware
+  that it is no drop-in replacement, as it must be sometimes placed at
+  different position in the code.
+
+- The macros `DUNE_UNUSED` is removed Use C++17's attribute
+  `[[maybe_unused]]` instead, but be aware that it is no drop-in
+  replacement, as it must be sometimes placed at a different position
+  in the code.
+
+- In `callFixedSize`, support handles with `fixedsize()` (lower case s)
+  is removed. Implement `fixedSize()` (camelCase) instead.
+
+- `CollectiveCommunication` and `getCollectiveCommunication` are deprecated
+  and will be removed after Dune 2.9. Use `Communication` respectively
+  `getCommunication` instead.
+
+- The header `power.hh` is deprecated. Use `Dune::power` from
+  `math.hh` instead.
+
+- The deprecated compatibility header `optional.hh` is removed. Include
+  `<optional>` instead.
+
+- The compatibility header `make_array.hh` is deprecated and will be
+  removed after Dune 2.8. Use deduction guide of `std::array` or
+  `std::to_array`.
+
 # Release 2.8
 
 - Set minimal required CMake version in cmake to >= 3.13.

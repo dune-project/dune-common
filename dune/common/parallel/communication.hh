@@ -528,10 +528,14 @@ namespace Dune
 
   };
 
+  /**
+   * \deprecated CollectiveCommunication is deprecated and will be removed after Dune 2.9.
+   *
+   * Use Communication instead.
+   */
   template<class T>
   using CollectiveCommunication
-  // Will be deprecated after the 2.7 release
-  //[[deprecated("CollectiveCommunication is deprecated. Use Communication instead.")]]
+  [[deprecated("CollectiveCommunication is deprecated. Use Communication instead.")]]
   = Communication<T>;
 }
 

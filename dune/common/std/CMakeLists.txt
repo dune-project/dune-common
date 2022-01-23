@@ -3,7 +3,6 @@ install(
   apply.hh
   functional.hh
   make_array.hh
-  optional.hh
   type_traits.hh
   utility.hh
   variant.hh

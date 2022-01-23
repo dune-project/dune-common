@@ -34,7 +34,7 @@ namespace Dune
     virtual int sum(int i) = 0;
     // create a new GuardCommunicator pointer
     template <class C>
-    static GuardCommunicator * create(const CollectiveCommunication<C> & c);
+    static GuardCommunicator * create(const Communication<C> & c);
 #if HAVE_MPI
     inline
     static GuardCommunicator * create(const MPI_Comm & c);
@@ -77,15 +77,15 @@ namespace Dune
   }   // anonymous namespace
 
   template<class C>
-  GuardCommunicator * GuardCommunicator::create(const CollectiveCommunication<C> & comm)
+  GuardCommunicator * GuardCommunicator::create(const Communication<C> & comm)
   {
-    return new GenericGuardCommunicator< CollectiveCommunication<C> >(comm);
+    return new GenericGuardCommunicator< Communication<C> >(comm);
   }
 
 #if HAVE_MPI
   GuardCommunicator * GuardCommunicator::create(const MPI_Comm & comm)
   {
-    return new GenericGuardCommunicator< CollectiveCommunication<MPI_Comm> >(comm);
+    return new GenericGuardCommunicator< Communication<MPI_Comm> >(comm);
   }
 #endif
 

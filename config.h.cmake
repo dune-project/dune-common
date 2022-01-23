@@ -20,15 +20,6 @@
 /* Standard debug streams with a level below will collapse to doing nothing */
 #define DUNE_MINIMAL_DEBUG_LEVEL ${DUNE_MINIMAL_DEBUG_LEVEL}
 
-/* does the compiler support __attribute__((deprecated))? */
-#cmakedefine HAS_ATTRIBUTE_DEPRECATED 1
-
-/* does the compiler support __attribute__((deprecated("message"))? */
-#cmakedefine HAS_ATTRIBUTE_DEPRECATED_MSG 1
-
-/* does the compiler support __attribute__((unused))? */
-#cmakedefine HAS_ATTRIBUTE_UNUSED 1
-
 /* does the standard library provide experimental::make_array() ? */
 #cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY 1
 
@@ -100,20 +91,10 @@
 /* end private */
 
 
-/* old feature support macros which were tested until 2.7, kept around for one more release */
-/* As these are now always supported due to the new compiler requirements, they are directly */
-/* defined without an explicit test. */
-#define DUNE_HAVE_CXX_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
-#define DUNE_HAVE_CXX_OPTIONAL 1
-#define DUNE_HAVE_CXX_VARIANT 1
-#define DUNE_SUPPORTS_CXX_THROW_IN_CONSTEXPR 1
-#define DUNE_HAVE_C_ALIGNED_ALLOC 1
-#define DUNE_HAVE_CXX_BOOL_CONSTANT 1
-#define DUNE_HAVE_CXX_EXPERIMENTAL_BOOL_CONSTANT 0
-#define DUNE_HAVE_HEADER_EXPERIMENTAL_TYPE_TRAITS 0
-#define DUNE_HAVE_CXX_APPLY 1
-#define DUNE_HAVE_CXX_EXPERIMENTAL_APPLY 0
-#define HAVE_IS_INDEXABLE_SUPPORT 1
+/* old feature support macros which were tested until 2.8, kept around for one more release */
+#define HAS_ATTRIBUTE_DEPRECATED 0
+#define HAS_ATTRIBUTE_DEPRECATED_MSG 0
+#define HAS_ATTRIBUTE_UNUSED 0
 
 /* Define to ENABLE_UMFPACK if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE

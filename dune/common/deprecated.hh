@@ -4,36 +4,11 @@
 #define DUNE_DEPRECATED_HH
 
 /** \file
- * \brief Definition of the DUNE_DEPRECATED macro for the case that config.h
- *      is not available
+ * \brief Definition of the `DUNE_NO_DEPRECATED_*` macros
  */
 
 //! @addtogroup CxxUtilities
 //! @{
-#if defined(DOXYGEN) || !defined(HAS_ATTRIBUTE_DEPRECATED)
-//! Mark some entity as deprecated
-/**
- * \deprecated Use C++14's \code[[deprecated]]\endcode instead. It will be
- * removed after Dune 2.8. Be aware that it must be sometimes placed at
- * different position in the code.
- */
-#define DUNE_DEPRECATED
-#else // defined(HAS_ATTRIBUTE_DEPRECATED)
-#define DUNE_DEPRECATED __attribute__((deprecated))
-#endif
-
-#if defined(DOXYGEN) || !defined(HAS_ATTRIBUTE_DEPRECATED_MSG)
-//! Mark some entity as deprecated
-/**
- * \deprecated Use C++14's \code[[deprecated(msg)]]\endcode instead. It
- * will be removed after Dune 2.8. Be aware that it must be sometimes
- * placed at different position in the code.
- */
-#define DUNE_DEPRECATED_MSG(text) DUNE_DEPRECATED
-#else // defined(HAS_ATTRIBUTE_DEPRECATED_MSG)
-#define DUNE_DEPRECATED_MSG(text) __attribute__((deprecated(# text)))
-#endif
-
 #ifdef DOXYGEN
 /**
  * \brief Ignore deprecation warnings (start)

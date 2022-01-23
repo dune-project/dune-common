@@ -52,7 +52,6 @@ install(FILES
         ftraits.hh
         function.hh
         fvector.hh
-        gcd.hh
         genericiterator.hh
         gmpfield.hh
         hash.hh
@@ -64,7 +63,6 @@ install(FILES
         iteratorfacades.hh
         iteratorrange.hh
         keywords.hh
-        lcm.hh
         lru.hh
         mallocallocator.hh
         math.hh
