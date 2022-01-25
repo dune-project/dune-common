@@ -261,8 +261,8 @@ macro(find_dune_package module)
     endif()
   endif()
   set(DUNE_${module}_FOUND ${${module}_FOUND})
-  dune_module_to_uppercase(_upper_case "${module}")
-  set(HAVE_${_upper_case} "${${module}_FOUND}") # need for example for the python meta data...
+  dune_module_to_uppercase(_upper_case ${module})
+  set(HAVE_${_upper_case} ${${module}_FOUND}) # need for example for the python meta data...
 endmacro(find_dune_package module)
 
 
