@@ -4,6 +4,7 @@ add_subdirectory(typeregistry)
 
 add_python_targets(dune
   __main__
+  commands
   create
   packagemetadata
   plotting

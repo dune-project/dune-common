@@ -7,4 +7,5 @@ add_python_targets(generator
   cmakebuilder
   exceptions
   generator
+  remove
   )
