@@ -190,7 +190,8 @@ class Builder:
     @staticmethod
     def callCMake(cmake_args, cwd, infoTxt, verbose=False, active=False, logLevel=logging.DEBUG):
         # print initial info, if we are verbose
-        # or we know that we have to build someting
+        # or we know that we have to build something
+        stdout, stderr = None, None
         active = active or verbose
         if active:
             if infoTxt:
@@ -213,6 +214,7 @@ class Builder:
                 # retrieve stderr output
                 _, stderr = cmake.communicate()
                 raise CompileError(buffer_to_str(stderr))
+        return stdout, stderr
 
     def compile(self, infoTxt, target='all', verbose=False):
         cmake_command = getCMakeCommand()
@@ -228,33 +230,35 @@ class Builder:
 
         if cmake_args != []:
             cmake_args += ["--"] + make_args
-        Builder.callCMake(cmake_args,
-                          cwd=self.generated_dir,
-                          infoTxt=infoTxt,
-                          verbose=verbose,
-                          logLevel=logging.INFO
-                          )
+        stdout, stderr = Builder.callCMake(cmake_args,
+                                           cwd=self.generated_dir,
+                                           infoTxt=infoTxt,
+                                           verbose=verbose,
+                                           logLevel=logging.INFO
+                                          )
         writeOutput = self.savedOutput is not None and target != 'all' if self.skipTargetAll else self.savedOutput is not None
         if writeOutput:
-            out = buffer_to_str(stdout)
-            nlines = out.count('\n')
-            if nlines > 1:
-                self.savedOutput[0].write("###############################\n")
-                self.savedOutput[0].write("###" + " ".join(cmake_args)+"\n")
-            if nlines > 0:
-                self.savedOutput[0].write(out)
-            if nlines > 1:
-                self.savedOutput[0].write("\n###############################\n")
+            if stdout is not None:
+                out = buffer_to_str(stdout)
+                nlines = out.count('\n')
+                if nlines > 1:
+                    self.savedOutput[0].write("###############################\n")
+                    self.savedOutput[0].write("###" + " ".join(cmake_args)+"\n")
+                if nlines > 0:
+                    self.savedOutput[0].write(out)
+                if nlines > 1:
+                    self.savedOutput[0].write("\n###############################\n")
 
-            err = buffer_to_str(stderr)
-            nlines = err.count('\n')
-            if nlines > 1:
-                self.savedOutput[1].write("###############################\n")
-                self.savedOutput[1].write("###" + " ".join(cmake_args)+"\n")
-            if nlines > 0:
-                self.savedOutput[1].write(err)
-            if nlines > 1:
-                self.savedOutput[1].write("\n###############################\n")
+            if stderr is not None:
+                err = buffer_to_str(stderr)
+                nlines = err.count('\n')
+                if nlines > 1:
+                    self.savedOutput[1].write("###############################\n")
+                    self.savedOutput[1].write("###" + " ".join(cmake_args)+"\n")
+                if nlines > 0:
+                    self.savedOutput[1].write(err)
+                if nlines > 1:
+                    self.savedOutput[1].write("\n###############################\n")
 
     def load(self, moduleName, source, pythonName, extraCMake=None):
         ## TODO replace if rank with something better
