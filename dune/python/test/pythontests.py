@@ -1,6 +1,11 @@
 from io import StringIO
 from numpy import array
 
+import os
+# enable DUNE_SAVE_BUILD to test various output options
+os.environ['DUNE_LOG_LEVEL'] = 'info'
+os.environ['DUNE_SAVE_BUILD'] = 'console'
+
 classACode="""
 struct MyClassA {
   MyClassA(int a,int b) : a_(a), b_(b) {}
