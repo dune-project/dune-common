@@ -440,10 +440,6 @@ function(dune_add_test)
   endforeach()
 endfunction()
 
-macro(add_directory_test_target)
-  message(FATAL_ERROR "The function add_directory_test_target has been removed alongside all testing magic in dune-common. Check dune_add_test for the new way!")
-endmacro()
-
 macro(add_test)
   if(NOT DUNE_REENABLE_ADD_TEST)
     message(SEND_ERROR "Please use dune_add_test instead of add_test! If you need add_test in a downstream project, set the variable DUNE_REENABLE_ADD_TEST to True in that project to suppress this error.")
