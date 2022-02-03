@@ -114,7 +114,7 @@ namespace Dune
      *
      * Use getCommunication instead.
      */
-    [[deprecated("getCollectionCommunication is deprecated. Use getCommunication instead.")]]
+    //[[deprecated("getCollectionCommunication is deprecated. Use getCommunication instead.")]]
     static Communication<MPICommunicator> getCollectiveCommunication()
     {
       return Communication<MPICommunicator>(getCommunicator());
