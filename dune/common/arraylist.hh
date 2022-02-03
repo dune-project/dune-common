@@ -340,9 +340,6 @@ namespace Dune
     /** \todo Please doc me! */
     inline difference_type distanceTo(const ArrayListIterator<T,N,A>& other) const;
 
-    /** \todo Please doc me! */
-    inline ArrayListIterator<T,N,A>& operator=(const ArrayListIterator<T,N,A>& other);
-
     //! Standard constructor
     inline ArrayListIterator() : position_(0), list_(nullptr)
     {}
@@ -437,8 +434,6 @@ namespace Dune
      * @return The element at the current position.
      */
     inline const_reference dereference() const;
-
-    inline const ConstArrayListIterator<T,N,A>& operator=(const ConstArrayListIterator<T,N,A>& other);
 
     inline ConstArrayListIterator() : position_(0), list_(nullptr)
     {}
@@ -669,22 +664,6 @@ namespace Dune
     // Makes only sense if we reference a common list
     assert(list_==(other.list_));
     return other.position_ - position_;
-  }
-
-  template<class T, int N, class A>
-  ArrayListIterator<T,N,A>& ArrayListIterator<T,N,A>::operator=(const ArrayListIterator<T,N,A>& other)
-  {
-    position_=other.position_;
-    list_=other.list_;
-    return *this;
-  }
-
-  template<class T, int N, class A>
-  const ConstArrayListIterator<T,N,A>& ConstArrayListIterator<T,N,A>::operator=(const ConstArrayListIterator<T,N,A>& other)
-  {
-    position_=other.position_;
-    list_=other.list_;
-    return *this;
   }
 
   template<class T, int N, class A>

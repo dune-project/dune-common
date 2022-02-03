@@ -383,10 +383,6 @@ namespace Dune
       : current_(other.current_)
     {}
 
-    inline SLListConstIterator(const SLListConstIterator<T,A>& other)
-      : current_(other.current_)
-    {}
-
     inline SLListConstIterator(const SLListModifyIterator<T,A>& other)
       : current_(other.iterator_.current_)
     {}
@@ -435,10 +431,6 @@ namespace Dune
     inline SLListModifyIterator(SLListIterator<T,A> beforeIterator,
                                 SLListIterator<T,A> _iterator)
       : beforeIterator_(beforeIterator), iterator_(_iterator)
-    {}
-
-    inline SLListModifyIterator(const SLListModifyIterator<T,A>& other)
-      : beforeIterator_(other.beforeIterator_), iterator_(other.iterator_)
     {}
 
     inline SLListModifyIterator()
