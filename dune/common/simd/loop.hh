@@ -24,6 +24,12 @@ namespace Dune {
 #  pragma GCC diagnostic ignored "-Wint-in-bool-context"
 #endif
 
+/*
+ * silence warnings from Clang about using bitwise operands on
+ * a bool (when instantiated for T=bool)
+ */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
 
 /*
  * Introduce a simd pragma if OpenMP is available in standard version >= 4
@@ -596,6 +602,8 @@ namespace Dune {
   struct IsNumber<LoopSIMD<T,S,A>> :
           public std::integral_constant<bool, IsNumber<T>::value>{
   };
+
+#pragma clang diagnostic pop
 
 #  pragma GCC diagnostic pop
 
