@@ -89,18 +89,47 @@ if(Python3_Interpreter_FOUND)
   add_custom_target(test_python COMMAND ctest CMD_ARGS -L python)
   add_custom_target(install_python)
 
-  # this option enables the build of Python bindings for DUNE modules
+  ##### Python bindings specific part begin ################
+  # this option enables the build of Python bindings for DUNE modules per default
   option(DUNE_ENABLE_PYTHONBINDINGS "Enable Python bindings for DUNE" ON)
 
   if( DUNE_ENABLE_PYTHONBINDINGS )
+    # first we test if all requirements are satisfied, if not, Python bindings are
+    # disabled and the user gets an informative message explaining why
+    set(DUNE_PB_USER_NOTICE "If you do not plan to use the Dune Python bindings you can ignore this information")
     if(NOT Python3_Interpreter_FOUND)
-      message(WARNING "Python bindings require a Python 3 interpreter")
+      message(STATUS "Python bindings disabled")
+      message(NOTICE
+        "   ----------------------------------------------------------------------------------------\n"
+        "   Python bindings require a Python 3 interpreter and none was found.\n"
+        "   ${DUNE_PB_USER_NOTICE}.\n"
+        "   ----------------------------------------------------------------------------------------\n"
+      )
       set(DUNE_ENABLE_PYTHONBINDINGS OFF)
       return()
     endif()
     if(NOT Python3_INCLUDE_DIRS)
-      message(WARNING "Found a Python interpreter but the Python bindings also requires the Python "
-                      "libraries (a package named like python-dev package or python3-devel)")
+      message(STATUS "Python bindings disabled")
+      message(NOTICE
+        "   ----------------------------------------------------------------------------------------\n"
+        "   Found a Python interpreter but the Python bindings also requires the Python libraries (a package named like python-dev package or python3-devel).\n"
+        "   ${DUNE_PB_USER_NOTICE}.\n"
+        "   ----------------------------------------------------------------------------------------\n"
+      )
+      set(DUNE_ENABLE_PYTHONBINDINGS OFF)
+      return()
+    endif()
+
+    # the Python bindings currently require the following minimum Python version
+    set(DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION 3.6)
+    if(Python3_VERSION VERSION_LESS ${DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION})
+      message(STATUS "Python bindings disabled")
+      message(NOTICE
+        "   ----------------------------------------------------------------------------------------\n"
+        "   Python bindings require at least Python version ${DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION} but only version ${Python3_VERSION} was found.\n"
+        "   ${DUNE_PB_USER_NOTICE}.\n"
+        "   ----------------------------------------------------------------------------------------\n"
+      )
       set(DUNE_ENABLE_PYTHONBINDINGS OFF)
       return()
     endif()
@@ -120,7 +149,7 @@ if(Python3_Interpreter_FOUND)
 
     include(DuneAddPybind11Module)
   endif()
-
+  ##### Python bindings end ################
 
   # Set up the Dune-internal virtualenv
   include(DunePythonVirtualenv)
