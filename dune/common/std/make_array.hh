@@ -8,7 +8,7 @@
 #include <experimental/array>
 #endif
 
-#warning make_array.hh is deprecated and will be removed after Dune 2.8. \
+#warning make_array.hh is deprecated and will be removed after Dune 2.9. \
   Use deduction guide of `std::array` or `std::to_array`.
 
 namespace Dune {
