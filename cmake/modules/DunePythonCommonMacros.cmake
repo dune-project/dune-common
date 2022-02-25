@@ -97,17 +97,6 @@ if(Python3_Interpreter_FOUND)
     # first we test if all requirements are satisfied, if not, Python bindings are
     # disabled and the user gets an informative message explaining why
     set(DUNE_PB_USER_NOTICE "If you do not plan to use the Dune Python bindings you can ignore this information")
-    if(NOT Python3_Interpreter_FOUND)
-      message(STATUS "Python bindings disabled")
-      message(NOTICE
-        "   ----------------------------------------------------------------------------------------\n"
-        "   Python bindings require a Python 3 interpreter and none was found.\n"
-        "   ${DUNE_PB_USER_NOTICE}.\n"
-        "   ----------------------------------------------------------------------------------------\n"
-      )
-      set(DUNE_ENABLE_PYTHONBINDINGS OFF)
-      return()
-    endif()
     if(NOT Python3_INCLUDE_DIRS)
       message(STATUS "Python bindings disabled")
       message(NOTICE
