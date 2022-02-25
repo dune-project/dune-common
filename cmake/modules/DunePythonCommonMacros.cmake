@@ -137,6 +137,7 @@ if(Python3_Interpreter_FOUND)
     endfunction()
 
     include(DuneAddPybind11Module)
+    message(STATUS "Python bindings enabled")
   endif()
   ##### Python bindings end ################
 
