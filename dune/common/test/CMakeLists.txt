@@ -298,6 +298,10 @@ dune_add_test(SOURCES rangeutilitiestest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
+dune_add_test(SOURCES referencehelpertest.cc
+              LINK_LIBRARIES dunecommon
+              LABELS quick)
+
 dune_add_test(SOURCES reservedvectortest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
