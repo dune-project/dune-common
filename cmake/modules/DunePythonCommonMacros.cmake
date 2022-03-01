@@ -163,4 +163,7 @@ if(Python3_Interpreter_FOUND)
     message(FATAL_ERROR "Specifying 'user' as install location is incompatible with using virtual environments (as per pip docs)")
   endif()
 
+else()
+  message(STATUS "Python bindings disabled as there is no Python3 interpreter")
+  set(DUNE_ENABLE_PYTHONBINDINGS OFF)
 endif()
