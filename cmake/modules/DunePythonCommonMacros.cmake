@@ -167,6 +167,7 @@ endif()
 
 include(DuneSymlinkOrCopy)
 
+# TODO: This function should have dune prefix and use named arguments
 function(add_python_targets base)
   if(Python3_Interpreter_FOUND)
     if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
