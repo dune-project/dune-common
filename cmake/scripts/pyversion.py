@@ -7,16 +7,21 @@
 #
 
 import sys
+import warnings
 
-# Load the module passed as argument (this avoids the need for a template
+# Load the module name passed as argument (this avoids the need for a template
 # to be configured to put the package name inhere)
 modstr = sys.argv[1]
-module = __import__(modstr)
 
-# The most common mechanism is module.__version__
-if hasattr(module, '__version__'):
-    sys.stdout.write(module.__version__)
-    sys.exit(0)
+with warnings.catch_warnings():
+    # suppress any warnings which may be raised on import (e.g. virtualenv 20.2.2)
+    warnings.simplefilter("ignore")
+
+    module = __import__(modstr)
+    # The most common mechanism is module.__version__
+    if hasattr(module, '__version__'):
+        sys.stdout.write(module.__version__)
+        sys.exit(0)
 
 # Alternative implementation: through pip (pip itself implement pip.__version__,
 # so we never get here, when checking the version of pip itself), only works if
