@@ -1,32 +1,38 @@
 import sys
 from argparse import ArgumentParser
-from dune.commands import * # configure, checkbuilddirs, rmgenerated, listgenerated
+from dune.commands import configure, checkbuilddirs, rmgenerated, listdunetype, listgenerated
+
+# NOTE: do not import from dune.common (and consequently from dune.generator)
+#       at top level to avoid failure due to missing mpi4py.
+
 
 def run(arguments=None):
     parser = ArgumentParser(description='Execute DUNE commands', prog='dune')
     subparsers = parser.add_subparsers(dest='command')
 
     # Configure
-    parserConfigure = subparsers.add_parser('configure', help='Tag dune-py to be reconfigured before next use')
-
-    # Remove
-    parserRemove = subparsers.add_parser('remove', help='Remove generated modules')
-    parserRemove.add_argument('modules', nargs='+', default=[], help='Patterns of modules to remove or "all"')
+    parserConfigure = subparsers.add_parser('configure',
+              help='Tag dune-py to be reconfigured before next use')
 
     # List
     parserList = subparsers.add_parser('list', help='List all generated modules')
-    parserList.add_argument('--date', dest='sort',
-                            action='store_const', const='date',
-                            default='alpha', help='sort by creation date (default it alphabetical)')
+    parserList.add_argument('--alphabetical', dest='sort', action='store_const', const='alphabetical', default='bydate',
+              help='List modules in alphabetical order (default: by date)')
 
-    # dunetype
+    # Remove
+    parserRemove = subparsers.add_parser('remove', help='Remove generated modules')
+    parserRemove.add_argument('modules', nargs='*',  default=[],
+              help='Patterns of modules ("*.cc" and dune-py path is added to each argument) or "all"')
+
+    # Dunetype
     parserDunetype = subparsers.add_parser('dunetype', help='Show dune types for given modules')
-    parserDunetype.add_argument('modules', nargs='+', default=[],
-              help='Patterns of modules - "*.cc" and dune-py path is added to each argument')
+    parserDunetype.add_argument('modules', nargs='*', default=[],
+              help='Patterns of modules ("*.cc" and dune-py path is added to each argument) or "all"')
 
     # CheckBuildDirs
     parserCheckBuildDirs = subparsers.add_parser('checkbuilddirs', help='(internal use) Check build directories')
-    parserCheckBuildDirs.add_argument('args', nargs='+', default=[], help='Dune module name and string with builddirs separated by ";"')
+    parserCheckBuildDirs.add_argument('args', nargs='+', default=[],
+              help='Dune module name and string with builddirs separated by ";"')
 
 
     ret = 0
@@ -38,17 +44,22 @@ def run(arguments=None):
         ret = checkbuilddirs(args.args)
 
     elif args.command == 'remove':
-        ret = rmgenerated(args.modules)
+        if args.modules == []:
+            parserRemove.print_help()
+        else:
+            ret = rmgenerated(args.modules)
 
     elif args.command == 'dunetype':
-        ret = listdunetype(args.modules)
+        if args.modules == []:
+            parserDunetype.print_help()
+        else:
+            ret = listdunetype(args.modules)
 
     elif args.command == 'list':
-        print(args.sort)
         ret = listgenerated(args.sort)
 
     else:
-        ret = 1
+        parser.print_help()
 
     sys.exit(ret)
 

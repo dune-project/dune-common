@@ -10,6 +10,9 @@ This module implements helpers for two classes of meta data
 
 """
 
+# NOTE: do not import from dune.common (and consequently from dune.generator)
+#       at top level to avoid failure due to missing mpi4py.
+
 from setuptools import find_namespace_packages
 import sys
 import os

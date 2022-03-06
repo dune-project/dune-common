@@ -1,5 +1,8 @@
-import os, glob
+import os, glob, time
 from dune.packagemetadata import getBuildMetaData, forceConfigure
+
+# NOTE: do not import from dune.common (and consequently from dune.generator)
+#       at top level to avoid failure due to missing mpi4py.
 
 def configure():
     print('Set up dune-py module for reconfiguration')
@@ -34,13 +37,7 @@ def checkbuilddirs(args):
 
 def rmgenerated(args):
     from dune.generator.remove import removeGenerated
-    if len(args) > 0:
-        removeGenerated(args)
-    else:
-        print("""\
-Please specify which modules to remove using '--args <module1*> [<module2*>...]'.
-Use '--args all' to remove all generated modules.""")
-        return 1
+    removeGenerated(args)
     return 0
 
 
@@ -49,29 +46,33 @@ def listgenerated(args):
     dune_py_dir = getDunePyDir()
     generated_dir = os.path.join(dune_py_dir, 'python', 'dune', 'generated')
 
-    files = glob.glob(os.path.join(generated_dir, '*.so'))
-    if args == 'alpha':
+    files = glob.glob(os.path.join(generated_dir, '*.cc'))
+    if args == 'bydate':
+        files.sort(key=os.path.getmtime, reverse=True)
+    elif args == 'alphabetical':
         files.sort()
-    elif args == 'date':
-        files.sort(key=os.path.getmtime)
 
     for filename in files:
         fileBase = os.path.splitext(os.path.basename(filename))[0]
-        print(fileBase)
+        print(time.ctime(os.path.getmtime(filename)), ' ', fileBase)
 
     return 0
+
 
 def listdunetype(args):
     from dune.common.module import getDunePyDir
     dune_py_dir = getDunePyDir()
     generated_dir = os.path.join(dune_py_dir, 'python', 'dune', 'generated')
 
-    for fileBase in args:
-        # if fileBase == 'all': fileBase = ''
-        for mod in glob.iglob(os.path.join(generated_dir,fileBase+'*.cc')):
-            print(mod,":",flush=True)
-            with open (mod, 'rt') as f:
+    if args == ['all']: args = ['']
+    for file in args:
+        files = glob.iglob(os.path.join(generated_dir, file+'*.cc'))
+        for file in files:
+            mod = os.path.splitext(os.path.basename(file))[0]
+            print(mod+":", flush=True)
+            with open(file, 'rt') as f:
                 for line in f:
                     if "using DuneType" in line:
-                        print(line)
+                        print("  ->", line.strip())
+            print("")
     return 0
