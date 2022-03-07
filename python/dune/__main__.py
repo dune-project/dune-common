@@ -21,6 +21,8 @@ def run(arguments=None):
 
     # Remove
     parserRemove = subparsers.add_parser('remove', help='Remove generated modules')
+    parserRemove.add_argument('--beforedate', dest='date', action='store_const', const=True, default=False,
+              help='Instead of a pattern provide a date to remove all modules not having been loaded after that date')
     parserRemove.add_argument('modules', nargs='*',  default=[],
               help='Patterns of modules ("*.cc" and dune-py path is added to each argument) or "all"')
 
@@ -47,7 +49,7 @@ def run(arguments=None):
         if args.modules == []:
             parserRemove.print_help()
         else:
-            ret = rmgenerated(args.modules)
+            ret = rmgenerated(args.modules, args.date)
 
     elif args.command == 'dunetype':
         if args.modules == []:

@@ -35,9 +35,9 @@ def checkbuilddirs(args):
     return 0
 
 
-def rmgenerated(args):
+def rmgenerated(args, date):
     from dune.generator.remove import removeGenerated
-    removeGenerated(args)
+    removeGenerated(args, date)
     return 0
 
 
@@ -46,15 +46,16 @@ def listgenerated(args):
     dune_py_dir = getDunePyDir()
     generated_dir = os.path.join(dune_py_dir, 'python', 'dune', 'generated')
 
-    files = glob.glob(os.path.join(generated_dir, '*.cc'))
+    files = glob.glob(os.path.join(generated_dir, '*.so'))
     if args == 'bydate':
-        files.sort(key=os.path.getmtime, reverse=True)
+        files.sort(key=os.path.getatime)
     elif args == 'alphabetical':
         files.sort()
 
     for filename in files:
         fileBase = os.path.splitext(os.path.basename(filename))[0]
-        print(time.ctime(os.path.getmtime(filename)), ' ', fileBase)
+        t = time.ctime(os.path.getatime(filename))
+        print(t, ' ', fileBase)
 
     return 0
 
@@ -66,13 +67,15 @@ def listdunetype(args):
 
     if args == ['all']: args = ['']
     for file in args:
-        files = glob.iglob(os.path.join(generated_dir, file+'*.cc'))
-        for file in files:
-            mod = os.path.splitext(os.path.basename(file))[0]
-            print(mod+":", flush=True)
-            with open(file, 'rt') as f:
+        files = glob.glob(os.path.join(generated_dir, file+'*.cc'))
+        files.sort(key=os.path.getmtime)
+        for filename in files:
+            mod = os.path.splitext(os.path.basename(filename))[0]
+            t = time.ctime(os.path.getmtime(filename))
+            print(t, mod+":", flush=True)
+            with open(filename, 'rt') as f:
                 for line in f:
                     if "using DuneType" in line:
-                        print("  ->", line.strip())
+                        print("   ", line.strip())
             print("")
     return 0
