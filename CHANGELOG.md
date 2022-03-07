@@ -6,6 +6,8 @@
 
 - deprecate Factorial in common/math.hh (use factorial function)
 
+- Add `python -m dune [configure|list|remove|dunetype]` command to manage just-in-time generated python modules in dune-py
+
 ## Build System
 
 - Improve the the function `dune_add_library` by separating the target types normal, interface, and
