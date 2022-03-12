@@ -1,5 +1,14 @@
 # Master (will become release 2.9)
 
+## Dependencies
+In order to build the DUNE core modules you need at least the following software:
+
+- C++ compiler supporting c++-17 language standard, e.g., LLVM Clang >= 5, GCC g++ >= 7
+- CMake >= 3.13
+- Optional: pkg-config to find other optional dependencies
+- Optional: Python >= 3.7 for Python bindings
+
+## Changelog
 - Add helper function `resolveRef()` to transparently use `std::reference_wrapper`.
 
 - Add `pragma omp simd` annotations in the LoopSIMD class to improve compiler optimizations
