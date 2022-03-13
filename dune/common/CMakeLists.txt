@@ -80,6 +80,7 @@ install(FILES
         proxymemberaccess.hh
         quadmath.hh
         rangeutilities.hh
+        referencehelper.hh
         reservedvector.hh
         scalarvectorview.hh
         scalarmatrixview.hh

@@ -1,5 +1,7 @@
 # Master (will become release 2.9)
 
+- Add helper function `resolveRef()` to transparently use `std::reference_wrapper`.
+
 - Add `pragma omp simd` annotations in the LoopSIMD class to improve compiler optimizations
 
 - deprecate Factorial in common/math.hh (use factorial function)
