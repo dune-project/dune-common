@@ -22,6 +22,33 @@ commits that violate those rules. And a developer will be much more motivated
 to merge your patch if doing so does not involve fixing a bunch of tab-based
 indentations that you inadvertently added as part of your changes
 
+Tests / Automated Testing
+-------------------------
+
+When contributing a new feature to Dune it should be accompanied by a unit test.
+There are currently untested features and adding unit tests for such features
+is always a good contribution.
+When modifying a currently untested feature, add a unit test.
+
+Unit tests in the Dune core modules are added in the `test` directory
+of the folder containing the header with the feature code.
+
+In Dune modules, tests are added to the
+test suite (which is tested automatically with Gitlab-CI, e.g., when opening a merge request)
+by adding them with the [`dune_add_test` function](https://gitlab.dune-project.org/core/dune-common/-/blob/master/cmake/modules/DuneTestMacros.cmake)
+in the `CMakeLists.txt` file of the test folder.
+Using `dune_add_test` ensures that the test is added to the top level `build_tests` target
+which is used in the CI framework to build all tests (and can of course
+also be used locally to build all tests of a Dune module, `make build_tests`).
+The function also provides several convenient features such as the possibility
+to automatically run a test several times with different numbers of processors.
+
+If a specific more complex test setup is not supported by `dune_add_test`,
+the test has to be added explicitly to the `build_tests` target. However,
+for such cases we recommend instead to try to improve the `dune_add_test`
+function to support the use case.
+
+
 Use Git to your advantage
 -------------------------
 
