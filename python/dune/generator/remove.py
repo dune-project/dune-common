@@ -3,32 +3,52 @@ import dune.common.module
 dune_py_dir = dune.common.module.getDunePyDir()
 generated_dir = os.path.join(dune_py_dir, 'python', 'dune', 'generated')
 
-def removeGenerated(modules = [], date=False):
+def removeGenerated(modules = [], date=False, verbose=True):
     if len(modules) == 0:
         return
 
     moduleFiles = set()
 
-    def rmJit(filename):
-        fileBase = os.path.splitext(os.path.basename(filename))[0]
-        print("Remove", fileBase)
-        filePath, fileName = os.path.split(filename)
-        os.remove( os.path.join(filePath,filename) )
-        os.remove( os.path.join(filePath,fileBase+'.cc') )
+    def rmJit(fileBase):
+        removed = False
+
         try:
-            shutil.rmtree( os.path.join(filePath,"CMakeFiles",fileBase+".dir") )
+            os.remove( os.path.join(generated_dir, fileBase+'.so') )
+            removed = True
         except:
             pass
+
+        try:
+            os.remove( os.path.join(generated_dir, fileBase+'.cc') )
+            removed = True
+        except:
+            pass
+
+        try:
+            shutil.rmtree( os.path.join(generated_dir, "CMakeFiles", fileBase+".dir") )
+            removed = True
+        except:
+            pass
+
+        if verbose and removed:
+          print("Removed", fileBase)
+
         moduleFiles.update( [fileBase] )
 
+    bases = set()
     rmDate = None
     if not date:
-        bases = []
         if 'all' in modules:
-            bases += [os.path.join(generated_dir, '*.so')]
-        else:
-            for m in modules:
-                bases += [os.path.join(generated_dir, m+'*.so')]
+            modules = ['']
+        for m in modules:
+            files = []
+            for ext in ('.so', '.cc'):
+                pattern = os.path.join(generated_dir, m+'*'+ext)
+                files += glob.glob(pattern)
+            if len(files) == 0:
+              bases.add(m)
+            else:
+              bases.update( [os.path.splitext(os.path.basename(f))[0] for f in files] )
     else:
         if not len(modules) == 1:
             raise ValueError("when removing modules by date only provide the date as argument and not a list of modules")
@@ -49,15 +69,15 @@ def removeGenerated(modules = [], date=False):
             except:
                 raise ValueError("could not read provided date - possible formats: "+
                                  ", ".join(formatExamples)) from None
-        # iterate over all files
-        bases = [os.path.join(generated_dir, '*.so')]
+
+        for filename in glob.iglob( os.path.join(generated_dir, '*.so') ):
+            accessTime = datetime.datetime.fromtimestamp( os.path.getatime(filename) )
+            if rmDate > accessTime:
+                base = os.path.splitext(os.path.basename(filename))[0]
+                bases.add( base )
 
     for base in bases:
-        for filename in glob.iglob( base ):
-            accessTime = datetime.datetime.fromtimestamp( os.path.getatime(filename) )
-            if rmDate and rmDate < accessTime:
-                continue
-            rmJit(filename)
+        rmJit(base)
 
     for line in fileinput.input( os.path.join(generated_dir, 'CMakeLists.txt'), inplace = True):
         if not any( [m in line for m in moduleFiles] ):
