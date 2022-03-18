@@ -367,7 +367,7 @@ function(dune_python_install_package)
         add_custom_command(TARGET metadata_${envtargetname} PRE_BUILD
                           COMMAND "${CMAKE_COMMAND}" -E echo "configured for interpreter ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}"
                           COMMAND "${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}" "${scriptdir}/checkvenvconf.py"
-                                   checkbuilddirs --args \"${PROJECT_NAME};${ALL_DEPENDENCIES}\" "${_export_builddirs}"
+                                   checkbuilddirs \"${PROJECT_NAME};${ALL_DEPENDENCIES}\" "${_export_builddirs}"
                           COMMENT checking if the modules used to confiugre this module match those from any installed dune packages
                           )
       endif()

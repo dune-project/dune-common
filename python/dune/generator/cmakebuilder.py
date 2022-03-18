@@ -22,6 +22,7 @@ from dune.common.locking import Lock, LOCK_EX, LOCK_SH
 from dune.common.utility import buffer_to_str, isString, reload_module
 
 from dune.generator.exceptions import CompileError
+from dune.generator.remove import removeGenerated
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
@@ -185,6 +186,9 @@ class Builder:
         except:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         self.initialized = True
+
+        # Auto-clean up dune-py: Remove all modules that have not been used in the last 30 days.
+        removeGenerated(['30'], date=True, verbose=False)
 
 
     @staticmethod

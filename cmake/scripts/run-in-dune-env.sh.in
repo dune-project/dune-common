@@ -9,7 +9,7 @@ else
 fi
 
 # test if build directory matches installed dune python packages
-python -m dune checkbuilddirs --args @PROJECT_NAME@ @CMAKE_BINARY_DIR@
+python -m dune checkbuilddirs @PROJECT_NAME@ @CMAKE_BINARY_DIR@
 if [ $? -eq 0 ] ; then
   "$@"
 else
