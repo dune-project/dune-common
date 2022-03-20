@@ -1,5 +1,15 @@
 # Release 2.8
 
+## Dependencies
+In order to build the DUNE core modules you need at least the following software:
+
+- C++ compiler supporting c++-17 language standard, e.g., LLVM Clang >= 5, GCC g++ >= 7
+- CMake >= 3.13
+- Optional: pkg-config to find other optional dependencies
+- Optional: Python >= 3.7 for Python bindings
+
+## Changelog
+
 - Set minimal required CMake version in cmake to >= 3.13.
 
 - Python bindings have been moved from `dune-python` to the respective
