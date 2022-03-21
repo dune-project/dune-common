@@ -91,12 +91,19 @@ if(METIS_HEADER_FILE)
     set(IS_SCOTCH_METIS_HEADER FALSE)
   else()
     set(IS_SCOTCH_METIS_HEADER TRUE)
+    string(REGEX REPLACE ".*#define SCOTCH_METIS_VERSION[ ]+([0-9]+).*" "\\1"
+      SCOTCH_METIS_VERSION "${metisheader}")
   endif()
 endif()
 unset(METIS_HEADER_FILE CACHE)
 
 # search for the METIS library or for the scotch-metis wrapper library
 if(IS_SCOTCH_METIS_HEADER)
+  # Debian bookworm has no scotchmetis library only scotchmetisv3
+  # and scotchmetisv5.
+  if(SCOTCH_METIS_VERSION)
+    find_library(METIS_LIBRARY scotchmetisv${SCOTCH_METIS_VERSION})
+  endif()
   find_library(METIS_LIBRARY scotchmetis)
 else()
   find_library(METIS_LIBRARY metis)
