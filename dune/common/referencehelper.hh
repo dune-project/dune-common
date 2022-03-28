@@ -95,7 +95,7 @@ constexpr T& resolveRef(std::reference_wrapper<T> gf) noexcept
  * \ingroup Utility
  */
 template<class T>
-using ResolveRef_t = std::remove_reference_t<decltype(resolveRef(std::declval<T&>()))>;
+using ResolveRef_t = std::remove_reference_t<decltype(Dune::resolveRef(std::declval<T&>()))>;
 
 
 } // namespace Dune
