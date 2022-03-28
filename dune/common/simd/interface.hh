@@ -122,7 +122,7 @@ namespace Dune {
      *
      * Since the abstraction layer cannot overload operators of SIMD types
      * (that would be meddling with the domain of the library that provides
-     * the SIMD types), nor provide it's own constructors, there are severe
+     * the SIMD types), nor provide its own constructors, there are severe
      * limitations in what the abstraction layer guarantees.  Besides the
      * standard types, the first SIMD library supported is Vc, so that is
      * where most of the limitations stem from; see \ref SIMDVcRestrictions in

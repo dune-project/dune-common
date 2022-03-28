@@ -236,8 +236,8 @@ int testRandomAccessIterator(Iter begin, Iter end, Opt opt){
 
     if(test != rand)
     {
-      std::cerr << "i+=n should have the same result as applying the"
-                << "increment ooperator n times!"<< std::endl;
+      std::cerr << "i+=n should have the same result as applying the "
+                << "increment operator n times!"<< std::endl;
       ret++;
     }
 
@@ -256,8 +256,8 @@ int testRandomAccessIterator(Iter begin, Iter end, Opt opt){
 
     if(test != rand)
     {
-      std::cerr << "i+=n should have the same result as applying the"
-                << "increment ooperator n times!"<< std::endl;
+      std::cerr << "i-=n should have the same result as applying the "
+                << "decrement operator n times!"<< std::endl;
       ret++;
     }
   }
