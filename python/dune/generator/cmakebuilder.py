@@ -180,15 +180,15 @@ class Builder:
                     logger.debug('Using existing dune-py module in ' + self.dune_py_dir)
                     self.compile("Rebuilding dune-py module")
 
+                # Auto-clean up dune-py: Remove all modules that have not been used in the last 30 days.
+                removeGenerated(['30'], date=True, verbose=False)
+
         comm.barrier()
         try:
             dune.__path__._path.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         except:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         self.initialized = True
-
-        # Auto-clean up dune-py: Remove all modules that have not been used in the last 30 days.
-        removeGenerated(['30'], date=True, verbose=False)
 
 
     @staticmethod
