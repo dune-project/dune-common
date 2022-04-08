@@ -1,64 +1,28 @@
+import os
+try:
+    s = os.environ['DUNEPY_BLOCK_PLOTTING']
+    block = s in ['TRUE','True','true', '1', 't', 'y', 'yes']
+except KeyError:
+    block = True
+try:
+    s = os.environ['DUNEPY_DISABLE_PLOTTING']
+    disable = s in ['TRUE','True','true', '1', 't', 'y', 'yes']
+except KeyError:
+    disable = False
+block = block and (not disable)
+
 try:
     import matplotlib
-    addPlot = True
-except ImportError:
-    def plot(*args,**kwargs):
-        print("plotting disabled since 'matplotlib' could not be imported")
-    addPlot = False
-
-if addPlot:
     from matplotlib import pyplot
     from matplotlib.collections import PolyCollection
     import numpy as np
     from numpy import amin, amax, linspace, linalg, random
-    import os
-
-    try:
-        s = os.environ['DUNEPY_BLOCK_PLOTTING']
-        block = s in ['TRUE','True','true', '1', 't', 'y', 'yes']
-    except KeyError:
-        block = True
-    try:
-        s = os.environ['DUNEPY_DISABLE_PLOTTING']
-        disable = s in ['TRUE','True','true', '1', 't', 'y', 'yes']
-    except KeyError:
-        disable = False
-    block = block and (not disable)
+    _addPlot = True
 
     def _plotGrid(fig, grid, gridLines="black"):
         for p in grid.polygons():
             coll = PolyCollection(p, facecolor='none', edgecolor=gridLines, linewidth=0.5, zorder=2)
             pyplot.gca().add_collection(coll)
-
-
-    def plotGrid(grid, gridLines="black", figure=None,
-            xlim=None, ylim=None, figsize=None):
-        if disable: return
-
-        if figure is None:
-            figure = pyplot.figure(figsize=figsize)
-            show = True
-        else:
-            try:
-                subPlot = figure[1]
-                figure = figure[0]
-                pyplot.subplot(subPlot)
-            except:
-                pass
-            show = False
-
-        _plotGrid(figure, grid, gridLines=gridLines)
-
-        figure.gca().set_aspect('equal')
-        figure.gca().autoscale()
-        if xlim:
-            figure.gca().set_xlim(xlim)
-        if ylim:
-            figure.gca().set_ylim(ylim)
-
-        if show:
-            pyplot.show(block=block)
-
 
     def _plotData(fig, grid, solution, level=0, gridLines="black",
             component=None, vectors=None, nofVectors=None,
@@ -173,124 +137,177 @@ if addPlot:
         if ylim:
             fig.gca().set_ylim(ylim)
 
+except ImportError or ModuleNotFoundError:
+    _addPlot = False
 
-    def plotPointData(solution, level=0, gridLines="black",
-            vectors=None, nofVectors=None, figure=None,
-            xlim=None, ylim=None, clim=None, figsize=None, cmap=None,
-            colorbar=True):
-        if disable: return
+
+def plotGrid(grid, gridLines="black", figure=None,
+        xlim=None, ylim=None, figsize=None):
+    if not _addPlot:
+        print("plotting disabled since 'matplotlib' could not be imported")
+        return
+
+    if disable: return
+
+    if figure is None:
+        figure = pyplot.figure(figsize=figsize)
+        show = True
+    else:
         try:
-            grid = solution.grid
+            subPlot = figure[1]
+            figure = figure[0]
+            pyplot.subplot(subPlot)
         except:
-            grid = solution
-            solution = None
-        if not grid.dimension == 2:
-            raise ValueError("inline plotting so far only available for 2d grids")
+            pass
+        show = False
 
-        if figure is None:
-            figure = pyplot.figure(figsize=figsize)
-            show = True
-        else:
-            try:
-                subPlot = figure[1]
-                figure = figure[0]
-                pyplot.subplot(subPlot)
-            except:
-                pass
-            show = False
-        _plotData(figure,grid,solution,level,gridLines,None,
-                vectors,nofVectors,xlim,ylim,clim,cmap,
-                colorbar=colorbar,on="points")
+    _plotGrid(figure, grid, gridLines=gridLines)
 
-        if show:
-            pyplot.show(block=block)
+    figure.gca().set_aspect('equal')
+    figure.gca().autoscale()
+    if xlim:
+        figure.gca().set_xlim(xlim)
+    if ylim:
+        figure.gca().set_ylim(ylim)
 
-    def plotCellData(solution, level=0, gridLines="black",
-            vectors=None, nofVectors=None, figure=None,
-            xlim=None, ylim=None, clim=None, figsize=None, cmap=None,
-            colorbar=True):
-        if disable: return
-        try:
-            grid = solution.grid
-        except:
-            grid = solution
-            solution = None
-        if not grid.dimension == 2:
-            raise ValueError("inline plotting so far only available for 2d grids")
-
-        if figure is None:
-            figure = pyplot.figure(figsize=figsize)
-            show = True
-        else:
-            try:
-                subPlot = figure[1]
-                figure = figure[0]
-                pyplot.subplot(subPlot)
-            except:
-                pass
-            show = False
-        _plotData(figure,grid,solution,level,gridLines,None,vectors,nofVectors,xlim,ylim,clim,cmap,
-                colorbar=colorbar,on="cells")
-
-        if show:
-            pyplot.show(block=block)
-
-    def plotComponents(solution, level=0, show=None, gridLines="black", figure=None,
-            xlim=None, ylim=None, clim=None, figsize=None, cmap=None):
-        if disable: return
-        try:
-            grid = solution.grid
-        except:
-            grid = solution
-            solution = None
-        if not grid.dimension == 2:
-            raise ValueError("inline plotting so far only available for 2d grids")
-
-        if not show:
-            show = range(solution.dimRange)
-
-        if figure is None:
-            figure = pyplot.figure(figsize=figsize)
-        offset = 1 if (gridLines is not None) and (gridLines != "") else 0
-        subfig = 101+(len(show)+offset)*10
-
-        # first the grid if required
-        if (gridLines is not None) and (gridLines != ""):
-            pyplot.subplot(subfig)
-            _plotData(figure,grid,None,level,gridLines,None,False,None,xlim,ylim,clim,cmap,
-                    on="points")
-
-        # add the data
-        for p in show:
-            pyplot.subplot(subfig+offset+p)
-            _plotData(figure,grid,solution,level,"",p,False,None,xlim,ylim,clim,cmap,False,
-                    on="points")
-
+    if show:
         pyplot.show(block=block)
 
-    def plot(solution,*args,**kwargs):
-        if disable: return
-        try:
-            grid = solution.grid
-        except:
-            grid = solution
-        defaultOn = "cells" if any(gt.isNone for gt in grid.indexSet.types(0)) else "points"
-        use = kwargs.pop("on",defaultOn)
-        if use == "points":
-            plotPointData(solution,*args,**kwargs)
-        elif use == "components-points":
-            plotComponents(solution,*args,**kwargs)
-        elif use == "cells":
-            plotCellData(solution,*args,**kwargs)
-        else:
-            raise ValueError("wrong value for 'on' parameter should be one of 'points','cells','components-points'")
 
-    def mayaviPointData(solution, level=0, component=0):
-        if disable: return
+
+def plotPointData(solution, level=0, gridLines="black",
+        vectors=None, nofVectors=None, figure=None,
+        xlim=None, ylim=None, clim=None, figsize=None, cmap=None,
+        colorbar=True):
+    if not _addPlot:
+        print("plotting disabled since 'matplotlib' could not be imported")
+        return
+
+    if disable: return
+    try:
         grid = solution.grid
-        from mayavi import mlab
-        triangulation = grid.triangulation(level)
-        z = solution.pointData(level)[:,component]
-        s = mlab.triangular_mesh(triangulation.x, triangulation.y, z,
-                                    triangulation.triangles)
-        mlab.show(block=block)
+    except:
+        grid = solution
+        solution = None
+    if not grid.dimension == 2:
+        raise ValueError("inline plotting so far only available for 2d grids")
+
+    if figure is None:
+        figure = pyplot.figure(figsize=figsize)
+        show = True
+    else:
+        try:
+            subPlot = figure[1]
+            figure = figure[0]
+            pyplot.subplot(subPlot)
+        except:
+            pass
+        show = False
+    _plotData(figure,grid,solution,level,gridLines,None,
+            vectors,nofVectors,xlim,ylim,clim,cmap,
+            colorbar=colorbar,on="points")
+
+    if show:
+        pyplot.show(block=block)
+
+def plotCellData(solution, level=0, gridLines="black",
+        vectors=None, nofVectors=None, figure=None,
+        xlim=None, ylim=None, clim=None, figsize=None, cmap=None,
+        colorbar=True):
+    if not _addPlot:
+        print("plotting disabled since 'matplotlib' could not be imported")
+        return
+
+    if disable: return
+    try:
+        grid = solution.grid
+    except:
+        grid = solution
+        solution = None
+    if not grid.dimension == 2:
+        raise ValueError("inline plotting so far only available for 2d grids")
+
+    if figure is None:
+        figure = pyplot.figure(figsize=figsize)
+        show = True
+    else:
+        try:
+            subPlot = figure[1]
+            figure = figure[0]
+            pyplot.subplot(subPlot)
+        except:
+            pass
+        show = False
+    _plotData(figure,grid,solution,level,gridLines,None,vectors,nofVectors,xlim,ylim,clim,cmap,
+            colorbar=colorbar,on="cells")
+
+    if show:
+        pyplot.show(block=block)
+
+def plotComponents(solution, level=0, show=None, gridLines="black", figure=None,
+        xlim=None, ylim=None, clim=None, figsize=None, cmap=None):
+    if not _addPlot:
+        print("plotting disabled since 'matplotlib' could not be imported")
+        return
+
+    if disable: return
+    try:
+        grid = solution.grid
+    except:
+        grid = solution
+        solution = None
+    if not grid.dimension == 2:
+        raise ValueError("inline plotting so far only available for 2d grids")
+
+    if not show:
+        show = range(solution.dimRange)
+
+    if figure is None:
+        figure = pyplot.figure(figsize=figsize)
+    offset = 1 if (gridLines is not None) and (gridLines != "") else 0
+    subfig = 101+(len(show)+offset)*10
+
+    # first the grid if required
+    if (gridLines is not None) and (gridLines != ""):
+        pyplot.subplot(subfig)
+        _plotData(figure,grid,None,level,gridLines,None,False,None,xlim,ylim,clim,cmap,
+                on="points")
+
+    # add the data
+    for p in show:
+        pyplot.subplot(subfig+offset+p)
+        _plotData(figure,grid,solution,level,"",p,False,None,xlim,ylim,clim,cmap,False,
+                on="points")
+
+    pyplot.show(block=block)
+
+def plot(solution,*args,**kwargs):
+    if not _addPlot:
+        print("plotting disabled since 'matplotlib' could not be imported")
+        return
+
+    if disable: return
+    try:
+        grid = solution.grid
+    except:
+        grid = solution
+    defaultOn = "cells" if any(gt.isNone for gt in grid.indexSet.types(0)) else "points"
+    use = kwargs.pop("on",defaultOn)
+    if use == "points":
+        plotPointData(solution,*args,**kwargs)
+    elif use == "components-points":
+        plotComponents(solution,*args,**kwargs)
+    elif use == "cells":
+        plotCellData(solution,*args,**kwargs)
+    else:
+        raise ValueError("wrong value for 'on' parameter should be one of 'points','cells','components-points'")
+
+def mayaviPointData(solution, level=0, component=0):
+    if disable: return
+    grid = solution.grid
+    from mayavi import mlab
+    triangulation = grid.triangulation(level)
+    z = solution.pointData(level)[:,component]
+    s = mlab.triangular_mesh(triangulation.x, triangulation.y, z,
+                                triangulation.triangles)
+    mlab.show(block=block)
