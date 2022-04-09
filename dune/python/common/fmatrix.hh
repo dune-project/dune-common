@@ -9,6 +9,7 @@
 #include <utility>
 
 #include <dune/common/fmatrix.hh>
+#include <dune/common/classname.hh>
 
 #include <dune/python/common/typeregistry.hh>
 #include <dune/python/common/fmatrix.hh>
