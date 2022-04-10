@@ -1,7 +1,21 @@
 cmake_minimum_required(VERSION 3.13)
 
-set(DUNE_ENABLE_PYTHONBINDINGS ON)
+# aquire lock to avoid cmake raise conditions
 
+# This is the CMakeLists.txt of the dune-py module. As new targets are
+# created when ever new bindings are required, a simple make call
+# might trigger a cmake reconfiguration. If different python scripts
+# run in parallel, we might have different parallel make calls and as
+# a consequence also parallel cmake calls.  Parallel cmake calls are
+# not allowed and as a consequence the complete build may fail. We
+# take care of such parallel cmake calls by additional locking in the
+# dune-py CMakeLists.txt
+set(lock "${CMAKE_BINARY_DIR}/cmake.lock")
+message("---- LOCK")
+file(LOCK ${lock})
+message("---- AQUIRED")
+
+set(DUNE_ENABLE_PYTHONBINDINGS ON)
 set(CMAKE_PREFIX_PATH {{ install_prefix }})
 
 {% for mod, dir in builddirs.items() -%}
@@ -32,3 +46,8 @@ dune_enable_all_packages()
 add_subdirectory(python/dune/generated)
 
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
+
+# we are done, so release lock
+message("---- RELEASE")
+file(LOCK ${lock} RELEASE)
+message("---- DONE")

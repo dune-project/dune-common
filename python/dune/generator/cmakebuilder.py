@@ -347,6 +347,14 @@ class Builder:
                 # This step is quite fast but there is room for optimization.
 
                 # for compilation a shared lock is enough
+                #
+                # A side effect is that during the parallel make calls
+                # for whatever reason cmake might be invoked due to
+                # changes to the module (i.e. a new target
+                # added). Parallel cmake calls are not allowed and as
+                # a consequence the complete build may fail. We take
+                # care of such parallel cmake calls by additional
+                # locking in the dune-py CMakeLists.txt
                 with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_SH):
                     # lock generated module
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
