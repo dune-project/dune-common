@@ -206,17 +206,16 @@ class Builder:
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE) as cmake:
             try:
-                cmake.communicate(timeout=2) # no message if delay is <2sec
+                stdout, stderr = cmake.communicate(timeout=2) # no message if delay is <2sec
             except subprocess.TimeoutExpired:
                 if infoTxt and not active:
                     logger.log(logLevel, infoTxt) #  + " ...")
                     active = True # make sure 'done' is printed
-                # wait for cmd to finish
-                stdout, stderr = cmake.communicate()
+            # wait for cmd to finish
+            cmake.wait()
             # check return code
             if cmake.returncode > 0:
                 # retrieve stderr output
-                _, stderr = cmake.communicate()
                 raise CompileError(buffer_to_str(stderr))
         return stdout, stderr
 
@@ -264,6 +263,57 @@ class Builder:
                 if nlines > 1:
                     self.savedOutput[1].write("\n###############################\n")
 
+    def _build(self, moduleName, source, pythonName, extraCMake):
+        sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
+        line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
+        # first check if this line is already present in the CMakeLists file
+        # (possible if a previous script was stopped by user before module was compiled)
+        with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
+            found = line in out.read()
+        if not os.path.isfile(sourceFileName) or not found:
+            PrintCompiling = "Compiling " + pythonName + " (new)"
+            code = str(source)
+            with open(os.path.join(sourceFileName), 'w') as out:
+                out.write(code)
+            assert os.path.isfile(sourceFileName), "Error in writing module .cc file"
+            if not found:
+                origPos = -1
+                with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
+                    # store original file size
+                    origPos = out.tell()
+                    out.write(line+"\n")
+                    if extraCMake is not None:
+                        for x in extraCMake:
+                            out.write(x.replace("TARGET",moduleName)+"\n")
+                # update build system
+                try:
+                    Builder.callCMake(["cmake","."],
+                                      cwd=self.dune_py_dir,
+                                      infoTxt="Configuring module {} ({}) with CMake".format(
+                                          pythonName, moduleName
+                                      ),
+                                      )
+                except: # all exceptions will cause a problem here
+                    os.remove(os.path.join(sourceFileName))
+                    # remove line from CMakeLists to avoid problems
+                    with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
+                        out.truncate(origPos)
+                    raise
+        elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
+            PrintCompiling = "Compiling " + pythonName + " (updated)"
+            code = str(source)
+            with open(os.path.join(sourceFileName), 'w') as out:
+                out.write(code)
+        else:
+            # we can directly load the module - after # checking if headers have changed
+            PrintCompiling = "Compiling " + pythonName + " (rebuilding)"
+            # sanity check
+            line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
+            # the CMakeLists file should already include this line
+            with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
+                found = line in out.read()
+            assert found, "CMakeLists.txt file does not contain an entry to build"+moduleName
+
     def load(self, moduleName, source, pythonName, extraCMake=None):
         ## TODO replace if rank with something better
         ## and remove barrier further down
@@ -274,6 +324,9 @@ class Builder:
         # this is the first call to load or because an external module with metadata has been registered
         if not self.initialized or not self.externalPythonModules == getExternalPythonModules():
             self.initialize()
+
+        # check whether modul is already compiled and build it if necessary
+        # (only try to build module on rank 0!)
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)
             if module is None:
@@ -282,56 +335,11 @@ class Builder:
                 with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_EX):
                     # module must be generated so lock the source file
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                        sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
-                        line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
-                        # first check if this line is already present in the CMakeLists file
-                        # (possible if a previous script was stopped by user before module was compiled)
-                        with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
-                            found = line in out.read()
-                        if not os.path.isfile(sourceFileName) or not found:
-                            PrintCompiling = "Compiling " + pythonName + " (new)"
-                            code = str(source)
-                            with open(os.path.join(sourceFileName), 'w') as out:
-                                out.write(code)
-                            assert os.path.isfile(sourceFileName), "Error in writing module .cc file"
-                            if not found:
-                                origPos = -1
-                                with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
-                                    # store original file size
-                                    origPos = out.tell()
-                                    out.write(line+"\n")
-                                    if extraCMake is not None:
-                                        for x in extraCMake:
-                                            out.write(x.replace("TARGET",moduleName)+"\n")
-                                # update build system
-                                try:
-                                    Builder.callCMake(["cmake","."],
-                                                      cwd=self.dune_py_dir,
-                                                      infoTxt="Configuring module {} ({}) with CMake".format(
-                                                          pythonName, moduleName
-                                                      ),
-                                                      )
-                                except: # all exceptions will cause a problem here
-                                    os.remove(os.path.join(sourceFileName))
-                                    # remove line from CMakeLists to avoid problems
-                                    with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'a') as out:
-                                        out.truncate(origPos)
-                                    raise
-                        elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
-                            PrintCompiling = "Compiling " + pythonName + " (updated)"
-                            code = str(source)
-                            with open(os.path.join(sourceFileName), 'w') as out:
-                                out.write(code)
-                        else:
-                            # we can directly load the module - after # checking if headers have changed
-                            PrintCompiling = "Compiling " + pythonName + " (rebuilding)"
-                            # sanity check
-                            line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
-                            # the CMakeLists file should already include this line
-                            with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
-                                found = line in out.read()
-                            assert found, "CMakeLists.txt file does not contain an entry to build"+moduleName
-
+                        # the module might now be present, so check again
+                        # (see #295)
+                        module = sys.modules.get("dune.generated." + moduleName)
+                        if module is None:
+                            self._build(moduleName, source, pythonName, extraCMake)
                 # end of exclusive dune-py lock
 
                 # we always compile even if the module is always compiled since it can happen
@@ -339,6 +347,14 @@ class Builder:
                 # This step is quite fast but there is room for optimization.
 
                 # for compilation a shared lock is enough
+                #
+                # A side effect is that during the parallel make calls
+                # for whatever reason cmake might be invoked due to
+                # changes to the module (i.e. a new target
+                # added). Parallel cmake calls are not allowed and as
+                # a consequence the complete build may fail. We take
+                # care of such parallel cmake calls by additional
+                # locking in the dune-py CMakeLists.txt
                 with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_SH):
                     # lock generated module
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
