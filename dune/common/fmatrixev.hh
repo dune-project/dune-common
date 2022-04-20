@@ -138,7 +138,8 @@ namespace Dune {
           acos(z) function requires |z| <= 1, but will fail silently
           and return NaN if the input is larger than 1 in magnitude.
           Thus r is clamped to [-1,1].*/
-          r = std::min<K>(std::max<K>(r, -1.0), 1.0);
+          using std::min, std::max;
+          r = min<K>(max<K>(r, -1.0), 1.0);
           K phi = acos(r) / 3.0;
 
           // the eigenvalues satisfy eig[2] <= eig[1] <= eig[0]
@@ -154,7 +155,8 @@ namespace Dune {
       //Robustly compute a right-handed orthonormal set {u, v, evec0}.
       template<typename K>
       void orthoComp(const FieldVector<K,3>& evec0, FieldVector<K,3>& u, FieldVector<K,3>& v) {
-        if(std::abs(evec0[0]) > std::abs(evec0[1])) {
+        using std::abs;
+        if(abs(evec0[0]) > abs(evec0[1])) {
           //The component of maximum absolute value is either evec0[0] or evec0[2].
           FieldVector<K,2> temp = {evec0[0], evec0[2]};
           auto L = 1.0 / temp.two_norm();
@@ -246,20 +248,21 @@ namespace Dune {
         assignments to eigenvector[1] lies on a circle, and U and V are
         unit length and perpendicular, so eigenvector[1] is unit length
         (within numerical tolerance). */
-        auto absM00 = std::abs(m00);
-        auto absM01 = std::abs(m01);
-        auto absM11 = std::abs(m11);
+        using std::abs, std::sqrt, std::max;
+        auto absM00 = abs(m00);
+        auto absM01 = abs(m01);
+        auto absM11 = abs(m11);
         if(absM00 >= absM11) {
-          auto maxAbsComp = std::max(absM00, absM01);
+          auto maxAbsComp = max(absM00, absM01);
           if(maxAbsComp > 0.0) {
             if(absM00 >= absM01) {
               m01 /= m00;
-              m00 = 1.0 / std::sqrt(1.0 + m01*m01);
+              m00 = 1.0 / sqrt(1.0 + m01*m01);
               m01 *= m00;
             }
             else {
               m00 /= m01;
-              m01 = 1.0 / std::sqrt(1.0 + m00*m00);
+              m01 = 1.0 / sqrt(1.0 + m00*m00);
               m00 *= m01;
             }
             evec1 = m01*u - m00*v;
@@ -268,16 +271,16 @@ namespace Dune {
             evec1 = u;
         }
         else {
-          auto maxAbsComp = std::max(absM11, absM01);
+          auto maxAbsComp = max(absM11, absM01);
           if(maxAbsComp > 0.0) {
             if(absM11 >= absM01) {
               m01 /= m11;
-              m11 = 1.0 / std::sqrt(1.0 + m01*m01);
+              m11 = 1.0 / sqrt(1.0 + m01*m01);
               m01 *= m11;
             }
             else {
               m11 /= m01;
-              m01 = 1.0 / std::sqrt(1.0 + m11*m11);
+              m01 = 1.0 / sqrt(1.0 + m11*m11);
               m11 *= m01;
             }
             evec1 = m11*u - m01*v;
