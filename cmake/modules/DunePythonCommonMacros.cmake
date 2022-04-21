@@ -76,7 +76,7 @@ include(DunePythonTestCommand)
 find_package(Python3 COMPONENTS Interpreter Development)
 
 # helper message used below in various user messages
-set(DUNE_PB_USER_NOTICE "If you do not plan to use the Dune Python bindings you can ignore this information")
+set(DUNE_PYTHON_BINDINGS_USER_NOTICE "If you do not plan to use the Dune Python bindings you can ignore this information")
 
 if(Python3_Interpreter_FOUND)
   include(DuneExecuteProcess)
@@ -101,7 +101,7 @@ if(Python3_Interpreter_FOUND)
       "   ----------------------------------------------------------------------------------------\n"
       "   Found a Python interpreter but the Python bindings also requires the Python libraries.\n"
       "   On Linux systems they may be installed in form of a package like python3-dev, python3-devel, python-dev or python-devel (depending on your distribution).\n"
-      "   ${DUNE_PB_USER_NOTICE}.\n"
+      "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"
       "   ----------------------------------------------------------------------------------------\n"
     )
     set(DUNE_ENABLE_PYTHONBINDINGS OFF)
@@ -115,7 +115,7 @@ if(Python3_Interpreter_FOUND)
     message(NOTICE
       "   ----------------------------------------------------------------------------------------\n"
       "   Python bindings require at least Python version ${DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION} but only version ${Python3_VERSION} was found.\n"
-      "   ${DUNE_PB_USER_NOTICE}.\n"
+      "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"
       "   ----------------------------------------------------------------------------------------\n"
     )
     set(DUNE_ENABLE_PYTHONBINDINGS OFF)
@@ -159,7 +159,7 @@ else()
   message(NOTICE
         "   ----------------------------------------------------------------------------------------\n"
         "   Python bindings require a Python3 interpreter.\n"
-        "   ${DUNE_PB_USER_NOTICE}.\n"
+        "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"
         "   ----------------------------------------------------------------------------------------\n"
   )
   set(DUNE_ENABLE_PYTHONBINDINGS OFF)
