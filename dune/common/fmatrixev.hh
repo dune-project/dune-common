@@ -138,8 +138,8 @@ namespace Dune {
           acos(z) function requires |z| <= 1, but will fail silently
           and return NaN if the input is larger than 1 in magnitude.
           Thus r is clamped to [-1,1].*/
-          using std::min, std::max;
-          r = min<K>(max<K>(r, -1.0), 1.0);
+          using std::clamp;
+          r = clamp<K>(r, -1.0, 1.0);
           K phi = acos(r) / 3.0;
 
           // the eigenvalues satisfy eig[2] <= eig[1] <= eig[0]
