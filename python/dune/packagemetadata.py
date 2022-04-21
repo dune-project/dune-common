@@ -121,9 +121,8 @@ class Description:
                     if m:
                         key = m.group(1)
                         val = m.group(2)
-                        if not key in valid_entries:
-                            raise ValueError('Invalid dune.module entry %s (%s).' % (key,fileName))
-                        data[key.lower()] = val.strip()
+                        if key in valid_entries:
+                            data[key.lower()] = val.strip()
         try:
             self.name = data['module']
         except KeyError:
