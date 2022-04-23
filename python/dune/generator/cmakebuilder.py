@@ -216,6 +216,7 @@ class Builder:
             # check return code
             if cmake.returncode > 0:
                 # retrieve stderr output
+                stdout, stderr = cmake.communicate()
                 raise CompileError(buffer_to_str(stderr))
         return stdout, stderr
 
