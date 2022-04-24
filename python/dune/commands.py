@@ -92,7 +92,7 @@ def fixdunepy(force):
             print("Fix inconsistencies:")
             for i in inconsistent:
                 print(" ", i)
-            removeGenerated(inconsistent, verbose=False)
+            removeGenerated(inconsistent)
 
         # Call 'cmake .' and check output
         if os.path.isdir(dune_py_dir):

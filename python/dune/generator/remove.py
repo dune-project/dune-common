@@ -1,9 +1,16 @@
 import glob, os, sys, re, fileinput, shutil, datetime
+import logging
 import dune.common.module
+
+logger = logging.getLogger(__name__)
+
 dune_py_dir = dune.common.module.getDunePyDir()
 generated_dir = os.path.join(dune_py_dir, 'python', 'dune', 'generated')
 
-def removeGenerated(modules = [], date=False, verbose=True):
+def removeGenerated(modules = [], date=False, verbose=None):
+    if verbose is not None:
+        logger.warn("Used deprecated argument in removeGenerated: verbose has no effect")
+
     if len(modules) == 0:
         return
 
@@ -30,8 +37,8 @@ def removeGenerated(modules = [], date=False, verbose=True):
         except:
             pass
 
-        if verbose and removed:
-          print("Removed", fileBase)
+        if removed:
+          logger.debug(f"Removed {fileBase}")
 
         moduleFiles.update( [fileBase] )
 

@@ -181,7 +181,7 @@ class Builder:
                     self.compile("Rebuilding dune-py module")
 
                 # Auto-clean up dune-py: Remove all modules that have not been used in the last 30 days.
-                removeGenerated(['30'], date=True, verbose=False)
+                removeGenerated(['30'], date=True)
 
         comm.barrier()
         try:
