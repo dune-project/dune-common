@@ -264,7 +264,7 @@ class Builder:
                 if nlines > 1:
                     self.savedOutput[1].write("\n###############################\n")
 
-    def _build(self, moduleName, source, pythonName, extraCMake):
+    def _maybeConfigureWithCMake(self, moduleName, source, pythonName, extraCMake):
         sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
         line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
         # first check if this line is already present in the CMakeLists file
@@ -340,7 +340,9 @@ class Builder:
                         # (see #295)
                         module = sys.modules.get("dune.generated." + moduleName)
                         if module is None:
-                            self._build(moduleName, source, pythonName, extraCMake)
+                            compilationMessage = self._maybeConfigureWithCMake(
+                                moduleName, source, pythonName, extraCMake
+                            )
                 # end of exclusive dune-py lock
 
                 # we always compile even if the module is always compiled since it can happen
