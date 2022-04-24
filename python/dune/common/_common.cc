@@ -26,5 +26,5 @@ PYBIND11_MODULE( _common, module )
   int argc = 0;
   char **argv = NULL;
   Dune::MPIHelper::instance(argc,argv);
-  Dune::Python::registerCollectiveCommunication(module);
+  Dune::Python::registerCommunication(module);
 }

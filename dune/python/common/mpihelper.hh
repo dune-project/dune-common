@@ -17,11 +17,11 @@ namespace Dune
   namespace Python
   {
 
-    // registerCollectiveCommunication
+    // registerCommunication
     // -------------------------------
 
     template< class Comm, class... objects >
-    inline static void registerCollectiveCommunication ( pybind11::class_< Comm, objects... > cls )
+    inline static void registerCommunication ( pybind11::class_< Comm, objects... > cls )
     {
       using pybind11::operator""_a;
 
@@ -35,17 +35,17 @@ namespace Dune
       cls.def( "sum", [] ( const Comm &self, double x ) { return self.sum( x ); }, "x"_a );
     }
 
-    inline static void registerCollectiveCommunication ( pybind11::handle scope )
+    inline static void registerCommunication ( pybind11::handle scope )
     {
-      typedef Dune::CollectiveCommunication< Dune::MPIHelper::MPICommunicator > Comm;
+      using Comm = Dune::Communication< Dune::MPIHelper::MPICommunicator >;
 
-      auto typeName = GenerateTypeName( "Dune::CollectiveCommunication", "Dune::MPIHelper::MPICommunicator" );
-      auto includes = IncludeFiles{ "dune/common/parallel/collectivecommunication.hh", "dune/common/parallel/mpihelper.hh" };
-      auto clsComm = insertClass< Comm >( scope, "CollectiveCommunication", typeName, includes );
-      if( clsComm.second )
-        registerCollectiveCommunication( clsComm.first );
+      auto typeName = GenerateTypeName( "Dune::Communication", "Dune::MPIHelper::MPICommunicator" );
+      auto includes = IncludeFiles{ "dune/common/parallel/communication.hh", "dune/common/parallel/mpihelper.hh" };
+      auto [ cls, notRegistered ] = insertClass< Comm >( scope, "Communication", typeName, includes );
+      if( notRegistered )
+        registerCommunication( cls );
 
-      scope.attr( "comm" ) = pybind11::cast( Dune::MPIHelper::getCollectiveCommunication() );
+      scope.attr( "comm" ) = pybind11::cast( Dune::MPIHelper::getCommunication() );
     }
 
   } // namespace Python
