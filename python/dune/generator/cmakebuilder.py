@@ -199,7 +199,7 @@ class Builder:
         active = active or verbose
         if active:
             if infoTxt:
-                logger.log(logLevel,infoTxt) #  + " ...")
+                logger.log(logLevel,infoTxt)
         # call the cmake process
         with subprocess.Popen(cmake_args,
                               cwd=cwd,
@@ -209,7 +209,7 @@ class Builder:
                 stdout, stderr = cmake.communicate(timeout=2) # no message if delay is <2sec
             except subprocess.TimeoutExpired:
                 if infoTxt and not active:
-                    logger.log(logLevel, infoTxt) #  + " ...")
+                    logger.log(logLevel, infoTxt)
 
             # wait for cmd to finish
             cmake.wait()
