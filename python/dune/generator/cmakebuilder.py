@@ -210,14 +210,14 @@ class Builder:
             except subprocess.TimeoutExpired:
                 if infoTxt and not active:
                     logger.log(logLevel, infoTxt)
+                # wait for cmd to finish
+                stdout, stderr = cmake.communicate()
 
-            # wait for cmd to finish
-            cmake.wait()
             # check return code
             if cmake.returncode > 0:
                 # retrieve stderr output
-                stdout, stderr = cmake.communicate()
                 raise CompileError(buffer_to_str(stderr))
+
         return stdout, stderr
 
     def compile(self, infoTxt, target='all', verbose=False):
