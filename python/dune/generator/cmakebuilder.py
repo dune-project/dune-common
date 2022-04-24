@@ -210,7 +210,7 @@ class Builder:
             except subprocess.TimeoutExpired:
                 if infoTxt and not active:
                     logger.log(logLevel, infoTxt) #  + " ...")
-                    active = True # make sure 'done' is printed
+
             # wait for cmd to finish
             cmake.wait()
             # check return code
