@@ -318,9 +318,6 @@ class Builder:
         return compilationInfoMessage
 
     def load(self, moduleName, source, pythonName, extraCMake=None):
-        ## TODO replace if rank with something better
-        ## and remove barrier further down
-
         # check if we need to initialize dune-py either because
         # this is the first call to load or because an external module with metadata has been registered
         if not self.initialized or not self.externalPythonModules == getExternalPythonModules():
@@ -328,6 +325,7 @@ class Builder:
 
         # check whether modul is already compiled and build it if necessary
         # (only try to build module on rank 0!)
+        # TODO replace if rank with something better and remove barrier further down
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)
             if module is None:
