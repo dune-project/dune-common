@@ -264,7 +264,7 @@ class Builder:
                 if nlines > 1:
                     self.savedOutput[1].write("\n###############################\n")
 
-    def _build(self, moduleName, source, pythonName, extraCMake):
+    def _maybeConfigureWithCMake(self, moduleName, source, pythonName, extraCMake):
         sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
         line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
         # first check if this line is already present in the CMakeLists file
@@ -272,7 +272,7 @@ class Builder:
         with open(os.path.join(self.generated_dir, "CMakeLists.txt"), 'r') as out:
             found = line in out.read()
         if not os.path.isfile(sourceFileName) or not found:
-            PrintCompiling = "Compiling " + pythonName + " (new)"
+            compilationInfoMessage = f"Compiling {pythonName} (new)"
             code = str(source)
             with open(os.path.join(sourceFileName), 'w') as out:
                 out.write(code)
@@ -301,13 +301,13 @@ class Builder:
                         out.truncate(origPos)
                     raise
         elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
-            PrintCompiling = "Compiling " + pythonName + " (updated)"
+            compilationInfoMessage = f"Compiling {pythonName} (updated)"
             code = str(source)
             with open(os.path.join(sourceFileName), 'w') as out:
                 out.write(code)
         else:
-            # we can directly load the module - after # checking if headers have changed
-            PrintCompiling = "Compiling " + pythonName + " (rebuilding)"
+            # we can directly load the module - after checking if headers have changed
+            compilationInfoMessage = f"Compiling {pythonName} (rebuilding)"
             # sanity check
             line = "dune_add_pybind11_module(NAME " + moduleName + " EXCLUDE_FROM_ALL)"
             # the CMakeLists file should already include this line
@@ -315,12 +315,9 @@ class Builder:
                 found = line in out.read()
             assert found, "CMakeLists.txt file does not contain an entry to build"+moduleName
 
+        return compilationInfoMessage
+
     def load(self, moduleName, source, pythonName, extraCMake=None):
-        ## TODO replace if rank with something better
-        ## and remove barrier further down
-
-        PrintCompiling="Compiling "+pythonName
-
         # check if we need to initialize dune-py either because
         # this is the first call to load or because an external module with metadata has been registered
         if not self.initialized or not self.externalPythonModules == getExternalPythonModules():
@@ -328,6 +325,7 @@ class Builder:
 
         # check whether modul is already compiled and build it if necessary
         # (only try to build module on rank 0!)
+        # TODO replace if rank with something better and remove barrier further down
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)
             if module is None:
@@ -340,7 +338,11 @@ class Builder:
                         # (see #295)
                         module = sys.modules.get("dune.generated." + moduleName)
                         if module is None:
-                            self._build(moduleName, source, pythonName, extraCMake)
+                            compilationMessage = self._maybeConfigureWithCMake(
+                                moduleName, source, pythonName, extraCMake
+                            )
+                        else:
+                            compilationMessage = f"Compiling {pythonName} (rebuilding after concurrent build)"
                 # end of exclusive dune-py lock
 
                 # we always compile even if the module is always compiled since it can happen
@@ -359,7 +361,7 @@ class Builder:
                 with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_SH):
                     # lock generated module
                     with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                        self.compile(infoTxt=PrintCompiling, target=moduleName)
+                        self.compile(infoTxt=compilationMessage, target=moduleName)
 
         ## TODO remove barrier here
         comm.barrier()
