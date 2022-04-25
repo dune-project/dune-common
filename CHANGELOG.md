@@ -1,5 +1,9 @@
 # Master (will become release 2.9)
 
+- Added feature test for lambdas in unevaluated contexts
+  `DUNE_HAVE_CXX_UNEVALUATED_CONTEXT_LAMBDA`. When defined, the C++ language
+  allows to declare lambdas in unevaluated contexts, e.g., `F = decltype([](){})`.
+
 ## Dependencies
 In order to build the DUNE core modules you need at least the following software:
 
