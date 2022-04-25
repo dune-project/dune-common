@@ -208,3 +208,5 @@ check_cxx_symbol_exists(
   "functional"
   DUNE_HAVE_CXX_STD_IDENTITY
   )
+
+check_cxx_source_compiles("using F = decltype([]{})\;" DUNE_HAVE_CXX_UNEVALUATED_CONTEXT_LAMBDA)
