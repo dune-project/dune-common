@@ -209,4 +209,5 @@ check_cxx_symbol_exists(
   DUNE_HAVE_CXX_STD_IDENTITY
   )
 
-check_cxx_source_compiles("using F = decltype([]{})\;" DUNE_HAVE_CXX_UNEVALUATED_CONTEXT_LAMBDA)
+string(REPLACE ";" "\;" cxx_lambda_test "using F = decltype([](){}); int main() {return 0;}")
+check_cxx_source_compiles(${cxx_lambda_test} DUNE_HAVE_CXX_UNEVALUATED_CONTEXT_LAMBDA)
