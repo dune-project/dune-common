@@ -5,6 +5,8 @@
 
 #include <config.h>
 
+#include <vector>
+
 #include <dune/common/parallel/communication.hh>
 #include <dune/common/parallel/mpihelper.hh>
 
@@ -31,8 +33,32 @@ namespace Dune
       cls.def( "barrier", &Comm::barrier );
 
       cls.def( "min", [] ( const Comm &self, double x ) { return self.min( x ); }, "x"_a );
+      cls.def( "min", [] ( const Comm &self, std::vector< double > x ) { self.min( x.data(), x.size() ); return x; }, "x"_a );
+
       cls.def( "max", [] ( const Comm &self, double x ) { return self.max( x ); }, "x"_a );
+      cls.def( "max", [] ( const Comm &self, std::vector<double> x ) { self.max( x.data(), x.size() ); return x; }, "x"_a );
+
       cls.def( "sum", [] ( const Comm &self, double x ) { return self.sum( x ); }, "x"_a );
+      cls.def( "sum", [] ( const Comm &self, std::vector<double> x ) { self.sum( x.data(), x.size() ); return x; }, "x"_a );
+
+      cls.def( "broadcast", [] ( const Comm &self, double x, int root ) { self.broadcast( &x, 1, root); return x; }, "x"_a, "root"_a );
+      cls.def( "broadcast", [] ( const Comm &self, std::vector<double> x, int root ) { self.broadcast( x.data(), x.size(), root); return x; }, "x"_a, "root"_a );
+
+      cls.def( "gather", [] ( const Comm &self, double x, int root )
+          {
+            // result will contain valid values only on rank=root
+            std::vector< double > out;
+            if( self.rank() == root )
+              out.resize( self.size(), x );
+            self.gather( &x, out.data(), 1, root);
+            return out;
+          }, "x"_a, "root"_a );
+      cls.def( "scatter", [] ( const Comm &self, double x, int root )
+          {
+            double out = x;
+            self.scatter( &x, &out, 1, root);
+            return out;
+          }, "x"_a, "root"_a );
     }
 
     inline static void registerCommunication ( pybind11::handle scope )
