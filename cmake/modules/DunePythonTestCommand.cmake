@@ -47,7 +47,7 @@ function(dune_python_add_test)
   # Parse Arguments
   set(OPTION)
   set(SINGLE WORKING_DIRECTORY NAME)
-  set(MULTI SCRIPT COMMAND LABELS MODULE CMAKE_GUARD)
+  set(MULTI SCRIPT COMMAND LABELS MODULE)
   cmake_parse_arguments(PYTEST "" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYTEST_COMMAND)
     message(FATAL_ERROR "dune_python_add_test: COMMAND argument should not be used, use SCRIPT instead providing only the Python script and not the Python interpreter")
@@ -82,8 +82,7 @@ function(dune_python_add_test)
     # Actually run the command
     add_custom_target(target_${PYTEST_NAME}
                       COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env python ${PYTEST_SCRIPT}
-                      WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY}
-                      CMAKE_GUARD ${CMAKE_GUARD})
+                      WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY})
   else()
     add_custom_target(target_${PYTEST_NAME}
                       COMMAND ${CMAKE_COMMAND} -E echo \"Test not run: python setup failed\")
