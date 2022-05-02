@@ -28,8 +28,10 @@ namespace Dune {
  * silence warnings from Clang about using bitwise operands on
  * a bool (when instantiated for T=bool)
  */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+#ifdef __clang__
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+#endif
 
 /*
  * Introduce a simd pragma if OpenMP is available in standard version >= 4
@@ -603,7 +605,9 @@ namespace Dune {
           public std::integral_constant<bool, IsNumber<T>::value>{
   };
 
-#pragma clang diagnostic pop
+#ifdef __clang__
+#  pragma clang diagnostic pop
+#endif
 
 #  pragma GCC diagnostic pop
 
