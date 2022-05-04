@@ -6,6 +6,7 @@
 
 int main()
 {
+  Py_SetProgramName(PYTHON_INTERPRETER);
   /*
      remark: combine getting the guard and loading
              dune.common in a single 'initialization' function -

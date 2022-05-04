@@ -157,6 +157,12 @@
 #       any timeout setting in ctest (see `cmake --help-property TIMEOUT`). If you
 #       specify the MPI_RANKS option, you need to specify a TIMEOUT.
 #
+#    .. cmake_param:: WORKING_DIRECTORY
+#       :single:
+#
+#       Set the WORKING_DIRECTORY test property to specify the working directory in which to execute the test.
+#       If not specified the test will be run with the current working directory set to the build directory corresponding to the current source directory.
+#
 #    .. cmake_param:: LABELS
 #       :multi:
 #
@@ -206,6 +212,10 @@
 #    build all tests during `make all`. Note, that this may take quite some time for some modules.
 #    If not in use, you have to build tests through the target :code:`build_tests`.
 #
+# .. cmake_variable:: PYTHON_TEST
+#
+#    This flag specifies a python test and is set by the dune_python_add_test command. It disables the check on the existence of the target file.
+#
 include_guard(GLOBAL)
 
 # enable the testing suite on the CMake side.
@@ -249,8 +259,8 @@ if(NOT DUNE_MAX_TEST_CORES)
 endif()
 
 function(dune_add_test)
-  set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY)
-  set(SINGLEARGS NAME TARGET TIMEOUT)
+  set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY PYTHON_TEST)
+  set(SINGLEARGS NAME TARGET TIMEOUT WORKING_DIRECTORY)
   set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND CMAKE_GUARD LABELS)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
 
@@ -297,6 +307,9 @@ function(dune_add_test)
   endif()
   if(NOT ADDTEST_TIMEOUT)
     set(ADDTEST_TIMEOUT 300)
+  endif()
+  if(NOT ADDTEST_WORKING_DIRECTORY)
+    set(ADDTEST_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
   endif()
   foreach(num ${ADDTEST_MPI_RANKS})
     if(NOT "${num}" MATCHES "[1-9][0-9]*")
@@ -397,10 +410,11 @@ function(dune_add_test)
       # Now add the actual test
       _add_test(NAME ${ACTUAL_NAME}
                 COMMAND "${ACTUAL_TESTCOMMAND}" ${ACTUAL_CMD_ARGS}
+                WORKING_DIRECTORY "${ADDTEST_WORKING_DIRECTORY}"
                )
 
       # Make the test depend on the existence of the target to trigger "Not Run" response
-      if(NOT ADDTEST_EXPECT_COMPILE_FAIL)
+      if(NOT ADDTEST_EXPECT_COMPILE_FAIL AND NOT ADDTEST_PYTHON_TEST)
         set_tests_properties(${ACTUAL_NAME} PROPERTIES REQUIRED_FILES $<TARGET_FILE:${ADDTEST_TARGET}>)
       endif()
       # Define the number of processors (ctest will coordinate this with the -j option)

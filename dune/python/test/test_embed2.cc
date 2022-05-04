@@ -7,8 +7,7 @@
 #include<Python.h>
 int main()
 {
-  const wchar_t* path = L"/home/domse/buildsytem/build/common-build/dune-python-env/bin/python";
-  Py_SetProgramName(path);
+  Py_SetProgramName(PYTHON_INTERPRETER);
 
   pybind11::scoped_interpreter guard{};
   auto global = pybind11::dict(pybind11::module::import("__main__").attr("__dict__"));
