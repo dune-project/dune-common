@@ -1,2 +1,2 @@
 [build-system]
-requires = ["setuptools", "wheel", "pip>=21"]
+requires = ["setuptools", "wheel", "pip>=21.a"]
