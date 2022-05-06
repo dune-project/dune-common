@@ -17,6 +17,7 @@
 PYBIND11_MODULE( _common, module )
 {
   Dune::Python::addToTypeRegistry<double>(Dune::Python::GenerateTypeName("double"));
+  Dune::Python::addToTypeRegistry<float>(Dune::Python::GenerateTypeName("float"));
   Dune::Python::addToTypeRegistry<int>(Dune::Python::GenerateTypeName("int"));
   Dune::Python::addToTypeRegistry<std::size_t>(Dune::Python::GenerateTypeName("std::size_t"));
 

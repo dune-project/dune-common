@@ -9,6 +9,7 @@
 #include <utility>
 
 #include <dune/common/fmatrix.hh>
+#include <dune/common/classname.hh>
 
 #include <dune/python/common/typeregistry.hh>
 #include <dune/python/common/fmatrix.hh>
@@ -92,7 +93,8 @@ namespace Dune
     {
       typedef Dune::FieldMatrix< K, m, n > FM;
 
-      auto entry = insertClass<FM>( scope, "FieldMatrix_"+std::to_string(m)+"_"+std::to_string(n), pybind11::buffer_protocol(),
+      std::string fname = className<K>();
+      auto entry = insertClass<FM>( scope, "FieldMatrix_"+fname+"_"+std::to_string(m)+"_"+std::to_string(n), pybind11::buffer_protocol(),
           GenerateTypeName("Dune::FieldMatrix",Dune::MetaType<K>(),m,n), IncludeFiles{"dune/common/fmatrix.hh"}
         );
       if (!entry.second)

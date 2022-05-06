@@ -12,6 +12,7 @@
 #include <utility>
 
 #include <dune/common/fvector.hh>
+#include <dune/common/classname.hh>
 
 #include <dune/python/common/typeregistry.hh>
 #include <dune/python/common/densevector.hh>
@@ -135,7 +136,8 @@ namespace Dune
     {
       typedef Dune::FieldVector<K, size> FV;
 
-      auto entry = insertClass<FV>(scope, "FieldVector_"+std::to_string(size), pybind11::buffer_protocol(),
+      std::string fname = className<K>();
+      auto entry = insertClass<FV>(scope, "FieldVector_"+fname+"_"+std::to_string(size), pybind11::buffer_protocol(),
         GenerateTypeName("Dune::FieldVector",MetaType<K>(),size),IncludeFiles{"dune/common/fvector.hh"}
         );
       if (!entry.second)

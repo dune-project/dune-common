@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include <dune/common/classname.hh>
 #include <dune/common/typelist.hh>
 #include <dune/common/visibility.hh>
 
@@ -128,7 +129,7 @@ namespace Dune
           const auto& outerEntry = findInTypeRegistry<Outer>();
           if (outerEntry.second)
             throw std::invalid_argument( (std::string("couldn't find outer class ") +
-                  typeid(Outer).name() + " in type registry").c_str() );
+                  className<Outer>() + " in type registry").c_str() );
           main_ = outerEntry.first->second.name + "::" + main;
           includes_.push_back(outerEntry.first->second.includes);
           std::sort( includes_.begin(), includes_.end() );
@@ -209,7 +210,7 @@ namespace Dune
           auto entry = detail::findInTypeRegistry<T>();
           if (entry.second)
             throw std::invalid_argument( (std::string("couldn't find requested type ") +
-                  typeid(T).name() + " in type registry").c_str() );
+                  className<T>() + " in type registry").c_str() );
           return entry.first->second.name;
         }
         template <class T>
@@ -233,7 +234,7 @@ namespace Dune
           auto entry = detail::findInTypeRegistry<T>();
           if (entry.second)
             throw std::invalid_argument( (std::string("couldn't find requested type ") +
-                typeid(T).name() + " in type registry").c_str() );
+                className<T>() + " in type registry").c_str() );
           return entry.first->second.includes;
         }
         template <class T>
@@ -266,7 +267,7 @@ namespace Dune
         includes.insert( includes.end(), inc.begin(), inc.end() );
         auto entry = detail::insertIntoTypeRegistry< DuneType >( typeName.name(), std::move( pyName ), includes );
         if( !entry.second )
-          throw std::invalid_argument( std::string( "adding a class (" ) + typeid( DuneType ).name() + ") twice to the type registry" );
+          throw std::invalid_argument( std::string( "adding a class (" ) + className<DuneType>() + ") twice to the type registry" );
         return entry;
       }
 
