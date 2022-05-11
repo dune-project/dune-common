@@ -34,25 +34,35 @@ class Version:
     def __init__(self, s):
         if s is None:
             self.major = 0
-            self.minor = 0
-            self.revision = 0
+            self.minor = ''
+            self.revision = ''
+            self.build = ''
         elif isinstance(s, Version):
             self.major = s.major
             self.minor = s.minor
             self.revision = s.revision
+            self.build = s.build
         else:
-            match = re.match('(?P<major>[0-9]+)([.](?P<minor>[0-9]+))?([.](?P<revision>[0-9]+))?', s)
+            match = re.match('(?P<major>[0-9]+)([.](?P<minor>[0-9*]+))?([.](?P<revision>[0-9*]+))?([.](?P<build>[a-z0-9*]+))?', s)
             if not match:
                 raise ValueError('Invalid version: \'' + s + '\'.')
             self.major = int(match.group('major'))
-            self.minor = int(match.group('minor')) if match.group('minor') else 0
-            self.revision = int(match.group('revision')) if match.group('revision') else 0
+            self.minor = match.group('minor') if match.group('minor') else ''
+            self.revision = match.group('revision') if match.group('revision') else ''
+            self.build = match.group('build') if match.group('build') else ''
 
     def __str__(self):
-        return str(self.major) + '.' + str(self.minor) + '.' + str(self.revision)
+        s = str(self.major)
+        if self.minor != '':
+            s += '.' + str(self.minor)
+            if self.revision != '':
+                s += '.' + str(self.revision)
+                if self.build != '':
+                    s += '.' + str(self.build)
+        return s
 
     def as_tuple(self):
-        return (self.major, self.minor, self.revision)
+        return (self.major, self.minor, self.revision, self.build)
 
     def __eq__(self, other):
         return self.as_tuple() == other.as_tuple()
@@ -76,7 +86,7 @@ class Version:
 class VersionRequirement:
     def __init__(self, s):
         if s:
-            match = re.match(r'(?P<operator>(>|>=|==|<=|<))\s*(?P<version>[0-9.]+)', s)
+            match = re.match(r'(?P<operator>(>|>=|==|<=|<))\s*(?P<version>[a-z0-9.*]+)', s)
             if not match:
                 raise ValueError('Invalid version qualifier: \'' + s + '\'.')
             self.version = Version(match.group('version'))
@@ -259,8 +269,31 @@ class Data:
             if version is None:
                 major = self.version.split('-')[0]
                 self.version = Version(major).__str__() + '.dev' + date.today().strftime('%Y%m%d')
-            self.depends = [(dep[0], '(<= '+self.version+')') for dep in self.depends]
-            self.python_requires = [((pr[0], '(<= '+self.version+')') if pr[0].startswith('dune-') else pr) for pr in self.python_requires]
+
+
+            # append self.version to any dune python requirement that has no specified version number
+            new_python_requires = []
+            for req in self.python_requires:
+                name, versionReq = req
+                if (name.startswith('dune-') and not versionReq.version):
+                    req = (name, '(<= '+self.version+')')
+                new_python_requires += [req]
+            self.python_requires = new_python_requires
+
+            # append self.version to any dune dependency if not python-requires specifies a version number
+            new_depends = []
+            for dep in self.depends:
+                name, versionReq = dep
+                pyVersionList = [pyVersion for pyName, pyVersion in self.python_requires if pyName == name]
+                if len(pyVersionList) > 0:
+                    assert len(pyVersionList) == 1
+                    pyVersion = pyVersionList[0]
+                    print("Note:", name, "will get version requirement", pyVersion, "in pyproject.toml as stated in Python-Requires.")
+                    dep = (name, str(pyVersion))
+                else:
+                    dep = (name, '(<= '+self.version+')')
+                new_depends += [dep]
+            self.depends = new_depends
 
     def asPythonRequirementString(self, requirements):
         return [(r[0]+str(r[1])).replace("(", " ").replace(")", "").replace(" ", "") for r in requirements]
@@ -381,6 +414,7 @@ def metaData(version=None, dependencyCheck=True):
             pass
 
     install_requires = data.asPythonRequirementString(data.python_requires + data.depends)
+    install_requires = list(set(install_requires))
 
     try:
         with open("README.md", "r") as fh:
