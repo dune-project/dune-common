@@ -7,10 +7,7 @@ logger = logging.getLogger(__name__)
 dune_py_dir = dune.common.module.getDunePyDir()
 generated_dir = os.path.join(dune_py_dir, 'python', 'dune', 'generated')
 
-def removeGenerated(modules = [], date=False, verbose=None):
-    if verbose is not None:
-        logger.warn("Used deprecated argument in removeGenerated: verbose has no effect")
-
+def removeGenerated(modules = [], date=False):
     if len(modules) == 0:
         return
 
