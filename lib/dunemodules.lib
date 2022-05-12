@@ -144,11 +144,25 @@ parse_control() {
   export DEPS_$module="$deps"
   export INST_$module="$module_inst"
   for name in $deps; do
+    test "${name:0:1}" == '(' && continue # skip version info
+    # check for delimiter error
+    if test "${name: -1}" == ','; then
+      echo "ERROR: Syntax error in suggestion list of file $1"
+      echo "       delimiter ',' not allowed."
+      exit 1
+    fi
     mod=$(fix_variable_name $name)
     export NAME_$mod="$name"
   done
   export SUGS_$module="$sugs"
   for name in $sugs; do
+    test "${name:0:1}" == '(' && continue # skip version info
+    # check for delimiter error
+    if test "${name: -1}" == ','; then
+      echo "ERROR: Syntax error in suggestion list of file $1"
+      echo "       delimiter ',' not allowed."
+      exit 1
+    fi
     mod=$(fix_variable_name $name)
     export NAME_$mod="$name"
   done
