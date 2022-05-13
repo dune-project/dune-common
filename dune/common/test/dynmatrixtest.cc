@@ -292,6 +292,14 @@ void test_matrix()
   // print vector
   std::cout << f << std::endl;
 
+  // transposed(Matrix)
+  {
+    DynamicMatrix<K> AT = A.transposed();
+    for (size_type i=0; i<AT.N(); i++)
+      for (size_type j=0; j<AT.M(); j++)
+        if (AT[i][j] != A[j][i])
+          DUNE_THROW(FMatrixError, "Return value of matrix.transposed() incorrect!");
+  }
 
   {
     DynamicMatrix<K> A2 = A;

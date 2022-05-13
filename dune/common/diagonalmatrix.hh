@@ -130,6 +130,12 @@ namespace Dune {
       return (this==&other);
     }
 
+    /** \brief Return transposed of the matrix as DiagonalMatrix */
+    DiagonalMatrix<K, n> transposed() const
+    {
+      return *this;
+    }
+
     //===== iterator interface to rows of the matrix
     //! Iterator class for sequential access
     typedef ContainerWrapperIterator<const WrapperType, reference, reference> Iterator;
@@ -600,6 +606,12 @@ namespace Dune {
     FieldVector<K,1>& diagonal()
     {
       return (*this)[0];
+    }
+
+    /** \brief Return transposed of the matrix as DiagonalMatrix */
+    DiagonalMatrix<K, 1> transposed() const
+    {
+      return *this;
     }
 
   };

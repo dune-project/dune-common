@@ -61,6 +61,11 @@ void test_matrix()
   [[maybe_unused]] FieldMatrix<K,n,n> AFM2 = A;
   [[maybe_unused]] FieldMatrix<K,n,n> AFM3;
   AFM3 = A;
+
+  // test transposed
+  DiagonalMatrix<K,n> AT = A.transposed();
+  if (AT != A)
+    DUNE_THROW(FMatrixError, "Return value of DiagoalMatrix::transposed() incorrect!");
 }
 
 template<class K, int n>

@@ -481,20 +481,18 @@ void test_matrix()
         DUNE_THROW(FMatrixError, "Return value of operator-(matrix) incorrect!");
     }
 
-    // Matrix * Matrix
+    // transposed(Matrix)
     {
-      auto transposed = [](const FM& A)
-      {
-        FieldMatrix<typename FM::field_type,FM::cols,FM::rows> AT;
-        for (int i=0; i<AT.rows; i++)
-          for (int j=0; j<AT.cols; j++)
-            AT[i][j] = A[j][i];
-
-        return AT;
-      };
-
-      [[maybe_unused]] auto product = transposed(A) * A;
+      FieldMatrix<typename FM::field_type,FM::cols,FM::rows> AT = A.transposed();
+      for (int i=0; i<AT.rows; i++)
+        for (int j=0; j<AT.cols; j++)
+          if (AT[i][j] != A[j][i])
+            DUNE_THROW(FMatrixError, "Return value of matrix.transposed() incorrect!");
     }
+
+
+    // Matrix * Matrix
+    [[maybe_unused]] auto product = A.transposed() * A;
 
   }
   {

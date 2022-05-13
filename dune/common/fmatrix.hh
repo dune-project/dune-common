@@ -120,6 +120,16 @@ namespace Dune
     template <typename T, int rows, int cols>
     FieldMatrix& operator=(FieldMatrix<T,rows,cols> const&) = delete;
 
+    //! Return transposed of the matrix as FieldMatrix
+    FieldMatrix<K, COLS, ROWS> transposed() const
+    {
+      Dune::FieldMatrix<K, COLS, ROWS> AT;
+      for( int i = 0; i < ROWS; ++i )
+        for( int j = 0; j < COLS; ++j )
+          AT[j][i] = (*this)[i][j];
+      return AT;
+    }
+
     //! vector space addition -- two-argument version
     template <class OtherScalar>
     friend auto operator+ ( const FieldMatrix& matrixA,
@@ -329,6 +339,12 @@ namespace Dune
     }
 
     using Base::operator=;
+
+    //! Return transposed of the matrix as FieldMatrix
+    FieldMatrix<K, 1, 1> transposed() const
+    {
+      return *this;
+    }
 
     //! vector space addition -- two-argument version
     template <class OtherScalar>
