@@ -40,6 +40,15 @@ void checkTranspose(Dune::TestSuite& suite, A a)
     at = at2;
     at = transpose(std::cref(a));
   }
+
+  // Check transposedView
+  {
+    [[maybe_unused]] auto at = transposedView(a);
+    [[maybe_unused]] auto at_dense = at.asDense();
+    auto at2 = transposedView(a);
+    at = at2;
+    at = transposedView(a);
+  }
 }
 
 
@@ -103,6 +112,23 @@ void checkTransposeProduct(Dune::TestSuite& suite, A a, B b_original)
   {
     auto b = b_original;
     auto bt = transpose(std::ref(b)).asDense();
+    suite.subTest(checkAxBT(a,b,bt));
+  }
+
+  // Check with reference capture by std::ref
+  {
+    auto b = b_original;
+    auto bt = transposedView(b);
+    suite.subTest(checkAxBT(a,b,bt));
+    // Check if bt was captured by reference
+    b *= 2;
+    suite.subTest(checkAxBT(a,b,bt));
+  }
+
+  // Check conversion to dense matrix of wrapper
+  {
+    auto b = b_original;
+    auto bt = transposedView(b).asDense();
     suite.subTest(checkAxBT(a,b,bt));
   }
 

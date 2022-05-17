@@ -248,6 +248,24 @@ auto transpose(const std::reference_wrapper<Matrix>& matrix) {
 
 
 
+/**
+ * \brief Create a view modelling the transposed matrix
+ *
+ * \param matrix The matrix to be transposed.
+ *
+ * The returned view stores a reference of the given matrix.
+ * Calling \code transposedView(matrix) \endcode is equivalent to
+ * \code transpose(std::cref(matrix)) \endcode.
+ */
+template<class Matrix>
+auto transposedView(const Matrix& matrix) {
+  return transpose(std::cref(matrix));
+}
+
+
+
+
+
 } // namespace Dune
 
 #endif // DUNE_COMMON_TRANSPOSE_HH
