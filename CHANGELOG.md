@@ -13,6 +13,17 @@ In order to build the DUNE core modules you need at least the following software
 - Optional: Python >= 3.7 for Python bindings
 
 ## Changelog
+- Multiplication of two matrices using `a*b` is now also implemented if `a` or `b`
+  is a `FieldMatrix` or if both are `DiagonalMatrices`.
+
+- The utility function `transpose(m)` will now return `m.transposed()` if available.
+  Otherwise it returns a wrapper storing a copy (this was a reference before) of `m`.
+  References to matrices can still be captured using `transpose(std::ref(m))` or
+  `transposedView(m)`.
+
+- The transposed of a `FieldMatrix`, `DiagonalMatrix`, and `DynamicMatrix`
+  is now available using the `transposed()` member function.
+
 - Add helper function `resolveRef()` to transparently use `std::reference_wrapper`.
 
 - Add `pragma omp simd` annotations in the LoopSIMD class to improve compiler optimizations
