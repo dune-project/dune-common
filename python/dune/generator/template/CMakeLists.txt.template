@@ -15,6 +15,7 @@ message("---- LOCK")
 file(LOCK ${lock})
 message("---- AQUIRED")
 
+set(ALLOW_CXXFLAGS_OVERWRITE ON) 
 set(DUNE_ENABLE_PYTHONBINDINGS ON)
 set(CMAKE_PREFIX_PATH {{ install_prefix }})
 
@@ -39,11 +40,15 @@ endif()
 find_package(dune-common REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH})
 
+# include(DunePythonCompiler)
+
 include(DuneMacros)
 dune_project()
 dune_enable_all_packages()
 
 add_subdirectory(python/dune/generated)
+# dune_add_pybind11_module(NAME ${DUNEPY_FILE})
+# dune_target_enable_all_packages(${DUNEPY_FILE})
 
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
 

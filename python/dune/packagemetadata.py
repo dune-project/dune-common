@@ -324,7 +324,7 @@ def envCMakeFlags(flags=[]):
 def defaultCMakeFlags():
     # defaults
     flags = dict([
-        ('CMAKE_BUILD_TYPE', 'Release'),
+        ('CMAKE_CXX_FLAGS', '-O3 -DNDEBUG'),              # same as release
         ('CMAKE_INSTALL_RPATH_USE_LINK_PATH', 'TRUE'),
         ('DUNE_ENABLE_PYTHONBINDINGS', 'TRUE'),
         ('ALLOW_CXXFLAGS_OVERWRITE', 'ON'),
