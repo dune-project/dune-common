@@ -713,7 +713,7 @@ namespace Dune {
 
       template<class V, class Op>
       std::enable_if_t<
-        std::is_invocable_v<Op, decltype(lane(0, std::declval<V>()))>>
+        IsCallable<Op(decltype(lane(0, std::declval<V>())))>::value>
       checkUnaryOpV(Op op)
       {
 #define DUNE_SIMD_OPNAME (className<Op(V)>())
@@ -752,7 +752,7 @@ namespace Dune {
 
       template<class V, class Op>
       std::enable_if_t<
-        not std::is_invocable_v<Op,decltype(lane(0, std::declval<V>()))>>
+        not IsCallable<Op(decltype(lane(0, std::declval<V>())))>::value>
       checkUnaryOpV(Op op)
       {
         // log_ << "No " << className<Op(decltype(lane(0, std::declval<V>())))>()
