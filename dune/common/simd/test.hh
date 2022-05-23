@@ -38,7 +38,7 @@ namespace Dune {
       template<class Op, class... Args, class SFINAE>
       struct CanCall<Op(Args...), SFINAE> : std::false_type {};
       template<class Op, class... Args>
-      struct CanCall<Op(Args...), std::void_t<std::result_of_t<Op(Args...)> > >
+      struct CanCall<Op(Args...), std::void_t<std::invoke_result<Op,Args...> > >
         : std::true_type
       {};
 
