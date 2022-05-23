@@ -33,15 +33,6 @@ namespace Dune {
 
     namespace Impl {
 
-      template<class Expr, class SFINAE = void>
-      struct CanCall; // not defined unless Expr has the form Op(Args...)
-      template<class Op, class... Args, class SFINAE>
-      struct CanCall<Op(Args...), SFINAE> : std::false_type {};
-      template<class Op, class... Args>
-      struct CanCall<Op(Args...), std::void_t<std::result_of_t<Op(Args...)> > >
-        : std::true_type
-      {};
-
       template<class T, class SFINAE = void>
       struct LessThenComparable : std::false_type {};
       template<class T>
@@ -283,9 +274,6 @@ namespace Dune {
         // avoid 0 (for / and %)
         return T(5);
       }
-
-      template<class Call>
-      using CanCall = Impl::CanCall<Call>;
 
       template<class Dst, class Src>
       using CopyRefQual = Impl::CopyRefQual<Dst, Src>;
@@ -725,7 +713,7 @@ namespace Dune {
 
       template<class V, class Op>
       std::enable_if_t<
-        CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
+        std::is_invocable_v<Op, decltype(lane(0, std::declval<V>()))>>
       checkUnaryOpV(Op op)
       {
 #define DUNE_SIMD_OPNAME (className<Op(V)>())
@@ -764,7 +752,7 @@ namespace Dune {
 
       template<class V, class Op>
       std::enable_if_t<
-        !CanCall<Op(decltype(lane(0, std::declval<V>())))>::value>
+        not std::is_invocable_v<Op,decltype(lane(0, std::declval<V>()))>>
       checkUnaryOpV(Op op)
       {
         // log_ << "No " << className<Op(decltype(lane(0, std::declval<V>())))>()
