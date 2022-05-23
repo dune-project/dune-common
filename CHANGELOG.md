@@ -44,6 +44,11 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Deprecations and removals
 
+- Helper fallback implementations for `Std::to_false_type`, `Std::to_true_type`,
+  `Std::is_invocable`, and `Std::is_invocable_r` have been removed. Instead,
+  use `Dune::AlwaysFalse`, `Dune::AlwaysTrue`, `std::is_invocable`, and
+  `std::is_invocable_r`.
+
 - The deprecated headers `gcd.hh` and `lcm.hh` are removed. Use `std::gcd`
   and `std::lcm` instead.
 
