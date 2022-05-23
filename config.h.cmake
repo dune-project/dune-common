@@ -26,6 +26,9 @@
 /* does the standard library provide experimental::is_detected ? */
 #cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED 1
 
+/* does the language support lambdas in unevaluated contexts ? */
+#cmakedefine DUNE_HAVE_CXX_UNEVALUATED_CONTEXT_LAMBDA 1
+
 /* does the standard library provide identity ? */
 #cmakedefine DUNE_HAVE_CXX_STD_IDENTITY 1
 
