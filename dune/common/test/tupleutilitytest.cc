@@ -92,8 +92,8 @@ struct Range<start, start>
 template<class Data, class PotentialDivisor>
 struct DivisorAccumulator
 {
-  enum {value = Data::first_type::value};
-  enum {isDivisor = (PotentialDivisor::value*(value / PotentialDivisor::value)==value)};
+  constexpr static int value = Data::first_type::value;
+  constexpr static bool isDivisor = (PotentialDivisor::value*(value / PotentialDivisor::value)==value);
 
   typedef typename Data::second_type OldTuple;
   typedef typename Dune::PushBackTuple<OldTuple, PotentialDivisor>::type ExtendedTuple;
@@ -112,14 +112,14 @@ struct Divisors
       typename std::pair<typename std::integral_constant<int, X>, typename std::tuple<> >
       >::type::second_type type;
 
-  enum {value = std::tuple_size<type>::value};
+  constexpr static int value = std::tuple_size<type>::value;
 };
 
 // An accumulator to build up a list of primes up to a fixed integer
 template<class Data, class N>
 struct PrimeAccumulator
 {
-  enum {isPrime = (Divisors<N::value>::value==2)};
+  constexpr static bool isPrime = (Divisors<N::value>::value==2);
 
   typedef typename std::conditional<isPrime, typename Dune::PushBackTuple<Data, N>::type, Data>::type type;
 };

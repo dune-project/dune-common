@@ -21,12 +21,10 @@ namespace Impl {
   {
   public:
 
-    enum {
-      //! The number of rows.
-      rows = M::cols,
-      //! The number of columns.
-      cols = M::rows
-    };
+    //! The number of rows.
+    constexpr static int rows = M::cols;
+    //! The number of columns.
+    constexpr static int cols = M::rows;
 
     TransposedMatrixWrapper(const M& matrix) : matrix_(matrix) {}
     TransposedMatrixWrapper(const TransposedMatrixWrapper&) = delete;

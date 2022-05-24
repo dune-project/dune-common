@@ -47,27 +47,21 @@ namespace Impl {
 
     //===== type definitions and constants
 
-    //! We are at the leaf of the block recursion
-    enum {
-      //! The number of block levels we contain.
-      //! This is always one for this type.
-      blocklevel = 1
-    };
+    //! The number of block levels we contain.
+    //! This is always one for this type.
+    constexpr static int blocklevel = 1;
 
     using size_type = typename Base::size_type;
     using row_type = typename Base::row_type;
     using row_reference = typename Base::row_reference;
     using const_row_reference = typename Base::const_row_reference;
 
-    //! export size
-    enum {
-      //! \brief The number of rows.
-      //! This is always one for this type.
-      rows = 1,
-      //! \brief The number of columns.
-      //! This is always one for this type.
-      cols = 1
-    };
+    //! \brief The number of rows.
+    //! This is always one for this type.
+    constexpr static int rows = 1;
+    //! \brief The number of columns.
+    //! This is always one for this type.
+    constexpr static int cols = 1;
 
     //===== constructors
     /** \brief Default constructor

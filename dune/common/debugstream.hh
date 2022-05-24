@@ -126,7 +126,7 @@ namespace Dune {
    */
   template <DebugLevel current, DebugLevel threshold>
   struct greater_or_equal {
-    static const bool value = (current >= threshold);
+    constexpr static bool value = (current >= threshold);
   };
 
 
@@ -138,7 +138,7 @@ namespace Dune {
    */
   template <DebugLevel current, DebugLevel mask>
   struct common_bits {
-    enum {value = ((current & mask)!=0) };
+    constexpr static bool value = ((current & mask) != 0);
   };
 
 

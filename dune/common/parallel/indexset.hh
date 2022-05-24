@@ -241,15 +241,13 @@ namespace Dune
      */
     typedef Dune::IndexPair<GlobalIndex,LocalIndex> IndexPair;
 
-    enum {
-      /**
-       * @brief The size of the individual arrays in the underlying ArrayList.
-       *
-       * The default value is 100.
-       * @see ArrayList::size
-       */
-      arraySize= (N>0) ? N : 1
-    };
+    /**
+     * @brief The size of the individual arrays in the underlying ArrayList.
+     *
+     * The default value is 100.
+     * @see ArrayList::size
+     */
+    constexpr static int arraySize = (N>0) ? N : 1;
 
     /** @brief The iterator over the pairs. */
     class iterator :

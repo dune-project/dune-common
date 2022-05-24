@@ -104,50 +104,48 @@ namespace Dune
 
     /** @brief The type of object we allocate memory for. */
     typedef T MemberType;
-    enum
-    {
-      /**
-       * @brief The size of a union of Reference and MemberType.
-       */
-      unionSize = ((sizeof(MemberType) < sizeof(Reference)) ?
-                   sizeof(Reference) : sizeof(MemberType)),
 
-      /**
-       * @brief Size requirement. At least one object has to
-       * stored.
-       */
-      size = ((sizeof(MemberType) <= s && sizeof(Reference) <= s) ?
-              s : unionSize),
+    /**
+     * @brief The size of a union of Reference and MemberType.
+     */
+    constexpr static int unionSize = (sizeof(MemberType) < sizeof(Reference)) ?
+                                      sizeof(Reference) : sizeof(MemberType);
 
-      /**
-       * @brief The alignment that suits both the MemberType and
-       * the Reference (i.e. their least common multiple).
-       */
-      alignment = std::lcm(alignof(MemberType), alignof(Reference)),
+    /**
+     * @brief Size requirement. At least one object has to
+     * stored.
+     */
+    constexpr static int size = (sizeof(MemberType) <= s && sizeof(Reference) <= s) ?
+                                 s : unionSize;
 
-      /**
-       * @brief The aligned size of the type.
-       *
-       * This size is bigger than sizeof of the type and a multiple of
-       * the alignment requirement.
-       */
-      alignedSize = ((unionSize % alignment == 0) ?
-                     unionSize :
-                     ((unionSize / alignment + 1) * alignment)),
+    /**
+     * @brief The alignment that suits both the MemberType and
+     * the Reference (i.e. their least common multiple).
+     */
+    constexpr static int alignment = std::lcm(alignof(MemberType), alignof(Reference));
 
-      /**
-       * @brief The size of each chunk memory chunk.
-       *
-       * Will be adapted to be a multiple of the alignment
-       */
-      chunkSize = ((size % alignment == 0) ?
-                   size : ((size / alignment + 1)* alignment)),
+    /**
+     * @brief The aligned size of the type.
+     *
+     * This size is bigger than sizeof of the type and a multiple of
+     * the alignment requirement.
+     */
+    constexpr static int alignedSize = (unionSize % alignment == 0) ?
+                                        unionSize :
+                                        ((unionSize / alignment + 1) * alignment);
 
-      /**
-       * @brief The number of element each chunk can hold.
-       */
-      elements = (chunkSize / alignedSize)
-    };
+    /**
+     * @brief The size of each chunk memory chunk.
+     *
+     * Will be adapted to be a multiple of the alignment
+     */
+    constexpr static int chunkSize = (size % alignment == 0) ?
+                                      size : ((size / alignment + 1)* alignment);
+
+    /**
+     * @brief The number of element each chunk can hold.
+     */
+    constexpr static int elements = (chunkSize / alignedSize);
 
   private:
     /** @brief Chunk of memory managed by the pool. */
@@ -229,14 +227,11 @@ namespace Dune
      */
     typedef T value_type;
 
-    enum
-    {
-      /**
-       * @brief The number of objects to fit into one memory chunk
-       * allocated.
-       */
-      size=s*sizeof(value_type)
-    };
+    /**
+     * @brief The number of objects to fit into one memory chunk
+     * allocated.
+     */
+    constexpr static int size = s * sizeof(value_type);
 
     /**
      * @brief The pointer type.

@@ -555,17 +555,15 @@ namespace Dune {
     class InvalidPosition : public RangeError
     {};
 
-    enum {
-      /**
-       * @brief If true the index set corresponding to the
-       * remote indices might get modified.
-       *
-       * If for example new indices are added to an index set
-       * all pointers of the remote indices to the local indices
-       * become invalid after ParallelIndexSet::endResize() was called.
-       */
-      MODIFYINDEXSET=mode
-    };
+    /**
+     * @brief If true the index set corresponding to the
+     * remote indices might get modified.
+     *
+     * If for example new indices are added to an index set
+     * all pointers of the remote indices to the local indices
+     * become invalid after ParallelIndexSet::endResize() was called.
+     */
+    constexpr static bool MODIFYINDEXSET = mode;
 
     /**
      * @brief Type of the index set we use.

@@ -64,11 +64,8 @@ namespace Dune {
     //! The type used for the index access and size operations.
     typedef std::size_t size_type;
 
-    //! We are at the leaf of the block recursion
-    enum {
-      //! The number of block levels we contain. This is 1.
-      blocklevel = 1
-    };
+    //! The number of block levels we contain. This is the leaf, that is, 1.
+    constexpr static int blocklevel = 1;
 
     //! Each row is implemented by a field vector
     typedef DiagonalRowVector<K,n> row_type;
@@ -78,13 +75,10 @@ namespace Dune {
     typedef const_row_type const_reference;
     typedef const_row_type const_row_reference;
 
-    //! export size
-    enum {
-      //! The number of rows
-      rows = n,
-      //! The number of columns
-      cols = n
-    };
+    //! The number of rows
+    constexpr static int rows = n;
+    //! The number of columns
+    constexpr static int cols = n;
 
     //==== size
 
@@ -558,27 +552,21 @@ namespace Dune {
     //! The type used for index access and size operations
     typedef typename Base::size_type size_type;
 
-    //! We are at the leaf of the block recursion
-    enum {
-      //! The number of block levels we contain.
-      //! This is always one for this type.
-      blocklevel = 1
-    };
+    //! The number of block levels we contain.
+    //! This is always one for this type.
+    constexpr static int blocklevel = 1;
 
     typedef typename Base::row_type row_type;
 
     typedef typename Base::row_reference row_reference;
     typedef typename Base::const_row_reference const_row_reference;
 
-    //! export size
-    enum {
-      //! \brief The number of rows.
-      //! This is always one for this type.
-      rows = 1,
-      //! \brief The number of columns.
-      //! This is always one for this type.
-      cols = 1
-    };
+    //! \brief The number of rows.
+    //! This is always one for this type.
+    constexpr static int rows = 1;
+    //! \brief The number of columns.
+    //! This is always one for this type.
+    constexpr static int cols = 1;
 
 
     //! Default Constructor
@@ -675,7 +663,7 @@ namespace Dune {
 
   public:
     // remember size of vector
-    enum { dimension = n };
+    constexpr static int dimension = n;
 
     // standard constructor and everything is sufficient ...
 
@@ -690,17 +678,11 @@ namespace Dune {
     //! The type used for the index access and size operation
     typedef std::size_t size_type;
 
-    //! We are at the leaf of the block recursion
-    enum {
-      //! The number of block levels we contain
-      blocklevel = 1
-    };
+    //! The number of block levels we contain
+    constexpr static int blocklevel = 1;
 
-    //! export size
-    enum {
-      //! The size of this vector.
-      size = n
-    };
+    //! The size of this vector.
+    constexpr static int size = n;
 
     //! Constructor making uninitialized vector
     DiagonalRowVectorConst() :

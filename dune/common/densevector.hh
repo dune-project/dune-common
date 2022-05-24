@@ -256,11 +256,8 @@ namespace Dune {
     //! The type used for the index access and size operation
     typedef typename Traits::size_type size_type;
 
-    //! We are at the leaf of the block recursion
-    enum {
-      //! The number of block levels we contain
-      blocklevel = 1
-    };
+    //! The number of block levels we contain. This is the leaf, that is, 1.
+    constexpr static int blocklevel = 1;
 
     //===== assignment from scalar
     //! Assignment operator for scalar
