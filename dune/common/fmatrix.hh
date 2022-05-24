@@ -71,13 +71,10 @@ namespace Dune
     typedef DenseMatrix< FieldMatrix<K,ROWS,COLS> > Base;
   public:
 
-    //! export size
-    enum {
-      //! The number of rows.
-      rows = ROWS,
-      //! The number of columns.
-      cols = COLS
-    };
+    //! The number of rows.
+    constexpr static int rows = ROWS;
+    //! The number of columns.
+    constexpr static int cols = COLS;
 
     typedef typename Base::size_type size_type;
     typedef typename Base::row_type row_type;
@@ -296,27 +293,21 @@ namespace Dune
     //! The type used for index access and size operations
     typedef typename Base::size_type size_type;
 
-    //! We are at the leaf of the block recursion
-    enum {
-      //! The number of block levels we contain.
-      //! This is always one for this type.
-      blocklevel = 1
-    };
+    //! The number of block levels we contain.
+    //! This is always one for this type.
+    constexpr static int blocklevel = 1;
 
     typedef typename Base::row_type row_type;
 
     typedef typename Base::row_reference row_reference;
     typedef typename Base::const_row_reference const_row_reference;
 
-    //! export size
-    enum {
-      //! \brief The number of rows.
-      //! This is always one for this type.
-      rows = 1,
-      //! \brief The number of columns.
-      //! This is always one for this type.
-      cols = 1
-    };
+    //! \brief The number of rows.
+    //! This is always one for this type.
+    constexpr static int rows = 1;
+    //! \brief The number of columns.
+    //! This is always one for this type.
+    constexpr static int cols = 1;
 
     //===== constructors
     /** \brief Default constructor

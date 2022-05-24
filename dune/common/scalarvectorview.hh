@@ -41,11 +41,8 @@ namespace Impl {
     friend class ScalarVectorView;
   public:
 
-    //! export size
-    enum {
-      //! The size of this vector.
-      dimension = 1
-    };
+    //! The size of this vector.
+    constexpr static int dimension = 1;
 
     /** \brief The type used for array indices and sizes */
     using size_type = typename Base::size_type;

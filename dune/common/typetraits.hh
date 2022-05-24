@@ -61,13 +61,11 @@ namespace Dune
   template<class T1, class T2>
   struct IsInteroperable
   {
-    enum {
-      /**
-       * @brief True if either a conversion from T1 to T2 or vice versa
-       * exists.
-       */
-      value = std::is_convertible<T1,T2>::value || std::is_convertible<T2,T1>::value
-    };
+    /**
+     * @brief True if either a conversion from T1 to T2 or vice versa
+     * exists.
+     */
+    constexpr static bool value = std::is_convertible<T1,T2>::value || std::is_convertible<T2,T1>::value;
   };
 
   /**

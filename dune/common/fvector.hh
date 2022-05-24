@@ -62,25 +62,23 @@ namespace Dune {
   template<typename C, int SIZE>
   struct IsFieldVectorSizeCorrect
   {
-    enum {
-      /**
-         *@param True if C is not of type FieldVector or its dimension
-       * is not equal SIZE.
-       */
-      value = true
-    };
+    /**
+     * \brief True if C is not of type FieldVector or its dimension
+     * is not equal SIZE.
+     */
+    constexpr static bool value = true;
   };
 
   template<typename T, int SIZE>
   struct IsFieldVectorSizeCorrect<FieldVector<T,SIZE>,SIZE>
   {
-    enum {value = true};
+    constexpr static bool value = true;
   };
 
   template<typename T, int SIZE, int SIZE1>
   struct IsFieldVectorSizeCorrect<FieldVector<T,SIZE1>,SIZE>
   {
-    enum {value = false};
+    constexpr static bool value = false;
   };
 
 
@@ -96,11 +94,8 @@ namespace Dune {
     std::array<K,SIZE> _data;
     typedef DenseVector< FieldVector<K,SIZE> > Base;
   public:
-    //! export size
-    enum {
-      //! The size of this vector.
-      dimension = SIZE
-    };
+    //! The size of this vector.
+    constexpr static int dimension = SIZE;
 
     typedef typename Base::size_type size_type;
     typedef typename Base::value_type value_type;
@@ -292,11 +287,8 @@ namespace Dune {
     K _data;
     typedef DenseVector< FieldVector<K,1> > Base;
   public:
-    //! export size
-    enum {
-      //! The size of this vector.
-      dimension = 1
-    };
+    //! The size of this vector.
+    constexpr static int dimension = 1;
 
     typedef typename Base::size_type size_type;
 

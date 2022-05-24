@@ -72,9 +72,12 @@ namespace Dune
   public:
 
     // unsigned short is 16 bits wide, n is the number of digits needed
-    enum { bits=std::numeric_limits<std::uint16_t>::digits, n=k/bits+(k%bits!=0),
-           hexdigits=4, bitmask=0xFFFF, compbitmask=0xFFFF0000,
-           overflowmask=0x1 };
+    constexpr static int bits = std::numeric_limits<std::uint16_t>::digits;
+    constexpr static int n = k/bits+(k%bits!=0);
+    constexpr static int hexdigits = 4;
+    constexpr static int bitmask = 0xFFFF;
+    constexpr static int compbitmask = 0xFFFF0000;
+    constexpr static int overflowmask = 0x1;
 
     //! Construct uninitialized
     bigunsignedint ();

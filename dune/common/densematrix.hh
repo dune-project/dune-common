@@ -172,11 +172,8 @@ namespace Dune
     //! The type used to represent a reference to a constant row (usually const row_type &)
     typedef typename Traits::const_row_reference const_row_reference;
 
-    //! We are at the leaf of the block recursion
-    enum {
-      //! The number of block levels we contain. This is 1.
-      blocklevel = 1
-    };
+    //! The number of block levels we contain. This is the leaf, that is, 1.
+    constexpr static int blocklevel = 1;
 
   private:
     //! \brief if value_type is a simd vector, then this is a simd vector of

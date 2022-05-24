@@ -38,7 +38,7 @@ int main (int argc, char** argv) try
     DUNE_THROW(MathError, "power(4,-3) implementation does not compute the correct result");
 
   // Test whether the result can be used in a compile-time expression
-  enum { dummy = power(2,2) };
+  [[maybe_unused]] constexpr static int dummy = power(2,2);
 
   // Test legacy power implementation
   DUNE_NO_DEPRECATED_BEGIN
