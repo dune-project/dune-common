@@ -26,6 +26,13 @@ include_guard(GLOBAL)
 
 option(ALLOW_CXXFLAGS_OVERWRITE OFF)
 option(ALLOW_CFLAGS_OVERWRITE OFF)
+option(ALLOW_CXXFLAGS_OVERWRITE_FORCE OFF)
+
+set(WRITE_CXXFLAGS_COMPILER_SCRIPT FALSE)
+# write scripts if CMAKE_GENERATOR is Makefiles or if FORCE is on
+if(${CMAKE_GENERATOR} MATCHES ".*Unix Makefiles.*" OR ALLOW_CXXFLAGS_OVERWRITE_FORCE)
+  set(WRITE_CXXFLAGS_COMPILER_SCRIPT TRUE)
+endif()
 
 set(CXX_COMPILER_SCRIPT "${CMAKE_BINARY_DIR}/CXX_compiler.sh" )
 set(C_COMPILER_SCRIPT "${CMAKE_BINARY_DIR}/C_compiler.sh" )
@@ -67,7 +74,7 @@ endmacro(find_extended_unix_commands)
 
 # init compiler script and store CXX flags
 macro(initialize_compiler_script)
-  if(ALLOW_CXXFLAGS_OVERWRITE AND (${CMAKE_GENERATOR} MATCHES ".*Unix Makefiles.*"))
+  if(ALLOW_CXXFLAGS_OVERWRITE AND WRITE_CXXFLAGS_COMPILER_SCRIPT)
     # check for unix commands necessary
     find_extended_unix_commands()
     # set CXXFLAGS as environment variable
@@ -79,7 +86,7 @@ macro(initialize_compiler_script)
     execute_process(COMMAND ${CHMOD_PROGRAM} 755 ${CXX_COMPILER_SCRIPT})
     set(CMAKE_CXX_COMPILER ${CXX_COMPILER_SCRIPT})
   endif()
-  if(ALLOW_CFLAGS_OVERWRITE AND (${CMAKE_GENERATOR} MATCHES ".*Unix Makefiles.*"))
+  if(ALLOW_CFLAGS_OVERWRITE AND WRITE_CXXFLAGS_COMPILER_SCRIPT)
     # check for unix commands necessary
     find_extended_unix_commands()
     # set CFLAGS as environment variable
@@ -95,7 +102,7 @@ endmacro()
 
 # finalize compiler script and write it
 macro(finalize_compiler_script)
-  if(${CMAKE_GENERATOR} MATCHES ".*Unix Makefiles.*")
+  if( WRITE_CXXFLAGS_COMPILER_SCRIPT )
     # check CXX compiler
     if((ALLOW_CXXFLAGS_OVERWRITE))
       set(COMPILERS "CXX")
