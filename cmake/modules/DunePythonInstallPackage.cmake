@@ -162,6 +162,17 @@ function(dune_python_install_package)
     return()
   endif()
 
+  # Now install some nice to have packages but don't fail if installation# does not work out
+  dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
+                                "${WHEEL_OPTION}"
+                                # we can't use the same additional parameters for both internal
+                                # install and normal install so not including these flags at the moment
+                                "${PACKAGE_INDEX}"          # stopgap solution until ci repo fixed
+                                "ninja"
+                       RESULT_VARIABLE DUNE_PYTHON_SUGGESTION_FAILED
+                       WARNING_MESSAGE "python package suggestions could not be installed - possibly connection to the python package index failed"
+                      )
+
   set(DUNE_PYTHON_VENVSETUP TRUE CACHE BOOL "The internal venv setup successfull")
 
   #

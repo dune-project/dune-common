@@ -590,7 +590,7 @@ class MakefileBuilder(Builder):
             with open(os.path.join(sourceFileName), 'w') as out:
                 out.write(code)
         else:
-            compilationInfoMessage = f"{pythonName} exists..."
+            compilationInfoMessage = f"{pythonName} exists (compiling)"
         os.makedirs(os.path.join(self.generated_dir,"CMakeFiles",moduleName+".dir"), exist_ok=True)
         return compilationInfoMessage
 
@@ -622,14 +622,14 @@ class MakefileBuilder(Builder):
                 with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
                                       cwd=self.generated_dir,
                                       stdout=subprocess.PIPE,
-                                      stderr=subprocess.PIPE) as cmake:
-                    stdout, stderr = cmake.communicate()
-                    exit_code = cmake.returncode
+                                      stderr=subprocess.PIPE) as make:
+                    stdout, stderr = make.communicate()
+                    exit_code = make.returncode
 
                 if self.savedOutput is not None:
                     self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
-                    self.savedOutput[0].write('make:' + str(stdout) + "\n")
-                    self.savedOutput[1].write('make:' + str(stderr) + "\n")
+                    self.savedOutput[0].write(str(stdout.decode()) + "\n")
+                    self.savedOutput[1].write(str(stderr.decode()) + "\n")
 
                 bash = MakefileBuilder.bashCmd
                 if exit_code:
@@ -639,8 +639,8 @@ class MakefileBuilder(Builder):
                                           stderr=subprocess.PIPE) as process:
                         stdout, stderr = process.communicate()
                     if self.savedOutput is not None:
-                        self.savedOutput[0].write('build:' + str(stdout) + "\n")
-                        self.savedOutput[1].write('build:' + str(stderr) + "\n")
+                        self.savedOutput[0].write('build:' + str(stdout.decode()) + "\n")
+                        self.savedOutput[1].write('build:' + str(stderr.decode()) + "\n")
                 depFileName  = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.cc.o.d')
                 with open(makeFileName, "w") as makeFile:
                     makeFile.write('.SUFFIXES:\n')
