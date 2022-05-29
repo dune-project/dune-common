@@ -90,6 +90,10 @@ namespace Dune {
 
   using AlignedNumberImpl::AlignedNumber;
 
+  template<class T, std::size_t align>
+  struct IsNumber<AlignedNumberImpl::AlignedNumber<T,align>>
+      : public std::true_type {};
+
   //! align a value to a certain alignment
   template<std::size_t align = debugAlignment, class T>
   AlignedNumber<T, align> aligned(T value) { return { std::move(value) }; }

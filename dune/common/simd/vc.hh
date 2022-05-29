@@ -740,8 +740,8 @@ namespace Dune {
    * Specialize IsNumber for Vc::SimdArray and Vc::Vector to be able to use
    * it as a scalar in DenseMatrix etc.
    */
-  template <typename T, std::size_t N>
-  struct IsNumber<Vc::SimdArray<T, N>>
+  template <typename T, std::size_t N, class V, size_t Wt>
+  struct IsNumber<Vc::SimdArray<T, N, V, Wt>>
     : public std::integral_constant<bool, IsNumber<T>::value> {
   };
 
