@@ -35,13 +35,13 @@ source env/bin/activate
 python -m pip install pip-download twine
 
 pip-download -d $(pwd)/downloads \
-  dune-common \
-  dune-geometry \
-  dune-grid \
-  dune-istl \
-  dune-localfunctions \
-  dune-alugrid \
-  dune-fem \
+  # dune-common \
+  # dune-geometry \
+  # dune-grid \
+  # dune-istl \
+  # dune-localfunctions \
+  # dune-alugrid \
+  # dune-fem \
   pyparsing \
   mpi4py \
   wheel \
@@ -52,6 +52,7 @@ pip-download -d $(pwd)/downloads \
   matplotlib \
   scipy \
   pip>=21 \
+  ninja \
   sortedcontainers
 
 
