@@ -458,6 +458,22 @@ namespace Dune {
 
 
 
+    //===== matrix-matrix multiplication
+
+    /** \brief Matrix-matrix multiplication
+     */
+    template <class OtherScalar>
+    friend auto operator* ( const DiagonalMatrix& matrixA,
+                            const DiagonalMatrix<OtherScalar, n>& matrixB)
+    {
+      auto result = DiagonalMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType, n>{};
+      for(int i=0; i<n; ++i)
+        result.diagonal(i) = matrixA.diagonal(i)*matrixB.diagonal(i);
+      return result;
+    }
+
+
+
     //===== sizes
 
     //! number of blocks in row direction
@@ -612,6 +628,15 @@ namespace Dune {
     DiagonalMatrix<K, 1> transposed() const
     {
       return *this;
+    }
+
+    /** \brief Matrix-matrix multiplication
+     */
+    template <class OtherScalar>
+    friend auto operator* ( const DiagonalMatrix& matrixA,
+                            const DiagonalMatrix<OtherScalar, 1>& matrixB)
+    {
+      return DiagonalMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType, 1>{matrixA.diagonal(0)*matrixB.diagonal(0)};
     }
 
   };
