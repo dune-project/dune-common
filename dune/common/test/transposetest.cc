@@ -68,10 +68,13 @@ auto checkAxBT(const A& a, const B&b, const BT&bt)
 
   // manually compute result value
   auto abt_check = Dune::DynamicMatrix<Field>{a.N(), b.N()};
+  abt_check = 0;
   for(std::size_t i=0; i<a.N(); ++i)
     for(std::size_t j=0; j<b.N(); ++j)
-      for(auto&& [b_jk, k] : Dune::sparseRange(b[j]))
-        abt_check[i][j] += a[i][k]*b_jk;
+      for(auto&& [a_ik, k] : Dune::sparseRange(a[i]))
+        for(auto&& [b_jl, l] : Dune::sparseRange(b[j]))
+          if (std::size_t(k) == std::size_t(l))
+            abt_check[i][j] += a_ik*b_jl;
 
   // check result value
   bool equal = true;
@@ -148,6 +151,66 @@ int main()
   };
 
   {
+    auto a = Dune::FieldMatrix<double,1,1>{};
+    auto b = Dune::FieldMatrix<double,1,1>{};
+    a = 2;
+    b = 3;
+    checkTranspose(suite,a);
+    checkTranspose(suite,b);
+    checkTransposeProduct(suite,a,b);
+  }
+
+  {
+    auto a = Dune::DiagonalMatrix<double,1>{};
+    auto b = Dune::FieldMatrix<double,1,1>{};
+    a = 2;
+    b = 3;
+    checkTranspose(suite,a);
+    checkTranspose(suite,b);
+    checkTransposeProduct(suite,a,b);
+  }
+
+  {
+    auto a = Dune::DiagonalMatrix<double,1>{};
+    auto b = Dune::DiagonalMatrix<double,1>{};
+    a = 2;
+    b = 3;
+    checkTranspose(suite,a);
+    checkTranspose(suite,b);
+    checkTransposeProduct(suite,a,b);
+  }
+
+  {
+    auto a = Dune::DiagonalMatrix<double,1>{};
+    auto b = Dune::FieldMatrix<double,4,1>{};
+    a = 2;
+    testFillDense(b);
+    checkTranspose(suite,a);
+    checkTranspose(suite,b);
+    checkTransposeProduct(suite,a,b);
+  }
+
+  {
+    auto a = Dune::FieldMatrix<double,1,1>{};
+    auto b = Dune::FieldMatrix<double,4,1>{};
+    a = 2;
+    testFillDense(b);
+    checkTranspose(suite,a);
+    checkTranspose(suite,b);
+    checkTransposeProduct(suite,a,b);
+  }
+
+  {
+    auto a = Dune::DiagonalMatrix<double,2>{};
+    auto b = Dune::FieldMatrix<double,2,2>{};
+    a = {0, 1};
+    testFillDense(b);
+    checkTranspose(suite,a);
+    checkTranspose(suite,b);
+    checkTransposeProduct(suite,a,b);
+  }
+
+  {
     auto a = Dune::FieldMatrix<double,3,4>{};
     auto b = Dune::FieldMatrix<double,7,4>{};
     testFillDense(a);
@@ -178,13 +241,33 @@ int main()
   }
 
   {
-    auto a = Dune::FieldMatrix<double,4,7>{};
+    auto a = Dune::FieldMatrix<double,7,4>{};
     auto b = Dune::DiagonalMatrix<double,4>{};
     testFillDense(a);
     b = {0, 1, 2, 3};
     checkTranspose(suite,a);
     checkTranspose(suite,b);
-    suite.subTest(checkAxBT(a,b,transposedView(b)));
+    checkTransposeProduct(suite,a,b);
+  }
+
+  {
+    auto a = Dune::DiagonalMatrix<double,2>{};
+    auto b = Dune::FieldMatrix<double,2,2>{};
+    a = {0, 1};
+    testFillDense(b);
+    checkTranspose(suite,a);
+    checkTranspose(suite,b);
+    checkTransposeProduct(suite,a,b);
+  }
+
+  {
+    auto a = Dune::DiagonalMatrix<double,4>{};
+    auto b = Dune::FieldMatrix<double,7,4>{};
+    a = {0, 1, 2, 3};
+    testFillDense(b);
+    checkTranspose(suite,a);
+    checkTranspose(suite,b);
+    checkTransposeProduct(suite,a,b);
   }
 
   {
