@@ -130,6 +130,12 @@ namespace Dune {
       return (this==&other);
     }
 
+    /** \brief Return transposed of the matrix as DiagonalMatrix */
+    DiagonalMatrix<K, n> transposed() const
+    {
+      return *this;
+    }
+
     //===== iterator interface to rows of the matrix
     //! Iterator class for sequential access
     typedef ContainerWrapperIterator<const WrapperType, reference, reference> Iterator;
@@ -452,6 +458,22 @@ namespace Dune {
 
 
 
+    //===== matrix-matrix multiplication
+
+    /** \brief Matrix-matrix multiplication
+     */
+    template <class OtherScalar>
+    friend auto operator* ( const DiagonalMatrix& matrixA,
+                            const DiagonalMatrix<OtherScalar, n>& matrixB)
+    {
+      auto result = DiagonalMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType, n>{};
+      for(int i=0; i<n; ++i)
+        result.diagonal(i) = matrixA.diagonal(i)*matrixB.diagonal(i);
+      return result;
+    }
+
+
+
     //===== sizes
 
     //! number of blocks in row direction
@@ -600,6 +622,21 @@ namespace Dune {
     FieldVector<K,1>& diagonal()
     {
       return (*this)[0];
+    }
+
+    /** \brief Return transposed of the matrix as DiagonalMatrix */
+    DiagonalMatrix<K, 1> transposed() const
+    {
+      return *this;
+    }
+
+    /** \brief Matrix-matrix multiplication
+     */
+    template <class OtherScalar>
+    friend auto operator* ( const DiagonalMatrix& matrixA,
+                            const DiagonalMatrix<OtherScalar, 1>& matrixB)
+    {
+      return DiagonalMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType, 1>{matrixA.diagonal(0)*matrixB.diagonal(0)};
     }
 
   };

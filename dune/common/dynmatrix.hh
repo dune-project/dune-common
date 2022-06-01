@@ -126,6 +126,16 @@ namespace Dune
       return *this;
     }
 
+    //! Return transposed of the matrix as DynamicMatrix
+    DynamicMatrix transposed() const
+    {
+      DynamicMatrix AT(this->M(), this->N());
+      for( size_type i = 0; i < this->N(); ++i )
+        for( size_type j = 0; j < this->M(); ++j )
+          AT[j][i] = (*this)[i][j];
+      return AT;
+    }
+
     // make this thing a matrix
     size_type mat_rows() const { return _data.size(); }
     size_type mat_cols() const {

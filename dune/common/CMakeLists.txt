@@ -66,6 +66,7 @@ install(FILES
         lru.hh
         mallocallocator.hh
         math.hh
+        matrixconcepts.hh
         matvectraits.hh
         overloadset.hh
         parameterizedobject.hh
