@@ -48,7 +48,7 @@ def getDefaultBuildArgs():
 class Builder:
 
     @staticmethod
-    def _dunepy_from_template(dunepy_dir,force=False):
+    def _generate_dunepy_from_template(dunepy_dir,force=False):
         # Extract the raw data dictionary
 
         metaData = getBuildMetaData()
@@ -126,8 +126,8 @@ class Builder:
         return force
 
     @staticmethod
-    def dunepy_from_template(dunepy_dir,force=False):
-        force = _dunepy_from_template(dunpe_dir,force)
+    def generate_dunepy_from_template(dunepy_dir,force=False):
+        force = Builder._generate_dunepy_from_template(dunepy_dir,force)
         if force:
             # configure dune-py
             Builder.callCMake(["cmake"]+defaultCMakeFlags()+["."],
@@ -158,9 +158,6 @@ class Builder:
         self.initialized = False
         self.externalPythonModules = copy.deepcopy(getExternalPythonModules())
 
-    def _call_dunepy_from_template(self, dunepy_dir, force=False):
-        return Builder.dunepy_from_template( dunepy_dir, force=force)
-
     def cacheExternalModules(self):
         """Store external modules in dune-py"""
 
@@ -185,7 +182,7 @@ class Builder:
                     # create module cache for external modules that have been registered with dune-py
                     self.cacheExternalModules()
                     # create dune-py module
-                    self._call_dunepy_from_template(self.dune_py_dir)
+                    self.generate_dunepy_from_template(self.dune_py_dir)
                     # create tag file so that dune-py is not rebuilt on the next build
                     open(tagfile, 'a').close()
                 else:
@@ -414,10 +411,10 @@ class MakefileBuilder(Builder):
     makeCmd = 'make' # set in dunepy_from_template
 
     @staticmethod
-    def dunepy_from_template(dunepy_dir, force=False):
+    def generate_dunepy_from_template(dunepy_dir, force=False):
 
         # call base class dunepy_from_template
-        force = Builder._dunepy_from_template(dunepy_dir, force=force)
+        force = Builder._generate_dunepy_from_template(dunepy_dir, force=force)
 
         if force:
             # generate path for the buildScript and other filed to be created
@@ -439,7 +436,7 @@ class MakefileBuilder(Builder):
                     useNinja = False
             if not useNinja:
                 # call base class dunepy_from_template (re-initialize)
-                force = Builder._dunepy_from_template(dunepy_dir, force=True)
+                force = Builder._generate_dunepy_from_template(dunepy_dir, force=True)
 
                 Builder.callCMake(["cmake"] + defaultCMakeFlags() + ["."],
                                   cwd=dunepy_dir,
@@ -570,9 +567,6 @@ class MakefileBuilder(Builder):
     def __init__(self, force=False, saveOutput=False):
         # call __init__ of base class
         super().__init__(force=force, saveOutput=saveOutput)
-
-    def _call_dunepy_from_template(self, dunepy_dir, force=False):
-        return MakefileBuilder.dunepy_from_template( dunepy_dir, force=force)
 
     def compile(self, infoTxt, target='all', verbose=False):
         pass
