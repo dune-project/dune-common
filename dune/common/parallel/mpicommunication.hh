@@ -152,9 +152,9 @@ namespace Dune
 
     //! @copydoc Communication::isend
     template<class T>
-    MPIFuture<const T> isend(const T&& data, int dest_rank, int tag) const
+    MPIFuture<T> isend(T&& data, int dest_rank, int tag) const
     {
-      MPIFuture<const T> future(std::forward<const T>(data));
+      MPIFuture<T> future(std::forward<T>(data));
       auto mpidata = future.get_mpidata();
       MPI_Isend(mpidata.ptr(), mpidata.size(), mpidata.type(),
                        dest_rank, tag, communicator, &future.req_);
