@@ -7,36 +7,52 @@
 #include "config.h"
 #endif
 
+constexpr int TAG = 42;
+
 #include <iostream>
 
 #include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/parallel/mpipack.hh>
 #include <dune/common/test/testsuite.hh>
 
-constexpr int TAG = 42;
-int main(int argc, char** argv){
-  Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
-  Dune::TestSuite suite;
-  suite.require(helper.size() == 2) << "This test must be executed on two processes";
-  auto comm = helper.getCommunication();
-  Dune::MPIPack pack(comm);
+template<typename Comm>
+auto testSync(Comm comm)
+{
+  Dune::TestSuite suite("testSync");
 
-  if(helper.rank() == 0){
-    pack << 3 << helper.rank();
+  int rank = comm.rank();
+  // we receive from left and right
+  int src  = (rank - 1 + comm.size()) % comm.size();
+  int dest = (rank + 1) % comm.size();
+
+  // send
+  {
+    Dune::MPIPack pack(comm);
+    pack << 3 << comm.rank();
     pack << std::vector<int>{4711, 42};
-    comm.send(pack, 1, TAG);
+    comm.send(pack, dest, TAG);
   }
-  if(helper.rank() == 1){
-    Dune::MPIPack pack = comm.rrecv(Dune::MPIPack(comm), 0, TAG);
+  // recv
+  {
+    Dune::MPIPack pack = comm.rrecv(Dune::MPIPack(comm), src, TAG);
     int drei; pack >> drei;
-    int rank_0; pack >> rank_0;
+    int rank_src; pack >> rank_src;
     std::vector<int> vec;
     pack >> vec;
     suite.check(drei==3) << "received wrong value";
-    suite.check(rank_0==0) << "received wrong value";
+    suite.check(rank_src==src) << "received wrong value";
     suite.check(vec.size() == 2) << "vector has wrong size!";
     suite.check(vec[0] == 4711 && vec[1] == 42) << "vector contains wrong values!";
   }
+  return suite;
+}
 
-  return 0;
+int main(int argc, char** argv){
+  Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
+  Dune::TestSuite suite;
+  auto comm = helper.getCommunication();
+
+  suite.subTest(testSync(comm));
+
+  return suite.exit();
 }
