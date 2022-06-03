@@ -641,7 +641,12 @@ class MakefileBuilder(Builder):
                 depFileName  = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.cc.o.d')
                 with open(makeFileName, "w") as makeFile:
                     makeFile.write('.SUFFIXES:\n')
-                    with open(depFileName, "r") as depFile:
-                        makeFile.write(depFile.read())
+                    try:
+                        with open(depFileName, "r") as depFile:
+                            makeFile.write(depFile.read())
+                    except FileNotFoundError:
+                        print(f"Dependency file {depFileName} not found!\n\nThis is likely caused by using a pre-existing dune-py. Remove dune-py folder and re-run Python script!")
+                        sys.exit(1)
+
                     makeFile.write('\t'+bash+ ' buildScript.sh '+moduleName+"\n")
                     makeFile.write(moduleName+'.so: '+os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+'\n')
