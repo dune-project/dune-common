@@ -219,7 +219,7 @@ class Builder:
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE) as cmake:
             try:
-                stdout, stderr = cmake.communicate(timeout=2) # no message if delay is <2sec
+                stdout, stderr = cmake.communicate(timeout=4) # no message if delay is <2sec
             except subprocess.TimeoutExpired:
                 if infoTxt and not active:
                     logger.log(logLevel, infoTxt)
@@ -342,7 +342,7 @@ class Builder:
         if not self.initialized or not self.externalPythonModules == getExternalPythonModules():
             self.initialize()
 
-        # check whether modul is already compiled and build it if necessary
+        # check whether module is already compiled and build it if necessary
         # (only try to build module on rank 0!)
         # TODO replace if rank with something better and remove barrier further down
         if comm.rank == 0:
@@ -422,7 +422,7 @@ class MakefileBuilder(Builder):
             buildScriptName = os.path.join(dunepy_dir,'python','dune','generated','buildScript.sh')
 
             # check whether ninja is available with cmake or not
-            useNinja = False
+            useNinja = False # to be revised in later versions
             if useNinja:
                 try:
                     Builder.callCMake(["cmake", "-G", "Ninja"] + defaultCMakeFlags() + ["."],
@@ -563,11 +563,12 @@ class MakefileBuilder(Builder):
                     linkerCmd = linkerCmd[2] + " " + linkerCmd[3].replace("&& :", "")
                     buildScript.write(linkerCmd+"\n")
 
-
+    # constructor
     def __init__(self, force=False, saveOutput=False):
         # call __init__ of base class
         super().__init__(force=force, saveOutput=saveOutput)
 
+    # nothing to be done in this class
     def compile(self, infoTxt, target='all', verbose=False):
         pass
 
@@ -584,7 +585,7 @@ class MakefileBuilder(Builder):
             with open(os.path.join(sourceFileName), 'w') as out:
                 out.write(code)
         else:
-            compilationInfoMessage = f"{pythonName} exists (compiling)"
+            compilationInfoMessage = f"{pythonName} (loading)"
         os.makedirs(os.path.join(self.generated_dir,"CMakeFiles",moduleName+".dir"), exist_ok=True)
         return compilationInfoMessage
 
@@ -603,14 +604,10 @@ class MakefileBuilder(Builder):
                 else:
                     compilationMessage = f"Compiling {pythonName} (rebuilding after concurrent build)"
 
-                logger.log(logging.INFO,compilationMessage)
-
                 # we always compile even if the module is already compiled since it can happen
                 # that dune-py was updated in the mean time ?????
                 # This step is quite fast but there is room for optimization.
                 makeFileName = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.make')
-                if self.savedOutput is not None:
-                    self.savedOutput[0].write(compilationMessage)
 
                 # call make to build shared library
                 with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
@@ -619,6 +616,12 @@ class MakefileBuilder(Builder):
                                       stderr=subprocess.PIPE) as make:
                     stdout, stderr = make.communicate()
                     exit_code = make.returncode
+
+                # if compilation is necessary, replace loading with compiling
+                if exit_code:
+                    compilationMessage = compilationMessage.replace("loading", "compiling")
+
+                logger.log(logging.INFO,compilationMessage)
 
                 if self.savedOutput is not None:
                     self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
