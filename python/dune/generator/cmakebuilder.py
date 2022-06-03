@@ -645,7 +645,7 @@ class MakefileBuilder(Builder):
                         with open(depFileName, "r") as depFile:
                             makeFile.write(depFile.read())
                     except FileNotFoundError:
-                        print(f"Dependency file {depFileName} not found!\n\nThis is likely caused by using a pre-existing dune-py. Remove dune-py folder and re-run Python script!")
+                        print(f"Dependency file {depFileName} not found!\n\nThis is likely caused by using a pre-existing dune-py. Remove dune-py folder `{self.dune_py_dir}` and re-run Python script!")
                         sys.exit(1)
 
                     makeFile.write('\t'+bash+ ' buildScript.sh '+moduleName+"\n")
