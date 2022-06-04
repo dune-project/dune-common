@@ -572,7 +572,7 @@ class MakefileBuilder(Builder):
     def compile(self, infoTxt, target='all', verbose=False):
         pass
 
-    def _buildWithMake(self, moduleName, source, pythonName):
+    def _configureWithMake(self, moduleName, source, pythonName):
         sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
         if not os.path.isfile(sourceFileName):
             compilationInfoMessage = f"Compiling {pythonName} (new)"
@@ -600,7 +600,7 @@ class MakefileBuilder(Builder):
                 # (see #295)
                 module = sys.modules.get("dune.generated." + moduleName)
                 if module is None:
-                    compilationMessage = self._buildWithMake( moduleName, source, pythonName )
+                    compilationMessage = self._configureWithMake( moduleName, source, pythonName )
                 else:
                     compilationMessage = f"Compiling {pythonName} (rebuilding after concurrent build)"
 
