@@ -219,7 +219,7 @@ class Builder:
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE) as cmake:
             try:
-                stdout, stderr = cmake.communicate(timeout=4) # no message if delay is <2sec
+                stdout, stderr = cmake.communicate(timeout=4) # no message if delay is <4sec
             except subprocess.TimeoutExpired:
                 if infoTxt and not active:
                     logger.log(logLevel, infoTxt)
@@ -467,17 +467,21 @@ class MakefileBuilder(Builder):
                 # We don't have to use ninja explicitly for dune-py but have
                 # to make sure the user can't set up ninja for dune-py by # mistake
                 #########################################################################
-                stdout, stderr = \
-                  Builder.callCMake(["cmake"]+
-                                     ['--build','.','--target',"extractCompiler"]+
-                                     ['--','-B'],
-                                     cwd=dunepy_dir,
-                                     env={**os.environ,
-                                          "CXXFLAGS":" ",
-                                          },
-                                     infoTxt="extract compiler command",
-                                     active=True, # print details anyway
-                                   )
+                try:
+                    stdout, stderr = \
+                      Builder.callCMake(["cmake"]+
+                                         ['--build','.','--target',"extractCompiler"]+
+                                         ['--','-B'],
+                                         cwd=dunepy_dir,
+                                         env={**os.environ,
+                                              "CXXFLAGS":" ",
+                                              },
+                                         infoTxt="extract compiler command",
+                                         active=True, # print details anyway
+                                       )
+                except CompileError:
+                    print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{dunepy_dir}` and re-run Python script!")
+                    sys.exit(1)
 
                 # now also generate compiler command
                 stdout, stderr = \
@@ -614,14 +618,15 @@ class MakefileBuilder(Builder):
                                       cwd=self.generated_dir,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE) as make:
-                    stdout, stderr = make.communicate()
+                    try:
+                        stdout, stderr = make.communicate(timeout=2) # no message if delay is <2sec
+                    except subprocess.TimeoutExpired:
+                        # compilation is taking place, replace loading with rebuilding
+                        compilationMessage = compilationMessage.replace("loading", "rebuilding")
+                        logger.log(logging.INFO,compilationMessage)
+                        # wait for cmd to finish
+                        stdout, stderr = make.communicate()
                     exit_code = make.returncode
-
-                # if compilation is necessary, replace loading with compiling
-                if exit_code:
-                    compilationMessage = compilationMessage.replace("loading", "compiling")
-
-                logger.log(logging.INFO,compilationMessage)
 
                 if self.savedOutput is not None:
                     self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
@@ -630,6 +635,9 @@ class MakefileBuilder(Builder):
 
                 bash = MakefileBuilder.bashCmd
                 if exit_code:
+                    # since compilation is necessary, replace loading with compiling
+                    compilationMessage = compilationMessage.replace("loading", "compiling")
+                    logger.log(logging.INFO,compilationMessage)
                     with subprocess.Popen([bash,"buildScript.sh",moduleName],
                                           cwd=self.generated_dir,
                                           stdout=subprocess.PIPE,
