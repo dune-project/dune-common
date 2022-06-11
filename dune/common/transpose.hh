@@ -177,7 +177,6 @@ namespace Impl {
  * It will return the result of \code matrix.transposed() \endcode.
  */
 template<class Matrix,
-  typename = std::void_t<typename Matrix::row_type>,
   std::enable_if_t<Impl::HasMemberFunctionTransposed<Matrix>::value, int> = 0>
 auto transpose(const Matrix& matrix) {
   return matrix.transposed();
@@ -207,7 +206,6 @@ auto transpose(const Matrix& matrix) {
  * if the wrapped matrix provides the \code b.mtv(x,y) \endcode.
  */
 template<class Matrix,
-  typename = std::void_t<typename std::decay_t<Matrix>::row_type>,
   std::enable_if_t<not Impl::HasMemberFunctionTransposed<std::decay_t<Matrix>>::value, int> = 0>
 auto transpose(Matrix&& matrix) {
   return Impl::TransposedMatrixWrapper(std::forward<Matrix>(matrix));
