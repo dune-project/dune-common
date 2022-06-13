@@ -219,7 +219,7 @@ class Builder:
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE) as cmake:
             try:
-                stdout, stderr = cmake.communicate(timeout=4) # no message if delay is <4sec
+                stdout, stderr = cmake.communicate(timeout=2) # no message if delay is < 2sec
             except subprocess.TimeoutExpired:
                 if infoTxt and not active:
                     logger.log(logLevel, infoTxt)
