@@ -643,10 +643,18 @@ class MakefileBuilder(Builder):
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.PIPE) as process:
                         stdout, stderr = process.communicate()
+                        exit_code = process.returncode
+
                     if self.savedOutput is not None:
                         self.savedOutput[0].write('build:' + str(stdout.decode()) + "\n")
                         self.savedOutput[1].write('build:' + str(stderr.decode()) + "\n")
                 depFileName  = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.cc.o.d')
+
+                # check return code
+                if exit_code > 0:
+                    # retrieve stderr output
+                    raise CompileError(buffer_to_str(stderr))
+
                 with open(makeFileName, "w") as makeFile:
                     makeFile.write('.SUFFIXES:\n')
                     try:
