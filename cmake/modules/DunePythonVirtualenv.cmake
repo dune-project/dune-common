@@ -268,6 +268,5 @@ set(DUNE_PYTHON_pip_FOUND ON)
 dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
       "${DUNE_PIP_INDEX}"
       setuptools
-  RESULT_VARIABLE DUNE_PYTHON_DEPENDENCIES_FAILED
   WARNING_MESSAGE "python 'setuptools' package could not be installed - possibly connection to the python package index failed"
   )

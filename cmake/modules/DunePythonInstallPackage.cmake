@@ -256,7 +256,8 @@ function(dune_python_install_package)
                         --upgrade
                         "${WHEEL_OPTION}"
                         ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
-                        "${PYINST_FULLPATH}"
+                        .
+                        WORKING_DIRECTORY "${PYINST_FULLPATH}"
                       COMMENT "Installing the python package at ${PYINST_FULLPATH} (location ${USER_INSTALL_OPTION})"
                       )
 
