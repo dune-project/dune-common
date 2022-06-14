@@ -46,6 +46,11 @@
 #
 #    The package at the given location is expected to be a pip-installable package.
 #
+#    Finding the setup.py of the package follows the following procedure:
+#      1. If PATH contains a `setup.py` file, such file will be used to make a `pip install` from the source directory
+#      2. If PATH contains a `setup.py.in` file, such file configured and used tp `pip install` the package from the binary directory
+#      3. Otherwise, this script will provide a template for `setup.py.in` and continue with 2.
+#
 # .. cmake_variable:: DUNE_PYTHON_ADDITIONAL_PIP_PARAMS
 #
 #    Use this variable to set additional flags for pip in this build. This can e.g.
@@ -102,14 +107,17 @@ function(dune_python_install_package)
     string(APPEND ProjectPythonRequires " mpi4py")
   endif()
 
+  # try to find setup.py. if not found, provide it from a template
   set(PYINST_FULLPATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
   if(EXISTS ${PYINST_FULLPATH})
-    if(EXISTS ${PYINST_FULLPATH}/setup.py.in)
+    if(EXISTS ${PYINST_FULLPATH}/setup.py)
+    elseif(EXISTS ${PYINST_FULLPATH}/setup.py.in)
       configure_file(${PYINST_PATH}/setup.py.in ${PYINST_PATH}/setup.py)
+      set(PYINST_FULLPATH ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH})
     else()
       configure_file(${scriptdir}/setup.py.in ${PYINST_PATH}/setup.py)
+      set(PYINST_FULLPATH ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH})
     endif()
-    set(PYINST_FULLPATH ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH})
   else()
     # Error out if setup.py is missing
     message(FATAL_ERROR "dune_python_install_package: Requested installations, but neither setup.py nor setup.py.in found!")
@@ -143,20 +151,35 @@ function(dune_python_install_package)
       set(PACKAGE_INDEX "")
   endif()
 
-  # Install external requirements (i.e. not dune packages) once at configure stage - install of package is
-  # only carried out if this succeeded and with --no-index, i.e., without using any package indices but only local wheels
-  # Installing python modules here can lead to issues with versions of module source packages and pypi packages
-  # and possible unexpected version downgrades
-  string(REPLACE " " ";" RequiredPypiModules "${ProjectPythonRequires}")
-  dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
-                                "${WHEEL_OPTION}"
-                                # we can't use the same additional parameters for both internal
-                                # install and normal install so not including these flags at the moment
-                                "${PACKAGE_INDEX}"          # stopgap solution until ci repo fixed
-                                "${RequiredPypiModules}"
-                       RESULT_VARIABLE DUNE_PYTHON_DEPENDENCIES_FAILED
-                       WARNING_MESSAGE "python package requirements could not be installed - possibly connection to the python package index failed"
+  file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH}")
+  # generate egg_info requirement file from setup.py
+  dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} setup.py
+                          egg_info --egg-base "${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH}"
+                        WORKING_DIRECTORY "${PYINST_FULLPATH}"
+                        ERROR_VARIABLE DUNE_PYTHON_DEPENDENCIES_ERROR
+                        WARNING_MESSAGE "python package '${PythonPackageName}' requirements could not be generated\n${DUNE_PYTHON_DEPENDENCIES_ERROR}"
                       )
+
+  # find the generated egg-info folder
+  file(GLOB EGG_INFO_PATH LIST_DIRECTORIES TRUE "${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH}/*.egg-info")
+
+  if(EXISTS "${EGG_INFO_PATH}/requires.txt")
+    # Install external requirements (i.e. not dune packages) once at configure stage - install of package is
+    # only carried out if this succeeded and with --no-index, i.e., without using any package indices but only local wheels
+    # Installing python modules here can lead to issues with versions of module source packages and pypi packages
+    # and possible unexpected version downgrades
+    dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
+                                  "${WHEEL_OPTION}"
+                                  # we can't use the same additional parameters for both internal
+                                  # install and normal install so not including these flags at the moment
+                                  "${PACKAGE_INDEX}"          # stopgap solution until ci repo fixed
+                                  -r "${EGG_INFO_PATH}/requires.txt"
+                        RESULT_VARIABLE DUNE_PYTHON_DEPENDENCIES_FAILED
+                        ERROR_VARIABLE DUNE_PYTHON_DEPENDENCIES_ERROR
+                        WARNING_MESSAGE "python package requirements '${EGG_INFO_PATH}/requires.txt' could not be installed - possibly connection to the python package index failed\n${DUNE_PYTHON_DEPENDENCIES_ERROR}"
+                        )
+  endif()
+
   if(DUNE_PYTHON_DEPENDENCIES_FAILED)
     set(DUNE_PYTHON_VENVSETUP FALSE CACHE BOOL "The internal venv setup failed: some required packages could not be installed")
     return()
@@ -197,7 +220,8 @@ function(dune_python_install_package)
       # install and normal install so not including these flags at the moment
       # ${PYINST_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
       --editable                  # Installations into the internal env are always editable
-      "${PYINST_FULLPATH}"
+      .
+    WORKING_DIRECTORY "${PYINST_FULLPATH}"
     COMMENT "Installing Python package at ${PYINST_FULLPATH} into Dune virtual environment (${PACKAGE_INDEX})."
     DEPENDS ${PYINST_DEPENDS}
   )

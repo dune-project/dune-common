@@ -10,17 +10,18 @@
 #
 #       .. note::
 #
-#          The script will be executed using :code:`${Python3_EXECUTABLE} SCRIPT`.
-#
 #    .. cmake_param:: MODULE
 #       :multi:
 #
 #       The Python module to execute using the python interpreter. It will be executed during :code:`make test_python`
 #       and during `ctest`. You are required to either pass SCRIPT or MODULE.
 #
-#       .. note::
+#    .. cmake_param:: WORKING_DIRECTORY
+#       :single:
+#       :argname: dir
 #
-#          The script will be executed using :code:`${Python3_EXECUTABLE} -m MODULE`.
+#       The working directory of the command. Defaults to
+#       the current build directory.
 #
 #    .. cmake_param:: NAME
 #       :single:
