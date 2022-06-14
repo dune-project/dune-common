@@ -96,17 +96,6 @@ function(dune_python_install_package)
     endif()
   endforeach()
 
-  # if MPI is found dune-common will be linked to MPI
-  # in that case we require mpi4py for MPI support from the Python side
-  # This will not install mpi4py when installing in build-isolation but
-  # will install it into the (internal) venv during a source build.
-  # The case of a package installation is taken care of in
-  # `python/dune/common/__init__.py'.
-  if(HAVE_MPI AND NOT SKBUILD)
-    message(STATUS "Adding mpi4py to the Python requirements")
-    string(APPEND ProjectPythonRequires " mpi4py")
-  endif()
-
   # try to find setup.py. if not found, provide it from a template
   set(PYINST_FULLPATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
   if(EXISTS ${PYINST_FULLPATH})
@@ -144,12 +133,7 @@ function(dune_python_install_package)
     return()
   endif()
 
-  option(DUNE_RUNNING_IN_CI "This is turned on if running in dune gitlab ci" OFF)
-  if(DUNE_RUNNING_IN_CI)
-      set(PACKAGE_INDEX "--index-url=https://gitlab.dune-project.org/api/v4/projects/133/packages/pypi/simple")
-  else()
-      set(PACKAGE_INDEX "")
-  endif()
+  set(PACKAGE_INDEX "${DUNE_PIP_INDEX}")
 
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH}")
   # generate egg_info requirement file from setup.py

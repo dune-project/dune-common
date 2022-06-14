@@ -87,6 +87,12 @@ set(DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR ON CACHE BOOL
   "Place Python virtualenv in top-level directory \"dune-python-env\" when using an absolute build directory"
   )
 
+option(DUNE_RUNNING_IN_CI "This is turned on if running in dune gitlab ci" OFF)
+
+if(DUNE_RUNNING_IN_CI)
+  set(DUNE_PIP_INDEX "--index-url=https://gitlab.dune-project.org/api/v4/projects/133/packages/pypi/simple")
+endif()
+
 # Determine whether the given interpreter is running inside a virtualenv
 dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/venvpath.py"
                      RESULT_VARIABLE DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
@@ -257,3 +263,11 @@ endif()
 
 # if pip was not found before then we can set it here since it was now found
 set(DUNE_PYTHON_pip_FOUND ON)
+
+# install setuptools into the venv (needed to find dependencies later on)
+dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
+      "${DUNE_PIP_INDEX}"
+      setuptools
+  RESULT_VARIABLE DUNE_PYTHON_DEPENDENCIES_FAILED
+  WARNING_MESSAGE "python 'setuptools' package could not be installed - possibly connection to the python package index failed"
+  )
