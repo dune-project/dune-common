@@ -572,6 +572,11 @@ class MakefileBuilder(Builder):
     def __init__(self, force=False, saveOutput=False):
         # call __init__ of base class
         super().__init__(force=force, saveOutput=saveOutput)
+
+    # just added to check for old versions of dune-py - can be removed once
+    # this check is not needed anymore
+    def initialize(self):
+        super().initialize()
         # check that the compile script is available
         script = os.path.join(self.generated_dir,"buildScript.sh")
         if not os.path.exists(script):
