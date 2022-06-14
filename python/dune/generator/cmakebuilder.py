@@ -481,6 +481,7 @@ class MakefileBuilder(Builder):
                                        )
                 except CompileError:
                     print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{dunepy_dir}` and re-run Python script!")
+                    print(f"It is possible to continue to use the old version by typing 'export DUNE_PY_USE_CMAKEBUILDER=1'")
                     sys.exit(1)
 
                 # now also generate compiler command
@@ -575,6 +576,7 @@ class MakefileBuilder(Builder):
         script = os.path.join(self.generated_dir,"buildScript.sh")
         if not os.path.exists(script):
             print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{self.dune_py_dir}` and re-run Python script!")
+            print(f"It is possible to continue to use the old version by typing 'export DUNE_PY_USE_CMAKEBUILDER=1'")
             sys.exit(1)
 
     # nothing to be done in this class
