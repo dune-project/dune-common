@@ -61,6 +61,8 @@ In order to build the DUNE core modules you need at least the following software
 
 - Deprecate cmake function `remove_processed_modules`
 
+- The CI system now checks for common spelling mistakes using the `codespell` tool.
+
 ## Deprecations and removals
 
 - Helper fallback implementations for `Std::to_false_type`, `Std::to_true_type`,

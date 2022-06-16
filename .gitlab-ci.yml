@@ -58,3 +58,10 @@ system-test:
     branch: core
     strategy: depend
   allow_failure: true
+
+# Check for spelling mistakes in text
+code-spelling-check:
+  stage: .pre
+  image: registry.dune-project.org/docker/ci/debian:11
+  script:
+  - codespell
