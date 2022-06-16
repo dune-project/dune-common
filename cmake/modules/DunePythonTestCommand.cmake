@@ -84,8 +84,12 @@ function(dune_python_add_test)
                       COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env python ${PYTEST_SCRIPT}
                       WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY})
   else()
+    # message(FATAL_ERROR "SHOULDN'T BE HERE")
+    # add_custom_target(target_${PYTEST_NAME}
+    #                   COMMAND ${CMAKE_COMMAND} -E echo \"Test not run: python setup failed\")
     add_custom_target(target_${PYTEST_NAME}
-                      COMMAND ${CMAKE_COMMAND} -E echo \"Test not run: python setup failed\")
+                      COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env python ${PYTEST_SCRIPT}
+                      WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY})
   endif()
 
   # Build this during make test_python

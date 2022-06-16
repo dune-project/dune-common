@@ -15,6 +15,8 @@ message("---- LOCK")
 file(LOCK ${lock})
 message("---- AQUIRED")
 
+set(ALLOW_CXXFLAGS_OVERWRITE ON) 
+set(ALLOW_CXXFLAGS_OVERWRITE_FORCE ON)  
 set(DUNE_ENABLE_PYTHONBINDINGS ON)
 set(CMAKE_PREFIX_PATH {{ install_prefix }})
 
@@ -39,11 +41,30 @@ endif()
 find_package(dune-common REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH})
 
+# include(DunePythonCompiler)
+
 include(DuneMacros)
 dune_project()
 dune_enable_all_packages()
 
 add_subdirectory(python/dune/generated)
+# dune_add_pybind11_module(NAME ${DUNEPY_FILE})
+# dune_target_enable_all_packages(${DUNEPY_FILE})
+
+# find bash
+include(FindUnixCommands)
+# find make program (might differ from CMAKE_MAKE_PROGRAM when ninja is used
+find_program(MAKE make)  
+# CMAKE_MAKE_PROGRAM points to either make or ninja
+set( UNIXCMD_SCRIPT_FILE "[
+{ 
+ \"bash\" : \"${BASH}\", 
+ \"make\" : \"${MAKE}\",
+ \"generator\" : \"${CMAKE_MAKE_PROGRAM}\"
+}
+]")
+
+file(WRITE "${CMAKE_BINARY_DIR}/unix_commands.json" ${UNIXCMD_SCRIPT_FILE})
 
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
 

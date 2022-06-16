@@ -53,6 +53,10 @@ In order to build the DUNE core modules you need at least the following software
   which also contains a detailed set of instructions on how to update
   existing python bindings.
 
+- dune-py is now build using a simple 'Makefile' per module instead of
+  relying on cmake for each module. The old cmake builder can still be used
+  by exporting the environment variable `DUNE_PY_USE_CMAKEBUILDER=1`.
+
 - Remove deprecated cmake function overload `target_link_libraries`
 
 - Deprecate cmake function `remove_processed_modules`

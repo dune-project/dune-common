@@ -48,7 +48,7 @@ def getDefaultBuildArgs():
 class Builder:
 
     @staticmethod
-    def dunepy_from_template(dunepy_dir,force=False):
+    def generate_dunepy_from_template(dunepy_dir,force=False):
         # Extract the raw data dictionary
 
         metaData = getBuildMetaData()
@@ -93,6 +93,8 @@ class Builder:
             context["builddirs"]      = builddirs
             context["install_prefix"] = metaData.unique_value_across_modules("INSTALL_PREFIX")
             context["cmake_flags"]    = getCMakeFlags()
+            context["cxx_compiler"]   = context["cmake_flags"]["CMAKE_CXX_COMPILER"]
+            context["cxx_flags"]      = context["cmake_flags"]["CMAKE_CXX_FLAGS"]
 
             # Find the correct template path
             path, _ = os.path.split(__file__)
@@ -120,13 +122,20 @@ class Builder:
                     with open(gen_file, "w") as outfile:
                         outfile.write(env.get_template(relative_template_file).render(**context))
 
+        # return force variable because this might be needed in the overloaded versions
+        return force
+
+    @staticmethod
+    def build_dunepy_from_template(dunepy_dir,force=False):
+        force = Builder.generate_dunepy_from_template(dunepy_dir,force)
+        if force:
             # configure dune-py
             Builder.callCMake(["cmake"]+defaultCMakeFlags()+["."],
                               cwd=dunepy_dir,
                               infoTxt="Configuring dune-py with CMake",
                               active=True, # print details anyway
                               )
-
+        return force
 
     def __init__(self, force=False, saveOutput=False):
         self.force = force
@@ -173,7 +182,7 @@ class Builder:
                     # create module cache for external modules that have been registered with dune-py
                     self.cacheExternalModules()
                     # create dune-py module
-                    Builder.dunepy_from_template(self.dune_py_dir)
+                    self.build_dunepy_from_template(self.dune_py_dir)
                     # create tag file so that dune-py is not rebuilt on the next build
                     open(tagfile, 'a').close()
                 else:
@@ -192,7 +201,7 @@ class Builder:
 
 
     @staticmethod
-    def callCMake(cmake_args, cwd, infoTxt, verbose=False, active=False, logLevel=logging.DEBUG):
+    def callCMake(cmake_args, cwd, infoTxt, verbose=False, active=False, logLevel=logging.DEBUG, env=None):
         # print initial info, if we are verbose
         # or we know that we have to build something
         stdout, stderr = None, None
@@ -201,12 +210,16 @@ class Builder:
             if infoTxt:
                 logger.log(logLevel,infoTxt)
         # call the cmake process
+        if verbose:
+            print(cmake_args)
+
         with subprocess.Popen(cmake_args,
                               cwd=cwd,
+                              env=env,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE) as cmake:
             try:
-                stdout, stderr = cmake.communicate(timeout=2) # no message if delay is <2sec
+                stdout, stderr = cmake.communicate(timeout=2) # no message if delay is < 2sec
             except subprocess.TimeoutExpired:
                 if infoTxt and not active:
                     logger.log(logLevel, infoTxt)
@@ -220,7 +233,10 @@ class Builder:
 
         return stdout, stderr
 
-    def compile(self, infoTxt, target='all', verbose=False):
+    def _compile(self, infoTxt, target='all', verbose=False):
+        # if called for other builders don't do anything here
+        assert isinstance(self, Builder)
+
         cmake_command = getCMakeCommand()
         cmake_args = [cmake_command, "--build", self.dune_py_dir,
                       "--target", target, "--parallel"]
@@ -263,6 +279,9 @@ class Builder:
                     self.savedOutput[1].write(err)
                 if nlines > 1:
                     self.savedOutput[1].write("\n###############################\n")
+
+    def compile(self, infoTxt, target='all', verbose=False):
+        return self._compile(infoTxt, target=target, verbose=verbose)
 
     def _maybeConfigureWithCMake(self, moduleName, source, pythonName, extraCMake):
         sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
@@ -323,45 +342,13 @@ class Builder:
         if not self.initialized or not self.externalPythonModules == getExternalPythonModules():
             self.initialize()
 
-        # check whether modul is already compiled and build it if necessary
+        # check whether module is already compiled and build it if necessary
         # (only try to build module on rank 0!)
         # TODO replace if rank with something better and remove barrier further down
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)
             if module is None:
-                logger.debug("Module {} not loaded".format(moduleName))
-                # make sure nothing (compilation, generating and building) is taking place
-                with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_EX):
-                    # module must be generated so lock the source file
-                    with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                        # the module might now be present, so check again
-                        # (see #295)
-                        module = sys.modules.get("dune.generated." + moduleName)
-                        if module is None:
-                            compilationMessage = self._maybeConfigureWithCMake(
-                                moduleName, source, pythonName, extraCMake
-                            )
-                        else:
-                            compilationMessage = f"Compiling {pythonName} (rebuilding after concurrent build)"
-                # end of exclusive dune-py lock
-
-                # we always compile even if the module is always compiled since it can happen
-                # that dune-py was updated in the mean time.
-                # This step is quite fast but there is room for optimization.
-
-                # for compilation a shared lock is enough
-                #
-                # A side effect is that during the parallel make calls
-                # for whatever reason cmake might be invoked due to
-                # changes to the module (i.e. a new target
-                # added). Parallel cmake calls are not allowed and as
-                # a consequence the complete build may fail. We take
-                # care of such parallel cmake calls by additional
-                # locking in the dune-py CMakeLists.txt
-                with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_SH):
-                    # lock generated module
-                    with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
-                        self.compile(infoTxt=compilationMessage, target=moduleName)
+                self._buildModule( moduleName, source, pythonName, extraCMake )
 
         ## TODO remove barrier here
         comm.barrier()
@@ -374,3 +361,320 @@ class Builder:
             module = reload_module(module)
 
         return module
+
+    def _buildModule(self, moduleName, source, pythonName, extraCMake):
+        logger.debug("Module {} not loaded".format(moduleName))
+        # make sure nothing (compilation, generating and building) is taking place
+        with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_EX):
+            # module must be generated so lock the source file
+            with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
+                # the module might now be present, so check again
+                # (see #295)
+                module = sys.modules.get("dune.generated." + moduleName)
+                if module is None:
+                    compilationMessage = self._maybeConfigureWithCMake(
+                        moduleName, source, pythonName, extraCMake
+                    )
+                else:
+                    compilationMessage = f"Compiling {pythonName} (rebuilding after concurrent build)"
+        # end of exclusive dune-py lock
+
+        # we always compile even if the module is always compiled since it can happen
+        # that dune-py was updated in the mean time.
+        # This step is quite fast but there is room for optimization.
+
+        # for compilation a shared lock is enough
+        #
+        # A side effect is that during the parallel make calls
+        # for whatever reason cmake might be invoked due to
+        # changes to the module (i.e. a new target
+        # added). Parallel cmake calls are not allowed and as
+        # a consequence the complete build may fail. We take
+        # care of such parallel cmake calls by additional
+        # locking in the dune-py CMakeLists.txt
+        with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_SH):
+            # lock generated module
+            with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
+                self._compile(infoTxt=compilationMessage, target=moduleName)
+        return module
+
+############################################################################
+##
+##  Builder based on Makefiles
+##
+############################################################################
+
+class MakefileBuilder(Builder):
+
+    # static vars holding command for bash and make
+    bashCmd = 'bash' # default values
+    makeCmd = 'make' # set in dunepy_from_template
+
+    @staticmethod
+    def build_dunepy_from_template(dunepy_dir, force=False):
+
+        # call base class dunepy_from_template
+        force = Builder.generate_dunepy_from_template(dunepy_dir, force=force)
+
+        if force:
+            # generate path for the buildScript and other filed to be created
+            generatedDir = os.path.join(dunepy_dir,'python','dune','generated')
+            buildScriptName = os.path.join(dunepy_dir,'python','dune','generated','buildScript.sh')
+
+            # check whether ninja is available with cmake or not
+            useNinja = False # to be revised in later versions
+            if useNinja:
+                try:
+                    Builder.callCMake(["cmake", "-G", "Ninja"] + defaultCMakeFlags() + ["."],
+                                       cwd=dunepy_dir,
+                                       infoTxt="Configuring dune-py with CMake (ninja)",
+                                       active=True, # print details anyway
+                                     )
+                    logger.debug("Using ninja as cmake generator!")
+                except:
+                    logger.debug("Check for ninja failed!")
+                    useNinja = False
+            if not useNinja:
+                # call base class dunepy_from_template (re-initialize)
+                force = Builder.generate_dunepy_from_template(dunepy_dir, force=True)
+
+                Builder.callCMake(["cmake"] + defaultCMakeFlags() + ["."],
+                                  cwd=dunepy_dir,
+                                  infoTxt="Configuring dune-py with CMake (make)",
+                                  active=True, # print details anyway
+                                 )
+
+            # obtain bash and make command generated by cmake
+            # when ninja is used makeCmd is the ninja command
+            try:
+                commandSourceName = os.path.join(dunepy_dir,'unix_commands.json')
+                with open(commandSourceName) as commandFile:
+                    cmdList = json.load(commandFile)[0]
+                    MakefileBuilder.bashCmd = cmdList["bash"] # shell command
+                    MakefileBuilder.makeCmd = cmdList["make"] # make command
+                    MakefileBuilder.generatorCmd = cmdList["generator"] # generator (make or ninja)
+            except FileNotFoundError:
+                pass
+
+            if not useNinja:
+                #########################################################################
+                # Remark about ninja:
+                # - the -B used below for the extractCompiler build needed for
+                #   the second approach does not work with ninja
+                # - the link.txt used in approach 1/3 is not available with ninja
+                # - the CXXFLAGS overwrite seems not to work with ninja -
+                #   the script is not generated so approach 2 will not work due to missing echo
+                # We don't have to use ninja explicitly for dune-py but have
+                # to make sure the user can't set up ninja for dune-py by # mistake
+                #########################################################################
+                try:
+                    stdout, stderr = \
+                      Builder.callCMake(["cmake"]+
+                                         ['--build','.','--target',"extractCompiler"]+
+                                         ['--','-B'],
+                                         cwd=dunepy_dir,
+                                         env={**os.environ,
+                                              "CXXFLAGS":" ",
+                                              },
+                                         infoTxt="extract compiler command",
+                                         active=True, # print details anyway
+                                       )
+                except CompileError:
+                    print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{dunepy_dir}` and re-run Python script!")
+                    print(f"It is possible to continue to use the old version by typing 'export DUNE_PY_USE_CMAKEBUILDER=1'")
+                    sys.exit(1)
+
+                # now also generate compiler command
+                stdout, stderr = \
+                  Builder.callCMake(["cmake","-DCMAKE_EXPORT_COMPILE_COMMANDS=ON","."],
+                                     cwd=dunepy_dir,
+                                     env={**os.environ,
+                                          "CXXFLAGS":" ",
+                                          },
+                                     infoTxt="extract compiler command",
+                                     active=True, # print details anyway
+                                   )
+                ########################################################################
+                #   Write buildScript.sh
+                ########################################################################
+
+                # we already have link.txt from the previous cmake run (extractCompiler)
+                buildDirBase = os.path.join(generatedDir,'CMakeFiles','extractCompiler.dir')
+                linkerSourceName = os.path.join(buildDirBase,'link.txt')
+                buildSourceName = os.path.join(buildDirBase,'build.make')
+
+                commandSourceName = os.path.join(dunepy_dir,'compile_commands.json')
+                # we do not need the buildScript template since the compiler command generated uses CXX_compiler.sh
+                with open(buildScriptName, "w") as buildScript:
+                    # write bash line
+                    buildScript.write("#!" + MakefileBuilder.bashCmd + "\n")
+                    # write compiler commands
+                    with open(commandSourceName) as commandFile:
+                        compilerCmd = json.load(commandFile)[0]["command"]
+                    compilerCmd = compilerCmd.replace('extractCompiler', '$1')
+                    # this line is extracted from build.make
+                    usedBuildMake = False
+                    #with open(buildSourceName, "r") as buildFile:
+                    #    buildCmd = buildFile.readlines()
+                    #    for idx,line in enumerate(buildCmd):
+                    #        # compiler command is next line after "Building CXX object ..."
+                    #        if "Building CXX object " in line and idx < len(buildCmd)-1:
+                    #            cmd = buildCmd[idx+1].partition("(CXX_FLAGS)")[2]
+                    #            cmd = cmd.partition(" -o ")[0].replace('extractCompiler', '$1')
+                    #            compilerCmd += cmd
+                    #            usedBuildMake = True
+                    #            break
+                    # fall back in case something went wrong with parsing build.make
+                    if not usedBuildMake:
+                        compilerCmd = compilerCmd + " -MD -MT CMakeFiles/$1.dir/$1.cc.o -MF CMakeFiles/$1.dir/$1.cc.o.d"
+
+                    buildScript.write(compilerCmd)
+                    buildScript.write('\n')
+                    # write linker commands
+                    with open(linkerSourceName, "r") as linkerSource:
+                        linkerCmd = linkerSource.read()
+                    linkerCmd = linkerCmd.replace('extractCompiler','$1')
+                    buildScript.write(linkerCmd)
+
+            else: # useNinja
+                ninja = MakefileBuilder.generatorCmd
+                assert ninja.find("ninja")
+
+                with subprocess.Popen([ninja, "-t","commands","extractCompiler"],
+                                       cwd=dunepy_dir,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE) as ninjaProcess:
+                    stdout, stderr = ninjaProcess.communicate()
+                    exit_code = ninjaProcess.returncode
+                assert exit_code == 0
+
+                ########################################################################
+                #   Write buildScript.sh
+                ########################################################################
+                out = buffer_to_str(stdout).strip().split("\n")
+                assert len(out) == 2
+                with open(buildScriptName, "w") as buildScript:
+                    # write bash line
+                    buildScript.write("#!" + MakefileBuilder.bashCmd + "\n")
+                    compilerCmd = out[0].replace('extractCompiler', '$1').\
+                                         replace(' python/dune/generated/',' ') # better to move the script to the root of dune-py then this can be kept
+                    compilerCmd = compilerCmd.split(' ',1)
+                    compilerCmd = compilerCmd[0] + " " + compilerCmd[1]
+                    buildScript.write(compilerCmd+"\n")
+                    # this needs fixing: Issue is that at the linker line beginns with ': && '
+                    linkerCmd = out[1].replace('extractCompiler','$1').\
+                                       replace(' python/dune/generated/',' ') # better to move the script to the root of dune-py then this can be kept
+                    linkerCmd = linkerCmd.split(' ',3)
+                    linkerCmd = linkerCmd[2] + " " + linkerCmd[3].replace("&& :", "")
+                    buildScript.write(linkerCmd+"\n")
+
+    # constructor
+    def __init__(self, force=False, saveOutput=False):
+        # call __init__ of base class
+        super().__init__(force=force, saveOutput=saveOutput)
+
+    # just added to check for old versions of dune-py - can be removed once
+    # this check is not needed anymore
+    def initialize(self):
+        super().initialize()
+        # check that the compile script is available
+        script = os.path.join(self.generated_dir,"buildScript.sh")
+        if not os.path.exists(script):
+            print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{self.dune_py_dir}` and re-run Python script!")
+            print(f"It is possible to continue to use the old version by typing 'export DUNE_PY_USE_CMAKEBUILDER=1'")
+            sys.exit(1)
+
+    # nothing to be done in this class
+    def compile(self, infoTxt, target='all', verbose=False):
+        pass
+
+    def _configureWithMake(self, moduleName, source, pythonName):
+        sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
+        if not os.path.isfile(sourceFileName):
+            compilationInfoMessage = f"Compiling {pythonName} (new)"
+            code = str(source)
+            with open(os.path.join(sourceFileName), 'w') as out:
+                out.write(code)
+        elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
+            compilationInfoMessage = f"Compiling {pythonName} (updated)"
+            code = str(source)
+            with open(os.path.join(sourceFileName), 'w') as out:
+                out.write(code)
+        else:
+            compilationInfoMessage = f"{pythonName} (loading)"
+        os.makedirs(os.path.join(self.generated_dir,"CMakeFiles",moduleName+".dir"), exist_ok=True)
+        return compilationInfoMessage
+
+    def _buildModule(self, moduleName, source, pythonName, extraCMake ):
+        logger.debug("Module {} not loaded".format(moduleName))
+        # make sure nothing (compilation, generating and building) is taking place
+        # module must be generated so lock the source file
+        with Lock(os.path.join(self.dune_py_dir, '..', 'lock-module.lock'), flags=LOCK_SH):
+            with Lock(os.path.join(self.dune_py_dir, 'lock-'+moduleName+'.lock'), flags=LOCK_EX):
+
+                # the module might now be present, so check again
+                # (see #295)
+                module = sys.modules.get("dune.generated." + moduleName)
+                if module is None:
+                    compilationMessage = self._configureWithMake( moduleName, source, pythonName )
+                else:
+                    compilationMessage = f"Compiling {pythonName} (rebuilding after concurrent build)"
+
+                # we always compile even if the module is already compiled since it can happen
+                # that dune-py was updated in the mean time ?????
+                # This step is quite fast but there is room for optimization.
+                makeFileName = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.make')
+
+                # call make to build shared library
+                with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
+                                      cwd=self.generated_dir,
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE) as make:
+                    try:
+                        stdout, stderr = make.communicate(timeout=2) # no message if delay is <2sec
+                    except subprocess.TimeoutExpired:
+                        # compilation is taking place, replace loading with rebuilding
+                        compilationMessage = compilationMessage.replace("loading", "rebuilding")
+                        logger.log(logging.INFO,compilationMessage)
+                        # wait for cmd to finish
+                        stdout, stderr = make.communicate()
+                    exit_code = make.returncode
+
+                if self.savedOutput is not None:
+                    self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
+                    self.savedOutput[0].write(str(stdout.decode()) + "\n")
+                    self.savedOutput[1].write(str(stderr.decode()) + "\n")
+
+                bash = MakefileBuilder.bashCmd
+                if exit_code:
+                    # since compilation is necessary, replace loading with compiling
+                    compilationMessage = compilationMessage.replace("loading", "compiling")
+                    logger.log(logging.INFO,compilationMessage)
+                    with subprocess.Popen([bash,"buildScript.sh",moduleName],
+                                          cwd=self.generated_dir,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE) as process:
+                        stdout, stderr = process.communicate()
+                        exit_code = process.returncode
+
+                    if self.savedOutput is not None:
+                        self.savedOutput[0].write('build:' + str(stdout.decode()) + "\n")
+                        self.savedOutput[1].write('build:' + str(stderr.decode()) + "\n")
+                depFileName  = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.cc.o.d')
+
+                # check return code
+                if exit_code > 0:
+                    # retrieve stderr output
+                    raise CompileError(buffer_to_str(stderr))
+
+                with open(makeFileName, "w") as makeFile:
+                    makeFile.write('.SUFFIXES:\n')
+                    try:
+                        with open(depFileName, "r") as depFile:
+                            makeFile.write(depFile.read())
+                    except FileNotFoundError:
+                        print(f"Dependency file {depFileName} not found!\n\nThis is likely caused by using a pre-existing dune-py. Remove dune-py folder `{self.dune_py_dir}` and re-run Python script!")
+                        sys.exit(1)
+
+                    makeFile.write('\t'+bash+ ' buildScript.sh '+moduleName+"\n")
+                    makeFile.write(moduleName+'.so: '+os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+'\n')

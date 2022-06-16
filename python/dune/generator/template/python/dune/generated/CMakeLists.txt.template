@@ -1,1 +1,3 @@
 # The builder will append rules for dynamically generated modules, here
+
+dune_add_pybind11_module(NAME extractCompiler EXCLUDE_FROM_ALL)
