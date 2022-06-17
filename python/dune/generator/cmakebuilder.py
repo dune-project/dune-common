@@ -30,6 +30,11 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 cxxFlags = None
 noDepCheck = False
 
+def deprecationMessage():
+    print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{self.dune_py_dir}` and re-run Python script!")
+    print(f"It might also be required to execute 'cmake .' in the 'dune-common' build directory")
+    print(f"It is possible to continue to use the old version by typing 'export DUNE_PY_USE_CMAKEBUILDER=1'")
+    sys.exit(1)
 
 def getCMakeCommand():
     try:
@@ -480,9 +485,7 @@ class MakefileBuilder(Builder):
                                          active=True, # print details anyway
                                        )
                 except CompileError:
-                    print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{dunepy_dir}` and re-run Python script!")
-                    print(f"It is possible to continue to use the old version by typing 'export DUNE_PY_USE_CMAKEBUILDER=1'")
-                    sys.exit(1)
+                    deprecationMessage()
 
                 # now also generate compiler command
                 stdout, stderr = \
@@ -528,6 +531,8 @@ class MakefileBuilder(Builder):
                     if not usedBuildMake:
                         compilerCmd = compilerCmd + " -MD -MT CMakeFiles/$1.dir/$1.cc.o -MF CMakeFiles/$1.dir/$1.cc.o.d"
 
+                    # forward errors so that compilation failure will be caught
+                    buildScript.write('set -e\n')
                     buildScript.write(compilerCmd)
                     buildScript.write('\n')
                     # write linker commands
@@ -556,6 +561,7 @@ class MakefileBuilder(Builder):
                 with open(buildScriptName, "w") as buildScript:
                     # write bash line
                     buildScript.write("#!" + MakefileBuilder.bashCmd + "\n")
+                    buildScript.write("set -e\n")
                     compilerCmd = out[0].replace('extractCompiler', '$1').\
                                          replace(' python/dune/generated/',' ') # better to move the script to the root of dune-py then this can be kept
                     compilerCmd = compilerCmd.split(' ',1)
@@ -580,9 +586,7 @@ class MakefileBuilder(Builder):
         # check that the compile script is available
         script = os.path.join(self.generated_dir,"buildScript.sh")
         if not os.path.exists(script):
-            print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{self.dune_py_dir}` and re-run Python script!")
-            print(f"It is possible to continue to use the old version by typing 'export DUNE_PY_USE_CMAKEBUILDER=1'")
-            sys.exit(1)
+            deprecationMessage()
 
     # nothing to be done in this class
     def compile(self, infoTxt, target='all', verbose=False):
@@ -623,7 +627,23 @@ class MakefileBuilder(Builder):
                 # we always compile even if the module is already compiled since it can happen
                 # that dune-py was updated in the mean time ?????
                 # This step is quite fast but there is room for optimization.
+
+                # we can always generate a new makefile - in case no
+                # dependency file has already been generate leave
+                # dependencies empty otherwise use existing depFile:
+                depFileName  = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.cc.o.d')
                 makeFileName = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.make')
+                with open(makeFileName, "w") as makeFile:
+                    makeFile.write('.SUFFIXES:\n')
+                    try:
+                        with open(depFileName, "r") as depFile:
+                            makeFile.write(depFile.read())
+                    except FileNotFoundError:
+                        makeFile.write(os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+':\n')
+                        pass
+                    makeFile.write('\t'+MakefileBuilder.bashCmd+ ' buildScript.sh '+moduleName+"\n")
+                    makeFile.write(moduleName+'.so: '+os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+'\n')
+
 
                 # call make to build shared library
                 with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
@@ -645,36 +665,7 @@ class MakefileBuilder(Builder):
                     self.savedOutput[0].write(str(stdout.decode()) + "\n")
                     self.savedOutput[1].write(str(stderr.decode()) + "\n")
 
-                bash = MakefileBuilder.bashCmd
-                if exit_code:
-                    # since compilation is necessary, replace loading with compiling
-                    compilationMessage = compilationMessage.replace("loading", "compiling")
-                    logger.log(logging.INFO,compilationMessage)
-                    with subprocess.Popen([bash,"buildScript.sh",moduleName],
-                                          cwd=self.generated_dir,
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.PIPE) as process:
-                        stdout, stderr = process.communicate()
-                        exit_code = process.returncode
-
-                    if self.savedOutput is not None:
-                        self.savedOutput[0].write('build:' + str(stdout.decode()) + "\n")
-                        self.savedOutput[1].write('build:' + str(stderr.decode()) + "\n")
-                depFileName  = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.cc.o.d')
-
                 # check return code
                 if exit_code > 0:
                     # retrieve stderr output
                     raise CompileError(buffer_to_str(stderr))
-
-                with open(makeFileName, "w") as makeFile:
-                    makeFile.write('.SUFFIXES:\n')
-                    try:
-                        with open(depFileName, "r") as depFile:
-                            makeFile.write(depFile.read())
-                    except FileNotFoundError:
-                        print(f"Dependency file {depFileName} not found!\n\nThis is likely caused by using a pre-existing dune-py. Remove dune-py folder `{self.dune_py_dir}` and re-run Python script!")
-                        sys.exit(1)
-
-                    makeFile.write('\t'+bash+ ' buildScript.sh '+moduleName+"\n")
-                    makeFile.write(moduleName+'.so: '+os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+'\n')
