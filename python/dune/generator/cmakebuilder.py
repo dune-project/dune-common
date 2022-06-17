@@ -528,6 +528,8 @@ class MakefileBuilder(Builder):
                     if not usedBuildMake:
                         compilerCmd = compilerCmd + " -MD -MT CMakeFiles/$1.dir/$1.cc.o -MF CMakeFiles/$1.dir/$1.cc.o.d"
 
+                    # forward errors so that compilation failure will be caught
+                    buildScript.write('set -e\n')
                     buildScript.write(compilerCmd)
                     buildScript.write('\n')
                     # write linker commands
@@ -556,6 +558,7 @@ class MakefileBuilder(Builder):
                 with open(buildScriptName, "w") as buildScript:
                     # write bash line
                     buildScript.write("#!" + MakefileBuilder.bashCmd + "\n")
+                    buildScript.write("set -e\n")
                     compilerCmd = out[0].replace('extractCompiler', '$1').\
                                          replace(' python/dune/generated/',' ') # better to move the script to the root of dune-py then this can be kept
                     compilerCmd = compilerCmd.split(' ',1)
