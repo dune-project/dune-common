@@ -645,27 +645,48 @@ class MakefileBuilder(Builder):
                     makeFile.write(moduleName+'.so: '+os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+'\n')
 
 
-                # call make to build shared library
-                with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
+                # first just check if the makefile does not contain any error
+                # An issue could be that a file in the dependency list has
+                # moved (e.g. from installed to source build)
+                with subprocess.Popen([MakefileBuilder.makeCmd, "-q", "-f",makeFileName, moduleName+'.so'],
                                       cwd=self.generated_dir,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE) as make:
-                    try:
-                        stdout, stderr = make.communicate(timeout=2) # no message if delay is <2sec
-                    except subprocess.TimeoutExpired:
-                        # compilation is taking place, replace loading with rebuilding
-                        compilationMessage = compilationMessage.replace("loading", "rebuilding")
-                        logger.log(logging.INFO,compilationMessage)
-                        # wait for cmd to finish
-                        stdout, stderr = make.communicate()
+                    stdout, stderr = make.communicate()
                     exit_code = make.returncode
 
-                if self.savedOutput is not None:
-                    self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
-                    self.savedOutput[0].write(str(stdout.decode()) + "\n")
-                    self.savedOutput[1].write(str(stderr.decode()) + "\n")
+                # this means that there was a problem
+                # with the makefile so we remove the dependencies and the
+                # generated module so that it will be regenerated
+                if exit_code == 2:
+                    with open(makeFileName, "w") as makeFile:
+                        makeFile.write('.SUFFIXES:\n')
+                        makeFile.write(os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+':\n')
+                        makeFile.write('\t'+MakefileBuilder.bashCmd+ ' buildScript.sh '+moduleName+"\n")
+                        makeFile.write(moduleName+'.so: '+os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+'\n')
 
-                # check return code
                 if exit_code > 0:
-                    # retrieve stderr output
-                    raise CompileError(buffer_to_str(stderr))
+                    # call make to build shared library
+                    with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
+                                          cwd=self.generated_dir,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE) as make:
+                        try:
+                            stdout, stderr = make.communicate(timeout=2) # no message if delay is <2sec
+                        except subprocess.TimeoutExpired:
+                            # compilation is taking place, replace loading with rebuilding
+                            compilationMessage = compilationMessage.replace("loading", "rebuilding")
+                            logger.log(logging.INFO,compilationMessage)
+                            # wait for cmd to finish
+                            stdout, stderr = make.communicate()
+                        exit_code = make.returncode
+
+                    if self.savedOutput is not None:
+                        self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
+                        self.savedOutput[0].write(str(stdout.decode()) + "\n")
+                        self.savedOutput[1].write(str(stderr.decode()) + "\n")
+
+                    # check return code
+                    if exit_code > 0:
+                        # retrieve stderr output
+                        raise CompileError(buffer_to_str(stderr))
