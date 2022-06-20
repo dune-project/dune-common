@@ -93,6 +93,15 @@ if(DUNE_RUNNING_IN_CI)
   set(DUNE_PIP_INDEX "--index-url=https://gitlab.dune-project.org/api/v4/projects/133/packages/pypi/simple")
 endif()
 
+# Construct the wheel house installation option string
+# First set the path to a Dune wheelhouse that is to be used during installation
+# NB: Right now, the same logic is used to retrieve the location of the
+#     wheelhouse (which means that you have to use the same CMAKE_INSTALL_PREFIX
+#     when *using* installed modules, you used when *installing* them.
+#     TODO: Replace this with a better mechanism (like writing the location into
+#           dune-commons package config file)
+set(DUNE_PYTHON_WHEELHOUSE "${CMAKE_INSTALL_PREFIX}/share/dune/wheelhouse" CACHE PATH "The place where the wheels will be stored")
+
 # Determine whether the given interpreter is running inside a virtualenv
 dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/venvpath.py"
                      RESULT_VARIABLE DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
@@ -267,6 +276,6 @@ set(DUNE_PYTHON_pip_FOUND ON)
 # install setuptools into the venv (needed to find dependencies later on)
 dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
       "${DUNE_PIP_INDEX}"
-      setuptools
+      setuptools ninja
   WARNING_MESSAGE "python 'setuptools' package could not be installed - possibly connection to the python package index failed"
   )
