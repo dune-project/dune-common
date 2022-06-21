@@ -7,7 +7,7 @@
 #    rules for python packages in Dune modules and provides virtual environments to
 #    run python code from cmake.
 #
-#    To disable any python releated features use -DCMAKE_DISABLE_FIND_PACKAGE_Python3=TRUE
+#    To disable any Python-related features use -DCMAKE_DISABLE_FIND_PACKAGE_Python3=TRUE
 #
 #    If you want to use Dune modules that provide Python functionality, you should be aware
 #    of some facts:

@@ -50,9 +50,9 @@ include(Headercheck)
 include(OverloadCompilerFlags)
 
 
-# macro that should be called near the begin of the top level CMakeLists.txt.
+# Macro that should be called near the beginning of the top level CMakeLists.txt.
 # Namely it sets up the module, defines basic variables and manages
-# depedencies.
+# dependencies.
 # Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
 
@@ -124,19 +124,19 @@ macro(dune_project)
   # Thus the user can override it and for example install
   # directly into the CMake installation. We use a cache variable
   # that is overridden by a local variable of the same name if
-  # the user does not explicitely set a value for it. Thus the value
+  # the user does not explicitly set a value for it. Thus the value
   # will automatically change if the user changes CMAKE_INSTALL_DATAROOTDIR
   # or CMAKE_INSTALL_PREFIX
   if(NOT DUNE_INSTALL_MODULEDIR)
     set(DUNE_INSTALL_MODULEDIR ""
       CACHE PATH
-      "Installation directory for CMake modules. Default is \${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/modules when not set explicitely")
+      "Installation directory for CMake modules. Default is \${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/modules when not set explicitly")
     set(DUNE_INSTALL_MODULEDIR ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/modules)
   endif()
   if(NOT DUNE_INSTALL_NONOBJECTLIBDIR)
     set(DUNE_INSTALL_NONOBJECTLIBDIR ""
       CACHE PATH
-      "Installation directory for libraries that are not architecture dependent. Default is lib when not set explicitely")
+      "Installation directory for libraries that are not architecture dependent. Default is lib when not set explicitly")
     set(DUNE_INSTALL_NONOBJECTLIBDIR lib)
   endif()
   # set up make headercheck

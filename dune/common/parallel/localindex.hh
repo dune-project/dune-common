@@ -20,7 +20,7 @@ namespace Dune
    * @author Markus Blatt
    */
   /**
-   * @brief The states avaiable for the local indices.
+   * @brief The states available for the local indices.
    * @see LocalIndex::state()
    */
   enum LocalIndexState {VALID, DELETED};

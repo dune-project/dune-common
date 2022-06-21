@@ -87,7 +87,7 @@ types.
 
 Note 2: For all expressions there is a lane-wise equality requirement with the
 scalar operation.  This requirement is formulated such that promotions of
-arguments are permitted, but not required.  This is neccessary to allow both
+arguments are permitted, but not required.  This is necessary to allow both
 the built-in types (which are promoted) and proper simd types (which typically
 are not promoted to stay within the same simd register).
 
@@ -109,7 +109,7 @@ Any compilation unit (generally a `.cc`-file) that creates vectorized types
 (other then the scalar built-in types) using some vectorization library, and
 hands those types to vectorization-enabled dune code, is responsible for
 
-1. including the neccessary headers providing the abstraction for that
+1. including the necessary headers providing the abstraction for that
    vectorization library, as specified in the documentation of the
    abstraction, and
 
@@ -154,7 +154,7 @@ This can then be used like this:
 ```c++
 #include <dune/common/foovector.hh>
 // provide dune-abstraction for mysimdlib
-// also pulls in the neccessary includes for mysimdlib
+// also pulls in the necessary includes for mysimdlib
 #include <dune/common/simd/mysimdlib.hh>
 
 int main()
@@ -241,7 +241,7 @@ int main()
 At the time when the definition of `Dune::FooVector::two_norm2()` is read,
 only the declarations for `lane()` and `lanes()` for scalar built-in types are
 visible.  By the time `Dune::FooVector<mysimdlib::Vector>::two_norm2()` is
-instanciated, the proper declarations for `lane()` and `lanes()` are visible.
+instantiated, the proper declarations for `lane()` and `lanes()` are visible.
 But that is too late, because unqualified lookup does early binding.  It would
 be OK for late binding, but only ADL does that, and ADL does not work as noted
 above.

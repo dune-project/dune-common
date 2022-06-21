@@ -70,7 +70,7 @@ static_assert((std::is_same<MyTupleTupleFlat1, MyTupleTupleFlat2>::value),
 
 //////////////////////////////////////////////////////////////////////
 //
-// check nested ReduceTuple with a litte TMP
+// check nested ReduceTuple with a little TMP
 
 // A tuple of a range of integers wrapped in integral_constant types
 template<int start, int end>

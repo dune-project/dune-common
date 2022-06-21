@@ -179,7 +179,7 @@ namespace Dune {
 // See above for rationale.
 #define DUNE_HASH_TYPE(...) (__VA_ARGS__)
 
-// Expansion macro for the parenthesed argument lists created by
+// Expansion macro for the parenthesized argument lists created by
 // DUNE_HASH_TEMPLATE_ARGS and DUNE_HASH_TYPE.
 #define DUNE_HASH_EXPAND_VA_ARGS(...) __VA_ARGS__
 
@@ -332,7 +332,7 @@ namespace Dune {
    *
    * \param seed   Start value that will be combined with the hash values of all objects in
    *               the range using hash_combine() in sequential fashion.
-   * \param first  Iterator pointing to the first ojbect to hash.
+   * \param first  Iterator pointing to the first object to hash.
    * \param last   Iterator pointing one past the last object to hash.
    */
   template<typename It>

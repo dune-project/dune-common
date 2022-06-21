@@ -51,7 +51,7 @@
 #endif
 
 /** The macro CHECK_AND_CALL_INTERFACE_IMPLEMENTATION throws an exception,
-   if the interface method ist not implemented and just calls the method
+   if the interface method is not implemented and just calls the method
    otherwise. If NDEBUG is defined no
    checking is done and the method is just called.
  */

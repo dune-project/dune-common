@@ -106,7 +106,7 @@ class Empty:
     pass
 
 def signatureDict(func):
-    # get signature from func, we simply fill a dictonary with the name of
+    # get signature from func, we simply fill a dictionary with the name of
     # all non var argument of the function as key and containing a either
     # Empty or the default argument provided by the function signature
 
@@ -126,8 +126,8 @@ def _creatorCall(create, usedKeys, *args, **kwargs):
     # check if any of the parameter names correspond to some creator -
     # if a creator exists for that function name and the value passed in by
     # the user for that parameter is a string, call the creator otherwise
-    # use the object provided. If no creator exsits use the the value
-    # provided by the user or the default value
+    # use the object provided. If no creator exists use the value
+    # provided by the user or the default value.
     for name in signature:
         # special treatment of 'view'/'grid' parameter since a 'grid' is
         # also a view
@@ -165,7 +165,7 @@ def creatorCall(self, key, *args, **kwargs):
     except KeyError:
         raise RuntimeError('No ' + self.obj + ' implementation: ' + key +\
                 '. Available: ' + ' '.join(r for r in self.registry) + '.' )
-    # the complex creation mechanism is only allowed with named arguemtns
+    # the complex creation mechanism is only allowed with named arguments
     # if positional arguments have been used, call the original function directly
     # without further checking the parameters
     if len(args)>0:

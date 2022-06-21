@@ -63,7 +63,7 @@ struct MyDataHandle
 
         it  = dataRecievedAt.find(idx);
         if(it == dataRecievedAt.end()) {
-          std::cerr << rank << ": No data recieved at index " << idx << "!" << std::endl;
+          std::cerr << rank << ": No data received at index " << idx << "!" << std::endl;
           std::abort();
         }
         dataRecievedAt.erase(it);
@@ -73,7 +73,7 @@ struct MyDataHandle
         std::abort();
       }
       for(const int &i : dataRecievedAt) {
-        std::cerr << rank << ": Unexpected data recieved at index " << i << "!" << std::endl;
+        std::cerr << rank << ": Unexpected data received at index " << i << "!" << std::endl;
         std::abort();
       }
     }
@@ -155,7 +155,7 @@ struct MyDataHandle1D : public MyDataHandle
     }
 };
 
-// On the sending side, for each index to send, send bewteen 0 and 4 numbers
+// On the sending side, for each index to send, send between 0 and 4 numbers
 // (precisely: `index % 5` numbers).  The first number is the index converted
 // to `double`, incrementing by one for each consecutive number.  On the
 // receiving side just print the received numbers.
@@ -202,7 +202,7 @@ struct VarDataHandle
 
         it  = dataRecievedAt.find(idx);
         if(it == dataRecievedAt.end() && idx%5) {
-          std::cerr << rank << ": No data recieved at index " << idx << "!" << std::endl;
+          std::cerr << rank << ": No data received at index " << idx << "!" << std::endl;
           std::abort();
         }
         else if(it != dataRecievedAt.end()) {
@@ -214,7 +214,7 @@ struct VarDataHandle
         std::abort();
       }
       for(const int &i : dataRecievedAt) {
-        std::cerr << rank << ": Unexpected data recieved at index " << i << "!" << std::endl;
+        std::cerr << rank << ": Unexpected data received at index " << i << "!" << std::endl;
         std::abort();
       }
     }
@@ -335,7 +335,7 @@ int main(int argc, char** argv)
     else
     {
         // We also want to check the case where the interface is empty on some
-        // processes. Therefore we artificially lower the numer of processes
+        // processes. Therefore we artificially lower the number of processes
         // if it is larger than two. Thus the last rank will not send anything
         // and we check for deadlocks.
         if(procs>2)

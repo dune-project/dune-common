@@ -43,7 +43,7 @@
     }                                                           \
   } while(false)
 
-// globally set a locale that uses "," as the decimal seperator.
+// globally set a locale that uses "," as the decimal separator.
 // return false if no such locale is installed on the system
 bool setCommaLocale()
 {
@@ -82,7 +82,7 @@ int main()
 {
   if(!setCommaLocale())
   {
-    std::cerr << "No locale using comma as decimal seperator found on system"
+    std::cerr << "No locale using comma as decimal separator found on system"
               << std::endl;
     return 77;
   }

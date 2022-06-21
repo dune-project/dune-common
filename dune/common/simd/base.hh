@@ -6,7 +6,7 @@
  *  @ingroup SIMDAbstract
  *
  * This file provides basic definitions and template declarations that are
- * used to write SIMD abtraction layers.
+ * used to write SIMD abstraction layers.
  *
  * This file should never be included by users of the SIMD
  * abstraction. Include <dune/common/simd/simd.hh> instead.
@@ -29,7 +29,7 @@
  * - Library developers implement support in Dune for handling SIMD types,
  *   e.g. by extending some existing class.  By using the interfaces provided
  *   here, they should not have to worry about the exact vectorization library
- *   beeing used, or whether a vectorization library is used at all.
+ *   being used, or whether a vectorization library is used at all.
  *
  * - Abstraction developers provide the necessary hooks to make a
  *   vectorization library known to this interface.  They are also responsible
@@ -156,7 +156,7 @@ namespace Dune {
        * an overload with a by-value argument and an overload with an
        * lvalue-reference argument.
        *
-       * The folloing priorities should not normally be used.  However, they
+       * The following priorities should not normally be used.  However, they
        * may sometimes be necessary:
        * - \c i==4: override standard implementation, but prefer other
        *   implementations

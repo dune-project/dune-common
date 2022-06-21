@@ -13,7 +13,7 @@ struct Foo {
   Foo() { ++count; std::cout << "construct" << std::endl; }
   Foo(const Foo&) { ++count; std::cout << "copy construct" << std::endl; }
   Foo(Foo&&) { ++count; std::cout << "move construct" << std::endl; }
-  ~Foo() { --count; std::cout << "deconstruct" << std::endl; }
+  ~Foo() { --count; std::cout << "destruct" << std::endl; }
 };
 int Foo::count = 0;
 
@@ -33,10 +33,10 @@ int main()
   assert_count(id(Foo()),1); // pass an r-value to identity, still constructed on the assert
 
   const auto& foo0 = id(Foo()); // pass an r-value to identity
-  assert_count(foo0,0); // id(Foo()) is alredy doconstructed at this point
+  assert_count(foo0,0); // id(Foo()) is already destructed at this point
 
   auto foo1 = id(Foo()); // pass an r-value to identity and move it to foo1
-  assert_count(foo1,1); // foo0 is alredy doconstructed at this point
+  assert_count(foo1,1); // foo0 is already destructed at this point
 
   Foo foo2;
   assert_count(id(foo2),2); // pass an l-value to identity

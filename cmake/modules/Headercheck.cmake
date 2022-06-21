@@ -80,7 +80,7 @@ macro(finalize_headercheck)
 
       # add target for the check of current header, this is implemented as a library
       # to prevent CMake from automatically trying to link the target, functionality
-      # of macro try_compile() is unfortunately not availbale due to it not being scriptable.
+      # of macro try_compile() is unfortunately not available due to it not being scriptable.
       add_library(headercheck_${targname} STATIC EXCLUDE_FROM_ALL
         ${CMAKE_BINARY_DIR}/headercheck/${rel}.cc)
       add_dependencies(headercheck headercheck_${targname})

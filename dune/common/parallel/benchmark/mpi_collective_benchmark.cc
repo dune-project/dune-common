@@ -40,7 +40,7 @@
  *                   broadcast, gather, allgather, scatter
  * -iterations: default: 10000. Number of iterations for
  *              measure the time for one communication
- * -allMethods: defaukt:0. If 1 iterates over all available methods
+ * -allMethods: default:0. If 1 iterates over all available methods
  * -startSize: default: n, where n is the size of MPI_COMM_WORLD. runs
  *             the benchmark for different communicator sizes, starting with
  *             startSize. After every run the size is doubled. Finally one run is

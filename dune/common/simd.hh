@@ -66,7 +66,7 @@ namespace Dune
 
     private:
       static_assert(std::is_arithmetic<value_type>::value,
-                    "Only artihmetic types are supported");
+                    "Only arithmetic types are supported");
       V &vec_;
       std::size_t idx_;
 

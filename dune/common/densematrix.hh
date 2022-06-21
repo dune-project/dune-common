@@ -795,7 +795,7 @@ namespace Dune
      *     After early termination, the contents of \c A should be considered
      *     bogus, and \c nonsingularLanes has the lane(s) that triggered the
      *     early termination unset.  There may be more singular lanes than the
-     *     one reported in \c nonsingularLanes, which just havent been
+     *     one reported in \c nonsingularLanes, which just haven't been
      *     discovered yet; so the value of \c nonsingularLanes is mostly
      *     useful for diagnostics.</li>
      * <li>Terminate only when all lanes are discovered to be singular.  Use

@@ -80,7 +80,7 @@ int check(const Dune::SLList<T,A>& alist, const T* vals)
   int i=0;
   for(iterator iter = alist.begin(); iter != alist.end(); ++iter, i++) {
     if( vals[i] != *iter ) {
-      std::cerr<<" List missmatch! "<<__FILE__<<":"<<__LINE__<<std::endl;
+      std::cerr<<" List mismatch! "<<__FILE__<<":"<<__LINE__<<std::endl;
       return 1;
     }
   }
@@ -139,7 +139,7 @@ int testAssign()
   List::iterator biter=blist.begin(), aiter=alist.begin();
   for(; aiter!=alist.end(); ++aiter, ++biter)
     if(*aiter!=*biter) {
-      std::cerr<<"Asignment failed "<<__FILE__<<":"<<__LINE__<<std::endl;
+      std::cerr<<"Assignment failed "<<__FILE__<<":"<<__LINE__<<std::endl;
       return 1;
     }
   return 0;

@@ -224,7 +224,7 @@ namespace Dune
      - access after free
 
      When defining DEBUG_NEW_DELETE >= 1, we
-     - overload new/delte
+     - overload new/delete
      - use the Debug memory management for new/delete
      - DEBUG_NEW_DELETE > 2 gives extensive debug output
    */

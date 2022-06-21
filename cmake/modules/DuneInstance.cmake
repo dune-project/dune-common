@@ -5,7 +5,7 @@
 #    This module can be used to generate explicit template instantiations.
 #    Suppose you have a template test function that you want to call for a
 #    number of template arguments.  You want to explicitly instantiate the
-#    function for each set of template arguments, and put the instanciation
+#    function for each set of template arguments, and put the instantiation
 #    into its own translation unit.  (This can be beneficial in that it limits
 #    the amount of code that the optimizer sees at once, and thus it can
 #    reduce both memory and cpu requirements during compilation.)
@@ -81,12 +81,12 @@
 #
 #    The call to :ref:`dune_instance_begin() <dune_instance_begin>` reads
 #    ``mytest.cc.in`` and ``mytest.hh.in`` and splits them into embedded
-#    templates and other content.  It will replace occurrances of ``@VAR@``
+#    templates and other content.  It will replace occurrences of ``@VAR@``
 #    now in the other content and save the result for later.
 #
 #    The call to :ref:`dune_instance_add() <dune_instance_add>` occurs in a
-#    loop.  Each call will instanciate the embedded templates extracted
-#    earlier to replace occurance of ``@TYPE@`` by the value of the variable
+#    loop.  Each call will instantiate the embedded templates extracted
+#    earlier to replace an occurrence of ``@TYPE@`` by the value of the variable
 #    ``TYPE`` set in the for loop.  Then files containing explicit
 #    instantiatons will be generated as ``mytest_instance_bool.cc``,
 #    ``mytest_instance_bool.cc``, etc, from a template file
@@ -155,7 +155,7 @@
 #    The begin of an embedded template is marked by a line containing
 #    ``@template@`` or ``@template NAME@``.  Leaving off the name is
 #    equivalent to an empty name.  ``dune_instance_add(TEMPLATE NAME)`` will
-#    only instanciate embedded templates whose name matches and ignore all
+#    only instantiate embedded templates whose name matches and ignore all
 #    others.
 #
 #    The end of an embedded template is marked by a line containing
@@ -181,7 +181,7 @@
 #    Refrain from using substitutions that begin with an underscore
 #    (i.e. ``@_my_local_var@``).  The generation functions in this module use
 #    such names for their local variables and may hide the variable you are
-#    trying to substitude.
+#    trying to substitute.
 #
 #    When instantiating files we set up a few convenience variables before
 #    calling ``configure_file()`` that can be used in substitutions:
@@ -448,7 +448,7 @@
 #
 #    If the instance file has been registered as a generated source file
 #    before, this function generates a fatal error.  This ensures that any
-#    accidential attempt to generate the same file twice is caught.  As a
+#    accidental attempt to generate the same file twice is caught.  As a
 #    special exception, if the generated content is the same as before, the
 #    error is silently skipped.
 #
@@ -490,8 +490,8 @@ endmacro(message_verbose)
 #   the list it inserts to, but we don't actually use that command.
 # - free of '\' characters.  This avoids problems with a list element that
 #   ends in a '\' merging with the next element, because the '\' quotes the
-#   ';' that is used to seperate the elements
-# - non-empty.  This avoids the problem that cmake can't destinguish between
+#   ';' that is used to separate the elements
+# - non-empty.  This avoids the problem that cmake can't distinguish between
 #   an empty list and a list with one empty element.
 function(dune_instance_quote_element VAR)
   set(content "${${VAR}}")
@@ -677,7 +677,7 @@ ${name}:${lineno}: ...'${sep}' here")
         set(in_template TRUE)
       endif()
       set(acc "")
-    else() # line did not match seperator
+    else() # line did not match separator
       string(APPEND acc "${line}")
     endif()
   endwhile()
@@ -694,8 +694,8 @@ ${name}:${lineno}: ...'${sep}' here")
   set("${template_names}" "${template_name_list}" PARENT_SCOPE)
 endfunction(dune_instance_parse_embedded)
 
-# Take the name of a list variable containing content parts other then
-# embedded templates and instanciate each part.  Put the result back into the
+# Take the name of a list variable containing content parts other than
+# embedded templates and instantiate each part.  Put the result back into the
 # same variable.  List elements are quoted.
 function(dune_instance_generate_parts _parts_list)
   set(_acc "")

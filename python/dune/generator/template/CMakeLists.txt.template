@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-# aquire lock to avoid cmake raise conditions
+# acquire lock to avoid cmake raise conditions
 
 # This is the CMakeLists.txt of the dune-py module. As new targets are
 # created when ever new bindings are required, a simple make call
@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.13)
 set(lock "${CMAKE_BINARY_DIR}/cmake.lock")
 message("---- LOCK")
 file(LOCK ${lock})
-message("---- AQUIRED")
+message("---- ACQUIRED")
 
 set(ALLOW_CXXFLAGS_OVERWRITE ON) 
 set(ALLOW_CXXFLAGS_OVERWRITE_FORCE ON)  

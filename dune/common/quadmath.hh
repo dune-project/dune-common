@@ -209,7 +209,7 @@ namespace Dune
     }                                                                      \
     static_assert(true, "Require semicolon to unconfuse editors")
 
-    // like DUNE_UNARY_FUNC but with cutom return type
+    // like DUNE_UNARY_FUNC but with custom return type
 #define DUNE_CUSTOM_UNARY_FUNC(type,name,func)                             \
     inline type name(const Float128& u) noexcept                           \
     {                                                                      \

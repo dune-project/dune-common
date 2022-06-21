@@ -42,7 +42,7 @@
    @code
     abs(first-second) <= epsilon * abs(first)
    @endcode
-   Of cource the comparison should be symmetric in first and second so we
+   Of course the comparison should be symmetric in first and second so we
    cannot arbitrarily select either first or second to scale epsilon.  The are
    two symmetric variants, @em relative_weak
    @code

@@ -241,7 +241,7 @@ namespace Std
    * \ingroup CxxUtilities
    **/
   template< class... B >
-  struct [[deprecated("Will be removed after release 2.8. Use std::conjuction instead.")]] conjunction
+  struct [[deprecated("Will be removed after release 2.8. Use std::conjunction instead.")]] conjunction
     : std::conjunction<B...>
   {};
 

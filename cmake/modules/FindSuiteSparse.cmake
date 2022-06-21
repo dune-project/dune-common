@@ -177,7 +177,7 @@ endif()
 unset(SUITESPARSE_CONFIG_FILE CACHE)
 
 
-# check wether everything was found
+# check whether everything was found
 foreach(_component ${SUITESPARSE_COMPONENTS})
   if(${_component}_LIBRARY AND ${_component}_INCLUDE_DIR)
     set(SuiteSparse_${_component}_FOUND TRUE)

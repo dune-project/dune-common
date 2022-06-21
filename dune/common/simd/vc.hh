@@ -35,7 +35,7 @@
  *
  * You also need to make sure that the compiler uses the correct flags and
  * that the linker can find the library.  (The compilation flags include one
- * that ensures a name mangling scheme that can distiguish the
+ * that ensures a name mangling scheme that can distinguish the
  * compiler-intrinsic vector types from non-vector types is used.)
  *
  * - Either use `add_dune_vc_flags(your_application)` in `CMakeLists.txt`,
@@ -203,7 +203,7 @@ namespace Dune {
 
       private:
         static_assert(std::is_arithmetic<value_type>::value,
-                      "Only artihmetic types are supported");
+                      "Only arithmetic types are supported");
         V &vec_;
         std::size_t idx_;
 
@@ -310,18 +310,18 @@ namespace Dune {
         // for conversions to be applied to the foreign argument (options 2.).
         // In contrast, allowing some of the template parameters being deduced
         // from the self argument also being deduced from the foreign argument
-        // will likely lead to ambigous deduction when the foreign argument is
+        // will likely lead to ambiguous deduction when the foreign argument is
         // a proxy:
         //   template<class T, class... Args>
         //   auto operator@(MyClass<T, Args...>, T);
-        // One class that suffers from this problem ist std::complex.
+        // One class that suffers from this problem is std::complex.
         //
         // Note that option 1. is a bit dangerous, as the foreign argument is
         // catch-all.  This seems tempting in the case of a proxy class, as
         // the operator could just be forwarded to the proxied object with the
         // foreign argument unchanged, immediately creating interoperability
         // with arbitrary foreign classes.  However, if the foreign class also
-        // choses option 1., this will result in ambigous overloads, and there
+        // choses option 1., this will result in ambiguous overloads, and there
         // is no clear guide to decide which class should provide the overload
         // and which should not.
         //
@@ -338,7 +338,7 @@ namespace Dune {
         //
         // So what we have to do here, unfortunately, is to provide operators
         // for the Vc types explicitly, and hope that there won't be some Vc
-        // version that gets the operators right, thus creating ambigous
+        // version that gets the operators right, thus creating ambiguous
         // overloads.  Well, if guess it will be #ifdef time if it comes to
         // that.
 #define DUNE_SIMD_VC_BINARY(OP)                                         \

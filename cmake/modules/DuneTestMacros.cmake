@@ -172,7 +172,7 @@
 #       first time a test with that label is added.  In some situations it can
 #       depend on the values of cmake cache variables whether a test is added,
 #       and then it can happen that the :code:`build_${target}_tests` target
-#       exists only sometimes.  If your workflow relies on the existance of
+#       exists only sometimes.  If your workflow relies on the existence of
 #       these targets, even if building them just returns successfully without
 #       doing anything, you can ensure they exist by calling
 #       :ref:`dune_declare_test_label` unconditionally.  The label
@@ -300,7 +300,7 @@ function(dune_add_test)
   endif()
   foreach(num ${ADDTEST_MPI_RANKS})
     if(NOT "${num}" MATCHES "[1-9][0-9]*")
-      message(FATAL_ERROR "${num} was given to the MPI_RANKS arugment of dune_add_test, but it does not seem like a correct processor number")
+      message(FATAL_ERROR "${num} was given to the MPI_RANKS argument of dune_add_test, but it does not seem like a correct processor number")
     endif()
   endforeach()
   if(ADDTEST_SKIP_ON_77)

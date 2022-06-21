@@ -226,7 +226,7 @@ macro(find_dune_package module)
         dune_module_information(${_dune_module_file_path})# QUIET)
         set(${module}_dune_module 1)
         set(DUNE_FIND_MOD_VERSION_STRING "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
-        # check whether dependency mathes version requirement
+        # check whether dependency matches version requirement
         unset(module_version_wrong)
         if(DUNE_FIND_VERSION_OP MATCHES ">=")
           if(NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
