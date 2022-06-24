@@ -15,6 +15,8 @@ int main(){
   dummyiterator<int> mit(value);
   dummyiterator<const int> cit(value);
 
+  [[maybe_unused]] int value2 = *mit;  // Check whether dereferencing works
+
   bool result = mit == cit;
 
   if(result) return 0;
