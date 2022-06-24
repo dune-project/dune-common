@@ -65,3 +65,5 @@ code-spelling-check:
   image: registry.dune-project.org/docker/ci/debian:11
   script:
   - codespell
+    --ignore-words-list te,inout,incrementall,iif,\trun,referr,ba
+    --skip pybind11
