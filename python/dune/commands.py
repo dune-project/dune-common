@@ -79,13 +79,13 @@ def fixdunepy(force):
               end = line.find(bracket[1], start)
               cmakeentries += [line[start:end]]
 
-        occurences = {}
+        occurrences = {}
         for i in ccfiles + sofiles + cmakedirs + cmakeentries:
-            occurences[i] = occurences.get(i, 0) + 1
+            occurrences[i] = occurrences.get(i, 0) + 1
 
         inconsistent = []
-        for o in occurences:
-            if occurences[o] != 4:
+        for o in occurrences:
+            if occurrences[o] != 4:
                 inconsistent += [o]
 
         if len(inconsistent) > 0:
