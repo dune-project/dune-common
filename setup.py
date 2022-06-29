@@ -14,4 +14,4 @@ try:
 except ImportError:
     from packagemetadata import metaData
 from skbuild import setup
-setup(**metaData()[1])
+setup(**metaData('2.9.dev20220629')[1])

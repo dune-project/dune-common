@@ -132,9 +132,9 @@ if(Python3_Interpreter_FOUND)
   if(NOT(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") OR
          ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "system") OR
          ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none") OR
-         ("${DUNE_PYTHON_INSTALL_LOCATION}" MATCHES "--target")   # this allow to provide a folder, i.e., --target /home/foo/site-packages
+         ("${DUNE_PYTHON_INSTALL_LOCATION}" MATCHES "--target")   # this allows to provide a folder, i.e., --target /home/foo/site-packages
     ))
-    message(FATAL_ERROR "DUNE_PYTHON_INSTALL_LOCATION must be user|system|none.")
+    message(FATAL_ERROR "DUNE_PYTHON_INSTALL_LOCATION must be user|system|none|--target <target>.")
   endif()
 
   if(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") AND DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)

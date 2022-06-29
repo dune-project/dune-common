@@ -48,7 +48,7 @@
 #
 #    Finding the setup.py of the package follows the following procedure:
 #      1. If PATH contains a `setup.py` file, such file will be used to make a `pip install` from the source directory
-#      2. If PATH contains a `setup.py.in` file, such file configured and used tp `pip install` the package from the binary directory
+#      2. If PATH contains a `setup.py.in` file, such file will be configured and used to `pip install` the package from the binary directory
 #      3. Otherwise, this script will provide a template for `setup.py.in` and continue with 2.
 #
 # .. cmake_variable:: DUNE_PYTHON_ADDITIONAL_PIP_PARAMS
