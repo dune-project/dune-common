@@ -276,6 +276,6 @@ set(DUNE_PYTHON_pip_FOUND ON)
 # install setuptools into the venv (needed to find dependencies later on)
 dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
       "${DUNE_PIP_INDEX}"
-      setuptools ninja
+      setuptools>=41 ninja
   WARNING_MESSAGE "python 'setuptools' package could not be installed - possibly connection to the python package index failed"
   )
