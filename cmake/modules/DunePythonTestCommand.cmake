@@ -40,7 +40,7 @@ function(dune_python_add_test)
   # Parse Arguments
   set(OPTION)
   set(SINGLE NAME)
-  set(MULTI SCRIPT MODULE CMAKE_GUARD LABELS)
+  set(MULTI SCRIPT MODULE CMAKE_GUARD LABELS TIMEOUT)
   cmake_parse_arguments(PYTEST "" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYTEST_COMMAND)
     message(FATAL_ERROR "dune_python_add_test: COMMAND argument should not be used, use SCRIPT instead providing only the Python script and not the Python interpreter")
@@ -49,6 +49,9 @@ function(dune_python_add_test)
   # Apply defaults
   set(PYTEST_CMAKE_GUARD ${PYTEST_CMAKE_GUARD} DUNE_ENABLE_PYTHONBINDINGS)
   set(PYTEST_LABELS ${PYTEST_LABELS} python)
+  if(NOT PYTEST_TIMEOUT)
+    set(PYTEST_TIMEOUT 3600)
+  endif()
 
   if((NOT PYTEST_MODULE) AND (NOT PYTEST_SCRIPT))
     message(FATAL_ERROR "dune_python_add_test: Either SCRIPT or MODULE need to be specified!")
@@ -79,6 +82,7 @@ function(dune_python_add_test)
                 PYTHON_TEST
                 CMAKE_GUARD ${PYTEST_CMAKE_GUARD}
                 LABELS ${PYTEST_LABELS}
+                TIMEOUT ${PYTEST_TIMEOUT}
                 ${PYTEST_UNPARSED_ARGUMENTS}
                )
 endfunction()

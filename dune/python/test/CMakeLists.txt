@@ -2,7 +2,6 @@ dune_python_add_test(NAME pythontests
                      SCRIPT pythontests.py
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                      MPI_RANKS 1 2 4
-                     TIMEOUT 300
                      LABELS quick
 )
 
