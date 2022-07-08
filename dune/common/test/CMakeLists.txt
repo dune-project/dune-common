@@ -90,7 +90,7 @@ dune_add_test(SOURCES debugaligntest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
-# Generate files with instanciations, external declarations, and also the
+# Generate files with instantiations, external declarations, and also the
 # invocations in the test for each instance.
 dune_instance_begin(FILES debugalignsimdtest.hh debugalignsimdtest.cc)
 foreach(SCALAR IN ITEMS double bool)

@@ -84,9 +84,9 @@ namespace Dune
    * data dependent communicators can be setup using BufferedCommunicator,
    * DatatypeCommunicator VariableSizeCommunicator based on the interface
    * information. In contrast to the former
-   * the latter is independent of the class Interface can work on a map
+   * the latter is independent of the class Interface which can work on a map
    * from process number to a pair of index lists describing which local indices
-   * are send and received from that processs, respectively.
+   * are sent and received from that process.
    */
   /** @addtogroup Common_Parallel
    *
@@ -161,7 +161,7 @@ namespace Dune
     static const void* getAddress(const V& v, int index);
 
     /**
-     * @brief Get the number of primitve elements at that index.
+     * @brief Get the number of primitive elements at that index.
      *
      * The default always returns 1.
      */
@@ -619,14 +619,14 @@ namespace Dune
 
 
     /**
-     * @brief Functors for message size caculation
+     * @brief Functors for message size calculation
      */
     template<class Data, typename IndexedTypeFlag>
     struct MessageSizeCalculator
     {};
 
     /**
-     * @brief Functor for message size caculation for datatypes
+     * @brief Functor for message size calculation for datatypes
      * where at each index is only one value.
      */
     template<class Data>
@@ -651,7 +651,7 @@ namespace Dune
     };
 
     /**
-     * @brief Functor for message size caculation for datatypes
+     * @brief Functor for message size calculation for datatypes
      * where at each index can be a variable number of values.
      */
     template<class Data>

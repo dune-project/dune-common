@@ -784,7 +784,7 @@ namespace Dune
    * and \code f \endcode is the transformation function,
    * then the result of \code f(it) \endcode is returned.
    *
-   * The transformation may either return temorary values
+   * The transformation may either return temporary values
    * or l-value references. In the former case the range behaves
    * like a proxy-container. In the latter case it forwards these
    * references allowing, e.g., to sort a subset of some container

@@ -66,10 +66,10 @@
 # system environment variable openout_any to "a" (as in "all"), to override the default "paranoid"
 # setting.
 #
-# UseLatexMk.cmake allows to reenable the TeX security measure by setting LATEXMK_PARANOID to TRUE
+# UseLatexMk.cmake allows to re-enable the TeX security measure by setting LATEXMK_PARANOID to TRUE
 # through cmake -D, but it is not guaranteed to work correctly in that case.
 #
-# For further informations, visit https://github.com/dokempf/UseLatexMk
+# For further information, visit https://github.com/dokempf/UseLatexMk
 #
 #
 # Copyright (c) 2017, Dominic Kempf, Steffen Müthing

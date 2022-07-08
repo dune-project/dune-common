@@ -425,7 +425,7 @@ namespace Dune
     : head_(0), chunks_(0) //, allocated_(0)
   {
     static_assert(sizeof(T)<=unionSize, "Library Error: type T is too big");
-    static_assert(sizeof(Reference)<=unionSize, "Library Error: type of referene is too big");
+    static_assert(sizeof(Reference)<=unionSize, "Library Error: type of reference is too big");
     static_assert(unionSize<=alignedSize, "Library Error: alignedSize too small");
     static_assert(sizeof(T)<=chunkSize, "Library Error: chunkSize must be able to hold at least one value");
     static_assert(sizeof(Reference)<=chunkSize, "Library Error: chunkSize must be able to hold at least one reference");

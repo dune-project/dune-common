@@ -12,7 +12,7 @@
 
 int main(int argc, char **argv)
 {
-  // This is a parallel programm so we need to
+  // This is a parallel program so we need to
   // initialize mpi first.
   Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
   // Print the index set
   if(rank==0)
-    std::cout<<"Reordered lcoal indices:"<<std::endl;
+    std::cout<<"Reordered local indices:"<<std::endl;
 
   // Wait for all processes
   helper.getCommunication().barrier();

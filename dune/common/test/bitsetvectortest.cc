@@ -52,7 +52,7 @@ void testContainer(BBF & bbf)
   const_reference z = bbf[4];
   const reference v = bbf[4];
 
-  // assignement
+  // assignment
   y = false;
   y[2] = true;
   y = x;
@@ -144,7 +144,7 @@ void testConstContainer(const BBF& bbf){
   [[maybe_unused]] value_type z;
   reference y = bbf[4];
 
-  // assignement
+  // assignment
   x = y;
   x = cbbf[1];
 

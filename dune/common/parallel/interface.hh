@@ -370,7 +370,7 @@ namespace Dune
 
     // Allocate memory for the type construction.
     for(const_iterator process=remoteIndices.begin(); process != end; ++process) {
-      // Messure the number of indices send to the remote process first
+      // Measure the number of indices sent to the remote process first
       int size=0;
       typedef typename RemoteIndices::RemoteIndexList::const_iterator RemoteIterator;
       const RemoteIterator remoteEnd = send ? process->second.first->end() :

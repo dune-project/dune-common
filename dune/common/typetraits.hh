@@ -91,7 +91,7 @@ namespace Dune
      template<typename T>
      struct Traits {
        static_assert(false,
-                          "Instanciating this non-specialized template is an "
+                          "Instantiating this non-specialized template is an "
                           "error.  You should use one of the specializations "
                           "instead.");
        //! The type used to frobnicate T
@@ -107,7 +107,7 @@ namespace Dune
      template<typename T>
      struct Traits {
        static_assert(AlwaysFalse<T>::value,
-                          "Instanciating this non-specialized template is an "
+                          "Instantiating this non-specialized template is an "
                           "error.  You should use one of the specializations "
                           "instead.");
        //! The type used to frobnicate T
@@ -490,7 +490,7 @@ namespace Dune
    * If you need to specialize for a proxy type or similar, just specialize
    * for the plain type.  There are already specializations for
    * reference-qualified and cv-qualified types that will just forward to your
-   * specailixszation.
+   * specialization.
    *
    * \note For all specializations, the member type `type` should be
    *       constructible from `T`.
@@ -599,7 +599,7 @@ namespace Dune
    * ```
    * If the automatic differentiation library is Adept, this would lead to
    * use-after-end-of-life-bugs.  The reason is that for efficiency reasons
-   * Adept does not immidiately evaluate the expression, but instead it
+   * Adept does not immediately evaluate the expression, but instead it
    * constructs an expression object that records the kind of expression and
    * references to the operands.  The expression object is only evaluated when
    * it is assigned to an object of some number type -- which will only happen

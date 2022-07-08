@@ -45,7 +45,7 @@ int main()
 
   if(expected_impl.empty())
   {
-    std::cerr << "No expected vc imlementation provided, skipping test\n"
+    std::cerr << "No expected vc implementation provided, skipping test\n"
               << "Please set " << expected_var
               << " environment variable to one of the following values:";
     for(const auto &item : impl_names)

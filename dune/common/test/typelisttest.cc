@@ -61,9 +61,9 @@ void staticLiteralTests() {
 
   // specialization/overload resolution tests
   static_assert(IsTypeListBySpecialization<TL>::value,
-                "TypeList cannot be recongized by class specialization");
+                "TypeList cannot be recognized by class specialization");
   static_assert(IsTypeListByOverload<TL>::value,
-                "TypeList cannot be recongized by function overload resolution");
+                "TypeList cannot be recognized by function overload resolution");
 
   // avoid compiler warnings
   (void)tl1;
@@ -90,7 +90,7 @@ void checkNonTypeList(decltype(skipOverloadTest))
 
   // specialization tests
   static_assert(!IsTypeListBySpecialization<T>::value,
-                "Non-TypeList recongized as TypeList by class specialization");
+                "Non-TypeList recognized as TypeList by class specialization");
 }
 
 template<class T>
@@ -100,7 +100,7 @@ void checkNonTypeList()
 
   // overload resolution tests
   static_assert(!IsTypeListByOverload<T>::value,
-                "Non-TypeList recongized as TypeList by function overload resolution");
+                "Non-TypeList recognized as TypeList by function overload resolution");
 }
 
 void staticTests()

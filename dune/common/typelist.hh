@@ -66,7 +66,7 @@ namespace Dune {
    *
    * It is also possible to iterate over complete-but-non-instantiable types,
    * e.g. `tuple<void>`.  But to do so you need to suppress ADL in the
-   * invocation of `forEach()`, since ADL would try to instanciate complete
+   * invocation of `forEach()`, since ADL would try to instantiate complete
    * types in the template argument list of `TypeList` in order to find the
    * associated namespaces.  To suppress ADL you can either use a qualified
    * lookup:

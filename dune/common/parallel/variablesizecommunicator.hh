@@ -341,8 +341,8 @@ public:
   /**
    * @brief Creates a communicator with the default maximum buffer size.
    *
-   * The default size ist either what the macro DUNE_MAX_COMMUNICATION_BUFFER_SIZE
-   * is set to or 32768 if is not set.
+   * The default size is either what the macro DUNE_MAX_COMMUNICATION_BUFFER_SIZE
+   * is set to, or 32768 if it is not set.
    */
   VariableSizeCommunicator(MPI_Comm comm, const InterfaceMap& inf)
     : maxBufferSize_(32768), interface_(&inf)
@@ -362,8 +362,8 @@ public:
   /**
    * @brief Creates a communicator with the default maximum buffer size.
    *
-   * The default size ist either what the macro DUNE_MAX_COMMUNICATION_BUFFER_SIZE
-   * is set to or 32768 if is not set.
+   * The default size is either what the macro DUNE_MAX_COMMUNICATION_BUFFER_SIZE
+   * is set to, or 32768 if it is not set.
    */
   VariableSizeCommunicator(MPI_Comm comm, InterfaceMap& inf)
     : maxBufferSize_(DUNE_PARALLEL_MAX_COMMUNICATION_BUFFER_SIZE),
@@ -1016,7 +1016,7 @@ bool validRecvRequests(const std::vector<MPI_Request> reqs)
  * @tparam Functor The type of the functor to set up the request.
  * @param handle The data handle describing the data.
  * @param trackers The trackers for the communication interfaces.
- * @param buffers The buffers for the comunication. One for each neighbour.
+ * @param buffers The buffers for the communication. One for each neighbour.
  * @param requests The send requests for each neighbour.
  * @param setupFunctor The functor responsible for setting up the request.
  */

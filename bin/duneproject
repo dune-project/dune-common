@@ -72,10 +72,10 @@ pkg_config_dependencies(){
 
 # modulesexist DEPS MODULES
 #
-# DEPS is a space seperated list of modules the new module should depend on
-# MODULES is a space seperated list of modules that are known to be present
+# DEPS is a space-separated list of modules the new module should depend on.
+# MODULES is a space-separated list of modules that are known to be present.
 #
-# Each name in DEPS is checked to see wether it is present in MODULES.  If
+# Each name in DEPS is checked to see whether it is present in MODULES.  If
 # not, is is checked whether it can be found with pkg-config.  If still no, an
 # error message is issued and modulesexist will return with an exit status
 # indicating failure.
@@ -241,7 +241,7 @@ while [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; do
   echo "creating Project \"$PROJECT\", version $VERSION "
   echo "which depends on \"$DEPENDENCIES\""
   echo "with maintainer \"$MAINTAINER\""
-  read -p "Are these informations correct? [y/N] " DATACORRECT
+  read -p "Is this information correct? [y/N] " DATACORRECT
 
   # reset data if necessary
   if [ "$DATACORRECT" != "y" -a "$DATACORRECT" != "Y" ]; then

@@ -113,8 +113,8 @@ def resolve_order(deps):
        deps:     dictionary mapping module name to its dependency names
 
     Return:
-       Ordred list of module names such that each module only depends on
-       modules preceeding it.
+       Ordered list of module names such that each module only depends on
+       modules preceding it.
     """
     order = []
 
@@ -329,7 +329,7 @@ def build_module(builddir, build_args=None):
 def get_dune_py_version():
     # change this version on the following events:
     # - a release (major version numbers)
-    # - any incompatible change to the dune-py module (revison number)
+    # - any incompatible change to the dune-py module (revision number)
     return Version("2.8.0")
 
 

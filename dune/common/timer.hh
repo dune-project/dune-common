@@ -27,7 +27,7 @@ namespace Dune {
      This class reports the elapsed user-time, i.e. time spent computing,
      after the last call to Timer::reset(). The results are seconds and
      fractional seconds. Note that the resolution of the timing depends
-     on your OS kernel which should be somewhere in the milisecond range.
+     on your OS kernel which should be somewhere in the millisecond range.
 
      The class is basically a wrapper for the libc-function getrusage()
 

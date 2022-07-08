@@ -65,7 +65,7 @@ namespace Dune {
      *
      * This will throw an exception if the check fails and if the AlwaysThrow policy was used on creation.
      *
-     * \param conditon Checks if this is true and increases the failure counter if not.
+     * \param condition Checks if this is true and increases the failure counter if not.
      * \param name A name to identify this check. Defaults to ""
      * \returns A CollectorStream that can be used to create a diagnostic message to be printed on failure.
      */
@@ -86,7 +86,7 @@ namespace Dune {
      *
      * This will always throw an exception if the check fails.
      *
-     * \param conditon Checks if this is true and increases the failure counter if not.
+     * \param condition Checks if this is true and increases the failure counter if not.
      * \param name A name to identify this check. Defaults to ""
      * \returns A CollectorStream that can be used to create a diagnostic message to be printed on failure.
      */
@@ -153,7 +153,7 @@ namespace Dune {
     /**
      * \brief Exit the test.
      *
-     * This wil print a summary of the test and return an integer
+     * This will print a summary of the test and return an integer
      * to be used on program exit.
      *
      * \returns 1 if any of the executed tests failed, otherwise 0.

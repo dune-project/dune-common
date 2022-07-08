@@ -598,7 +598,7 @@ namespace Dune {
         out[l] = Dune::isFinite(v[l]);
       return out;
     }
-  } //namepace MathOverloads
+  } //namespace MathOverloads
 
   template<class T, std::size_t S, std::size_t A>
   struct IsNumber<LoopSIMD<T,S,A>> :

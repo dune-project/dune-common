@@ -13,7 +13,7 @@ set(TYPES
   std::complex<float> std::complex<double> "std::complex<long double>"
   )
 
-# Generate files with instanciations, external declarations, and also the
+# Generate files with instantiations, external declarations, and also the
 # invocations in the test for each instance.
 dune_instance_begin(FILES looptest.hh looptest.cc)
 foreach(SCALAR IN LISTS TYPES)
@@ -44,7 +44,7 @@ set(TYPES
   float double "long double"
   std::complex<float> std::complex<double> "std::complex<long double>")
 
-# Generate files with instanciations, external declarations, and also the
+# Generate files with instantiations, external declarations, and also the
 # invocations in the test for each instance.
 dune_instance_begin(FILES standardtest.hh standardtest.cc)
 foreach(SCALAR IN LISTS TYPES)
@@ -64,7 +64,7 @@ dune_add_test(NAME standardtest
 # with T = { double, float, int32_t, uint32_t, int16_t, uint16_t }
 set(VCTEST_TYPES std::int16_t std::uint16_t std::int32_t std::uint32_t float double)
 
-# Generate files with instanciations, external declarations, and also the
+# Generate files with instantiations, external declarations, and also the
 # invocations in the test for each instance.
 dune_instance_begin(FILES vcarraytest.hh vcarraytest.cc)
 foreach(SCALAR IN LISTS VCTEST_TYPES)
@@ -87,7 +87,7 @@ dune_add_test(NAME vcarraytest
 add_dune_vc_flags(vcarraytest)
 # no need to install vcarraytest.hh, used by vctest*.cc only
 
-# Generate files with instanciations, external declarations, and also the
+# Generate files with instantiations, external declarations, and also the
 # invocations in the test for each instance.
 dune_instance_begin(FILES vcvectortest.hh vcvectortest.cc)
 foreach(SCALAR IN LISTS VCTEST_TYPES)

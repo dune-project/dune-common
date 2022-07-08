@@ -29,7 +29,7 @@ public:
     : value(o.value)
   {}
 
-  T& derefence() const {
+  T& dereference() const {
     return *value;
   }
 

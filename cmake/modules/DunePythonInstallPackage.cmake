@@ -173,7 +173,7 @@ function(dune_python_install_package)
                        WARNING_MESSAGE "python package suggestions could not be installed - possibly connection to the python package index failed"
                       )
 
-  set(DUNE_PYTHON_VENVSETUP TRUE CACHE BOOL "The internal venv setup successfull")
+  set(DUNE_PYTHON_VENVSETUP TRUE CACHE BOOL "The internal venv setup was successful")
 
   #
   # Define build rules that install the Python package into the Dune virtualenv at the build stage
@@ -183,14 +183,14 @@ function(dune_python_install_package)
   string(REPLACE "/" "_" envtargetname "env_install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYINST_PATH}")
 
   # installation target for dune package into local env - external requirements are already sorted and we want this step to not require
-  # internet access. Dune packages need to be installed at this stage and should not be optained from pypi (those packages include the C++ part
+  # internet access. Dune packages need to be installed at this stage and should not be obtained from pypi (those packages include the C++ part
   # of the module which we don't want to install. So only use available wheels.
   add_custom_target(
     ${envtargetname}
     ALL
     COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
       --no-build-isolation      # avoid looking for packages during 'make' if they in the internal venv from previous 'make'
-      --no-warn-script-location # supress warnings that dune-env/bin not in path
+      --no-warn-script-location # suppress warnings that dune-env/bin is not in path
       --no-index
       "${WHEEL_OPTION}"
       # we can't use the same additional parameters for both internal
@@ -224,7 +224,7 @@ function(dune_python_install_package)
   endif()
   if(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") AND
      DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
-    message(FATAL_ERROR "Specifying 'user' as install location is incomaptible with using virtual environments (as per pip docs)")
+    message(FATAL_ERROR "Specifying 'user' as install location is incompatible with using virtual environments (as per pip docs)")
   endif()
 
   # Only add installation rules if it was requested
@@ -323,7 +323,7 @@ function(dune_python_install_package)
     # Make sure to generate the metadata for the build stage
     if(NOT DUNE_PYTHON_DEPENDENCIES_FAILED)
       if(SKBUILD)
-        # this is the only version of the metadata we need for the package insallation
+        # this is the only version of the metadata we need for the package installation
         add_custom_target(
           metadata_${envtargetname}
           COMMAND ${CMAKE_COMMAND}

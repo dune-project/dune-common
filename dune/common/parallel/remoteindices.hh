@@ -360,20 +360,20 @@ namespace Dune {
     /**
      * @brief Find an iterator over the remote index lists of a specific process.
      * @param proc The identifier of the process.
-     * @return The iterator the remote index lists postioned at the process.
-     * If theres is no list for this process, the end iterator is returned.
+     * @return The iterator the remote index lists positioned at the process.
+     * If there's is no list for this process, the end iterator is returned.
      */
     inline const_iterator find(int proc) const;
 
     /**
      * @brief Get an iterator over all remote index lists.
-     * @return The iterator over all remote index lists postioned at the first process.
+     * @return The iterator over all remote index lists positioned at the first process.
      */
     inline const_iterator begin() const;
 
     /**
      * @brief Get an iterator over all remote index lists.
-     * @return The iterator over all remote index lists postioned at the end.
+     * @return The iterator over all remote index lists positioned at the end.
      */
     inline const_iterator end() const;
 
@@ -1154,7 +1154,7 @@ namespace Dune {
 
     int maxPublish, publish=sourcePublish+destPublish;
 
-    // Calucate maximum number of indices send
+    // Calculate maximum number of indices send
     MPI_Allreduce(&publish, &maxPublish, 1, MPI_INT, MPI_MAX, comm_);
 
     // allocate buffers
@@ -1608,7 +1608,7 @@ namespace Dune {
 
 #ifdef DUNE_ISTL_WITH_CHECKING
     if(!first_ && index.localIndexPair().global()<last_)
-      DUNE_THROW(InvalidPosition, "Modifcation of remote indices have to occur with ascending global index.");
+      DUNE_THROW(InvalidPosition, "Modification of remote indices have to occur with ascending global index.");
 #endif
     // Move to the correct position
     while(iter_ != end_ && iter_->localIndexPair().global() < index.localIndexPair().global()) {
@@ -1652,7 +1652,7 @@ namespace Dune {
   {
 #ifdef DUNE_ISTL_WITH_CHECKING
     if(!first_ && global<last_)
-      DUNE_THROW(InvalidPosition, "Modifcation of remote indices have to occur with ascending global index.");
+      DUNE_THROW(InvalidPosition, "Modification of remote indices have to occur with ascending global index.");
 #endif
 
     bool found= false;
@@ -1837,7 +1837,7 @@ namespace Dune {
     const auto rend = indices.remoteIndices_.end();
 
     for(auto rindex = indices.remoteIndices_.begin(); rindex!=rend; ++rindex) {
-      os<<rank<<": Prozess "<<rindex->first<<":";
+      os<<rank<<": Process "<<rindex->first<<":";
 
       if(!rindex->second.first->empty()) {
         os<<" send:";
@@ -1850,7 +1850,7 @@ namespace Dune {
         os<<std::endl;
       }
       if(!rindex->second.second->empty()) {
-        os<<rank<<": Prozess "<<rindex->first<<": "<<"receive: ";
+        os<<rank<<": Process "<<rindex->first<<": "<<"receive: ";
 
         for(const auto& index : *(rindex->second.second))
           os << index << " ";

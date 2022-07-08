@@ -53,7 +53,7 @@ doublequote()
     result=$result$token${special:+\\$special}
   done
   # if the value ends in \n, protect it by appending two double-quotes so it
-  # wont get stripped by the surrounding $(...)
+  # won't get stripped by the surrounding $(...)
   case $result in
     *"$nl") result=$result'""';;
   esac
@@ -817,7 +817,7 @@ create_module_list() {
   if test "x$SKIPFIRST" = "xyes" ; then
     export MODULES=`echo $MODULES " " | cut '--delimiter= ' --fields=2-`
   fi
-  # warn about superseeded modules:
+  # warn about superseded modules:
   if test -n "$superseded_modules"; then
     # sort moules list and make it unique.
     superseded_modules=$(echo $superseded_modules | tr ' ' '\n'| sort -u)

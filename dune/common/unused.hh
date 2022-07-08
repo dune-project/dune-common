@@ -16,5 +16,5 @@
  *
  * \ingroup CxxUtilities
  */
-#define DUNE_UNUSED_PARAMETER(parm) static_cast<void>(parm)
+#define DUNE_UNUSED_PARAMETER(param) static_cast<void>(param)
 #endif

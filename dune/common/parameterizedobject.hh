@@ -21,7 +21,7 @@ namespace Dune {
  * The Signature parameter defined the "virtual" constructor signature
  * in the form of Interface(Args...), where Interface is the type of
  * the (abstract) interface class and Args... is the set of
- * constrcutor parameters.
+ * constructor parameters.
  *
  * Each type constructed by this factory is identified by a different key. This class
  * allows for easy registration of type with new keys.

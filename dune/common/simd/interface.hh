@@ -107,7 +107,7 @@ namespace Dune {
      * types where the result may be "negative".  Most code in Dune will want
      * to operate on floating point types, where this is a non-issue.
      *
-     * (Of couse, this is also a problem for code that operates on untrusted
+     * (Of course, this is also a problem for code that operates on untrusted
      * input, but you should not be doing that with Dune anyway).
      *
      * Still, when writing code using the SIMD abstractions, you should be
@@ -312,7 +312,7 @@ namespace Dune {
      *
      * \return If `v` is a non-`const` lvalue, a reference
      *         `Scalar<decay_t<V>>&`, or a proxy object through which the
-     *         element of `v` may be modified.  Overwise, `v` is a `const`
+     *         element of `v` may be modified.  Otherwise, `v` is a `const`
      *         lvalue or an rvalue, and the result is a prvalue (a temporary)
      *         of type `Scalar<decay_t<V>>`.
      *

@@ -136,7 +136,7 @@ namespace Dune
     {
     public:
       /**
-       * @brief Provide the lcoal index, always
+       * @brief Provide the local index, always
        * std::numeric_limits<size_t>::max()
        * @param global The global index (ignored).
        */
@@ -181,12 +181,12 @@ namespace Dune
     GlobalIndicesMap globalMap_;
 
     /**
-     * @brief The type of the single linked list of bools.
+     * @brief The type of the singly linked list of bools.
      */
     typedef SLList<bool, typename RemoteIndices::Allocator> BoolList;
 
     /**
-     * @brief The mutable iterator of the single linked bool list.
+     * @brief The mutable iterator of the singly linked bool list.
      */
     typedef typename BoolList::iterator BoolIterator;
 
@@ -227,7 +227,7 @@ namespace Dune
     /**
      * @brief A tuple of iterators.
      *
-     * Insertion into a single linked list is only possible at the position after the one of the iterator.
+     * Insertion into a singly linked list is only possible at the position after the one of the iterator.
      * Therefore for each linked list two iterators are needed: One position before the actual entry
      * (for insertion) and one positioned at the actual position (for searching).
      */
@@ -240,7 +240,7 @@ namespace Dune
        *
        * Initializes all iterator to first entry and the one before the first entry, respectively.
        * @param remoteIndices The list of the remote indices.
-       * @param globalIndices The list of the coresponding global indices. This is needed because the
+       * @param globalIndices The list of the corresponding global indices. This is needed because the
        * the pointers to the local index will become invalid due to the merging of the index sets.
        * @param booleans Whether the remote index was there before the sync process started.
        */
@@ -291,7 +291,7 @@ namespace Dune
        *
        * Position them to first list entry and the entry before the first entry respectively.
        * @param remoteIndices The list of the remote indices.
-       * @param globalIndices The list of the coresponding global indices. This is needed because the
+       * @param globalIndices The list of the corresponding global indices. This is needed because the
        * the pointers to the local index will become invalid due to the merging of the index sets.
        * @param booleans Whether the remote index was there before the sync process started.
        */
@@ -316,11 +316,11 @@ namespace Dune
       /**
        * @brief The iterator tuple.
        *
-       * The tuple consists of one iterator over a single linked list of remote indices
-       * initially positioned before the first entry, one over a sll of global indices
-       * , one over a all of bool values both postioned at the same entry. The another three
+       * The tuple consists of one iterator over a singly linked list of remote indices
+       * initially positioned before the first entry, one over a singly linked list of global indices
+       * , one over a singly linked list of bool values both positioned at the same entry. The another three
        * iterators of the same type positioned at the first entry. Last an iterator over the
-       * sll of remote indices positioned at the end.
+       * singly linked list of remote indices positioned at the end.
        */
       IteratorTuple iterators_;
     };

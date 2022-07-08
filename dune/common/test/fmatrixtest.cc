@@ -814,7 +814,7 @@ void test_interface()
 #if __GNUC__ != 5 || defined(__clang__)
   static_assert(
     !std::is_trivially_copyable<K>::value || std::is_trivially_copyable<FMatrix>::value,
-    "FieldMatrix<T, ...> must be trivally copyable type when T is trivial type"
+    "FieldMatrix<T, ...> must be trivially copyable type when T is trivial type"
     );
 #endif
   static_assert(

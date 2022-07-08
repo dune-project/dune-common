@@ -15,7 +15,7 @@ _dunecontrol_complete ()
   local cur prev words cword split
   _init_completion -s || return
 
-  # check wether we have already seen a command
+  # check whether we have already seen a command
   local have_command=0
   for i in `seq $COMP_CWORD`; do
     case ${COMP_WORDS[i]} in

@@ -50,7 +50,7 @@ The following variables may be set to influence this module's behavior:
 
 ``PTSCOTCH_SUFFIX``
   Scotch might be compiled using different integer sizes (int32, int64, long).
-  When this is set the headers and libaries are search under the suffix
+  When this is set the headers and libraries are search under the suffix
   :code:`include/scotch-${PTSCOTCH_SUFFIX}`, and :code:`lib/scotch-${PTSCOTCH_SUFFIX}`,
   respectively.
 
