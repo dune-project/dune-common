@@ -10,26 +10,17 @@
 #
 #       .. note::
 #
-#          The script will be executed using :code:`${Python3_EXECUTABLE} SCRIPT`. If the INTERPRETER
-#          option is given, that interpreter is used instead.
+#          The script will be executed using :code:`${Python3_EXECUTABLE} SCRIPT`.
 #
 #    .. cmake_param:: MODULE
 #       :multi:
 #
-#       The Python module to be executed.  It will be executed during :code:`make test_python`
+#       The Python module to execute using the python interpreter. It will be executed during :code:`make test_python`
 #       and during `ctest`. You are required to either pass SCRIPT or MODULE.
 #
 #       .. note::
 #
-#          The script will be executed using :code:`${Python3_EXECUTABLE} -m MODULE`. If the INTERPRETER
-#          option is given, that interpreter is used instead.
-#
-#    .. cmake_param:: WORKING_DIRECTORY
-#       :single:
-#       :argname: dir
-#
-#       The working directory of the command. Defaults to
-#       the current build directory.
+#          The script will be executed using :code:`${Python3_EXECUTABLE} -m MODULE`.
 #
 #    .. cmake_param:: NAME
 #       :single:
@@ -41,25 +32,27 @@
 #    build system. Added commands are run, when the target
 #    :code:`test_python` is built and during :code:`ctest`.
 #
+#    This function uses `dune_add_test` and forwards all unparsed arguments.
+#
 include_guard(GLOBAL)
 
 function(dune_python_add_test)
   # Parse Arguments
   set(OPTION)
-  set(SINGLE WORKING_DIRECTORY NAME)
-  set(MULTI SCRIPT COMMAND LABELS MODULE)
+  set(SINGLE NAME)
+  set(MULTI SCRIPT MODULE CMAKE_GUARD LABELS TIMEOUT)
   cmake_parse_arguments(PYTEST "" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYTEST_COMMAND)
     message(FATAL_ERROR "dune_python_add_test: COMMAND argument should not be used, use SCRIPT instead providing only the Python script and not the Python interpreter")
   endif()
-  if(PYTEST_UNPARSED_ARGUMENTS)
-    message(WARNING "Unparsed arguments in dune_python_add_test: This often indicates typos!")
-  endif()
 
   # Apply defaults
-  if(NOT PYTEST_WORKING_DIRECTORY)
-    set(PYTEST_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  set(PYTEST_CMAKE_GUARD ${PYTEST_CMAKE_GUARD} DUNE_ENABLE_PYTHONBINDINGS)
+  set(PYTEST_LABELS ${PYTEST_LABELS} python)
+  if(NOT PYTEST_TIMEOUT)
+    set(PYTEST_TIMEOUT 3600)
   endif()
+
   if((NOT PYTEST_MODULE) AND (NOT PYTEST_SCRIPT))
     message(FATAL_ERROR "dune_python_add_test: Either SCRIPT or MODULE need to be specified!")
   endif()
@@ -78,32 +71,18 @@ function(dune_python_add_test)
     string(REPLACE "/" "_" PYTEST_NAME ${commandstr})
   endif()
 
-  if(DUNE_PYTHON_VENVSETUP)
-    # Actually run the command
-    add_custom_target(target_${PYTEST_NAME}
-                      COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env python ${PYTEST_SCRIPT}
-                      WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY})
-  else()
-    # message(FATAL_ERROR "SHOULDN'T BE HERE")
-    # add_custom_target(target_${PYTEST_NAME}
-    #                   COMMAND ${CMAKE_COMMAND} -E echo \"Test not run: python setup failed\")
-    add_custom_target(target_${PYTEST_NAME}
-                      COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env python ${PYTEST_SCRIPT}
-                      WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY})
-  endif()
+  set(PYTEST_COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env)
+  set(PYTEST_CMD_ARGS python ${PYTEST_SCRIPT})
 
-  # Build this during make test_python
-  add_dependencies(test_python target_${PYTEST_NAME})
-
-  # make sure each label exists and its name is acceptable
-  dune_declare_test_label(LABELS ${PYTEST_LABELS})
-
-  # Also build this during ctest
-  _add_test(NAME ${PYTEST_NAME}
-            COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env python ${PYTEST_SCRIPT}
-            WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY}
-            )
-  set_tests_properties(${PYTEST_NAME} PROPERTIES SKIP_RETURN_CODE 77)
-  # Set the labels on the test
-  set_tests_properties(${PYTEST_NAME} PROPERTIES LABELS "${PYTEST_LABELS}")
+  add_custom_target(target_${PYTEST_NAME})
+  dune_add_test(NAME ${PYTEST_NAME}
+                TARGET target_${PYTEST_NAME}
+                COMMAND ${PYTEST_COMMAND}
+                CMD_ARGS ${PYTEST_CMD_ARGS}
+                PYTHON_TEST
+                CMAKE_GUARD ${PYTEST_CMAKE_GUARD}
+                LABELS ${PYTEST_LABELS}
+                TIMEOUT ${PYTEST_TIMEOUT}
+                ${PYTEST_UNPARSED_ARGUMENTS}
+               )
 endfunction()

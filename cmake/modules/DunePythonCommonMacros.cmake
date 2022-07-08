@@ -83,7 +83,7 @@ if(Python3_Interpreter_FOUND)
   dune_python_find_package(PACKAGE pip)
 
   # Add python related meta targets
-  add_custom_target(test_python)
+  add_custom_target(test_python COMMAND ctest CMD_ARGS -L python)
   add_custom_target(install_python)
 
   # this option enables the build of Python bindings for DUNE modules
