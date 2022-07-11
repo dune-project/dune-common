@@ -72,6 +72,11 @@
 #    not be necessary anymore, see https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
 #    for more information about the underlying distribution bug.
 #
+# .. cmake_variable:: DUNE_PYTHON_WHEELHOUSE
+#
+#    The place where python wheels are stored. Notice that this wheelhouse directory shall be
+#    the same for all dune installations.
+#
 include_guard(GLOBAL)
 
 # pre-populate DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
@@ -91,6 +96,8 @@ option(DUNE_RUNNING_IN_CI "This is turned on if running in dune gitlab ci" OFF)
 
 if(DUNE_RUNNING_IN_CI)
   set(DUNE_PIP_INDEX "--index-url=https://gitlab.dune-project.org/api/v4/projects/133/packages/pypi/simple")
+else()
+  set(DUNE_PIP_INDEX "")
 endif()
 
 # Construct the wheel house installation option string
