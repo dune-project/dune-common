@@ -758,7 +758,7 @@ namespace Dune
 
   template<class TG, class TL, int N>
   ParallelIndexSet<TG,TL,N>::ParallelIndexSet()
-    : state_(GROUND), seqNo_(0)
+    : state_(GROUND), seqNo_(0), deletedEntries_()
   {}
 
   template<class TG, class TL, int N>
