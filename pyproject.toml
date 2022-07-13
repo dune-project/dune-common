@@ -10,5 +10,5 @@
 # included in the package install from source.
 #
 [build-system]
-requires = ['cmake>=3.13', 'jinja2', 'ninja', 'numpy', 'pip>=21', 'portalocker', 'requests', 'scikit-build', 'setuptools>=41', 'wheel']
+requires = ['cmake>=3.13', 'jinja2', 'ninja', 'numpy', 'pip>=21.a', 'portalocker', 'requests', 'scikit-build', 'setuptools>=41', 'wheel']
 build-backend = 'setuptools.build_meta'

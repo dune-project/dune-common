@@ -445,7 +445,15 @@ function(dune_python_build_package)
     set(PYPKGCONF_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYPKGCONF_PATH})
   endif()
 
-  dune_python_configure_dependencies(PATH ${PYPKGCONF_PATH} RESULT PYTHON_DEPENDENCIES_FAILED)
+  dune_python_configure_dependencies(
+       PATH ${PYPKGCONF_PATH}
+       RESULT PYTHON_DEPENDENCIES_FAILED)
+
+  if (PYTHON_DEPENDENCIES_FAILED)
+    # message(WARNING "DEPENDENCIES FAILED")
+    set(${PYPKGCONF_RESULT} ${PYTHON_DEPENDENCIES_FAILED} PARENT_SCOPE)
+    return()
+  endif()
 
   # Install the Python Package into the Dune virtual environment in the build stage
   if (NOT PYPKGCONF_BUILD_TARGET)
@@ -612,6 +620,12 @@ function(dune_python_configure_bindings)
     INSTALL_TARGET install_python_package_${PYCONFBIND_PACKAGENAME}
   )
 
+  # we could actually add metadata even if the configuration of the venv
+  # failed - some people set the PYTHON_PATH env variable instead of using
+  # a venv.
+  # At the moment the metadata is added to target that only exists if
+  # configuration succeeded. When moving to pure configure time this could
+  # be changed.
   if(NOT PYTHON_PACKAGE_FAILED)
     dune_link_dune_py(
       PATH ${CMAKE_CURRENT_BINARY_DIR}/${PYCONFBIND_PATH}
@@ -619,6 +633,8 @@ function(dune_python_configure_bindings)
       BUILD_TARGET build_python_package_${PYCONFBIND_PACKAGENAME}
       INSTALL_TARGET install_python_package_${PYCONFBIND_PACKAGENAME}
     )
+  else()
+    message(WARNING "python binding configuration failed - no linking done")
   endif()
 
 endfunction()
