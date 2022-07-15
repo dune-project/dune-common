@@ -1,7 +1,6 @@
 from setuptools import setup, find_namespace_packages
 
-pkg = ["pip>=21.a", "portalocker", "numpy", "wheel", "setuptools>=41", "jinja2"]
-pkg += '${RequiredPythonModules}'.replace(';',' ').split(' ')
+pkg = '${RequiredPythonModules}'.replace(';',' ').split(' ')
 
 # convert cmake bool to python bool
 def cmake_to_bool(str):

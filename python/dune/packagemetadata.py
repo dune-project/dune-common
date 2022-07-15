@@ -213,7 +213,7 @@ class Description:
                 while s:
                     match = re.match(r'(?P<module>[a-zA-Z0-9_\-]+)(\s*\((?P<version>[^)]*)\))?((?P<pyversion>[^\s]*))?', s)
                     if not match:
-                        raise ValueError('Invalid dependency list.')
+                        raise ValueError('Invalid dependency list: ' + s)
                     deps.append((match.group('module'), VersionRequirement(match.group('version') or match.group('pyversion'))))
                     s = s[match.end():].strip()
             return deps
@@ -573,13 +573,14 @@ def _extractCMakeFlags():
     duneOptsFile = None
     cmakeFlags = {}
     for x in _buildMetaData.combine_across_modules("CMAKE_FLAGS"):
-        for y in x.split(";"):
+        for y in x.split("<SEP>"):
             try:
                 k, v = y.split(":=", 1)
+                v = v.strip(' "')
                 if k == "DUNE_OPTS_FILE":
                     duneOptsFile = v
                 else:
-                    cmakeFlags[k] = v.strip()
+                    cmakeFlags[k] = v
             except ValueError:  # no '=' in line
                 pass
 
