@@ -445,7 +445,15 @@ function(dune_python_configure_package)
       --editable                  # Installations into the internal env are always editable
       .
     WORKING_DIRECTORY "${PYPKGCONF_PATH}"
+    RESULT_VARIABLE PYTHON_INSTALL_FAILED
+    ERROR_VARIABLE PYTHON_INSTALL_ERROR
+    WARNING_MESSAGE "python package at '${PYPKGCONF_PATH}' could not be installed - possibly connection to the python package index failed\n${PYTHON_INSTALL_ERROR}"
   )
+
+  set(${PYPKGCONF_RESULT} ${PYTHON_INSTALL_FAILED} PARENT_SCOPE)
+  if (PYTHON_INSTALL_FAILED)
+    return()
+  endif()
 
   #
   # Now define rules for `make install_python`.
@@ -514,9 +522,6 @@ function(dune_python_configure_package)
                                      WARNING_MESSAGE \"wheel installation failed - ignored\")"
           )
 
-  if (PYPKGCONF_RESULT)
-    set(${PYPKGCONF_RESULT} ${PYTHON_DEPENDENCIES_FAILED} PARENT_SCOPE)
-  endif()
 endfunction()
 
 
