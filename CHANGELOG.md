@@ -53,6 +53,16 @@ In order to build the DUNE core modules you need at least the following software
   which also contains a detailed set of instructions on how to update
   existing python bindings.
 
+- Deprecated `dune_python_install_package`. Use either
+  `dune_python_configure_binding` (for Python bindings)
+  `dune_python_configure_package` (for pure Python package).
+  See https://gitlab.dune-project.org/core/dune-common/-/merge_requests/1148
+  for more details.
+  Note that this MR also includes
+  https://gitlab.dune-project.org/core/dune-common/-/merge_requests/1103:
+  the Python bindings are not installed editable during the configure stage
+  instead of the build stage.
+
 - dune-py is now build using a simple 'Makefile' per module instead of
   relying on cmake for each module. The old cmake builder can still be used
   by exporting the environment variable `DUNE_PY_USE_CMAKEBUILDER=1`.
