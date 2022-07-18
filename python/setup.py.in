@@ -2,6 +2,22 @@ from setuptools import setup, find_namespace_packages
 
 pkg = '${RequiredPythonModules}'.replace(';',' ').split(' ')
 
+# convert cmake bool to python bool
+def cmake_to_bool(str):
+  if str in ['1', 'ON', 'YES', 'TRUE', 'Y']:
+    return True
+  else:
+    return False
+
+# if MPI is found dune-common will be linked to MPI
+# in that case we require mpi4py for MPI support from the Python side
+# This will not install mpi4py when installing in build-isolation but
+# will install it into the (internal) venv during a source build.
+# The case of a package installation is taken care of in
+# `python/dune/common/__init__.py'.
+if cmake_to_bool("${HAVE_MPI}") and not cmake_to_bool("${SKBUILD}"):
+  pkg += ['mpi4py']
+
 setup(name="${ProjectName}",
     # only add 'dune' here in dune-common other packages shouldn't add file # directly to 'dune'
     packages=find_namespace_packages(include=['dune','dune.*']),

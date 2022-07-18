@@ -121,4 +121,24 @@ if(Python3_Interpreter_FOUND)
 
   # Set up the Dune-internal virtualenv
   include(DunePythonVirtualenv)
+
+  # Determine where to install python packages
+  if(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
+    set(DUNE_PYTHON_INSTALL_LOCATION "system" CACHE STRING "Location of where to install python packages")
+  else()
+    set(DUNE_PYTHON_INSTALL_LOCATION "user" CACHE STRING "Location of where to install python packages")
+  endif()
+
+  if(NOT(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") OR
+         ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "system") OR
+         ("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none") OR
+         ("${DUNE_PYTHON_INSTALL_LOCATION}" MATCHES "--target")   # this allows to provide a folder, i.e., --target /home/foo/site-packages
+    ))
+    message(FATAL_ERROR "DUNE_PYTHON_INSTALL_LOCATION must be user|system|none|--target <target>.")
+  endif()
+
+  if(("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user") AND DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
+    message(FATAL_ERROR "Specifying 'user' as install location is incompatible with using virtual environments (as per pip docs)")
+  endif()
+
 endif()
