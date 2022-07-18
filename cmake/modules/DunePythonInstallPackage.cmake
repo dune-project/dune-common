@@ -29,13 +29,6 @@
 #
 #       Absolute path to the python package source code where to generate metadata.
 #
-#    .. cmake_param:: BUILD_TARGET
-#       :required:
-#       :single:
-#
-#       Name of the target that generates the package metadata and triggers the :dune-py:
-#       module configuration at build time.
-#
 #    .. cmake_param:: INSTALL_TARGET
 #       :required:
 #       :single:
@@ -64,7 +57,7 @@
 #    build time. This distinction is important because it means that the package dependencies
 #    will be available to be used during configuration time.
 #
-# .. cmake_function:: dune_python_build_package
+# .. cmake_function:: dune_python_configure_package
 #
 #    .. cmake_param:: PATH
 #       :required:
@@ -72,11 +65,6 @@
 #
 #       Path to the python package. In case of a relative path, it will be
 #       evaluated with respect to the :CMAKE_CURRENT_SOURCE_DIR:.
-#
-#    .. cmake_param:: BUILD_TARGET
-#       :single:
-#
-#       Name of the target that installs the package on the build directory.
 #
 #    .. cmake_param:: INSTALL_TARGET
 #       :single:
@@ -86,8 +74,8 @@
 #    .. cmake_param:: RESULT
 #       :single:
 #
-#       Variable where to store the result of the dependecy configuration.
-#       A non-zero result stands for a failure on the configuration of the dependecies.
+#       Variable where to store the result of the package configuration.
+#       A non-zero result stands for a failure on the configuration of the package.
 #
 #    .. cmake_param:: ADDITIONAL_PIP_PARAMS
 #       :multi:
@@ -103,9 +91,9 @@
 #      This is necessary for mixing installed and non-installed Dune modules.
 #
 #    The package at the given location is expected to be a pip-installable package.
-#    For convenience reasons wrt dune python bindings, this function installs the package
-#    at build time rather than at configure time. This distinction is important because it means
-#    that the package won't be yet available to be used during configuration time.
+#    This function installs the package at configure time. This distinction is
+#    important because it means that the package will be available to be used during
+#    other CMake configureation tasks.
 #
 #
 #
@@ -136,12 +124,17 @@
 #       then set in the CMakeLists.txt file of a generated dune-py module.
 #
 #    This is a convenience function that performs the tasks of
-#    :dune_python_configure_dependencies:, :dune_link_dune_py:, and :dune_python_build_package:.
+#    :dune_python_configure_dependencies:, :dune_link_dune_py:, and :dune_python_configure_package:.
 #    Additionally, it makes sure that a 'setup.py' is available with the following procedure:
 #
 #      1. If PATH contains a `setup.py` file, such file will be used to make a `pip install` from the source directory
 #      2. If PATH contains a `setup.py.in` file, such file will be configured and used to `pip install` the package from the binary directory
 #      3. Otherwise, this script will provide a template for `setup.py.in` and continue with 2.
+#
+# .. cmake_function:: dune_python_install_package
+#
+#    This function is deprecated, use :dune_python_configure_bindings: or
+#    :dune_python_configure_package: according to the needed behavior.
 #
 # .. cmake_variable:: DUNE_PYTHON_ADDITIONAL_PIP_PARAMS
 #
@@ -152,7 +145,6 @@ include_guard(GLOBAL)
 
 
 
-# finds all the dependencies of a python package and installs them at configure time
 function(dune_python_configure_dependencies)
   # Parse Arguments
   set(OPTION)
@@ -269,12 +261,10 @@ function(dune_python_configure_dependencies)
 endfunction()
 
 
-
-
 function(dune_link_dune_py)
   # Parse Arguments
   set(OPTION)
-  set(SINGLE PATH BUILD_TARGET INSTALL_TARGET)
+  set(SINGLE PATH INSTALL_TARGET)
   set(MULTI CMAKE_METADATA_FLAGS)
   cmake_parse_arguments(LINKDUNEPY "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(LINKDUNEPY_UNPARSED_ARGUMENTS)
@@ -413,9 +403,9 @@ function(dune_link_dune_py)
 endfunction()
 
 
-function(dune_python_build_package)
+function(dune_python_configure_package)
   # Parse Arguments
-  set(SINGLE PATH RESULT BUILD_TARGET INSTALL_TARGET)
+  set(SINGLE PATH RESULT INSTALL_TARGET)
   set(MULTI ADDITIONAL_PIP_PARAMS)
   cmake_parse_arguments(PYPKGCONF "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYPKGCONF_UNPARSED_ARGUMENTS)
@@ -431,22 +421,16 @@ function(dune_python_build_package)
        RESULT PYTHON_DEPENDENCIES_FAILED)
 
   if (PYTHON_DEPENDENCIES_FAILED)
-    # message(WARNING "DEPENDENCIES FAILED")
     set(${PYPKGCONF_RESULT} ${PYTHON_DEPENDENCIES_FAILED} PARENT_SCOPE)
     return()
-  endif()
-
-  # Install the Python Package into the Dune virtual environment in the build stage
-  if (NOT PYPKGCONF_BUILD_TARGET)
-    string(REPLACE "/" "_" PYPKGCONF_BUILD_TARGET "env_install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYPKGCONF_PATH}")
   endif()
 
   if(IS_DIRECTORY ${DUNE_PYTHON_WHEELHOUSE})
     set(WHEEL_OPTION "--find-links=file://${DUNE_PYTHON_WHEELHOUSE}")
   endif()
 
-  # installation target for dune package into local env - external requirements are already sorted and we want this step to not require
-  # internet access. Dune packages need to be installed at this stage and should not be obtained from pypi (those packages include the C++ part
+  # installation command for dune package into local env - external requirements are already sorted and we want this step to not require
+  # internet access. Dune packages need to be installed at this stage and should not be optained from pypi (those packages include the C++ part
   # of the module which we don't want to install. So only use available wheels.
   message(STATUS "Installing python package at ${PYPKGCONF_PATH} into Dune virtual environment ${DUNE_PIP_INDEX}")
   dune_execute_process(
@@ -589,11 +573,10 @@ function(dune_python_configure_bindings)
     message(FATAL_ERROR "dune_python_install_package: ${PYCONFBIND_FULLPATH} does not exists")
   endif()
 
-  dune_python_build_package(
+  dune_python_configure_package(
     PATH ${PYCONFBIND_FULLPATH}
     ADDITIONAL_PIP_PARAMS ${PYCONFBIND_ADDITIONAL_PIP_PARAMS}
     RESULT PYTHON_PACKAGE_FAILED
-    BUILD_TARGET build_python_package_${PYCONFBIND_PACKAGENAME}
     INSTALL_TARGET install_python_package_${PYCONFBIND_PACKAGENAME}
   )
 
@@ -607,7 +590,6 @@ function(dune_python_configure_bindings)
     dune_link_dune_py(
       PATH ${CMAKE_CURRENT_BINARY_DIR}/${PYCONFBIND_PATH}
       CMAKE_METADATA_FLAGS ${PYCONFBIND_CMAKE_METADATA_FLAGS}
-      BUILD_TARGET build_python_package_${PYCONFBIND_PACKAGENAME}
       INSTALL_TARGET install_python_package_${PYCONFBIND_PACKAGENAME}
     )
   else()
@@ -626,7 +608,7 @@ function(dune_python_install_package)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
   endif()
 
-  message(DEPRECATION "This function is deprecated. Use 'dune_python_configure_bindings' for python binding packages or 'dune_python_build_package' for installable python packages")
+  message(DEPRECATION "This function is deprecated. Use 'dune_python_configure_bindings' for python binding packages or 'dune_python_configure_package' for installable python packages")
 
   if(PYINST_DEPENDS)
     message(DEPRECATION "Argument DEPENDS is deprecated and will be ignored!")
@@ -637,7 +619,6 @@ function(dune_python_install_package)
     PACKAGENAME ${PYINST_PACKAGENAME}
     ADDITIONAL_PIP_PARAMS ${PYINST_ADDITIONAL_PIP_PARAMS}
     CMAKE_METADATA_FLAGS ${PYINST_CMAKE_METADATA_FLAGS}
-    BUILD_TARGET build_python_package_${PYINST_PACKAGENAME}
     INSTALL_TARGET install_python_package_${PYINST_PACKAGENAME}
   )
 
