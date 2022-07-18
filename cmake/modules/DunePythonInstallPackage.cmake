@@ -12,8 +12,8 @@
 #    .. cmake_param:: RESULT
 #       :single:
 #
-#       Variable where to store the result of the dependecy configuration.
-#       A non-zero result stands for a failure on the configuration of the dependecies.
+#       Variable where to store the result of the dependency configuration.
+#       A non-zero result stands for a failure on the configuration of the dependencies.
 #
 #     This function installs the dependencies of a python package at configure time.
 #     The dependencies are extracted from the :setup.py: and :requiements.txt: file
@@ -46,7 +46,7 @@
 #
 #     This function generates the metadata required for Python package in order to be
 #     used by the dune-py module. It essentially glues together python code generation
-#     of dune-py (via CMake) with a python package. This is acheived by generating a
+#     of dune-py (via CMake) with a python package. This is achiieved by generating a
 #     filename that CMake should export some meta data about this build to.
 #     The file will be installed together with the Python package. This mechanism
 #     is used by the Python bindings to transport information from CMake to
@@ -194,7 +194,7 @@ function(dune_python_configure_dependencies)
         set(DUNE_PYTHON_VENVSETUP FALSE CACHE BOOL "The internal venv setup failed: some required packages could not be installed")
         return()
       else()
-        set(DUNE_PYTHON_VENVSETUP TRUE CACHE BOOL "The internal venv setup successfull")
+        set(DUNE_PYTHON_VENVSETUP TRUE CACHE BOOL "The internal venv setup successful")
       endif()
     endif()
   endif()
@@ -215,7 +215,7 @@ function(dune_python_configure_dependencies)
     set(DUNE_PYTHON_VENVSETUP FALSE CACHE BOOL "The internal venv setup failed: some required packages could not be installed")
     return()
   else()
-    set(DUNE_PYTHON_VENVSETUP TRUE CACHE BOOL "The internal venv setup successfull")
+    set(DUNE_PYTHON_VENVSETUP TRUE CACHE BOOL "The internal venv setup successful")
   endif()
 
   # find the generated egg-info folder and install each dependency listed on the requires.txt file
@@ -251,7 +251,7 @@ function(dune_python_configure_dependencies)
           set(DUNE_PYTHON_VENVSETUP FALSE CACHE BOOL "The internal venv setup failed: some required packages could not be installed")
           return()
         else()
-          set(DUNE_PYTHON_VENVSETUP TRUE CACHE BOOL "The internal venv setup successfull")
+          set(DUNE_PYTHON_VENVSETUP TRUE CACHE BOOL "The internal venv setup successful")
         endif()
       endif()
     endforeach()
@@ -430,7 +430,7 @@ function(dune_python_configure_package)
   endif()
 
   # installation command for dune package into local env - external requirements are already sorted and we want this step to not require
-  # internet access. Dune packages need to be installed at this stage and should not be optained from pypi (those packages include the C++ part
+  # internet access. Dune packages need to be installed at this stage and should not be obtained from pypi (those packages include the C++ part
   # of the module which we don't want to install. So only use available wheels.
   message(STATUS "Installing python package at ${PYPKGCONF_PATH} into Dune virtual environment ${DUNE_PIP_INDEX}")
   dune_execute_process(
