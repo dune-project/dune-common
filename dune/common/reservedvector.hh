@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
+#include <iterator>
 #include <cstddef>
 #include <dune/common/genericiterator.hh>
 #include <initializer_list>
@@ -50,6 +51,8 @@ namespace Dune
     typedef T value_type;
     //! Pointer to T.
     typedef T* pointer;
+    //! Const pointer to T.
+    typedef T const* const_pointer;
     //! Reference to T
     typedef T& reference;
     //! Const reference to T
@@ -62,24 +65,30 @@ namespace Dune
     typedef Dune::GenericIterator<ReservedVector, value_type> iterator;
     //! Const iterator used to iterate through a vector.
     typedef Dune::GenericIterator<const ReservedVector, const value_type> const_iterator;
+    //! Reverse iterator
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    //! Const reverse iterator
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
     /** @} */
 
     /** @{ Constructors */
 
     //! Constructor
-    ReservedVector() = default;
+    constexpr ReservedVector() noexcept = default;
 
-    ReservedVector(std::initializer_list<T> const &l)
+    constexpr ReservedVector(std::initializer_list<T> const &l) noexcept
     {
-      assert(l.size() <= n);// Actually, this is not needed any more!
+      assert(l.size() <= n);// Actually, this is not needed any more! Why?
       size_ = l.size();
-      std::copy_n(l.begin(), size_, storage_.data());
+      auto it = l.begin();
+      for (size_type i=0; i<size_ && it!=l.end(); ++i)
+        storage_[i] = *it++;
     }
 
     /** @} */
 
-    bool operator == (const ReservedVector & other) const
+    constexpr bool operator== (const ReservedVector & other) const noexcept
     {
       bool eq = (size_ == other.size_);
       for (size_type i=0; i<size_ && eq; ++i)
@@ -87,91 +96,167 @@ namespace Dune
       return eq;
     }
 
-    /** @{ Data access operations */
+    /** @{ Modifiers */
 
     //! Erases all elements.
-    void clear()
+    constexpr void clear() noexcept
     {
       size_ = 0;
     }
 
     //! Specifies a new size for the vector.
-    void resize(size_t s)
+    constexpr void resize(size_type s) noexcept
     {
       CHECKSIZE(s<=n);
       size_ = s;
     }
 
     //! Appends an element to the end of a vector, up to the maximum size n, O(1) time.
-    void push_back(const T& t)
+    constexpr void push_back(const T& t) noexcept
     {
       CHECKSIZE(size_<n);
       storage_[size_++] = t;
     }
 
     //! Erases the last element of the vector, O(1) time.
-    void pop_back()
+    constexpr void pop_back() noexcept
     {
       if (! empty()) size_--;
     }
 
+    /** @} */
+
+    /** @{ Iterators  */
+
     //! Returns a iterator pointing to the beginning of the vector.
-    iterator begin(){
+    constexpr iterator begin() noexcept
+    {
       return iterator(*this, 0);
     }
 
     //! Returns a const_iterator pointing to the beginning of the vector.
-    const_iterator begin() const {
+    constexpr const_iterator begin() const noexcept
+    {
       return const_iterator(*this, 0);
     }
 
+    //! Returns a const_iterator pointing to the beginning of the vector.
+    constexpr const_iterator cbegin() const noexcept
+    {
+      return const_iterator(*this, 0);
+    }
+
+    //! Returns a const reverse-iterator pointing to the end of the vector.
+    constexpr reverse_iterator rbegin() noexcept
+    {
+      return reverse_iterator{begin()+size()};
+    }
+
+    //! Returns a const reverse-iterator pointing to the end of the vector.
+    constexpr const_reverse_iterator rbegin() const noexcept
+    {
+      return const_reverse_iterator{begin()+size()};
+    }
+
+    //! Returns a const reverse-iterator pointing to the end of the vector.
+    constexpr const_reverse_iterator crbegin() const noexcept
+    {
+      return const_reverse_iterator{begin()+size()};
+    }
+
     //! Returns an iterator pointing to the end of the vector.
-    iterator end(){
+    constexpr iterator end() noexcept
+    {
       return iterator(*this, size_);
     }
 
     //! Returns a const_iterator pointing to the end of the vector.
-    const_iterator end() const {
+    constexpr const_iterator end() const noexcept
+    {
       return const_iterator(*this, size_);
     }
 
+    //! Returns a const_iterator pointing to the end of the vector.
+    constexpr const_iterator cend() const noexcept
+    {
+      return const_iterator(*this, size_);
+    }
+
+    //! Returns a const reverse-iterator pointing to the begin of the vector.
+    constexpr reverse_iterator rend() noexcept
+    {
+      return reverse_iterator{begin()};
+    }
+
+    //! Returns a const reverse-iterator pointing to the begin of the vector.
+    constexpr const_reverse_iterator rend() const noexcept
+    {
+      return const_reverse_iterator{begin()};
+    }
+
+    //! Returns a const reverse-iterator pointing to the begin of the vector.
+    constexpr const_reverse_iterator crend() const noexcept
+    {
+      return const_reverse_iterator{begin()};
+    }
+
+    /** @} */
+
+    /** @{ Element access  */
+
     //! Returns reference to the i'th element.
-    reference operator[] (size_type i)
+    constexpr reference at(size_type i)
+    {
+      if (!(i < size()))
+        DUNE_THROW(Dune::RangeError, "Index out of range");
+      return storage_[i];
+    }
+
+    //! Returns a const reference to the i'th element.
+    constexpr const_reference at(size_type i) const
+    {
+      if (!(i < size()))
+        DUNE_THROW(Dune::RangeError, "Index out of range");
+      return storage_[i];
+    }
+
+    //! Returns reference to the i'th element.
+    constexpr reference operator[] (size_type i) noexcept
     {
       CHECKSIZE(size_>i);
       return storage_[i];
     }
 
     //! Returns a const reference to the i'th element.
-    const_reference operator[] (size_type i) const
+    constexpr const_reference operator[] (size_type i) const noexcept
     {
       CHECKSIZE(size_>i);
       return storage_[i];
     }
 
     //! Returns reference to first element of vector.
-    reference front()
+    constexpr reference front() noexcept
     {
       CHECKSIZE(size_>0);
       return storage_[0];
     }
 
     //! Returns const reference to first element of vector.
-    const_reference front() const
+    constexpr const_reference front() const noexcept
     {
       CHECKSIZE(size_>0);
       return storage_[0];
     }
 
     //! Returns reference to last element of vector.
-    reference back()
+    constexpr reference back() noexcept
     {
       CHECKSIZE(size_>0);
       return storage_[size_-1];
     }
 
     //! Returns const reference to last element of vector.
-    const_reference back() const
+    constexpr const_reference back() const noexcept
     {
       CHECKSIZE(size_>0);
       return storage_[size_-1];
@@ -179,30 +264,49 @@ namespace Dune
 
     /** @} */
 
-    /** @{ Informative Methods */
+    /** @{ Capacity */
 
     //! Returns number of elements in the vector.
-    size_type size () const
+    constexpr size_type size() const noexcept
     {
       return size_;
     }
 
     //! Returns true if vector has no elements.
-    bool empty() const
+    constexpr bool empty() const noexcept
     {
       return size_==0;
     }
 
     //! Returns current capacity (allocated memory) of the vector.
-    static constexpr size_type capacity()
+    static constexpr size_type capacity() noexcept
     {
       return n;
     }
 
     //! Returns the maximum length of the vector.
-    static constexpr size_type max_size()
+    static constexpr size_type max_size() noexcept
     {
       return n;
+    }
+
+    /** @} */
+
+    /** @{ Operations */
+
+    //! Fill the container with the value
+    constexpr void fill(const value_type& value) noexcept
+    {
+      for (size_type i=0; i<size(); ++i)
+        storage_[i] = value;
+    }
+
+    //! Swap the content with another vector
+    void swap(ReservedVector& other) noexcept(std::is_nothrow_swappable_v<T>)
+    {
+      using std::swap;
+      swap(storage_, other.storage_);
+      swap(size_, other.size_);
     }
 
     /** @} */
@@ -210,7 +314,7 @@ namespace Dune
     //! Send ReservedVector to an output stream
     friend std::ostream& operator<< (std::ostream& s, const ReservedVector& v)
     {
-      for (size_t i=0; i<v.size(); i++)
+      for (size_type i=0; i<v.size(); i++)
         s << v[i] << "  ";
       return s;
     }

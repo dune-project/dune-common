@@ -58,5 +58,26 @@ int main() {
   // try and try again with a const ReservedVector
   std::unordered_map< const Dune::ReservedVector<unsigned int, 8>, double> const_rv_map;
 
+  rv = {1,2,3,4};
+  { // check forward iterators
+    unsigned int i = 1;
+    for (auto it = rv.begin(); it != rv.end(); ++it)
+      test.check( *it == i++ );
+
+    // check backward iterators
+    i = 4;
+    for (auto it = rv.rbegin(); it != rv.rend(); ++it)
+      test.check( *it == i-- );
+
+    // check raw data
+    i = 1;
+    for (auto* it = rv.data(); it != rv.data()+rv.size(); ++it)
+      test.check( *it == i++ );
+  }
+
+  { // check constexpr
+    constexpr Dune::ReservedVector<unsigned int, 8> crv{3,2,1};
+    static_assert(crv.size() == 3);
+  }
   return 0;
 }
