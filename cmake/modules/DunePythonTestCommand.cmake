@@ -16,12 +16,29 @@
 #       The Python module to execute using the python interpreter. It will be executed during :code:`make test_python`
 #       and during `ctest`. You are required to either pass SCRIPT or MODULE.
 #
+#    .. cmake_param:: LABELS
+#       :multi:
+#
+#       A list of labels to add to the test. This sets
+#       the LABELS property on the test so :code:`ctest -L ${label_regex}` can
+#       be used to run all tests with certain labels. We always add the label
+#       :code:`python` per default. The labels are forwarded to
+#       :ref:`dune_add_test`. See :ref:`dune_add_test` for a
+#       more detailed documentation.
+#
 #    .. cmake_param:: WORKING_DIRECTORY
 #       :single:
 #       :argname: dir
 #
 #       The working directory of the command. Defaults to
 #       the current build directory.
+#
+#    .. cmake_param:: TIMEOUT
+#       :single:
+#
+#       If set, the test will time out after the given number of seconds. This supersedes
+#       any timeout setting in ctest (see `cmake --help-property TIMEOUT`). If you
+#       specify the MPI_RANKS option, you need to specify a TIMEOUT.
 #
 #    .. cmake_param:: NAME
 #       :single:
@@ -40,18 +57,21 @@ include_guard(GLOBAL)
 function(dune_python_add_test)
   # Parse Arguments
   set(OPTION)
-  set(SINGLE NAME)
-  set(MULTI SCRIPT MODULE CMAKE_GUARD LABELS TIMEOUT)
+  set(SINGLE NAME WORKING_DIRECTORY)
+  set(MULTI SCRIPT MODULE LABELS TIMEOUT)
   cmake_parse_arguments(PYTEST "" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYTEST_COMMAND)
     message(FATAL_ERROR "dune_python_add_test: COMMAND argument should not be used, use SCRIPT instead providing only the Python script and not the Python interpreter")
   endif()
 
   # Apply defaults
-  set(PYTEST_CMAKE_GUARD ${PYTEST_CMAKE_GUARD} DUNE_ENABLE_PYTHONBINDINGS)
   set(PYTEST_LABELS ${PYTEST_LABELS} python)
   if(NOT PYTEST_TIMEOUT)
     set(PYTEST_TIMEOUT 3600)
+  endif()
+
+  if(NOT PYTEST_WORKING_DIRECTORY)
+    set(PYTEST_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   endif()
 
   if((NOT PYTEST_MODULE) AND (NOT PYTEST_SCRIPT))
@@ -81,8 +101,8 @@ function(dune_python_add_test)
                 COMMAND ${PYTEST_COMMAND}
                 CMD_ARGS ${PYTEST_CMD_ARGS}
                 PYTHON_TEST
-                CMAKE_GUARD ${PYTEST_CMAKE_GUARD}
                 LABELS ${PYTEST_LABELS}
+                WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY}
                 TIMEOUT ${PYTEST_TIMEOUT}
                 ${PYTEST_UNPARSED_ARGUMENTS}
                )
