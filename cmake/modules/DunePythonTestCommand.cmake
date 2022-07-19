@@ -41,14 +41,13 @@ function(dune_python_add_test)
   # Parse Arguments
   set(OPTION)
   set(SINGLE NAME WORKING_DIRECTORY)
-  set(MULTI SCRIPT MODULE CMAKE_GUARD LABELS TIMEOUT)
+  set(MULTI SCRIPT MODULE LABELS TIMEOUT)
   cmake_parse_arguments(PYTEST "" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYTEST_COMMAND)
     message(FATAL_ERROR "dune_python_add_test: COMMAND argument should not be used, use SCRIPT instead providing only the Python script and not the Python interpreter")
   endif()
 
   # Apply defaults
-  set(PYTEST_CMAKE_GUARD ${PYTEST_CMAKE_GUARD} DUNE_ENABLE_PYTHONBINDINGS)
   set(PYTEST_LABELS ${PYTEST_LABELS} python)
   if(NOT PYTEST_TIMEOUT)
     set(PYTEST_TIMEOUT 3600)
@@ -85,7 +84,6 @@ function(dune_python_add_test)
                 COMMAND ${PYTEST_COMMAND}
                 CMD_ARGS ${PYTEST_CMD_ARGS}
                 PYTHON_TEST
-                CMAKE_GUARD ${PYTEST_CMAKE_GUARD}
                 LABELS ${PYTEST_LABELS}
                 WORKING_DIRECTORY ${PYTEST_WORKING_DIRECTORY}
                 TIMEOUT ${PYTEST_TIMEOUT}
