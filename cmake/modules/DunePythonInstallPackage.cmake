@@ -298,8 +298,10 @@ function(dune_link_dune_py)
   set(metadatafile ${LINKDUNEPY_PATH}/${LINKDUNEPY_CMAKE_METADATA_FILE})
 
   # Collect some variables that we would like to export
+  set(_deps ${ProjectName})
   set(_export_builddirs "${CMAKE_BINARY_DIR}")
   foreach(mod ${ALL_DEPENDENCIES})
+    string(APPEND _deps " ${mod}")
     string(APPEND _export_builddirs "\;${${mod}_DIR}")
   endforeach()
 
@@ -349,13 +351,17 @@ function(dune_link_dune_py)
   endif()
 
   # Make sure to generate the metadata for the build stage
+  # Issue: parameter forwarding fails when using dune_execute_process so
+  # reverting to 'execute_process' for now. Alternative would be to extra escape the ';':
+  # e.g. string(REPLACE ";" "\\\\\\\;" _export_builddirs # "${_export_builddirs}")
+  # and the same for the DEPS argument.
   if(SKBUILD)
     # this is the only version of the metadata we need for the package installation
     message(STATUS "Generating the CMake metadata file at ${LINKDUNEPY_CMAKE_METADATA_FILE}")
-    dune_execute_process(
+    execute_process(
       COMMAND ${CMAKE_COMMAND}
         -Dmetadatafile=${metadatafile}
-        -DDEPS=${PROJECT_NAME};${ALL_DEPENDENCIES}
+        -DDEPS=${_deps}
         -DMODULENAME=${PROJECT_NAME}
         -DCMAKE_FLAGS=${_cmake_flags}
         -P ${scriptdir}/WritePythonCMakeMetadata.cmake
@@ -367,22 +373,24 @@ function(dune_link_dune_py)
   else()
     # this is the build version - keep in mind there is an install version further down
     message(STATUS "Generating the CMake metadata file at ${LINKDUNEPY_CMAKE_METADATA_FILE}")
-    dune_execute_process(
+    execute_process(
       COMMAND ${CMAKE_COMMAND}
         -Dmetadatafile=${metadatafile}
         -DDEPBUILDDIRS=${_export_builddirs}
-        -DDEPS=${PROJECT_NAME};${ALL_DEPENDENCIES}
+        -DDEPS=${_deps}
         -DMODULENAME=${PROJECT_NAME}
         -DCMAKE_FLAGS=${_cmake_flags}
         -DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
         -P ${scriptdir}/WritePythonCMakeMetadata.cmake
     )
+    #  WARNING_MESSAGE "Writing metadata failed"
+
     if(NOT "${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")
       add_custom_target(
         metadata_${LINKDUNEPY_INSTALL_TARGET}
         COMMAND ${CMAKE_COMMAND}
           -Dmetadatafile=${metadatafile}
-          -DDEPS="${PROJECT_NAME};${ALL_DEPENDENCIES}"
+          -DDEPS=${_deps}
           -DMODULENAME=${PROJECT_NAME}
           -DCMAKE_FLAGS="${_cmake_flags}"
           -DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
