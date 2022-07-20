@@ -14,10 +14,24 @@
 
 struct A
 {
-  A() = default;
-  A(int a,double b) : a_(a), b_(b) {};
-  int a_ = 0;
-  double b_ = 0.0;
+  explicit A(int s = 42)
+    : data_(s > 0 ? new double[s] : nullptr)
+    , size_(s) {};
+  A(const A& other)
+    : A(other.size_) {}
+  A(A&& other) {
+    std::swap(data_, other.data_);
+    std::swap(size_, other.size_);
+  }
+  A& operator=(A other) {
+    std::swap(data_, other.data_);
+    std::swap(size_, other.size_);
+    return *this;
+  }
+  ~A() { delete[] data_; }
+
+  double* data_ = nullptr;
+  int size_ = 0;
 };
 
 int main() {
@@ -91,12 +105,10 @@ int main() {
 
   { // check non-fundamental types
     Dune::ReservedVector<A, 8> rvA;
-    rvA.push_back(A(5,7.0));
-    rvA.emplace_back(A(5,7.0));
-    rvA.emplace_back(5,7.0);
+    rvA.push_back(A(5));
+    rvA.emplace_back(A(5));
+    rvA.emplace_back(5);
     test.check( rvA.size() == 3 );
-    test.check( rvA.back().a_ == 5 );
-    test.check( rvA.back().b_ == 7.0 );
   }
 
   { // check constexpr

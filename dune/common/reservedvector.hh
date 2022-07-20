@@ -77,9 +77,15 @@ namespace Dune
     /** @{ Constructors */
 
     //! Constructor
-    constexpr ReservedVector() noexcept = default;
+    constexpr ReservedVector()
+          noexcept(std::is_nothrow_default_constructible_v<value_type>)
+      : storage_()
+      , size_(0)
+    {}
 
-    constexpr ReservedVector(std::initializer_list<T> const &l) noexcept
+    constexpr ReservedVector(std::initializer_list<T> const &l)
+          noexcept(std::is_nothrow_default_constructible_v<value_type>)
+      : ReservedVector()
     {
       assert(l.size() <= n);
       size_ = l.size();
@@ -114,14 +120,16 @@ namespace Dune
     }
 
     //! Appends an element to the end of a vector, up to the maximum size n, O(1) time.
-    constexpr void push_back(const value_type& t) noexcept
+    constexpr void push_back(const value_type& t)
+          noexcept(std::is_nothrow_copy_assignable_v<value_type>)
     {
       CHECKSIZE(size_<n);
       storage_[size_++] = t;
     }
 
     //! Appends an element to the end of a vector by moving the value, up to the maximum size n, O(1) time.
-    constexpr void push_back(value_type&& t) noexcept
+    constexpr void push_back(value_type&& t)
+          noexcept(std::is_nothrow_move_assignable_v<value_type>)
     {
       CHECKSIZE(size_<n);
       storage_[size_++] = std::move(t);
@@ -130,6 +138,7 @@ namespace Dune
     //! Appends an element to the end of a vector by constructing it in place
     template<class... Args>
     reference emplace_back(Args&&... args)
+          noexcept(std::is_nothrow_constructible_v<value_type,decltype(args)...>)
     {
       CHECKSIZE(size_<n);
       value_type* p = &storage_[size_++];
@@ -332,14 +341,16 @@ namespace Dune
     /** @{ Operations */
 
     //! Fill the container with the value
-    constexpr void fill(const value_type& value) noexcept
+    constexpr void fill(const value_type& value)
+          noexcept(std::is_nothrow_copy_assignable_v<value_type>)
     {
       for (size_type i=0; i<size(); ++i)
         storage_[i] = value;
     }
 
     //! Swap the content with another vector
-    void swap(ReservedVector& other) noexcept(std::is_nothrow_swappable_v<value_type>)
+    void swap(ReservedVector& other)
+          noexcept(std::is_nothrow_swappable_v<value_type>)
     {
       using std::swap;
       swap(storage_, other.storage_);
@@ -362,8 +373,8 @@ namespace Dune
     }
 
   private:
-    storage_type storage_ = {};
-    size_type size_ = 0;
+    storage_type storage_;
+    size_type size_;
   };
 
 }
