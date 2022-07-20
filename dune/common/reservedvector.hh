@@ -9,10 +9,10 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <iostream>
 #include <iterator>
 #include <cstddef>
-#include <dune/common/genericiterator.hh>
 #include <initializer_list>
 
 #include <dune/common/hash.hh>
@@ -43,28 +43,30 @@ namespace Dune
   template<class T, int n>
   class ReservedVector
   {
+    using storage_type = std::array<T,n>;
+
   public:
 
     /** @{ Typedefs */
 
     //! The type of object, T, stored in the vector.
-    typedef T value_type;
+    typedef typename storage_type::value_type value_type;
     //! Pointer to T.
-    typedef T* pointer;
+    typedef typename storage_type::pointer pointer;
     //! Const pointer to T.
-    typedef T const* const_pointer;
+    typedef typename storage_type::const_pointer const_pointer;
     //! Reference to T
-    typedef T& reference;
+    typedef typename storage_type::reference reference;
     //! Const reference to T
-    typedef const T& const_reference;
+    typedef typename storage_type::const_reference const_reference;
     //! An unsigned integral type.
-    typedef size_t size_type;
+    typedef typename storage_type::size_type size_type;
     //! A signed integral type.
-    typedef std::ptrdiff_t difference_type;
+    typedef typename storage_type::difference_type difference_type;
     //! Iterator used to iterate through a vector.
-    typedef Dune::GenericIterator<ReservedVector, value_type> iterator;
+    typedef typename storage_type::iterator iterator;
     //! Const iterator used to iterate through a vector.
-    typedef Dune::GenericIterator<const ReservedVector, const value_type> const_iterator;
+    typedef typename storage_type::const_iterator const_iterator;
     //! Reverse iterator
     typedef std::reverse_iterator<iterator> reverse_iterator;
     //! Const reverse iterator
@@ -79,7 +81,7 @@ namespace Dune
 
     constexpr ReservedVector(std::initializer_list<T> const &l) noexcept
     {
-      assert(l.size() <= n);// Actually, this is not needed any more! Why?
+      assert(l.size() <= n);
       size_ = l.size();
       auto it = l.begin();
       for (size_type i=0; i<size_ && it!=l.end(); ++i)
@@ -112,10 +114,33 @@ namespace Dune
     }
 
     //! Appends an element to the end of a vector, up to the maximum size n, O(1) time.
-    constexpr void push_back(const T& t) noexcept
+    constexpr void push_back(const value_type& t) noexcept
     {
       CHECKSIZE(size_<n);
       storage_[size_++] = t;
+    }
+
+    //! Appends an element to the end of a vector by moving the value, up to the maximum size n, O(1) time.
+    constexpr void push_back(value_type&& t) noexcept
+    {
+      CHECKSIZE(size_<n);
+      storage_[size_++] = std::move(t);
+    }
+
+    //! Appends an element to the end of a vector by constructing it in place
+    template<class... Args>
+    reference emplace_back(Args&&... args)
+    {
+      CHECKSIZE(size_<n);
+      value_type* p = &storage_[size_++];
+      // first destroy any previously (default) constructed element at that location
+      p->~value_type();
+      // construct the value_type in place
+      // NOTE: This is not an integral constant expression.
+      // With c++20 we could use std::construct_at
+      ::new (const_cast<void*>(static_cast<const volatile void*>(p)))
+          value_type(std::forward<Args>(args)...);
+      return *p;
     }
 
     //! Erases the last element of the vector, O(1) time.
@@ -131,19 +156,19 @@ namespace Dune
     //! Returns a iterator pointing to the beginning of the vector.
     constexpr iterator begin() noexcept
     {
-      return iterator(*this, 0);
+      return storage_.begin();
     }
 
     //! Returns a const_iterator pointing to the beginning of the vector.
     constexpr const_iterator begin() const noexcept
     {
-      return const_iterator(*this, 0);
+      return storage_.begin();
     }
 
     //! Returns a const_iterator pointing to the beginning of the vector.
     constexpr const_iterator cbegin() const noexcept
     {
-      return const_iterator(*this, 0);
+      return storage_.cbegin();
     }
 
     //! Returns a const reverse-iterator pointing to the end of the vector.
@@ -167,19 +192,19 @@ namespace Dune
     //! Returns an iterator pointing to the end of the vector.
     constexpr iterator end() noexcept
     {
-      return iterator(*this, size_);
+      return storage_.begin()+size();
     }
 
     //! Returns a const_iterator pointing to the end of the vector.
     constexpr const_iterator end() const noexcept
     {
-      return const_iterator(*this, size_);
+      return storage_.begin()+size();
     }
 
     //! Returns a const_iterator pointing to the end of the vector.
     constexpr const_iterator cend() const noexcept
     {
-      return const_iterator(*this, size_);
+      return storage_.cbegin()+size();
     }
 
     //! Returns a const reverse-iterator pointing to the begin of the vector.
@@ -208,7 +233,7 @@ namespace Dune
     constexpr reference at(size_type i)
     {
       if (!(i < size()))
-        DUNE_THROW(Dune::RangeError, "Index out of range");
+        throw std::out_of_range("Index out of range");
       return storage_[i];
     }
 
@@ -216,7 +241,7 @@ namespace Dune
     constexpr const_reference at(size_type i) const
     {
       if (!(i < size()))
-        DUNE_THROW(Dune::RangeError, "Index out of range");
+        throw std::out_of_range("Index out of range");
       return storage_[i];
     }
 
@@ -262,6 +287,18 @@ namespace Dune
       return storage_[size_-1];
     }
 
+    //! Returns pointer to the underlying memory.
+    constexpr pointer data() noexcept
+    {
+      return storage_.data();
+    }
+
+    //! Returns const pointer to the underlying memory.
+    constexpr const_pointer data() const noexcept
+    {
+      return storage_.data();
+    }
+
     /** @} */
 
     /** @{ Capacity */
@@ -302,7 +339,7 @@ namespace Dune
     }
 
     //! Swap the content with another vector
-    void swap(ReservedVector& other) noexcept(std::is_nothrow_swappable_v<T>)
+    void swap(ReservedVector& other) noexcept(std::is_nothrow_swappable_v<value_type>)
     {
       using std::swap;
       swap(storage_, other.storage_);
@@ -325,7 +362,7 @@ namespace Dune
     }
 
   private:
-    std::array<T,n> storage_ = {};
+    storage_type storage_ = {};
     size_type size_ = 0;
   };
 

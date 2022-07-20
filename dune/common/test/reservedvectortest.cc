@@ -12,6 +12,14 @@
 #include <dune/common/classname.hh>
 #include <dune/common/reservedvector.hh>
 
+struct A
+{
+  A() = default;
+  A(int a,double b) : a_(a), b_(b) {};
+  int a_ = 0;
+  double b_ = 0.0;
+};
+
 int main() {
   Dune::TestSuite test;
   // check that make_array works
@@ -30,6 +38,12 @@ int main() {
   rv.push_back(5);
   test.check(rv.size() == 5);
   test.check(rv.back() == 5);
+
+  // check emplace_back
+  test.check(rv.emplace_back(6) == 6);
+  test.check(rv.size() == 6);
+  test.check(rv.back() == 6);
+  rv.pop_back();
 
   // check copy constructor
   Dune::ReservedVector<unsigned int, 8> rv2 = rv;
@@ -75,9 +89,20 @@ int main() {
       test.check( *it == i++ );
   }
 
+  { // check non-fundamental types
+    Dune::ReservedVector<A, 8> rvA;
+    rvA.push_back(A(5,7.0));
+    rvA.emplace_back(A(5,7.0));
+    rvA.emplace_back(5,7.0);
+    test.check( rvA.size() == 3 );
+    test.check( rvA.back().a_ == 5 );
+    test.check( rvA.back().b_ == 7.0 );
+  }
+
   { // check constexpr
     constexpr Dune::ReservedVector<unsigned int, 8> crv{3,2,1};
     static_assert(crv.size() == 3);
+    static_assert(crv.at(2) == 1);
   }
   return 0;
 }
