@@ -264,15 +264,21 @@ endfunction()
 function(dune_link_dune_py)
   # Parse Arguments
   set(OPTION)
-  set(SINGLE PATH INSTALL_TARGET)
+  set(SINGLE PATH INSTALL_TARGET PACKAGENAME)
   set(MULTI CMAKE_METADATA_FLAGS)
   cmake_parse_arguments(LINKDUNEPY "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(LINKDUNEPY_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
   endif()
 
+
+  # check the package name argument
+  if("${LINKDUNEPY_PACKAGENAME}" STREQUAL "")
+    message(FATAL_ERROR "PACKAGENAME cannot be empty!")
+  endif()
+
   # set the meta data file path for this package
-  set(LINKDUNEPY_CMAKE_METADATA_FILE "dune/data/${ProjectName}.cmake")
+  set(LINKDUNEPY_CMAKE_METADATA_FILE "${LINKDUNEPY_PACKAGENAME}/data/${ProjectName}.cmake")
 
   # Locate the cmake/scripts directory of dune-common
   dune_module_path(MODULE dune-common
@@ -544,7 +550,7 @@ function(dune_python_configure_bindings)
 
   # set the new package name
   if("${PYCONFBIND_PACKAGENAME}" STREQUAL "")
-      set(PYCONFBIND_PACKAGENAME "dune")
+    set(PYCONFBIND_PACKAGENAME "dune")
   endif()
 
   if ("${DUNE_BINDINGS_PACKAGENAME}" STREQUAL "")
@@ -602,8 +608,9 @@ function(dune_python_configure_bindings)
   if(NOT PYTHON_PACKAGE_FAILED)
     dune_link_dune_py(
       PATH ${CMAKE_CURRENT_BINARY_DIR}/${PYCONFBIND_PATH}
-      CMAKE_METADATA_FLAGS ${PYCONFBIND_CMAKE_METADATA_FLAGS}
+      PACKAGENAME ${PYCONFBIND_PACKAGENAME}
       INSTALL_TARGET install_python_package_${PYCONFBIND_PACKAGENAME}
+      CMAKE_METADATA_FLAGS ${PYCONFBIND_CMAKE_METADATA_FLAGS}
     )
   else()
     message(WARNING "python binding configuration failed - no linking done")
