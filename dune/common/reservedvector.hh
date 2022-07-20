@@ -35,7 +35,7 @@ namespace Dune
      This implies that the vector cannot grow bigger than the predefined
      maximum size.
 
-     \tparam T The data type ReservedVector stores.
+     \tparam T The value type ReservedVector stores.
      \tparam n The maximum number of objects the ReservedVector can store.
 
    */
@@ -73,17 +73,17 @@ namespace Dune
     ReservedVector(std::initializer_list<T> const &l)
     {
       assert(l.size() <= n);// Actually, this is not needed any more!
-      sz = l.size();
-      std::copy_n(l.begin(), sz, data.data());
+      size_ = l.size();
+      std::copy_n(l.begin(), size_, storage_.data());
     }
 
     /** @} */
 
     bool operator == (const ReservedVector & other) const
     {
-      bool eq = (sz == other.sz);
-      for (size_type i=0; i<sz && eq; ++i)
-        eq = eq && (data[i] == other.data[i]);
+      bool eq = (size_ == other.size_);
+      for (size_type i=0; i<size_ && eq; ++i)
+        eq = eq && (storage_[i] == other.storage_[i]);
       return eq;
     }
 
@@ -92,27 +92,27 @@ namespace Dune
     //! Erases all elements.
     void clear()
     {
-      sz = 0;
+      size_ = 0;
     }
 
     //! Specifies a new size for the vector.
     void resize(size_t s)
     {
       CHECKSIZE(s<=n);
-      sz = s;
+      size_ = s;
     }
 
     //! Appends an element to the end of a vector, up to the maximum size n, O(1) time.
     void push_back(const T& t)
     {
-      CHECKSIZE(sz<n);
-      data[sz++] = t;
+      CHECKSIZE(size_<n);
+      storage_[size_++] = t;
     }
 
     //! Erases the last element of the vector, O(1) time.
     void pop_back()
     {
-      if (! empty()) sz--;
+      if (! empty()) size_--;
     }
 
     //! Returns a iterator pointing to the beginning of the vector.
@@ -127,54 +127,54 @@ namespace Dune
 
     //! Returns an iterator pointing to the end of the vector.
     iterator end(){
-      return iterator(*this, sz);
+      return iterator(*this, size_);
     }
 
     //! Returns a const_iterator pointing to the end of the vector.
     const_iterator end() const {
-      return const_iterator(*this, sz);
+      return const_iterator(*this, size_);
     }
 
     //! Returns reference to the i'th element.
     reference operator[] (size_type i)
     {
-      CHECKSIZE(sz>i);
-      return data[i];
+      CHECKSIZE(size_>i);
+      return storage_[i];
     }
 
     //! Returns a const reference to the i'th element.
     const_reference operator[] (size_type i) const
     {
-      CHECKSIZE(sz>i);
-      return data[i];
+      CHECKSIZE(size_>i);
+      return storage_[i];
     }
 
     //! Returns reference to first element of vector.
     reference front()
     {
-      CHECKSIZE(sz>0);
-      return data[0];
+      CHECKSIZE(size_>0);
+      return storage_[0];
     }
 
     //! Returns const reference to first element of vector.
     const_reference front() const
     {
-      CHECKSIZE(sz>0);
-      return data[0];
+      CHECKSIZE(size_>0);
+      return storage_[0];
     }
 
     //! Returns reference to last element of vector.
     reference back()
     {
-      CHECKSIZE(sz>0);
-      return data[sz-1];
+      CHECKSIZE(size_>0);
+      return storage_[size_-1];
     }
 
     //! Returns const reference to last element of vector.
     const_reference back() const
     {
-      CHECKSIZE(sz>0);
-      return data[sz-1];
+      CHECKSIZE(size_>0);
+      return storage_[size_-1];
     }
 
     /** @} */
@@ -184,13 +184,13 @@ namespace Dune
     //! Returns number of elements in the vector.
     size_type size () const
     {
-      return sz;
+      return size_;
     }
 
     //! Returns true if vector has no elements.
     bool empty() const
     {
-      return sz==0;
+      return size_==0;
     }
 
     //! Returns current capacity (allocated memory) of the vector.
@@ -217,12 +217,12 @@ namespace Dune
 
     inline friend std::size_t hash_value(const ReservedVector& v) noexcept
     {
-      return hash_range(v.data.data(),v.data.data()+v.sz);
+      return hash_range(v.storage_.data(),v.storage_.data()+v.size_);
     }
 
   private:
-    std::array<T,n> data = {};
-    size_type sz = 0;
+    std::array<T,n> storage_ = {};
+    size_type size_ = 0;
   };
 
 }
