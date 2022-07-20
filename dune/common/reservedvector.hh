@@ -76,33 +76,79 @@ namespace Dune
 
     /** @{ Constructors */
 
-    //! Constructor
+    //! Default Constructor
     constexpr ReservedVector()
           noexcept(std::is_nothrow_default_constructible_v<value_type>)
       : storage_()
       , size_(0)
     {}
 
-    constexpr ReservedVector(std::initializer_list<T> const &l)
-          noexcept(std::is_nothrow_default_constructible_v<value_type>)
+    //! Constructor from an iterator range
+    template<class InputIt,
+      std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<InputIt>::value_type, value_type>, int> = 0>
+    constexpr ReservedVector(InputIt first, InputIt last)
+          noexcept(std::is_nothrow_copy_assignable_v<value_type> &&
+          noexcept(ReservedVector()))
       : ReservedVector()
     {
-      assert(l.size() <= n);
-      size_ = l.size();
-      auto it = l.begin();
-      for (size_type i=0; i<size_ && it!=l.end(); ++i)
-        storage_[i] = *it++;
+      for (size_type i=0; i<n && first!=last; ++i,++size_)
+        storage_[i] = *first++;
+      assert(first == last);
     }
+
+    //! Constructor from an initializer list
+    constexpr ReservedVector(std::initializer_list<value_type> const& l)
+          noexcept(std::is_nothrow_copy_assignable_v<value_type> &&
+          noexcept(ReservedVector(l.begin(),l.end())))
+      : ReservedVector(l.begin(),l.end())
+    {}
 
     /** @} */
 
-    constexpr bool operator== (const ReservedVector & other) const noexcept
+    /** @{ Comparison */
+
+    //! Compares the values in the vector for equality
+    constexpr bool operator== (const ReservedVector& that) const noexcept
     {
-      bool eq = (size_ == other.size_);
-      for (size_type i=0; i<size_ && eq; ++i)
-        eq = eq && (storage_[i] == other.storage_[i]);
-      return eq;
+      if (size() != that.size())
+        return false;
+      for (size_type i=0; i<size(); ++i)
+        if (!(storage_[i]==that.storage_[i]))
+          return false;
+      return true;
     }
+
+    constexpr bool operator!= (const ReservedVector& that) const noexcept
+    {
+      return !(*this == that);
+    }
+
+    //! Lexicographically compares the values in the vector
+    constexpr bool operator< (const ReservedVector& that) const noexcept
+    {
+      for (size_type i=0; i<std::min(size(),that.size()); ++i) {
+        if (storage_[i] < that.storage_[i]) return true;
+        if (that.storage_[i] < storage_[i]) return false;
+      }
+      return size() < that.size();
+    }
+
+    constexpr bool operator> (const ReservedVector& that) const noexcept
+    {
+      return that < *this;
+    }
+
+    constexpr bool operator<= (const ReservedVector& that) const noexcept
+    {
+      return !(*this > that);
+    }
+
+    constexpr bool operator>= (const ReservedVector& that) const noexcept
+    {
+      return !(*this < that);
+    }
+
+    /** @} */
 
     /** @{ Modifiers */
 
