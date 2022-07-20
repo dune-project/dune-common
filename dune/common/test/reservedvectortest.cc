@@ -34,6 +34,24 @@ struct A
   int size_ = 0;
 };
 
+struct NoCopy
+{
+  NoCopy() = default;
+  NoCopy(const NoCopy&) = delete;
+  NoCopy(NoCopy&&) = default;
+  NoCopy& operator= (const NoCopy&) = delete;
+  NoCopy& operator= (NoCopy&&) = default;
+};
+
+struct NoMove
+{
+  NoMove() = default;
+  NoMove(const NoMove&) = default;
+  NoMove(NoMove&&) = delete;
+  NoMove& operator= (const NoMove&) = default;
+  NoMove& operator= (NoMove&&) = delete;
+};
+
 int main() {
   Dune::TestSuite test;
   // check that make_array works
@@ -103,12 +121,27 @@ int main() {
       test.check( *it == i++ );
   }
 
-  { // check non-fundamental types
+  { // check non-trivial types
     Dune::ReservedVector<A, 8> rvA;
     rvA.push_back(A(5));
     rvA.emplace_back(A(5));
     rvA.emplace_back(5);
     test.check( rvA.size() == 3 );
+  }
+
+  { // check non-copyable types
+    Dune::ReservedVector<NoCopy, 8> rv;
+    rv.push_back(NoCopy{});
+    rv.emplace_back();
+    test.check( rv.size() == 2 );
+  }
+
+  { // check non-movable types
+    Dune::ReservedVector<NoMove, 8> rv;
+    NoMove x;
+    rv.push_back(x);
+    rv.emplace_back();
+    test.check( rv.size() == 2 );
   }
 
   { // check constexpr
