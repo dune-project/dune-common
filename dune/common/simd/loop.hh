@@ -13,15 +13,16 @@
 
 namespace Dune {
 
-#  pragma GCC diagnostic push
 
 /*
  * silence warnings from GCC about using integer operands on a bool
  * (when instantiated for T=bool)
  */
 #if __GNUC__ >= 7
+#  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wbool-operation"
 #  pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#  define GCC_WARNING_DISABLED
 #endif
 
 /*
@@ -29,8 +30,11 @@ namespace Dune {
  * a bool (when instantiated for T=bool)
  */
 #ifdef __clang__
+#if __has_warning("-Wbitwise-instead-of-logical")
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
+#  define CLANG_WARNING_DISABLED
+#endif
 #endif
 
 /*
@@ -605,11 +609,15 @@ namespace Dune {
           public std::integral_constant<bool, IsNumber<T>::value>{
   };
 
-#ifdef __clang__
+#ifdef CLANG_WARNING_DISABLED
 #  pragma clang diagnostic pop
+#  undef CLANG_WARNING_DISABLED
 #endif
 
+#ifdef GCC_WARNING_DISABLED
 #  pragma GCC diagnostic pop
+#  undef GCC_WARNING_DISABLED
+#endif
 
 } //namespace Dune
 

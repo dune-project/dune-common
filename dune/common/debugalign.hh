@@ -183,11 +183,18 @@ namespace Dune {
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wbool-operation"
 #endif
+#ifdef __clang__
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wbool-operation"
+#endif
       template<class U = T,
                class = std::void_t<decltype(~std::declval<const U&>())> >
       decltype(auto) operator~() const { return aligned<align>(~value_); }
 #if __GNUC__ >= 7
 #  pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#  pragma clang diagnostic pop
 #endif
 
       template<class U = T,
