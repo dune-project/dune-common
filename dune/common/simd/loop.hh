@@ -30,12 +30,11 @@ namespace Dune {
  * a bool (when instantiated for T=bool)
  */
 #ifdef __clang__
+#if __has_warning("-Wbitwise-instead-of-logical")
 #  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wbool-operation"
-#  if __has_warning("-Wbitwise-instead-of-logical")
-#    pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
-#  endif
+#  pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
 #  define CLANG_WARNING_DISABLED
+#endif
 #endif
 
 /*

@@ -20,6 +20,17 @@ namespace Dune {
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wbool-operation"
 #  pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#  define GCC_WARNING_DISABLED
+#endif
+
+/*
+ * silence warnings from Clang about using bitwise operands on
+ * a bool (when instantiated for T=bool)
+ */
+#ifdef __clang__
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wbool-operation"
+#  define CLANG_WARNING_DISABLED
 #endif
 
   //! Test suite for arithmetic types
@@ -791,8 +802,14 @@ namespace Dune {
     }
   };
 
-#if __GNUC__ >= 7
+#ifdef CLANG_WARNING_DISABLED
+#  pragma clang diagnostic pop
+#  undef CLANG_WARNING_DISABLED
+#endif
+
+#ifdef GCC_WARNING_DISABLED
 #  pragma GCC diagnostic pop
+#  undef GCC_WARNING_DISABLED
 #endif
 
 } // namespace Dune
