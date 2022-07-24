@@ -57,7 +57,7 @@ In order to build the DUNE core modules you need at least the following software
   existing python bindings.
 
 - Deprecated `dune_python_install_package`. Use either
-  `dune_python_configure_binding` (for Python bindings)
+  `dune_python_configure_bindings` (for Python bindings)
   `dune_python_configure_package` (for pure Python package).
   See https://gitlab.dune-project.org/core/dune-common/-/merge_requests/1148
   for more details.
