@@ -12,10 +12,9 @@ fi
 if python -m dune --help &> /dev/null; then
   # test if build directory matches installed dune python packages
   python -m dune checkbuilddirs @PROJECT_NAME@ @CMAKE_BINARY_DIR@
-  RESULT=$?
-  if [ $RESULT -ne 0 ] ; then
+  if [ $? -ne 0 ] ; then
     echo "Dune python package could not check build directories"
-    exit $RESULT
+    exit 77
   fi
 fi
 
