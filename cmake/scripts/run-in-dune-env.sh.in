@@ -8,15 +8,11 @@ else
   exit 77
 fi
 
-# check if dune-common python package is installed
-if python -m dune --help &> /dev/null; then
-  # test if build directory matches installed dune python packages
-  python -m dune checkbuilddirs @PROJECT_NAME@ @CMAKE_BINARY_DIR@
-  if [ $? -ne 0 ] ; then
-    echo "Dune python package could not check build directories"
-    exit 77
-  fi
+# test if build directory matches installed dune python packages
+python -m dune checkbuilddirs @PROJECT_NAME@ @CMAKE_BINARY_DIR@
+if [ $? -eq 0 ] ; then
+  "$@"
+else
+  echo "Dune python package could not be found."
+  exit 77
 fi
-
-# execute the command
-"$@"
