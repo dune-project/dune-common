@@ -85,6 +85,16 @@ int main() {
     rv2[3] == 4 &&
     rv2[4] == 5);
 
+  // check size constructor
+  Dune::ReservedVector<unsigned int, 8> rv3(7);
+  test.check(rv3.size() == 7);
+  test.check(rv3[6] == 0);
+
+  // check size and value constructor
+  Dune::ReservedVector<unsigned int, 8> rv4(5, 42);
+  test.check(rv4.size() == 5);
+  test.check(rv4[3] == 42);
+
   // check pop_back
   rv2.pop_back();
   test.check(rv2.size() == 4);

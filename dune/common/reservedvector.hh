@@ -76,14 +76,33 @@ namespace Dune
 
     /** @{ Constructors */
 
-    //! Default Constructor
+    //! Constructs an empty vector
     constexpr ReservedVector()
           noexcept(std::is_nothrow_default_constructible_v<value_type>)
       : storage_()
       , size_(0)
     {}
 
-    //! Constructor from an iterator range
+    //! Constructs the vector with `count` elements that will be default-initialized.
+    explicit constexpr ReservedVector(size_type count)
+          noexcept(std::is_nothrow_default_constructible_v<value_type>)
+      : storage_()
+      , size_(count)
+    {
+      assert(count <= n);
+    }
+
+    //! Constructs the vector with `count` copies of elements with value `value`.
+    constexpr ReservedVector(size_type count, const value_type& value)
+          noexcept(std::is_nothrow_copy_assignable_v<value_type> &&
+          noexcept(ReservedVector(count)))
+      : ReservedVector(count)
+    {
+      for (size_type i=0; i<count; ++i)
+        storage_[i] = value;
+    }
+
+    //! Constructs the vector from an iterator range `[first,last)`
     template<class InputIt,
       std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<InputIt>::value_type, value_type>, int> = 0>
     constexpr ReservedVector(InputIt first, InputIt last)
@@ -96,7 +115,7 @@ namespace Dune
       assert(first == last);
     }
 
-    //! Constructor from an initializer list
+    //! Constructs the vector from an initializer list
     constexpr ReservedVector(std::initializer_list<value_type> const& l)
           noexcept(std::is_nothrow_copy_assignable_v<value_type> &&
           noexcept(ReservedVector(l.begin(),l.end())))
@@ -107,7 +126,7 @@ namespace Dune
 
     /** @{ Comparison */
 
-    //! Compares the values in the vector for equality
+    //! Compares the values in the vector `this` with `that` for equality
     constexpr bool operator== (const ReservedVector& that) const noexcept
     {
       if (size() != that.size())
@@ -118,12 +137,13 @@ namespace Dune
       return true;
     }
 
+    //! Compares the values in the vector `this` with `that` for not equality
     constexpr bool operator!= (const ReservedVector& that) const noexcept
     {
       return !(*this == that);
     }
 
-    //! Lexicographically compares the values in the vector
+    //! Lexicographically compares the values in the vector `this` with `that`
     constexpr bool operator< (const ReservedVector& that) const noexcept
     {
       for (size_type i=0; i<std::min(size(),that.size()); ++i) {
@@ -133,16 +153,19 @@ namespace Dune
       return size() < that.size();
     }
 
+    //! Lexicographically compares the values in the vector `this` with `that`
     constexpr bool operator> (const ReservedVector& that) const noexcept
     {
       return that < *this;
     }
 
+    //! Lexicographically compares the values in the vector `this` with `that`
     constexpr bool operator<= (const ReservedVector& that) const noexcept
     {
       return !(*this > that);
     }
 
+    //! Lexicographically compares the values in the vector `this` with `that`
     constexpr bool operator>= (const ReservedVector& that) const noexcept
     {
       return !(*this < that);
