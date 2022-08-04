@@ -279,6 +279,25 @@ namespace Std
 
 } // namespace Std
 
+
+namespace detail
+{
+  template <class Type>
+  [[deprecated("Type extraction of `TargetType` has failed. Inspect the code calling `detected_or_fallback_t` for getting the source of this warning!")]]
+  Type warningIfNotDefined(const Std::nonesuch*);
+
+  template <class Type, class T>
+  Type warningIfNotDefined(const T*);
+}
+
+//! This type will be either TargetType<Args...> if it exists, or the Fallback<Args...> type.
+template <template<typename...> class Fallback,
+          template<typename...> class TargetType, typename... Args>
+using detected_or_fallback_t = Std::detected_or_t<decltype(
+  detail::warningIfNotDefined<Std::detected_t<Fallback, Args...> >(std::declval<const Std::detected_t<TargetType, Args...>*>())),
+  TargetType, Args...>;
+
+
 } // namespace Dune
 
 #endif // #ifndef DUNE_COMMON_STD_TYPE_TRAITS_HH
