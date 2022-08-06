@@ -32,6 +32,9 @@ In order to build the DUNE core modules you need at least the following software
 
 - Add `python -m dune [info|configure|list|remove|dunetype|fix-dunepy]` command to manage just-in-time generated python modules in dune-py
 
+- The storage type `ReservedVector` is extended to follow more closely the `std::vector` and
+  `std::array` interfaces.
+
 ## Build System
 
 - Improve the the function `dune_add_library` by separating the target types normal, interface, and
