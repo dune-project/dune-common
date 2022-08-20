@@ -89,6 +89,9 @@ dune_add_test(SOURCES constexprifelsetest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
+dune_add_test(SOURCES copyableoptionaltest.cc
+              LABELS quick)
+
 dune_add_test(SOURCES debugaligntest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
