@@ -53,6 +53,25 @@ def getDefaultBuildArgs():
 class Builder:
 
     @staticmethod
+    def sync_dir(dir_path):
+        """
+        Execute fsync on a directory ensuring it is synced to disk
+
+        :param str dir_path: The directory to sync
+        :raise OSError: If fail opening the directory
+        """
+        dir_fd = os.open(dir_path, os.O_DIRECTORY)
+        try:
+            os.fsync(dir_fd)
+        except OSError as e:
+            # On some filesystem doing a fsync on a directory
+            # raises an EINVAL error. Ignoring it is usually safe.
+            if e.errno != errno.EINVAL:
+                raise
+        finally:
+            os.close(dir_fd)
+
+    @staticmethod
     def generate_dunepy_from_template(dunepy_dir,force=False):
         # Extract the raw data dictionary
 
@@ -126,6 +145,7 @@ class Builder:
                     os.makedirs(os.path.split(gen_file)[0], exist_ok=True)
                     with open(gen_file, "w") as outfile:
                         outfile.write(env.get_template(relative_template_file).render(**context))
+                        os.fsync(outfile) # make sure files are correctly synced before calling make or cmake
 
         # return force variable because this might be needed in the overloaded versions
         return force
@@ -204,7 +224,6 @@ class Builder:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         self.initialized = True
 
-
     @staticmethod
     def callCMake(cmake_args, cwd, infoTxt, verbose=False, active=False, logLevel=logging.DEBUG, env=None):
         # print initial info, if we are verbose
@@ -217,6 +236,9 @@ class Builder:
         # call the cmake process
         if verbose:
             print(cmake_args)
+
+        # make sure directory entries are properly written to avoid raceconditions on network storage.
+        Builder.sync_dir(self.generated_dir)
 
         with subprocess.Popen(cmake_args,
                               cwd=cwd,
@@ -540,10 +562,14 @@ class MakefileBuilder(Builder):
                         linkerCmd = linkerSource.read()
                     linkerCmd = linkerCmd.replace('extractCompiler','$1')
                     buildScript.write(linkerCmd)
+                    os.fsync(buildScript) # make sure files are correctly synced before calling make or cmake
 
             else: # useNinja
                 ninja = MakefileBuilder.generatorCmd
                 assert ninja.find("ninja")
+
+                # make sure directory entries are properly written to avoid raceconditions on network storage.
+                Builder.sync_dir(self.generated_dir)
 
                 with subprocess.Popen([ninja, "-t","commands","extractCompiler"],
                                        cwd=dunepy_dir,
@@ -573,6 +599,7 @@ class MakefileBuilder(Builder):
                     linkerCmd = linkerCmd.split(' ',3)
                     linkerCmd = linkerCmd[2] + " " + linkerCmd[3].replace("&& :", "")
                     buildScript.write(linkerCmd+"\n")
+                    os.fsync(buildScript) # make sure files are correctly synced before calling make or cmake
 
     # constructor
     def __init__(self, force=False, saveOutput=False):
@@ -643,7 +670,10 @@ class MakefileBuilder(Builder):
                         pass
                     makeFile.write('\t'+MakefileBuilder.bashCmd+ ' buildScript.sh '+moduleName+"\n")
                     makeFile.write(moduleName+'.so: '+os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+'\n')
+                    os.fsync(makeFile) # make sure files are correctly synced before calling make or cmake
 
+                # make sure directory entries are properly written to avoid raceconditions on network storage.
+                Builder.sync_dir(self.generated_dir)
 
                 # first just check if the makefile does not contain any error
                 # An issue could be that a file in the dependency list has
@@ -664,8 +694,12 @@ class MakefileBuilder(Builder):
                         makeFile.write(os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+':\n')
                         makeFile.write('\t'+MakefileBuilder.bashCmd+ ' buildScript.sh '+moduleName+"\n")
                         makeFile.write(moduleName+'.so: '+os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+'\n')
+                        os.fsync(makeFile) # make sure files are correctly synced before calling make or cmake
 
                 if exit_code > 0:
+                    # make sure directory entries are properly written to avoid raceconditions on network storage.
+                    Builder.sync_dir(self.generated_dir)
+
                     # call make to build shared library
                     with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
                                           cwd=self.generated_dir,
