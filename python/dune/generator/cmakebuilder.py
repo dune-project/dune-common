@@ -30,8 +30,8 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 cxxFlags = None
 noDepCheck = False
 
-def deprecationMessage():
-    print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{self.dune_py_dir}` and re-run Python script!")
+def deprecationMessage(dune_py_dir):
+    print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{dune_py_dir}` and re-run Python script!")
     print(f"It might also be required to execute 'cmake .' in the 'dune-common' build directory")
     print(f"It is possible to continue to use the old version by typing 'export DUNE_PY_USE_CMAKEBUILDER=1'")
     sys.exit(1)
@@ -234,6 +234,7 @@ class Builder:
             # check return code
             if cmake.returncode > 0:
                 # retrieve stderr output
+                print(stderr,stdout)
                 raise CompileError(buffer_to_str(stderr))
 
         return stdout, stderr
@@ -485,7 +486,7 @@ class MakefileBuilder(Builder):
                                          active=True, # print details anyway
                                        )
                 except CompileError:
-                    deprecationMessage()
+                    deprecationMessage(dunepy_dir)
 
                 # now also generate compiler command
                 stdout, stderr = \
@@ -586,7 +587,7 @@ class MakefileBuilder(Builder):
         # check that the compile script is available
         script = os.path.join(self.generated_dir,"buildScript.sh")
         if not os.path.exists(script):
-            deprecationMessage()
+            deprecationMessage(self.dune_py_dir)
 
     # nothing to be done in this class
     def compile(self, infoTxt, target='all', verbose=False):

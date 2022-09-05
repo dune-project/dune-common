@@ -14,6 +14,9 @@ def removeGenerated(modules = [], date=False):
     moduleFiles = set()
 
     def rmJit(fileBase):
+        # do not remove the entry belonging to the dune-py template
+        if fileBase == "extractCompiler":
+            return
         removed = False
 
         try:
@@ -83,6 +86,9 @@ def removeGenerated(modules = [], date=False):
     for base in bases:
         rmJit(base)
 
-    for line in fileinput.input( os.path.join(generated_dir, 'CMakeLists.txt'), inplace = True):
-        if not any( [m in line for m in moduleFiles] ):
-             print(line, end="")
+    # not sure what this was for but in the new builder version
+    # this is not reasonable anymore.
+    # Replace with something else?
+    # for line in fileinput.input( os.path.join(generated_dir, 'CMakeLists.txt'), inplace = True):
+    #     if not any( [m in line for m in moduleFiles] ):
+    #          print(line, end="")
