@@ -90,6 +90,24 @@ class Builder:
             if nlines > 1:
                 self.savedOutput[1].write("\n###############################\n")
 
+    def fsync_dir(self, dir_path):
+        """
+        Execute fsync on a directory ensuring it is synced to disk
+
+        :param str dir_path: The directory to sync
+        :raise OSError: If fail opening the directory
+        """
+        dir_fd = os.open(dir_path, os.O_DIRECTORY)
+        try:
+            os.fsync(dir_fd)
+        except OSError as e:
+            # On some filesystem doing a fsync on a directory
+            # raises an EINVAL error. Ignoring it is usually safe.
+            if e.errno != errno.EINVAL:
+                raise
+        finally:
+            os.close(dir_fd)
+
     def load(self, moduleName, source, pythonName):
 
         ## TODO replace if rank if something better
@@ -112,6 +130,7 @@ class Builder:
                             code = str(source)
                             with open(os.path.join(sourceFileName), 'w') as out:
                                 out.write(code)
+                                os.fsync(out) # make sure files are correctly synced before calling cmake
                             assert os.path.isfile(sourceFileName), "Error in writing module .cc file"
                             if not found:
                                 origPos = -1
@@ -119,7 +138,9 @@ class Builder:
                                     # store original file size
                                     origPos = out.tell()
                                     out.write(line+"\n")
+                                    os.fsync(out) # make sure files are correctly synced before calling cmake
                                 # update build system
+                                self.fsync_dir(self.generated_dir) # make sure directory entries are written to disk before calling cmake
                                 logger.debug("Rebuilding module")
                                 try:
                                     self.compile()
