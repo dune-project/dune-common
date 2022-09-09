@@ -62,6 +62,7 @@ system-test:
 # Check for spelling mistakes in text
 code-spelling-check:
   stage: .pre
+  tags: [duneci]
   image: registry.dune-project.org/docker/ci/debian:11
   script:
   - codespell
