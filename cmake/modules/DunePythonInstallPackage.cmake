@@ -446,27 +446,28 @@ function(dune_python_configure_package)
   # installation command for dune package into local env - external requirements are already sorted and we want this step to not require
   # internet access. Dune packages need to be installed at this stage and should not be obtained from pypi (those packages include the C++ part
   # of the module which we don't want to install. So only use available wheels.
-  message(STATUS "Installing python package at ${PYPKGCONF_PATH} into Dune virtual environment ${DUNE_PIP_INDEX}")
-  dune_execute_process(
-    COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
-      --no-build-isolation      # avoid looking for packages during 'make' if they in the internal venv from previous 'make'
-      --no-warn-script-location # suppress warnings that dune-env/bin is not in path
-      --no-index
-      "${WHEEL_OPTION}"
-      # we can't use the same additional parameters for both internal
-      # install and normal install so not including these flags at the moment
-      # ${PYPKGCONF_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
-      --editable                  # Installations into the internal env are always editable
-      .
-    WORKING_DIRECTORY "${PYPKGCONF_PATH}"
-    RESULT_VARIABLE PYTHON_INSTALL_FAILED
-    ERROR_VARIABLE PYTHON_INSTALL_ERROR
-    WARNING_MESSAGE "python package at '${PYPKGCONF_PATH}' could not be installed - possibly connection to the python package index failed\n${PYTHON_INSTALL_ERROR}"
-  )
-
-  set(${PYPKGCONF_RESULT} ${PYTHON_INSTALL_FAILED} PARENT_SCOPE)
-  if (PYTHON_INSTALL_FAILED)
-    return()
+  if(NOT SKBUILD)
+    message(STATUS "Installing python package at ${PYPKGCONF_PATH} into Dune virtual environment ${DUNE_PIP_INDEX}")
+    dune_execute_process(
+      COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
+        --no-build-isolation      # avoid looking for packages during 'make' if they in the internal venv from previous 'make'
+        --no-warn-script-location # suppress warnings that dune-env/bin is not in path
+        --no-index
+        "${WHEEL_OPTION}"
+        # we can't use the same additional parameters for both internal
+        # install and normal install so not including these flags at the moment
+        # ${PYPKGCONF_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
+        --editable                  # Installations into the internal env are always editable
+        .
+      WORKING_DIRECTORY "${PYPKGCONF_PATH}"
+      RESULT_VARIABLE PYTHON_INSTALL_FAILED
+      ERROR_VARIABLE PYTHON_INSTALL_ERROR
+      WARNING_MESSAGE "python package at '${PYPKGCONF_PATH}' could not be installed - possibly connection to the python package index failed\n${PYTHON_INSTALL_ERROR}"
+    )
+    set(${PYPKGCONF_RESULT} ${PYTHON_INSTALL_FAILED} PARENT_SCOPE)
+    if (PYTHON_INSTALL_FAILED)
+      return()
+    endif()
   endif()
 
   #
@@ -513,7 +514,7 @@ function(dune_python_configure_package)
   # TODO should the wheel be build for the internal env setup or for the external one?
   set(WHEEL_COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE}
                         "${DUNE_PIP_INDEX}"
-                        --use-feature=in-tree-build
+                        # --use-feature=in-tree-build
                         "${WHEEL_OPTION}"
                         ${PYPKGCONF_ADDITIONAL_PIP_PARAMS} ${DUNE_PYTHON_ADDITIONAL_PIP_PARAMS}
                         "${PYPKGCONF_PATH}")
@@ -525,16 +526,18 @@ function(dune_python_configure_package)
   #     python packages into a virtual environment.
   #
 
-  install(CODE "set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
-                set(DUNE_PYTHON_WHEELHOUSE ${DUNE_PYTHON_WHEELHOUSE})
-                include(DuneExecuteProcess)
-                message(\"Installing python package\")
-                dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build .  --target install_python --config $<CONFIG>
-                                     WARNING_MESSAGE \"python package installation failed - ignored\")
-                message(\"Installing wheel for python package at ${PYPKGCONF_PATH} into ${DUNE_PYTHON_WHEELHOUSE}...\")
-                dune_execute_process(COMMAND ${WHEEL_COMMAND}
-                                     WARNING_MESSAGE \"wheel installation failed - ignored\")"
-          )
+  if(NOT SKBUILD)
+    install(CODE "set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+                  set(DUNE_PYTHON_WHEELHOUSE ${DUNE_PYTHON_WHEELHOUSE})
+                  include(DuneExecuteProcess)
+                  message(\"Installing python package\")
+                  dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build .  --target install_python --config $<CONFIG>
+                                       WARNING_MESSAGE \"python package installation failed - ignored\")
+                  message(\"Installing wheel for python package at ${PYPKGCONF_PATH} into ${DUNE_PYTHON_WHEELHOUSE}...\")
+                  dune_execute_process(COMMAND ${WHEEL_COMMAND}
+                                       WARNING_MESSAGE \"wheel installation failed - ignored\")"
+            )
+  endif()
 
 endfunction()
 
