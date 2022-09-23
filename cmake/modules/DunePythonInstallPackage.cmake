@@ -15,6 +15,12 @@
 #       Variable where to store the result of the dependency configuration.
 #       A non-zero result stands for a failure on the configuration of the dependencies.
 #
+#    .. cmake_param:: INSTALL_CONCRETE_DEPENDENCIES
+#       :option:
+#
+#       This option forces the package dependencies to be installed with concrete dependencies
+#       listed in the requirements.txt file
+#
 #     This function installs the dependencies of a python package at configure time.
 #     The dependencies are extracted from the :setup.py: and :requiements.txt: file
 #     A failure on the installation of the dependencies does will no trigger a
@@ -83,6 +89,11 @@
 #
 #       Parameters to add to any :code:`pip install` call (appended).
 #
+#    .. cmake_param:: INSTALL_CONCRETE_DEPENDENCIES
+#       :option:
+#
+#       See :dune_python_configure_dependencies:
+#
 #    This function installs the python package located at the given path:
 #
 #    * installs it to the location specified with :ref:`DUNE_PYTHON_INSTALL_LOCATION` during
@@ -148,7 +159,7 @@ include_guard(GLOBAL)
 function(dune_python_configure_dependencies)
   # Parse Arguments
   set(OPTION)
-  set(SINGLE PATH RESULT)
+  set(SINGLE PATH RESULT INSTALL_CONCRETE_DEPENDENCIES)
   cmake_parse_arguments(PYCONFDEPS "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYCONFDEPS_UNPARSED_ARGUMENTS)
     message(WARNING "Unparsed arguments in dune_python_configure_dependencies: This often indicates typos!")
@@ -173,9 +184,9 @@ function(dune_python_configure_dependencies)
     set(WHEEL_OPTION "--find-links=file://${DUNE_PYTHON_WHEELHOUSE}")
   endif()
 
-
-  # if requirements file exists, install them directly
-  if(EXISTS "${PYCONFDEPS_PATH}/requirements.txt")
+  if(PYCONFDEPS_INSTALL_CONCRETE_DEPENDENCIES)
+    # if requirements file exists, install them directly
+    message(STATUS "Installing python package concrete requirements at ${PYPKGCONF_PATH}/requirements.txt")
     # Install requirements (e.g. not dune packages) once at configure stage
     dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
                                   "${WHEEL_OPTION}"
@@ -200,10 +211,11 @@ function(dune_python_configure_dependencies)
   endif()
 
   # generate egg_info requirement file from setup.py
-  string(MD5 PACKAGE_HASH "${PYINST_PATH}")
-  file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_HASH}")
+  string(MD5 PACKAGE_HASH "${PYCONFDEPS_PATH}")
+  set(EGG_INFO_PATH "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_HASH}")
+  file(MAKE_DIRECTORY "${EGG_INFO_PATH}")
   dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} setup.py
-                        egg_info --egg-base "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_HASH}"
+                        egg_info --egg-base "${EGG_INFO_PATH}"
                         WORKING_DIRECTORY "${PYCONFDEPS_PATH}"
                         RESULT_VARIABLE REQUIREMENTS_FAILED
                         ERROR_VARIABLE DEPENDENCIES_ERROR
@@ -219,12 +231,12 @@ function(dune_python_configure_dependencies)
   endif()
 
   # find the generated egg-info folder and install each dependency listed on the requires.txt file
-  file(GLOB EGG_INFO_PATH LIST_DIRECTORIES TRUE "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_HASH}/*.egg-info")
+  file(GLOB EGG_INFO_PATH LIST_DIRECTORIES TRUE "${EGG_INFO_PATH}/*.egg-info")
   if(EXISTS "${EGG_INFO_PATH}/requires.txt")
     file(READ "${EGG_INFO_PATH}/requires.txt" PACKAGE_REQUIREMENTS)
     string(REPLACE "\n" ";" PACKAGE_REQUIREMENTS ${PACKAGE_REQUIREMENTS})
     string(REPLACE ";" " " PACKAGE_REQUIREMENTS_STR "${PACKAGE_REQUIREMENTS}")
-    message(STATUS "Installing python requirements: " ${PACKAGE_REQUIREMENTS_STR})
+    message(STATUS "Installing python package abstract requirements: " ${PACKAGE_REQUIREMENTS_STR})
     foreach(requirement IN LISTS PACKAGE_REQUIREMENTS)
       if("${requirement}" STREQUAL "")
         continue()
@@ -232,6 +244,7 @@ function(dune_python_configure_dependencies)
       if (requirement MATCHES "^\\[")
         # sections (e.g. "[<section>]") in setuptools define the start of optional requirements
         set(OPTIONAL_PACKAGE ON)
+        set(PYCONFDEPS_OPT "(optional) ")
         continue()
       endif()
       # Install requirements (e.g. not dune packages) once at configure stage
@@ -243,7 +256,7 @@ function(dune_python_configure_dependencies)
                                     "${requirement}"
                           RESULT_VARIABLE INSTALL_FAILED
                           ERROR_VARIABLE DEPENDENCIES_ERROR
-                          WARNING_MESSAGE "python package requirement '${requirement}' could not be installed - possibly connection to the python package index failed\n${DEPENDENCIES_ERROR}"
+                          WARNING_MESSAGE "Python ${PYCONFDEPS_OPT}package requirement '${requirement}' could not be installed - possibly connection to the python package index failed\n${DEPENDENCIES_ERROR}"
                           )
       if(NOT OPTIONAL_PACKAGE)
         if(INSTALL_FAILED)
@@ -419,7 +432,7 @@ endfunction()
 
 function(dune_python_configure_package)
   # Parse Arguments
-  set(SINGLE PATH RESULT INSTALL_TARGET)
+  set(SINGLE PATH RESULT INSTALL_TARGET INSTALL_CONCRETE_DEPENDENCIES)
   set(MULTI ADDITIONAL_PIP_PARAMS)
   cmake_parse_arguments(PYPKGCONF "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYPKGCONF_UNPARSED_ARGUMENTS)
@@ -432,7 +445,9 @@ function(dune_python_configure_package)
 
   dune_python_configure_dependencies(
        PATH ${PYPKGCONF_PATH}
-       RESULT PYTHON_DEPENDENCIES_FAILED)
+       RESULT PYTHON_DEPENDENCIES_FAILED
+       ${PYPKGCONF_INSTALL_CONCRETE_DEPENDENCIES}
+  )
 
   if (PYTHON_DEPENDENCIES_FAILED)
     set(${PYPKGCONF_RESULT} ${PYTHON_DEPENDENCIES_FAILED} PARENT_SCOPE)
@@ -548,7 +563,7 @@ function(dune_python_configure_bindings)
   set(MULTI ADDITIONAL_PIP_PARAMS CMAKE_METADATA_FLAGS)
   cmake_parse_arguments(PYCONFBIND "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYCONFBIND_UNPARSED_ARGUMENTS)
-    message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
+    message(WARNING "Unparsed arguments in dune_python_configure_bindings: This often indicates typos!")
   endif()
 
   # set the new package name
