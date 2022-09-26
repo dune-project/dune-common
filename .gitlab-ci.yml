@@ -71,3 +71,12 @@ code-spelling-check:
   - codespell
     --ignore-words-list te,inout,incrementall,iif,\trun,referr,ba
     --skip pybind11
+
+reuse:
+  image:
+    name: docker.io/fsfe/reuse:latest
+    entrypoint: [""]
+  tags: [duneci]
+  before_script: ""
+  script:
+    - reuse lint
