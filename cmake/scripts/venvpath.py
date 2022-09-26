@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+#
 # A python script that determines whether the current interpreter is
 # running inside a virtual environment. For discussion of the implemented
 # methods, see http://stackoverflow.com/questions/1871549

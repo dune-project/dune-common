@@ -1,0 +1,17 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: dune-common
+Upstream-Contact: Dune Developers <dune-devel@lists.dune-project.org>
+Source: https://dune-project.org
+
+Files:
+  dune/python/pybind11/*.h
+  dune/python/pybind11/_version.py
+Copyright:
+  Copyright (c) 2016 Wenzel Jakob <wenzel.jakob@epfl.ch>
+  Copyright (c) 2016 Trent Houliston <trent@houliston.me>
+  Copyright (c) 2016 Klemens Morgenstern <klemens.morgenstern@ed-chemnitz.de>
+  Copyright (c) 2016 Andreas Dedner <a.s.dedner@warwick.ac.uk>
+  Copyright (c) 2016 Martin Nolte <nolte@mathematik.uni-freiburg.de>
+  Copyright (c) 2017 Henry F. Schreiner
+  Copyright (c) 2016 Sergey Lyskov and Wenzel Jakob
+License: BSD-3-Clause

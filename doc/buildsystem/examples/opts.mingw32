@@ -1,2 +1,5 @@
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 BUILDDIR=build-mingw
 CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$PATH_dune_common/Toolchain-Ubuntu-mingw32.cmake"

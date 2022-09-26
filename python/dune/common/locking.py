@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 ## By default use portalocker, if available.
 ## However, portalocker is not available on all systems
 ## and therefore a fallback implementation is also provided
