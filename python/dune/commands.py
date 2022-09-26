@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 import os, glob, time, fileinput, subprocess, shutil
 from dune.packagemetadata import getBuildMetaData, forceConfigure
 

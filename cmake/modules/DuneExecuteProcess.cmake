@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 # An error checking wrapper around the cmake command execute_process
 #
 # .. cmake_command:: dune_execute_process

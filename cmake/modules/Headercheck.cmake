@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 # .. cmake_variable:: ENABLE_HEADERCHECK
 #
 #    Set this variable to TRUE if you want to use the CMake

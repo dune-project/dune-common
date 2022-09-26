@@ -2,7 +2,10 @@
 # dune-git-whitespace-hook
 # DO NOT TOUCH THE PRECEDING LINE
 # It is used by dunecontrol to enable automatic updates of the whitespace hook
-
+#
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+#
 # DUNE pre-commit hook to enforce whitespace policy
 # This hook prevents adding lines with trailing whitespace and or tab characters
 # in line indentation for certain files (see the TRAILING_WHITESPACE_DEFAULT and

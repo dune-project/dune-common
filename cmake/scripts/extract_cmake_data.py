@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 """ This script will parse a cmake module and extract some
     rst documentation from it. This might not be as elegant as

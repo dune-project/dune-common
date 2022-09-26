@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 # Wrap python testing commands into the CMake build system
 #
 # .. cmake_function:: dune_python_add_test

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 cmake_minimum_required(VERSION 3.13)
 project(dune-common LANGUAGES C CXX)
 

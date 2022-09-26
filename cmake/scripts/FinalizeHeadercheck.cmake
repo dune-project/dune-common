@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 # this is script is called at the end of all header checks
 if(ENABLE_HEADERCHECK)
   message("Headerchecks finished! Rerun CMake if a new file has not been checked!")
