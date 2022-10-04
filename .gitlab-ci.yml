@@ -73,6 +73,7 @@ code-spelling-check:
     --skip pybind11
 
 reuse:
+  stage: .pre
   image:
     name: docker.io/fsfe/reuse:latest
     entrypoint: [""]
