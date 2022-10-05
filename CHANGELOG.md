@@ -9,6 +9,9 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 - Add "hybrid" functors for basic math operations with integral constant arguments, i.e., `Hybrid::max`, `Hybrid::min`, `Hybrid::plus`, `Hybrid::minus`, and `Hybrid::equals`. Operations between two integral constants result in an integral constant, whereas operations with at least one non integral constant argument is performed on the underlying value type.
 
+- Add utility `CopyableOptional` that allows to wrap types that are copy constructible but not
+  copy assignable and provide assignment operations based on the constructors.
+
 # Master (will become release 2.9)
 
 - Added feature test for lambdas in unevaluated contexts
