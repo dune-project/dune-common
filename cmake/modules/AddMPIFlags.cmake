@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 # The DUNE way to compile MPI applications is to use the CXX
 # compiler with MPI flags usually used for C. CXX bindings
 # are deactivated to prevent ABI problems.

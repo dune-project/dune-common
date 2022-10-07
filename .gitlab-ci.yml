@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 ---
 include:
   - project: 'core/ci-config'
@@ -68,3 +71,13 @@ code-spelling-check:
   - codespell
     --ignore-words-list te,inout,incrementall,iif,\trun,referr,ba
     --skip pybind11
+
+reuse:
+  stage: .pre
+  image:
+    name: docker.io/fsfe/reuse:latest
+    entrypoint: [""]
+  tags: [duneci]
+  before_script: ""
+  script:
+    - reuse lint

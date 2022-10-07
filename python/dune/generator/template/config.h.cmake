@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+// SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 /* begin dune-py
    put the definitions for config.h specific to
    your project here. Everything above will be

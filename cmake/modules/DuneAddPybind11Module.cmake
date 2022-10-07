@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 # This cmake module provides infrastructure for building modules using Pybind11
 #
 # .. cmake_function:: dune_add_pybind11_module
