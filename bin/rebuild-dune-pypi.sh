@@ -1,5 +1,6 @@
 #!/bin/bash
-
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 #
 # This script builds a Python package index on gitlab.dune-project.org. Such an
 # index is necessary as a drop-in replacement for PyPI in continuous integration,

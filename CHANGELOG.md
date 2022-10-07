@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+-->
+
 # Master (will become release 2.9)
 
 - Added feature test for lambdas in unevaluated contexts

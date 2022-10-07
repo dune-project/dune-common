@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 # .. cmake_module::
 #
 #    Module that checks for supported C++20, C++17 and non-standard features.

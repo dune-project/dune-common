@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+#
 # This python script tries to figure out the version of a given python
 # package. This is only intended to be used from DunePythonFindPackage.cmake
 #

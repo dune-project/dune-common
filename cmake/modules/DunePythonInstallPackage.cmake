@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 # This cmake module provides infrastructure for cmake installation rules concerning python packages.
 #
 # .. cmake_function:: dune_python_configure_dependencies

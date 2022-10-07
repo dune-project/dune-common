@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 # Defines the functions to use Vc
 #
 # Vc is a library for high-level Vectorization support in C++

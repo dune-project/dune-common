@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
 # searches for pkg-config, creates the
 # file <module-name>.pc from <module-name>.pc.in,
 # and adds installation directives.
