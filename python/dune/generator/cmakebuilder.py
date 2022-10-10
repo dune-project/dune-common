@@ -238,7 +238,7 @@ class Builder:
             print(cmake_args)
 
         # make sure directory entries are properly written to avoid raceconditions on network storage.
-        Builder.sync_dir(self.generated_dir)
+        # Builder.sync_dir(self.generated_dir)
 
         with subprocess.Popen(cmake_args,
                               cwd=cwd,
@@ -673,7 +673,7 @@ class MakefileBuilder(Builder):
                     os.fsync(makeFile) # make sure files are correctly synced before calling make or cmake
 
                 # make sure directory entries are properly written to avoid raceconditions on network storage.
-                Builder.sync_dir(self.generated_dir)
+                # Builder.sync_dir(self.generated_dir)
 
                 # first just check if the makefile does not contain any error
                 # An issue could be that a file in the dependency list has
@@ -695,10 +695,12 @@ class MakefileBuilder(Builder):
                         makeFile.write('\t'+MakefileBuilder.bashCmd+ ' buildScript.sh '+moduleName+"\n")
                         makeFile.write(moduleName+'.so: '+os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+'\n')
                         os.fsync(makeFile) # make sure files are correctly synced before calling make or cmake
+                    # make sure directory entries are properly written to avoid raceconditions on network storage.
+                    Builder.sync_dir(self.generated_dir)
 
                 if exit_code > 0:
                     # make sure directory entries are properly written to avoid raceconditions on network storage.
-                    Builder.sync_dir(self.generated_dir)
+                    # Builder.sync_dir(self.generated_dir)
 
                     # call make to build shared library
                     with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
