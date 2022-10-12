@@ -68,6 +68,12 @@ def fixdunepy(force):
         if os.path.isdir(dune_py_dir):
             shutil.rmtree(dune_py_dir)
     else:
+        print("""
+ Fixing dunepy only works with 'force=True' at the moment - nothing will be done.
+ If you are encountering an inconsistent dune-py setup please report in the issue
+ https://gitlab.dune-project.org/core/dune-common/-/issues/318.
+ """)
+        return 1
         ccfiles = filebases( glob.glob(os.path.join(generated_dir, '*.cc')) )
         sofiles = filebases( glob.glob(os.path.join(generated_dir, '*.so')) )
         cmakedirs = filebases( glob.glob(os.path.join(generated_dir, "CMakeFiles", "*.dir") ) )
