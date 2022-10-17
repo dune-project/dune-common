@@ -3,6 +3,9 @@ SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE
 SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 -->
 
+## Changelog
+- Add "hybrid" functors for basic math operations with integral constant arguments, i.e., `Hybrid::max`, `Hybrid::min`, `Hybrid::plus`, `Hybrid::minus`, and `Hybrid::equals`. Operations between two integral constants result in an integral constant, whereas operations with at least one non integral constant argument is performed on the underlying value type.
+
 # Master (will become release 2.9)
 
 - Added feature test for lambdas in unevaluated contexts
