@@ -375,36 +375,213 @@ void ifElse(const Condition& condition, IfFunc&& ifFunc)
 
 namespace Impl {
 
-  template<class T1, class T2>
-  constexpr auto equals(const T1& /*t1*/, const T2& /*t2*/, PriorityTag<1>) -> decltype(T1::value, T2::value, std::integral_constant<bool,T1::value == T2::value>())
-  { return {}; }
+  struct Max {
+    template<class... Args>
+    constexpr decltype(auto) operator()(Args&&... args) const
+    {
+      using T = std::common_type_t<Args...>;
+      return std::max({T(args)...});
+    }
+  };
 
-  template<class T1, class T2>
-  constexpr auto equals(const T1& t1, const T2& t2, PriorityTag<0>)
-  {
-    return t1==t2;
-  }
+  struct Min {
+    template<class... Args>
+    constexpr decltype(auto) operator()(Args&&... args) const
+    {
+      using T = std::common_type_t<Args...>;
+      return std::min({T(args)...});
+    }
+  };
 
 } // namespace Impl
 
 
-
 /**
- * \brief Equality comparison
+ * \brief Adapter of a hybrid functor that maintains results hybrid
  *
  * \ingroup HybridUtilities
  *
- * If both types have a static member value, the result of comparing
- * these is returned as std::integral_constant<bool, *>. Otherwise
- * the result of a runtime comparison of t1 and t2 is directly returned.
+ * This adapter will return an integral constant if all of the arguments are
+ * integral constants. That's helpful to maintain the hybrid nature of a variable
+ * after a transformation. For example, applying an operator + between two integral
+ * constants will promote the result to its underlying type (e.g. std::size_t).
+ * That's inconventient since the value of the result is not encoded in the type
+ * anymore, thus, losing its hybrid attribute (maybe still being constexpr).
+ *
+ * \code{.cpp}
+ *  using namespace Dune::Indices;
+ *  { // non-hybrid transformation!
+ *    auto i =  1 +  2;      // -> 3
+ *    auto j =  1 + _2;      // -> 3
+ *    auto k = _1 + _2;      // -> 3
+ *    // depending of the context, `k` may or may not be constexpr
+ *  }
+ *  { // hybrid transformation!
+ *    auto plus = Hybrid::HybridFunctor<std::plus<>>{};
+ *    auto j = plus( 1,  2); // -> 3
+ *    auto j = plus( 1, _2); // -> 3
+ *    auto k = plus(_1, _2); // -> Dune::Indices::_3
+ *    // independent of the context, `k` encodes its value in the type system
+ *  }
+ * \endcode
+ *
  */
-template<class T1, class T2>
-constexpr auto equals(T1&& t1,  T2&& t2)
+template<class Functor>
+class HybridFunctor {
+
+  static_assert(std::is_default_constructible_v<Functor>,
+    "Operator in integral expressions shall be constexpr default constructible");
+
+  inline static constexpr Functor _functor = Functor{};
+
+public:
+
+/**
+ * \brief Adapter of a hybrid functor that keeps results hybrid
+ *
+ * \ingroup HybridUtilities
+ *
+ * Implements an operator that promotes the results of the underlying functor to
+ * an integral constant if all the function arguments are integral constants,
+ * otherwise, usual promotion rules apply.
+ */
+  template<class... Args>
+  constexpr decltype(auto) operator()(const Args&... args) const
+  {
+    if constexpr (std::conjunction_v<IsIntegralConstant<Args>...>)
+    {
+      constexpr auto result = _functor(Args::value...);
+      // apply functor on integral constant arguments and return an integral constant of the result
+      // this is guaranteed to be evaluated at compile-time
+      return std::integral_constant<std::remove_cv_t<decltype(result)>,result>{};
+    } else {
+      // apply functor directly on arguments and return the result of the functor
+      // (integral constants are likely to be casted to underlying type)
+      // this not is guaranteed to be evaluated at compile-time although is possible if expression is constexpr
+      return _functor(args...);
+    }
+  }
+};
+
+/**
+ * \brief Returns an HybridFunctor adaptor
+ * \see HybridFunctor
+ */
+template<class Functor>
+constexpr HybridFunctor<Functor> hybridFunctor(const Functor&)
 {
-  return Impl::equals(std::forward<T1>(t1), std::forward<T2>(t2), PriorityTag<1>());
+  return {};
 }
 
+/**
+ * \brief Function object that returns the greater of the given values
+ *
+ * \ingroup HybridUtilities
+ * \see HybridFunctor
+ *
+ * If all arguments have a static member value, the maximum value of
+ * these is returned as std::integral_constant<*, *>. Otherwise
+ * the result of a direct max of the arguments is returned.
+ *
+ * \code{.cpp}
+ *  using namespace Dune::Indices;
+ *  { // hybrid transformation!
+ *    auto j = Dune::Hybrid::max( 1,  2); // -> 2
+ *    auto j = Dune::Hybrid::max( 1, _2); // -> 2
+ *    auto k = Dune::Hybrid::max(_1, _2); // -> Dune::Indices::_2
+ *    // independent of the context, `k` encodes its value in the type system
+ *  }
+ * \endcode
+ */
+inline constexpr auto max = hybridFunctor(Impl::Max{});
 
+/**
+ * \brief Function object that returns the smaller of the given values
+ *
+ * \ingroup HybridUtilities
+ * \see HybridFunctor
+ *
+ * If all arguments have a static member value, the minimum value of
+ * these is returned as std::integral_constant<*, *>. Otherwise
+ * the result of a direct min of the arguments is returned.
+ *
+ * \code{.cpp}
+ *  using namespace Dune::Indices;
+ *  { // hybrid transformation!
+ *    auto j = Dune::Hybrid::min( 1,  2); // -> 1
+ *    auto j = Dune::Hybrid::min( 1, _2); // -> 1
+ *    auto k = Dune::Hybrid::min(_1, _2); // -> Dune::Indices::_1
+ *    // independent of the context, `k` encodes its value in the type system
+ *  }
+ * \endcode
+ */
+inline constexpr auto min = hybridFunctor(Impl::Min{});
+
+/**
+ * \brief Function object for performing addition
+ *
+ * \ingroup HybridUtilities
+ * \see HybridFunctor
+ *
+ * If all arguments have a static member value, the added value of
+ * these is returned as std::integral_constant<*, *>. Otherwise
+ * the result of a direct addition of the arguments is returned.
+ *
+ * \code{.cpp}
+ *  using namespace Dune::Indices;
+ *  { // hybrid transformation!
+ *    auto j = Dune::Hybrid::plus( 1,  2); // -> 3
+ *    auto j = Dune::Hybrid::plus( 1, _2); // -> 3
+ *    auto k = Dune::Hybrid::plus(_1, _2); // -> Dune::Indices::_3
+ *    // independent of the context, `k` encodes its value in the type system
+ *  }
+ * \endcode
+ */
+inline constexpr auto plus = hybridFunctor(std::plus<>{});
+
+/**
+ * \brief Function object for performing subtraction
+ *
+ * \ingroup HybridUtilities
+ * \see HybridFunctor
+ *
+ * If all arguments have a static member value, the subtracted value of
+ * these is returned as std::integral_constant<*, *>. Otherwise
+ * the result of a direct subtraction of the arguments is returned.
+ *
+ * \code{.cpp}
+ *  using namespace Dune::Indices;
+ *  { // hybrid transformation!
+ *    auto j = Dune::Hybrid::minus( 2,  1); // -> 1
+ *    auto j = Dune::Hybrid::minus( 2, _1); // -> 1
+ *    auto k = Dune::Hybrid::minus(_2, _1); // -> Dune::Indices::_1
+ *    // independent of the context, `k` encodes its value in the type system
+ *  }
+ * \endcode
+ */
+inline constexpr auto minus = hybridFunctor(std::minus<>{});
+
+/**
+ * \brief Function object for performing equality comparison
+ *
+ * \ingroup HybridUtilities
+ * \see HybridFunctor
+ *
+ * If both arguments have a static member value, the result of comparing
+ * these for equality is returned as std::integral_constant<bool, *>. Otherwise
+ * the result of a comparison of the two arguments is directly returned.
+ *
+ * \code{.cpp}
+ *  using namespace Dune::Indices;
+ *  { // hybrid transformation!
+ *    auto j = Dune::Hybrid::equals( 2,  1); // -> false
+ *    auto j = Dune::Hybrid::equals( 2, _1); // -> false
+ *    auto k = Dune::Hybrid::equals(_2, _1); // -> std::false_type
+ *    // independent of the context, `k` encodes its value in the type system
+ *  }
+ * \endcode
+ */
+inline constexpr auto equals = hybridFunctor(std::equal_to<>{});
 
 namespace Impl {
 
