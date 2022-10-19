@@ -11,6 +11,7 @@
 MANIFEST
 _skbuild/
 dist
+*.egg-info/
 # ignore macOS filesystem
 .DS_Store
 
