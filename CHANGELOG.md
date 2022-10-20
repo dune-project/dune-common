@@ -3,7 +3,7 @@ SPDX-FileCopyrightInfo: Copyright (C) DUNE Project contributors, see file LICENS
 SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 -->
 
-# Master (will become release 2.9)
+# Release 2.9
 
 - Added feature test for lambdas in unevaluated contexts
   `DUNE_HAVE_CXX_UNEVALUATED_CONTEXT_LAMBDA`. When defined, the C++ language
