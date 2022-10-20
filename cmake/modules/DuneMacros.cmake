@@ -46,6 +46,10 @@ include(DuneSymlinkOrCopy)
 include(DuneTestMacros)
 include(DuneUtilities)
 
+# Suppress a warning about a manually specified variable that is not used if
+# python is deactivated.
+set(DUNE_MAYBE_UNUSED_VARIABLES "DUNE_OPTS_FILE=${DUNE_OPTS_FILE}")
+
 macro(target_link_dune_default_libraries _target)
   foreach(_lib ${DUNE_LIBS})
     target_link_libraries(${_target} PUBLIC ${_lib})
