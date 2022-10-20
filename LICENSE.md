@@ -4,49 +4,49 @@ Copyright holders:
 2015--2017    Marco Agnese
 2015          Martin Alkämper
 2003--2019    Peter Bastian
-2004--2020    Markus Blatt
+2004--2022    Markus Blatt
 2013          Andreas Buhr
-2020--2021    Samuel Burbulla
-2011--2020    Ansgar Burchardt
+2020--2022    Samuel Burbulla
+2011--2022    Ansgar Burchardt
 2004--2005    Adrian Burri
 2014          Benjamin Bykowski (may appear in the logs as "Convex Function")
 2014          Marco Cecchetti
 2018          Matthew Collins
-2006--2021    Andreas Dedner
-2019--2021    Nils-Arne Dreier
+2006--2022    Andreas Dedner
+2018--2021    Nils-Arne Dreier
 2003          Marc Droske
-2003--2021    Christian Engwer
+2003--2022    Christian Engwer
 2004--2020    Jorrit Fahlke
 2016          Thomas Fetzer
 2008--2017    Bernd Flemisch
 2013--2014    Christoph Gersbacher
 2017--2020    Janick Gerstenberger
 2015          Stefan Girke
-2005--2021    Carsten Gräser
 2015--2017    Felix Gruber
-2010--2021    Christoph Grüninger
-2006          Bernhard Haasdonk
-2015--2018    Claus-Justus Heine
+2005--2022    Carsten Gräser
+2010--2022    Christoph Grüninger
+2006          Bernard Haasdonk
 2015--2020    René Heß
+2015--2018    Claus-Justus Heine
 2017--2019    Stephan Hilb
 2017--2021    Lasse Hinrichsen
 2012--2013    Olaf Ippisch
-2020          Patrick Jaap
+2020--2022    Patrick Jaap
 2020          Liam Keegan
 2013--2021    Dominic Kempf
 2009          Leonard Kern
 2017--2018    Daniel Kienle
 2013          Torbjörn Klatt
-2003--2021    Robert Klöfkorn
-2017--2021    Timo Koch
+2003--2022    Robert Klöfkorn
+2017--2022    Timo Koch
 2005--2007    Sreejith Pulloor Kuttanikkad
 2012--2016    Arne Morten Kvarving
 2010--2014    Andreas Lauser
-2016--2019    Tobias Leibner
+2016--2021    Tobias Leibner
 2015          Lars Lubkoll
 2012--2017    Tobias Malkmus
 2007--2011    Sven Marnach
-2010--2017    Rene Milk
+2010--2017    René Milk
 2019--2020    Felix Müller
 2011--2019    Steffen Müthing
 2018          Lisa Julia Nebel
@@ -55,16 +55,16 @@ Copyright holders:
 2008--2018    Martin Nolte
 2014          Andreas Nüßing
 2004--2005    Mario Ohlberger
-2019--2020    Santiago Ospina De Los Rios
 2014          Steffen Persvold
 2008--2017    Elias Pipping
 2021          Joscha Podlesny
 2011          Dan Popovic
-2017--2021    Simon Praetorius
+2017--2022    Simon Praetorius
 2009          Atgeirr Rasmussen
 2017--2020    Lukas Renelt
+2019--2022    Santiago Ospina De Los Ríos
 2006--2014    Uli Sack
-2003--2020    Oliver Sander
+2003--2022    Oliver Sander
 2006          Klaus Schneider
 2004          Roland Schulz
 2015          Nicolas Schwenck
