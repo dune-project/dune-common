@@ -30,5 +30,23 @@ int main()
   std::get<_1>(v) = 4.14;
   std::get<_2>(v) = 3.7;
 
+  { // test user-defined literal _xc
+    using namespace Dune::Indices::Literals;
+
+    static_assert(_0 == 0_ic);
+    static_assert(_1 == 1_ic);
+    static_assert(_2 == 2_ic);
+    static_assert(_3 == 3_ic);
+    static_assert(_4 == 4_ic);
+    static_assert(_5 == 5_ic);
+    static_assert(_6 == 6_ic);
+    static_assert(_7 == 7_ic);
+    static_assert(_8 == 8_ic);
+    static_assert(_9 == 9_ic);
+
+    static_assert(123_uc == 123u);
+    static_assert(-123_sc == -123);
+  }
+
   return 0;
 }

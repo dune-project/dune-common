@@ -43,6 +43,8 @@ In order to build the DUNE core modules you need at least the following software
 - The storage type `ReservedVector` is extended to follow more closely the `std::vector` and
   `std::array` interfaces.
 
+- Add user-defined literals `_uc` and `_sc` to represent integer constants.
+
 ## Build System
 
 - Improve the the function `dune_add_library` by separating the target types normal, interface, and

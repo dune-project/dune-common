@@ -7,6 +7,7 @@
 #define DUNE_COMMON_INDICES_HH
 
 #include <cstddef>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -127,6 +128,92 @@ namespace Dune
     return f(std::integral_constant<I, i>()...);
   }
 
+
+  namespace Indices::Literals
+  {
+    namespace Impl
+    {
+      // convert a single character into an unsigned integer
+      constexpr unsigned char2digit (const char c)
+      {
+        if (c >= '0' && c <= '9')
+          return unsigned(c) - unsigned('0');
+        else {
+          throw std::invalid_argument("Character is not a digit.");
+          return 0u;
+        }
+      }
+
+      // convert a sequence of character digits into an unsigned integer
+      template <class T, char... digits>
+      constexpr T chars2unsigned ()
+      {
+        const char arr[] = {digits...};
+        if (arr[0] == '-')
+          throw std::invalid_argument("Negative index constant not allowed.");
+
+        T result = 0;
+        T power  = 1;
+        const T base = 10;
+
+        const int N = sizeof...(digits);
+        for (int i = 0; i < N; ++i) {
+            char c = arr[N - 1 - i];
+            result+= char2digit(c) * power;
+            power *= base;
+        }
+
+        return result;
+      }
+
+      // convert a sequence of character digits into a signed integer
+      template <class T, char digit0, char... digits>
+      constexpr T chars2signed ()
+      {
+        return digit0 == '-'
+          ? -chars2unsigned<T,digits...>()
+          :  chars2unsigned<T,digit0,digits...>();
+      }
+
+    } //namespace Impl
+
+    /**
+     * \brief Literal to create an index compile-time constant
+     *
+     * \b Example:
+     * `1_ic -> std::integral_constant<std::size_t,1>`
+     **/
+    template <char... digits>
+    constexpr auto operator"" _ic()
+    {
+      return std::integral_constant<std::size_t, Impl::chars2unsigned<std::size_t,digits...>()>{};
+    }
+
+    /**
+     * \brief Literal to create an unsigned integer compile-time constant
+     *
+     * \b Example:
+     * `1_uc -> std::integral_constant<unsigned,1>`
+     **/
+    template <char... digits>
+    constexpr auto operator"" _uc()
+    {
+      return std::integral_constant<unsigned, Impl::chars2unsigned<unsigned,digits...>()>{};
+    }
+
+    /**
+     * \brief Literal to create a signed integer compile-time constant
+     *
+     * \b Example:
+     * `-1_sc -> std::integral_constant<int,-1>`
+     **/
+    template <char... digits>
+    constexpr auto operator"" _sc()
+    {
+      return std::integral_constant<int, Impl::chars2signed<int,digits...>()>{};
+    }
+
+  } //namespace Indices::Literals
 } //namespace Dune
 
 #endif // DUNE_COMMON_INDICES_HH
