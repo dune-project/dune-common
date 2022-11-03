@@ -32,6 +32,7 @@ install(FILES
         boundschecking.hh
         classname.hh
         concept.hh
+        concepts.hh
         conditional.hh
         copyableoptional.hh
         debugalign.hh
