@@ -11,6 +11,32 @@
 
 namespace Dune::Concept {
 
+/**
+ * \brief Detects hashable types usable as keys in unordered containers.
+ * \ingroup CxxConcepts
+ *
+ * A type is a model of `Hashable` if it can be used directly as key type in
+ * `std::unordered_map` or `std::unordered_set`.
+ *
+ * \par Notation:
+ * - `a`: an object of type `T`
+ *
+ * \par Valid Expressions:
+ * - `std::hash<T>{}(a)`: the standard hash function can be called on objects of type `T`
+ *
+ * \par Models:
+ * - `int`, `double`
+ * - `Dune::ReservedVector`
+ * - `Dune::bigunsignedint`
+ *
+ * \hideinitializer
+ **/
+template<class T>
+concept Hashable = requires(T a)
+{
+  { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
+};
+
 } // end namespace Dune::Concept
 
 

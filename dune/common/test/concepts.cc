@@ -20,7 +20,10 @@
 #include <type_traits>
 #include <vector>
 
+#include <dune/common/bigunsignedint.hh>
 #include <dune/common/concepts.hh>
+#include <dune/common/hash.hh>
+#include <dune/common/reservedvector.hh>
 #include <dune/common/parallel/mpihelper.hh>
 
 int main (int argc, char **argv)
@@ -28,6 +31,13 @@ int main (int argc, char **argv)
   using namespace Dune;
   MPIHelper::instance(argc, argv);
 
+  // test Hashable
+  static_assert(Concept::Hashable<int>);
+  static_assert(Concept::Hashable<double>);
+  static_assert(Concept::Hashable<Dune::bigunsignedint<64>>);
+  static_assert(Concept::Hashable<Dune::ReservedVector<double,3>>);
+
+  static_assert(not Concept::Hashable<std::vector<double>>);
 }
 
 #else // DUNE_COMMON_HAVE_CONCEPTS
