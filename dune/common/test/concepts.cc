@@ -4,15 +4,7 @@
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 #include <config.h>
 
-// check whether c++20 concept can be used
-#if __has_include(<version>) && __has_include(<concepts>)
-  #include <version>
-  #if  __cpp_concepts >= 201907L && __cpp_lib_concepts >= 202002L
-    #ifndef DUNE_COMMON_HAVE_CONCEPTS
-    #define DUNE_COMMON_HAVE_CONCEPTS 1
-    #endif
-  #endif
-#endif
+#include <dune/common/concepts.hh>
 
 #if DUNE_COMMON_HAVE_CONCEPTS
 
@@ -23,7 +15,6 @@
 #include <vector>
 
 #include <dune/common/bigunsignedint.hh>
-#include <dune/common/concepts.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/hash.hh>
 #include <dune/common/reservedvector.hh>

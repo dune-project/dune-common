@@ -5,6 +5,18 @@
 #ifndef DUNE_COMMON_CONCEPTS_HH
 #define DUNE_COMMON_CONCEPTS_HH
 
+// check whether c++20 concept can be used
+#if __has_include(<version>) && __has_include(<concepts>) && __has_include(<ranges>)
+  #include <version>
+  #if  __cpp_concepts >= 201907L && __cpp_lib_concepts >= 202002L
+    #ifndef DUNE_COMMON_HAVE_CONCEPTS
+    #define DUNE_COMMON_HAVE_CONCEPTS 1
+    #endif
+  #endif
+#endif
+
+#if DUNE_COMMON_HAVE_CONCEPTS
+
 #include <concepts>
 #include <cstddef>
 #include <iterator>
@@ -126,5 +138,6 @@ requires(T a, const T ca, typename T::size_type i)
 
 } // end namespace Dune::Concept
 
+#endif // DUNE_COMMON_HAVE_CONCEPTS
 
 #endif // DUNE_COMMON_CONCEPTS_HH
