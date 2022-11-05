@@ -15,7 +15,7 @@
   #endif
 #endif
 
-#if DUNE_COMMON_HAVE_CONCEPTS
+#if DUNE_COMMON_HAVE_CONCEPTS || DOXYGEN
 
 #include <concepts>
 #include <cstddef>
