@@ -4,6 +4,9 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 -->
 
 ## Changelog
+
+- Add user-defined literals `_ic`, `_uc` and `_sc` to represent integral constants.
+
 - Add "hybrid" functors for basic math operations with integral constant arguments, i.e., `Hybrid::max`, `Hybrid::min`, `Hybrid::plus`, `Hybrid::minus`, and `Hybrid::equals`. Operations between two integral constants result in an integral constant, whereas operations with at least one non integral constant argument is performed on the underlying value type.
 
 # Master (will become release 2.9)
@@ -42,8 +45,6 @@ In order to build the DUNE core modules you need at least the following software
 
 - The storage type `ReservedVector` is extended to follow more closely the `std::vector` and
   `std::array` interfaces.
-
-- Add user-defined literals `_uc` and `_sc` to represent integer constants.
 
 ## Build System
 
