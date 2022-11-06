@@ -33,6 +33,7 @@ install(FILES
         classname.hh
         concept.hh
         conditional.hh
+        copyableoptional.hh
         debugalign.hh
         debugallocator.hh
         debugstream.hh
