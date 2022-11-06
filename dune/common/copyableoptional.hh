@@ -91,12 +91,10 @@ public:
   constexpr CopyableOptional (const CopyableOptional&) = default;
 
   /// \brief Move construct the contained value
-  template <class T = Type,
-    std::enable_if_t<std::is_move_constructible_v<T>, int> = 0>
-  constexpr CopyableOptional (CopyableOptional&& that)
-        noexcept(std::is_nothrow_move_constructible<T>::value)
-    : Base{std::move(that)}
-  {}
+  constexpr CopyableOptional (CopyableOptional&&) = default;
+
+  /// \brief Default destructor
+  ~CopyableOptional () = default;
 
   /// \brief Copy assignment in terms of copy constructor
   constexpr CopyableOptional& operator= (const CopyableOptional& that)
