@@ -12,6 +12,8 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 - Add utility `CopyableOptional` that allows to wrap types that are copy constructible but not
   copy assignable and provide assignment operations based on the constructors.
 
+- Added the methods `checkThrow`,`requireThrow` and the corresponding `checkNoThrow`,`requireNoThrow` to the `Dune::TestSuite` to test for throwing and no throwing of exceptions.
+
 # Master (will become release 2.9)
 
 - Added feature test for lambdas in unevaluated contexts
