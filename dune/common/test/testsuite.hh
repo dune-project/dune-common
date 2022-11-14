@@ -104,6 +104,106 @@ namespace Dune {
         });
     }
 
+
+  private:
+    struct AnyException{};
+    struct NoException{};
+
+    template <class Exception= AnyException,class Expression>
+    bool evaluateThrowCondition(Expression&& expr)
+    {
+      try { expr(); }
+      catch (const Exception& e)
+      {
+        return true;
+      }
+      catch (...) //If we end up here, but we wanted to catch a specific Exception, we consider this failed, but if Exception is AnyExpection, we pass.
+      {
+        return std::is_same_v<Exception,AnyException>;
+      }
+      // If we end up here we didn't catch any exception. Thus, if this is on purpose, i.e. 'Exception= NoException', we return true.
+      return std::is_same_v<Exception,NoException>;
+    }
+
+  public:
+
+    /**
+     * \brief Checks that the expression throws
+     *
+     * This will throw an exception if the check fails and if the AlwaysThrow policy was used on creation.
+     * \param expr A nullary functor that is expected to throw an exception on evaluation that is of type `Exception` or any exception if the template parameter is omitted.
+     * \param name A name to identify this check. Defaults to ""
+     * \returns A CollectorStream that can be used to create a diagnostic message to be printed on failure.
+     * \par Example:
+     * \code
+     * checkThrow<Exception>([]{ throw Exception; }, "Expected an 'Exception' to be thrown");
+     * checkThrow([]{ throw std::runtime_Error("error"); }, "Expected any exception to be thrown");
+     * \endcode
+     */
+    template <class Exception= AnyException,class Expression>
+    CollectorStream checkThrow(Expression&& expr, std::string name = "")
+    {
+      return check(evaluateThrowCondition<Exception>(expr),name);
+    }
+
+    /**
+     * \brief Checks that the expression doesn't throw
+     *
+     * This will throw an exception if the check fails and if the AlwaysThrow policy was used on creation.
+     *
+     * \param expr A nullary functor that is expected not to throw an exception on evaluation
+     * \param name A name to identify this check. Defaults to ""
+     * \returns A CollectorStream that can be used to create a diagnostic message to be printed on failure.
+     * \par Example:
+     * \code
+     * checkNoThrow([]{ throw std::runtime_Error("error"); }, "Expected not to thrown"); //fails
+     * \endcode
+     */
+    template <class Expression>
+    CollectorStream checkNoThrow(Expression&& expr, std::string name = "")
+    {
+      return check(evaluateThrowCondition<NoException>(expr),name);
+    }
+
+    /**
+     * \brief Requires that the expression throws
+     *
+     * This will throw an exception if the check fails.
+     *
+     * \param expr A nullary functor that is expected to throw an exception on evaluation that is of type `Exception` or any exception if the template parameter is omitted.
+     * \param name A name to identify this check. Defaults to ""
+     * \returns A CollectorStream that can be used to create a diagnostic message to be printed on failure.
+     * \par Example:
+     * \code
+     * requireThrow<Exception>([]{ throw Exception; }, "Expected an 'Exception' to be thrown");
+     * requireThrow([]{ throw std::runtime_Error("error"); }, "Expected any exception to be thrown");
+     * \endcode
+     */
+    template <class Exception= AnyException,class Expression>
+    CollectorStream requireThrow(Expression&& expr, std::string name = "")
+    {
+      return require(evaluateThrowCondition<Exception>(expr),name);
+    }
+
+    /**
+     * \brief Requires that the expression doesn't throw
+     *
+     * This will throw an exception if the check fails.
+     *
+     * \param expr A nullary functor that is expected not to throw an exception on evaluation
+     * \param name A name to identify this check. Defaults to ""
+     * \returns A CollectorStream that can be used to create a diagnostic message to be printed on failure.
+     * \par Example:
+     * \code
+     * requireNoThrow([]{ throw std::runtime_Error("error"); }, "Expected not to thrown"); //fails
+     * \endcode
+     */
+    template <class Expression>
+    CollectorStream requireNoThrow(Expression&& expr, std::string name = "")
+    {
+      return require(evaluateThrowCondition<NoException>(expr),name);
+    }
+
     /**
      * \brief Collect data from a sub-TestSuite
      *
