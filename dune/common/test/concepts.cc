@@ -6,7 +6,7 @@
 
 #include <dune/common/concepts.hh>
 
-#if DUNE_COMMON_HAVE_CONCEPTS
+#if DUNE_ENABLE_CONCEPTS
 
 #include <array>
 #include <bitset>
@@ -43,8 +43,8 @@ int main (int argc, char **argv)
   static_assert(not Concept::Container<Dune::FieldVector<double,3>>);
 }
 
-#else // DUNE_COMMON_HAVE_CONCEPTS
+#else // DUNE_ENABLE_CONCEPTS
 
 int main () { return 77; }
 
-#endif // DUNE_COMMON_HAVE_CONCEPTS
+#endif // DUNE_ENABLE_CONCEPTS
