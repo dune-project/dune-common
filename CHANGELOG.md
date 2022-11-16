@@ -3,22 +3,31 @@ SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE
 SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 -->
 
+# Master (will become release 2.10)
+
+## Dependencies
+
 ## Changelog
 
 - Add user-defined literals `_ic`, `_uc` and `_sc` to represent integral constants.
 
-- Add "hybrid" functors for basic math operations with integral constant arguments, i.e., `Hybrid::max`, `Hybrid::min`, `Hybrid::plus`, `Hybrid::minus`, and `Hybrid::equals`. Operations between two integral constants result in an integral constant, whereas operations with at least one non integral constant argument is performed on the underlying value type.
+- Add "hybrid" functors for basic math operations with integral constant arguments, i.e.,
+  `Hybrid::max`, `Hybrid::min`, `Hybrid::plus`, `Hybrid::minus`, and `Hybrid::equals`. Operations
+  between two integral constants result in an integral constant, whereas operations with at least
+  one non integral constant argument is performed on the underlying value type.
 
 - Add utility `CopyableOptional` that allows to wrap types that are copy constructible but not
   copy assignable and provide assignment operations based on the constructors.
 
-- Added the methods `checkThrow`,`requireThrow` and the corresponding `checkNoThrow`,`requireNoThrow` to the `Dune::TestSuite` to test for throwing and no throwing of exceptions.
+- Added the methods `checkThrow`,`requireThrow` and the corresponding `checkNoThrow`,
+  `requireNoThrow` to the `Dune::TestSuite` to test for throwing and no throwing of exceptions.
 
-# Master (will become release 2.9)
+## Build System
 
-- Added feature test for lambdas in unevaluated contexts
-  `DUNE_HAVE_CXX_UNEVALUATED_CONTEXT_LAMBDA`. When defined, the C++ language
-  allows to declare lambdas in unevaluated contexts, e.g., `F = decltype([](){})`.
+## Deprecations and removals
+
+
+# Release 2.9
 
 ## Dependencies
 In order to build the DUNE core modules you need at least the following software:
@@ -29,6 +38,11 @@ In order to build the DUNE core modules you need at least the following software
 - Optional: Python >= 3.7 for Python bindings
 
 ## Changelog
+
+- Added feature test for lambdas in unevaluated contexts
+  `DUNE_HAVE_CXX_UNEVALUATED_CONTEXT_LAMBDA`. When defined, the C++ language
+  allows to declare lambdas in unevaluated contexts, e.g., `F = decltype([](){})`.
+
 - Multiplication of two matrices using `a*b` is now also implemented if `a` or `b`
   is a `FieldMatrix` or if both are `DiagonalMatrices`.
 
@@ -46,7 +60,8 @@ In order to build the DUNE core modules you need at least the following software
 
 - deprecate Factorial in common/math.hh (use factorial function)
 
-- Add `python -m dune [info|configure|list|remove|dunetype|fix-dunepy]` command to manage just-in-time generated python modules in dune-py
+- Add `python -m dune [info|configure|list|remove|dunetype|fix-dunepy]` command to manage
+  just-in-time generated python modules in dune-py
 
 - The storage type `ReservedVector` is extended to follow more closely the `std::vector` and
   `std::array` interfaces.
