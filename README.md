@@ -18,7 +18,7 @@ DUNE was designed with flexibility in mind. It supports easy discretization
 using methods, like Finite Elements, Finite Volume and also Finite
 Differences. Through separation of data structures DUNE allows fast Linear
 Algebra like provided in the ISTL module, or usage of external libraries
-like blas.
+like BLAS.
 
 This package contains the basic DUNE common classes.
 
@@ -30,7 +30,7 @@ dune-common depends on the following software packages
 - pkg-config
 - Compiler (C, C++): GNU >=7 or Clang >= 5
 
-  Other compilers might work too, they need to support C++17 to the extend the
+  Other compilers might work too, they need to support C++17 to the extent the
   ones above do.
 
 The following software is recommended but optional:
@@ -54,13 +54,13 @@ follows:
 > inline functions from one or more of the DUNE source files, or you
 > compile one or more of the DUNE source files and link them with
 > other files to produce an executable, this does not by itself cause
-> Athe resulting executable to be covered by the GNU General Public
+> the resulting executable to be covered by the GNU General Public
 > License.  This exception does not however invalidate any other
 > reasons why the executable file might be covered by the GNU General
 > Public License.
 
-This licence clones the one of the libstc++ library. For further
-implications of this library please see their [licence page][licence]
+This license clones the one of the libstc++ library. For further
+implications of this library please see their [license page][license]
 
 See the file COPYING for full copying permissions.
 
@@ -76,7 +76,7 @@ Links
 0. https://www.dune-project.org/doc/installation
 1. https://dune-project.org/releases/
 2. https://dune-project.org/buildsystem/
-3. http://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
+3. https://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
 
 [installation]: https://www.dune-project.org/doc/installation
-[licence]: http://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
+[license]: https://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
