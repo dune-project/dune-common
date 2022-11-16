@@ -27,14 +27,15 @@ Dependencies
 
 dune-common depends on the following software packages
 
-- pkg-config
-- Compiler (C, C++): GNU >=7 or Clang >= 5
+- CMake >= 3.13
+- Compiler (C, C++): GNU >= 9 or Clang >= 10
 
   Other compilers might work too, they need to support C++17 to the extent the
   ones above do.
 
 The following software is recommended but optional:
 
+- pkg-config
 - MPI (either OpenMPI, lam, or mpich suffice)
 
 For a full explanation of the DUNE installation process please read
