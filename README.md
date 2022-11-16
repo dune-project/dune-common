@@ -59,7 +59,7 @@ follows:
 > reasons why the executable file might be covered by the GNU General
 > Public License.
 
-This license clones the one of the libstc++ library. For further
+This license clones the one of the libstdc++ library. For further
 implications of this library please see their [license page][license]
 
 See the file COPYING for full copying permissions.
