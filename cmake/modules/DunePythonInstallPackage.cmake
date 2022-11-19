@@ -25,7 +25,7 @@
 #       listed in the requirements.txt file
 #
 #     This function installs the dependencies of a python package at configure time.
-#     The dependencies are extracted from the :setup.py: and :requiements.txt: file
+#     The dependencies are extracted from the :setup.py: and :requirements.txt: file
 #     A failure on the installation of the dependencies does will no trigger a
 #     CMake fatal error but it will be reflected on the :RESULT: variable.
 #
@@ -55,7 +55,7 @@
 #
 #     This function generates the metadata required for Python package in order to be
 #     used by the dune-py module. It essentially glues together python code generation
-#     of dune-py (via CMake) with a python package. This is achiieved by generating a
+#     of dune-py (via CMake) with a python package. This is achieved by generating a
 #     filename that CMake should export some meta data about this build to.
 #     The file will be installed together with the Python package. This mechanism
 #     is used by the Python bindings to transport information from CMake to
@@ -107,7 +107,7 @@
 #    The package at the given location is expected to be a pip-installable package.
 #    This function installs the package at configure time. This distinction is
 #    important because it means that the package will be available to be used during
-#    other CMake configureation tasks.
+#    other CMake configuration tasks.
 #
 #
 #
@@ -303,7 +303,7 @@ function(dune_link_dune_py)
 
 
   if(NOT IS_ABSOLUTE "${LINKDUNEPY_PATH}")
-    message(FATAL_ERROR "'PATH=${LINKDUNEPY_PATH}' argument is not an absulte path")
+    message(FATAL_ERROR "'PATH=${LINKDUNEPY_PATH}' argument is not an absolute path")
   endif()
 
   if(NOT EXISTS "${LINKDUNEPY_PATH}/setup.py")
@@ -365,7 +365,7 @@ function(dune_link_dune_py)
 
   # check consistency of the builddir when using an external venv
   if(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV)
-    message(STATUS "Checking if the modules used to confiugre this module match those from any installed dune packages")
+    message(STATUS "Checking if the modules used to configure this module match those from any installed dune packages")
     dune_execute_process(COMMAND "${CMAKE_COMMAND}" -E echo "configured for interpreter ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}"
                          COMMAND "${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}" "${scriptdir}/checkvenvconf.py"
                                   checkbuilddirs \"${PROJECT_NAME};${ALL_DEPENDENCIES}\" "${_export_builddirs}"
