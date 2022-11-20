@@ -406,7 +406,7 @@ int test_determinant()
     ++ret;
   }
 
-  return 0;
+  return ret;
 }
 
 int main()
@@ -419,11 +419,12 @@ int main()
     test_matrix<double, 1, 1>();
     test_matrix<int, 10, 5>();
     test_matrix<double, 5, 10>();
-    test_determinant();
+    int ret = test_determinant();
     Dune::DynamicMatrix<double> B(34, 34, 1e-15);
     for (int i=0; i<34; i++) B[i][i] = 1;
     B.invert();
-    return test_invert_solve();
+    ret += test_invert_solve();
+    return ret;
   }
   catch (Dune::Exception & e)
   {
