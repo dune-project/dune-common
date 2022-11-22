@@ -375,6 +375,8 @@ class Builder:
 
     def load(self, moduleName, source, pythonName, extraCMake=None):
         self.initialize()
+        if pythonName is None:
+            pythonName = moduleName
 
         # check whether module is already compiled and build it if necessary
         # (only try to build module on rank 0!)
