@@ -197,12 +197,6 @@
 #    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
 #    to do so.
 #
-# .. cmake_variable:: DUNE_REENABLE_ADD_TEST
-#
-#    You may set this variable to True either through your opts file or in your module
-#    (before the call to :code:`include(DuneMacros)`) to suppress the error that is thrown if
-#    :code:`add_test` is used. You should only do that if you have proper reason to do so.
-#
 # .. cmake_variable:: DUNE_MAX_TEST_CORES
 #
 #    You may set this variable to give an upperbound to the number of processors, that
@@ -411,10 +405,10 @@ function(dune_add_test)
       endif()
 
       # Now add the actual test
-      _add_test(NAME ${ACTUAL_NAME}
-                COMMAND "${ACTUAL_TESTCOMMAND}" ${ACTUAL_CMD_ARGS}
-                WORKING_DIRECTORY "${ADDTEST_WORKING_DIRECTORY}"
-               )
+      add_test(NAME ${ACTUAL_NAME}
+               COMMAND "${ACTUAL_TESTCOMMAND}" ${ACTUAL_CMD_ARGS}
+               WORKING_DIRECTORY "${ADDTEST_WORKING_DIRECTORY}"
+              )
 
       # Make the test depend on the existence of the target to trigger "Not Run" response
       if(NOT ADDTEST_EXPECT_COMPILE_FAIL AND NOT ADDTEST_PYTHON_TEST)
@@ -439,15 +433,3 @@ function(dune_add_test)
     endif()
   endforeach()
 endfunction()
-
-macro(add_directory_test_target)
-  message(FATAL_ERROR "The function add_directory_test_target has been removed alongside all testing magic in dune-common. Check dune_add_test for the new way!")
-endmacro()
-
-macro(add_test)
-  if(NOT DUNE_REENABLE_ADD_TEST)
-    message(SEND_ERROR "Please use dune_add_test instead of add_test! If you need add_test in a downstream project, set the variable DUNE_REENABLE_ADD_TEST to True in that project to suppress this error.")
-  else()
-    _add_test(${ARGN})
-  endif()
-endmacro()

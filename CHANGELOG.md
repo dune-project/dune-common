@@ -30,6 +30,10 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Build System
 
+- Remove deprecated `add_directory_test_target` function.
+
+- Do not overwrite the `add_test` cmake function with an error message.
+
 ## Deprecations and removals
 
 
