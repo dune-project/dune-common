@@ -399,10 +399,12 @@ struct pickle_factory<Get, Set, RetState(Self), NewInstance(ArgState)> {
     remove_reference_t<Set> set;
 
     pickle_factory(Get get, Set set) : get(std::forward<Get>(get)), set(std::forward<Set>(set)) {}
-
     template <typename Class, typename... Extra>
     void execute(Class &cl, const Extra &...extra) && {
-        cl.def("__getstate__", std::move(get));
+      if constexpr ((std::is_same_v<pybind11::prepend, Extra> || ...)) {
+        cl.def("__getstate__", std::move(get),
+              pybind11::prepend() // add prepend both in getter and setter
+              );
 
 #if defined(PYBIND11_CPP14)
         cl.def(
@@ -420,7 +422,28 @@ struct pickle_factory<Get, Set, RetState(Self), NewInstance(ArgState)> {
             },
             is_new_style_constructor(),
             extra...);
+    } else {
+      cl.def("__getstate__", std::move(get)
+            );
+
+#if defined(PYBIND11_CPP14)
+      cl.def(
+          "__setstate__",
+          [func = std::move(set)]
+#else
+      auto &func = set;
+      cl.def(
+          "__setstate__",
+          [func]
+#endif
+          (value_and_holder &v_h, ArgState state) {
+              setstate<Class>(
+                  v_h, func(std::forward<ArgState>(state)), Py_TYPE(v_h.inst) != v_h.type->type);
+          },
+          is_new_style_constructor(),
+          extra...);
     }
+  }
 };
 
 PYBIND11_NAMESPACE_END(initimpl)
