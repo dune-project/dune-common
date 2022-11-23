@@ -240,39 +240,41 @@ if(SuiteSparse_FOUND)
   endforeach(_component)
 
   foreach(_component ${SUITESPARSE_COMPONENTS})
-    # Link required dependencies
-    foreach(_dependency ${SUITESPARSE_${_component}_REQUIRED_DEPENDENCIES})
-      target_link_libraries(SuiteSparse::${_component}
-        INTERFACE SuiteSparse::${_dependency})
-    endforeach(_dependency)
-
-    # Link found optional dependencies
-    foreach(_dependency ${SUITESPARSE_${_component}_OPTIONAL_DEPENDENCIES})
-      if(SuiteSparse_${_dependency}_FOUND)
+    if(TARGET SuiteSparse::${component_})
+      # Link required dependencies
+      foreach(_dependency ${SUITESPARSE_${_component}_REQUIRED_DEPENDENCIES})
         target_link_libraries(SuiteSparse::${_component}
           INTERFACE SuiteSparse::${_dependency})
-      endif()
-    endforeach(_dependency)
+      endforeach(_dependency)
 
-    # Link BLAS library
-    if(SUITESPARSE_${_component}_REQUIRES_BLAS)
-      if(TARGET BLAS::BLAS)
-        target_link_libraries(SuiteSparse::${_component}
-          INTERFACE BLAS::BLAS)
-      else()
-        target_link_libraries(SuiteSparse::${_component}
-          INTERFACE ${BLAS_LINKER_FLAGS} ${BLAS_LIBRARIES})
-      endif()
-    endif()
+      # Link found optional dependencies
+      foreach(_dependency ${SUITESPARSE_${_component}_OPTIONAL_DEPENDENCIES})
+        if(SuiteSparse_${_dependency}_FOUND)
+          target_link_libraries(SuiteSparse::${_component}
+            INTERFACE SuiteSparse::${_dependency})
+        endif()
+      endforeach(_dependency)
 
-    # Link LAPACK library
-    if(SUITESPARSE_${_component}_REQUIRES_LAPACK)
-      if(TARGET LAPACK::LAPACK)
-        target_link_libraries(SuiteSparse::${_component}
-          INTERFACE LAPACK::LAPACK)
-      else()
-        target_link_libraries(SuiteSparse::${_component}
-          INTERFACE ${LAPACK_LINKER_FLAGS} ${LAPACK_LIBRARIES})
+      # Link BLAS library
+      if(SUITESPARSE_${_component}_REQUIRES_BLAS)
+        if(TARGET BLAS::BLAS)
+          target_link_libraries(SuiteSparse::${_component}
+            INTERFACE BLAS::BLAS)
+        else()
+          target_link_libraries(SuiteSparse::${_component}
+            INTERFACE ${BLAS_LINKER_FLAGS} ${BLAS_LIBRARIES})
+        endif()
+      endif()
+
+      # Link LAPACK library
+      if(SUITESPARSE_${_component}_REQUIRES_LAPACK)
+        if(TARGET LAPACK::LAPACK)
+          target_link_libraries(SuiteSparse::${_component}
+            INTERFACE LAPACK::LAPACK)
+        else()
+          target_link_libraries(SuiteSparse::${_component}
+            INTERFACE ${LAPACK_LINKER_FLAGS} ${LAPACK_LIBRARIES})
+        endif()
       endif()
     endif()
   endforeach(_component)
