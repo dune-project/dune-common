@@ -240,7 +240,7 @@ if(SuiteSparse_FOUND)
   endforeach(_component)
 
   foreach(_component ${SUITESPARSE_COMPONENTS})
-    if(TARGET SuiteSparse::${component_})
+    if(TARGET SuiteSparse::${_component})
       # Link required dependencies
       foreach(_dependency ${SUITESPARSE_${_component}_REQUIRED_DEPENDENCIES})
         target_link_libraries(SuiteSparse::${_component}
