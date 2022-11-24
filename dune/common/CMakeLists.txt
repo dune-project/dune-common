@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
+add_subdirectory("concepts")
 add_subdirectory("parallel")
 add_subdirectory("simd")
 add_subdirectory("std")
@@ -32,6 +33,7 @@ install(FILES
         boundschecking.hh
         classname.hh
         concept.hh
+        concepts.hh
         conditional.hh
         copyableoptional.hh
         debugalign.hh

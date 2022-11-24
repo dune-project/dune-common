@@ -15,6 +15,16 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Changelog
 
+- Add concepts directory `dune/common/concepts/` and some fundamental concept definitions using
+  c++20-concepts. Those concepts are still experimental and are marked with the new `doxygen`
+  command `\experimental`. Additionally, the preprocessor constant `DUNE_ENABLE_CONCEPTS` is
+  provided when including `dune/common/concepts.hh` that tells whether the library and compiler
+  understand the new c++20-concepts and the concept definitions can be used. This constant can also
+  be set manually as a compilerflag to enforce enabling or disabling these features.
+
+- Two concept definitions are added: `Dune::Concept::Hashable` and
+  `Dune::Concept::[RandomAccess]Container` in `dune/common/concepts/` directory.
+
 - Add user-defined literals `_ic`, `_uc` and `_sc` to represent integral constants.
 
 - Add "hybrid" functors for basic math operations with integral constant arguments, i.e.,

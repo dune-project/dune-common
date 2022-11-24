@@ -65,7 +65,7 @@
 
 /**
   @defgroup CxxConcepts C++ concepts
-  @brief Concepts built on top of C++14.
+  @brief Concepts definitions and utilities to define requirements.
   @ingroup Utilities
 */
 
