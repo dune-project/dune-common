@@ -51,7 +51,7 @@ debian:11 clang-11-20-nobindings:
     DUNECI_TOOLCHAIN: clang-11-20
     DUNECI_CMAKE_FLAGS: '-DDUNE_ENABLE_PYTHONBINDINGS=OFF'
 
-system-test:
+core-modules-test:
   stage: downstream
   variables:
     CI_BUILD_REF_NAME: $CI_COMMIT_REF_NAME
@@ -60,7 +60,22 @@ system-test:
     project: infrastructure/dune-nightly-test
     branch: core
     strategy: depend
-  allow_failure: true
+  rules:
+    - when: manual
+      allow_failure: false
+
+full-system-test:
+  stage: downstream
+  variables:
+    CI_BUILD_REF_NAME: $CI_COMMIT_REF_NAME
+    DUNECI_TEST_LABELS: ""
+  trigger:
+    project: infrastructure/dune-nightly-test
+    branch: master
+    strategy: depend
+  rules:
+    - when: manual
+      allow_failure: true
 
 # Check for spelling mistakes in text
 code-spelling-check:
