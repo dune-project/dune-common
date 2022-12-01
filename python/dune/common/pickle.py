@@ -77,7 +77,7 @@ class SeriesPickler:
         assert self.objects is not None, "if used to dump data the 'objects' to dump need to be provided in the ctor"
         dumpFileName = self._dumpFileName(self.count)
         if not type(data) is dict:
-            raise TypeError("data passed to 'dump' should be a dictonary")
+            raise TypeError("data passed to 'dump' should be a dictionary")
         data["dumpFileName"] = dumpFileName
         self.data[self.count] = data
         with open(self.seriesFileName,"w") as f:
