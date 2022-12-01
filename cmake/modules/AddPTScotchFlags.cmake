@@ -19,21 +19,25 @@ set(HAVE_PTSCOTCH ${PTScotch_FOUND})
 
 # register all PTScotch related flags
 if(PTScotch_SCOTCH_FOUND)
-  dune_register_package_flags(LIBRARIES PTScotch::Scotch)
+  dune_register_package_flags(LIBRARIES PTScotch::Scotch
+    COMPILE_DEFINITIONS "ENABLE_SCOTCH=1")
 endif()
 if(PTScotch_PTSCOTCH_FOUND)
-  dune_register_package_flags(LIBRARIES PTScotch::PTScotch)
+  dune_register_package_flags(LIBRARIES PTScotch::PTScotch
+    COMPILE_DEFINITIONS "ENABLE_PTSCOTCH=1")
 endif()
 
 function(add_dune_ptscotch_flags _targets)
   if(PTScotch_SCOTCH_FOUND)
     foreach(_target ${_targets})
       target_link_libraries(${_target} PUBLIC PTScotch::Scotch)
+      target_compile_definitions(${_target} PUBLIC ENABLE_SCOTCH=1)
     endforeach(_target ${_targets})
   endif()
   if(PTScotch_PTSCOTCH_FOUND)
     foreach(_target ${_targets})
       target_link_libraries(${_target} PUBLIC PTScotch::PTScotch)
+      target_compile_definitions(${_target} PUBLIC ENABLE_PTSCOTCH=1)
     endforeach(_target ${_targets})
   endif()
 endfunction(add_dune_ptscotch_flags)
