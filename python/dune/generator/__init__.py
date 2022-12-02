@@ -102,3 +102,27 @@ class Method(object):
 
     def __str__(self):
         return self.register()
+
+class Pickler(object):
+    def __init__(self, getterBody, setterBody,
+                 setterArgs="pybind11::tuple t",
+                 extra=["pybind11::keep_alive<1,2>()","pybind11::prepend()"]):
+        self.getterBody = getterBody
+        self.setterBody = setterBody
+        self.setterArgs = setterArgs
+        if extra is None:
+            self.extra = []
+        else:
+            self.extra = extra
+
+    def register(self, cls="cls"):
+        source = cls + ".def( pybind11::pickle(\n";
+        source += "  [](const pybind11::object &self) {\n";
+        source += self.getterBody + "}\n"
+        source += ", [](" + self.setterArgs + ") {\n";
+        source += self.setterBody + "}\n"
+        source += ")" + "".join(", " + e for e in self.extra) + " );\n"
+        return source
+
+    def __str__(self):
+        return self.register()

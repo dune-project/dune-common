@@ -194,6 +194,11 @@ class Builder:
             json.dump(self.externalPythonModules, externalModulesFile)
 
     def initialize(self):
+        # check if we need to initialize dune-py either because
+        # this is the first call to load or because an external module with metadata has been registered
+        if self.initialized and self.externalPythonModules == getExternalPythonModules():
+            return False
+
         self.externalPythonModules = copy.deepcopy(getExternalPythonModules())
 
         if comm.rank == 0:
@@ -226,6 +231,7 @@ class Builder:
         except:
             dune.__path__.insert(0,os.path.join(self.dune_py_dir, 'python', 'dune'))
         self.initialized = True
+        return True
 
     @staticmethod
     def callCMake(cmake_args, cwd, infoTxt, verbose=False, active=False, logLevel=logging.DEBUG, env=None):
@@ -368,10 +374,9 @@ class Builder:
         return compilationInfoMessage
 
     def load(self, moduleName, source, pythonName, extraCMake=None):
-        # check if we need to initialize dune-py either because
-        # this is the first call to load or because an external module with metadata has been registered
-        if not self.initialized or not self.externalPythonModules == getExternalPythonModules():
-            self.initialize()
+        self.initialize()
+        if pythonName is None:
+            pythonName = moduleName
 
         # check whether module is already compiled and build it if necessary
         # (only try to build module on rank 0!)
@@ -613,7 +618,8 @@ class MakefileBuilder(Builder):
     # just added to check for old versions of dune-py - can be removed once
     # this check is not needed anymore
     def initialize(self):
-        super().initialize()
+        if not super().initialize():
+            return
         # check that the compile script is available
         script = os.path.join(self.generated_dir,"buildScript.sh")
         if not os.path.exists(script):

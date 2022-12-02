@@ -9,7 +9,7 @@ add_python_targets(common
   hashit
   locking
   module
-  pickle                # deprecated 2.8
+  pickle
   project
   utility
 )
