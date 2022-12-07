@@ -145,19 +145,19 @@
 #cmakedefine HAVE_SUITESPARSE_UMFPACK ENABLE_SUITESPARSE
 
 /* Define to 1 if METIS is available */
-#cmakedefine HAVE_METIS 1
+#cmakedefine HAVE_METIS ENABLE_METIS
 
 /* Define to 1 if the Scotch replacement for METIS is used. */
 #cmakedefine HAVE_SCOTCH_METIS 1
 
 /* Define to 1 if you have the ParMETIS library. */
-#cmakedefine HAVE_PARMETIS 1
+#cmakedefine HAVE_PARMETIS ENABLE_PARMETIS
 
 /* Define to 1 if the PTScotch replacement for ParMETIS is used. */
 #cmakedefine HAVE_PTSCOTCH_PARMETIS 1
 
 /* Define to 1 if PT-Scotch is available */
-#cmakedefine HAVE_PTSCOTCH 1
+#cmakedefine HAVE_PTSCOTCH ENABLE_PTSCOTCH
 
 /* Used to call lapack functions */
 #cmakedefine LAPACK_NEEDS_UNDERLINE

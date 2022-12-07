@@ -19,7 +19,8 @@ set(HAVE_METIS ${METIS_FOUND})
 
 # register METIS library as dune package
 if(METIS_FOUND)
-  dune_register_package_flags(LIBRARIES METIS::METIS)
+  dune_register_package_flags(LIBRARIES METIS::METIS
+    COMPILE_DEFINITIONS "ENABLE_METIS=1")
 endif()
 
 # Add function to link targets against METIS library
@@ -27,6 +28,7 @@ function(add_dune_metis_flags _targets)
   if(METIS_FOUND)
     foreach(_target ${_targets})
       target_link_libraries(${_target} PUBLIC METIS::METIS)
+      target_compile_definitions(${_target} PUBLIC ENABLE_METIS=1)
     endforeach(_target)
   endif()
 endfunction(add_dune_metis_flags _targets)
