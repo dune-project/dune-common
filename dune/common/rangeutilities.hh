@@ -702,23 +702,21 @@ namespace Dune
     /**
      * \brief Provide const element access for random-accessible ranges
      */
-    template<class Range=R, class Tag=T,
-      std::enable_if_t<std::is_same_v<Tag,ValueTransformationTag>, int> = 0,
-      class = std::void_t<decltype(std::declval<const Range>().operator[](std::size_t(0)))>>
+    template<class It=const_iterator,
+      std::enable_if_t<std::is_same_v<typename It::iterator_category,std::random_access_iterator_tag>, int> = 0>
     constexpr decltype(auto) operator[](std::size_t i) const noexcept
     {
-      return f_(rawRange_[i]);
+      return this->begin()[i];
     }
 
     /**
      * \brief Provide mutable element access for random-accessible ranges
      */
-    template<class Range=R, class Tag=T,
-      std::enable_if_t<std::is_same_v<Tag,ValueTransformationTag>, int> = 0,
-      class = std::void_t<decltype(std::declval<Range>().operator[](std::size_t(0)))>>
+    template<class It=iterator,
+      std::enable_if_t<std::is_same_v<typename It::iterator_category,std::random_access_iterator_tag>, int> = 0>
     constexpr decltype(auto) operator[](std::size_t i) noexcept
     {
-      return f_(rawRange_[i]);
+      return this->begin()[i];
     }
 
     /**

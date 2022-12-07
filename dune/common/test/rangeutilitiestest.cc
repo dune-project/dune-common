@@ -32,7 +32,7 @@ auto checkRangeSize(R&& r)
   std::size_t counter = 0;
   for([[maybe_unused]] auto&& dummy : r)
     ++counter;
-  return (r.size()==counter);
+  return (r.size()==counter) && (!r.empty() || counter==0);
 }
 
 template<class R, class V>
@@ -43,6 +43,13 @@ auto checkRandomAccessNumberRangeSums(R&& r, V sum, V first, V last)
   passed = passed and (std::accumulate(r.begin()+1, r.end(), 0) == (sum-first));
   passed = passed and (std::accumulate(r.begin(), r.end()-1, 0) == (sum-last));
   passed = passed and (std::accumulate(r.begin()+1, r.end()-1, 0) == (sum-first-last));
+
+  // check direct random index access
+  V s = 0;
+  for (std::size_t i = 0; i < std::size_t(r.size()); ++i)
+    s += r[i];
+  passed = passed and (s == sum);
+
   return passed;
 }
 
