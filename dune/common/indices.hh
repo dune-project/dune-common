@@ -129,7 +129,7 @@ namespace Dune
   }
 
 
-  namespace Indices::Literals
+  namespace Indices { inline namespace Literals
   {
     namespace Impl
     {
@@ -213,7 +213,7 @@ namespace Dune
       return std::integral_constant<int, Impl::chars2signed<int,digits...>()>{};
     }
 
-  } //namespace Indices::Literals
+  }} //namespace Indices::Literals
 } //namespace Dune
 
 #endif // DUNE_COMMON_INDICES_HH
