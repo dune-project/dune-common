@@ -274,7 +274,7 @@ find_modules_in_path() {
         while read m; do
           test -n "$m" && parse_control "$m"
         done <<EOFM
-        $(find -H "$dir" -name ".?*" -prune -o -name $CONTROL -print | $GREP -v 'dune-[-_a-zA-Z]/dune-[-a-zA-Z_]*-[0-9]\{1,\}.[0-9]\{1,\}/')
+        $(find -H "$dir" -type d -name .git -prune -o -name $CONTROL -print | $GREP -v 'dune-[-_a-zA-Z]/dune-[-a-zA-Z_]*-[0-9]\{1,\}.[0-9]\{1,\}/')
 EOFM
 	  else
         parse_control "$dir"
