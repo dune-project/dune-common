@@ -700,6 +700,26 @@ namespace Dune
     }
 
     /**
+     * \brief Provide const element access for random-accessible ranges
+     */
+    template<class It=const_iterator,
+      std::enable_if_t<std::is_same_v<typename It::iterator_category,std::random_access_iterator_tag>, int> = 0>
+    constexpr decltype(auto) operator[](std::size_t i) const noexcept
+    {
+      return this->begin()[i];
+    }
+
+    /**
+     * \brief Provide mutable element access for random-accessible ranges
+     */
+    template<class It=iterator,
+      std::enable_if_t<std::is_same_v<typename It::iterator_category,std::random_access_iterator_tag>, int> = 0>
+    constexpr decltype(auto) operator[](std::size_t i) noexcept
+    {
+      return this->begin()[i];
+    }
+
+    /**
      * \brief Obtain the size of the range
      *
      * This is only available if the underlying range
@@ -709,17 +729,25 @@ namespace Dune
      * Attention: Don't select the template parameters explicitly.
      * They are only used to implement SFINAE.
      */
-    template<class Dummy=R,
-      class = std::void_t<decltype(std::declval<Dummy>().size())>>
-    auto size() const
+    template<class Range=R,
+      class = std::void_t<decltype(std::declval<const Range>().size())>>
+    auto size() const noexcept
     {
       return rawRange_.size();
     }
 
     /**
+     * \brief Checks whether the range is empty
+     */
+    constexpr bool empty() const noexcept
+    {
+      return rawRange_.begin() == rawRange_.end();
+    }
+
+    /**
      * \brief Export the wrapped untransformed range.
      */
-    const RawRange& rawRange() const
+    const RawRange& rawRange() const noexcept
     {
       return rawRange_;
     }
@@ -727,7 +755,7 @@ namespace Dune
     /**
      * \brief Export the wrapped untransformed range.
      */
-    RawRange& rawRange()
+    RawRange& rawRange() noexcept
     {
       return rawRange_;
     }
