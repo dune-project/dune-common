@@ -269,7 +269,7 @@ namespace Dune {
 
   // "How do I convert a string into a wstring in C++?"  "Why, that very simple
   // son. You just need a these hundred lines of code."
-  // Instead im going to restrict myself to string with charT=char here.
+  // Instead I'm going to restrict myself to string with charT=char here.
   template<typename traits, typename Allocator>
   struct ParameterTree::Parser<std::basic_string<char, traits, Allocator> > {
     static std::basic_string<char, traits, Allocator>
