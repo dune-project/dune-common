@@ -63,8 +63,8 @@ class SeriesPickler:
         self.protocol = protocol
         self.seriesFileName = fileBase+".series."+"dbf"
         if append and os.path.exists(self.seriesFileName):
-            f = open(self.seriesFileName,"r+")
-            self.data = json.load(self.f)
+            with open(self.seriesFileName,"r+") as f:
+                self.data = _json.load(f)
             self.count = max(self.data.keys())+1
         else:
             self.data = {}
@@ -86,10 +86,16 @@ class SeriesPickler:
             dump(self.objects,f,protocol=self.protocol,includeJITSources=(self.count==0))
         self.count += 1
     def load(self,count=None):
+        if not self.data:
+            with open(self.seriesFileName,"r+") as f:
+                self.data = _json.load(f)
         if count is None:
             count = self.count
             self.count += 1
-        data = self.data[count]
+        try:
+            data = self.data[str(count)]
+        except KeyError:
+            raise FileNotFoundError
         with open(data["dumpFileName"],"rb") as f:
-            obj = load(f,protocol=self.protocol)
+            obj = load(f)
         return data,obj
