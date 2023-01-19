@@ -59,6 +59,8 @@ In order to build the DUNE core modules you need at least the following software
   instead.
 - The deprecated header `dune/common/std/variant.hh` has been removed. Use `<variant>`
   instead.
+- The deprecated header `dune/common/to_unique_ptr.hh` has been removed. Use
+  `std::unique_ptr` or `std::shared_ptr` instead.
 
 
 # Release 2.9
