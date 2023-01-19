@@ -7,5 +7,4 @@ install(
   functional.hh
   make_array.hh
   type_traits.hh
-  variant.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/std)
