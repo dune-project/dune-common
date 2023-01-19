@@ -55,6 +55,9 @@ In order to build the DUNE core modules you need at least the following software
 
 - The deprecated header `dune/common/function.hh` has been removed. Use C++ function
   objects and `std::function` stuff instead!
+- The deprecated header `dune/common/std/utility.hh` has been removed. Use `<utility>`
+  instead.
+
 
 # Release 2.9
 
