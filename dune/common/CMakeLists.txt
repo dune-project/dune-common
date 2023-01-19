@@ -56,7 +56,6 @@ install(FILES
         fmatrix.hh
         fmatrixev.hh
         ftraits.hh
-        function.hh
         fvector.hh
         genericiterator.hh
         gmpfield.hh
