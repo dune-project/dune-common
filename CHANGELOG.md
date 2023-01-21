@@ -61,6 +61,8 @@ In order to build the DUNE core modules you need at least the following software
   instead.
 - The deprecated header `dune/common/to_unique_ptr.hh` has been removed. Use
   `std::unique_ptr` or `std::shared_ptr` instead.
+- Deprecated `conjunction`, `disjunction`, and `negation` have been removed. Instead,
+  use the structs from `<type_traits>` introduced with C++17.
 
 
 # Release 2.9
