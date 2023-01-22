@@ -329,10 +329,6 @@ dune_add_test(SOURCES sllisttest.cc
 dune_add_test(SOURCES stdidentity.cc
               LABELS quick)
 
-dune_add_test(SOURCES stdapplytest.cc
-              LINK_LIBRARIES dunecommon
-              LABELS quick)
-
 dune_add_test(SOURCES stdchecktypes.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)

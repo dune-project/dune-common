@@ -3,7 +3,6 @@
 
 install(
   FILES
-  apply.hh
   functional.hh
   make_array.hh
   type_traits.hh
