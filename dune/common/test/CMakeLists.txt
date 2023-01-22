@@ -10,9 +10,6 @@ dune_add_test(SOURCES arithmetictestsuitetest.cc
 dune_add_test(SOURCES arraylisttest.cc
               LABELS quick)
 
-dune_add_test(SOURCES arraytest.cc
-              LABELS quick)
-
 dune_add_test(SOURCES assertandreturntest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)

@@ -22,9 +22,6 @@
 /* Standard debug streams with a level below will collapse to doing nothing */
 #define DUNE_MINIMAL_DEBUG_LEVEL ${DUNE_MINIMAL_DEBUG_LEVEL}
 
-/* does the standard library provide experimental::make_array() ? */
-#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY 1
-
 /* does the standard library provide experimental::is_detected ? */
 #cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED 1
 
@@ -95,6 +92,9 @@
 
 /* end private */
 
+
+/* old feature support macros which were tested until 2.9, kept around for one more release */
+#define DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY 0
 
 /* Define to ENABLE_UMFPACK if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE
