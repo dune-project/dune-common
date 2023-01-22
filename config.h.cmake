@@ -96,11 +96,6 @@
 /* end private */
 
 
-/* old feature support macros which were tested until 2.8, kept around for one more release */
-#define HAS_ATTRIBUTE_DEPRECATED 0
-#define HAS_ATTRIBUTE_DEPRECATED_MSG 0
-#define HAS_ATTRIBUTE_UNUSED 0
-
 /* Define to ENABLE_UMFPACK if the UMFPack library is available */
 #cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE
 
