@@ -57,7 +57,7 @@ void allocator_tests()
   std::vector<double, Dune::DebugAllocator<double> > v;
   v.push_back(10);
   v.push_back(12);
-  v.size();
+  [[maybe_unused]] int size = v.size();
   std::cout << v[0] << "\n";
   std::cout << v[1] << "\n";
 #ifdef FAILURE5
