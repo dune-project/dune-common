@@ -124,8 +124,8 @@ void testmodify(P parameterSet)
   parameterSet["testVector"] = "2 3 5 7 11";
   parameterSet.sub("Foo")["bar"] = "2";
 
-  double testDouble      = parameterSet.template get<double>("testDouble");
-  int testInt            = parameterSet.template get<int>("testInt");
+  [[maybe_unused]] double testDouble = parameterSet.template get<double>("testDouble");
+  [[maybe_unused]] int testInt       = parameterSet.template get<int>("testInt");
   ++testDouble;
   ++testInt;
   std::string testString = parameterSet.template get<std::string>("testString");
