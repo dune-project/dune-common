@@ -585,6 +585,23 @@ inline constexpr auto equals = hybridFunctor(std::equal_to<>{});
 
 namespace Impl {
 
+  // This overload is selected if the passed value is already a compile time constant.
+  template<class Result, class T, T t0, T... tt, class ValueType, ValueType value, class Branches, class ElseBranch>
+  constexpr Result switchCases(std::integer_sequence<T, t0, tt...>, const std::integral_constant<ValueType, value>& /*value*/, Branches&& branches, ElseBranch&& elseBranch)
+  {
+    // In case we pass a value known at compile time, we no longer have to do
+    // a dynamic to static dispatch via recursion. The only thing that's left
+    // is to check if the value is contained in the passed range.
+    // If this is true, we have to pass it to the branches callback
+    // as an appropriate integral_constant type. Otherwise we have to
+    // execute the else callback.
+    if constexpr (((t0 == value) || ... || (tt == value)))
+      return branches(std::integral_constant<T, value>{});
+    else
+      return elseBranch();
+  }
+
+  // This overload is selected if the passed value is dynamic.
   template<class Result, class T, class Value, class Branches, class ElseBranch>
   constexpr Result switchCases(std::integer_sequence<T>, const Value& /*value*/, Branches&& /*branches*/, ElseBranch&& elseBranch)
   {
@@ -594,13 +611,10 @@ namespace Impl {
   template<class Result, class T, T t0, T... tt, class Value, class Branches, class ElseBranch>
   constexpr Result switchCases(std::integer_sequence<T, t0, tt...>, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
   {
-    return ifElse(
-        Hybrid::equals(std::integral_constant<T, t0>(), value),
-      [&](auto id) -> decltype(auto) {
-        return id(branches)(std::integral_constant<T, t0>());
-      }, [&](auto id) -> decltype(auto) {
-        return Impl::switchCases<Result>(id(std::integer_sequence<T, tt...>()), value, branches, elseBranch);
-    });
+    if (t0 == value)
+      return branches(std::integral_constant<T, t0>());
+    else
+      return Impl::switchCases<Result>(std::integer_sequence<T, tt...>(), value, branches, elseBranch);
   }
 
 } // namespace Impl
