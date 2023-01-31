@@ -6,8 +6,6 @@
 #include "testsuite.hh"
 
 int main() try {
-  bool passed = true;
-
   Dune::TestSuite t;
   Dune::FieldVector<double, 3> v1 = {1, 2, 3};
   Dune::FieldVector<double, 2> const v2 = {1, 2};
