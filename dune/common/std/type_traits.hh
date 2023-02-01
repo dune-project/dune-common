@@ -9,7 +9,7 @@
 #include <dune/common/typetraits.hh>
 #include <dune/common/typeutilities.hh>
 
-#if __has_include(<experimental/type_traits>)
+#if DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
 #include <experimental/type_traits>
 #endif
 
