@@ -119,6 +119,9 @@ namespace Std
        using st_b = typename detected_or<std::size_t,SizeType,B>::type;
      \endcode
    *
+   * Do not directly use the nested `typedefs` `value_t` and `type` as
+   * they are implementation details.
+   *
    * \note This functionality is part of the C++ library fundamentals TS v2 and might
    *       or might not became part of C++2a.
    *
