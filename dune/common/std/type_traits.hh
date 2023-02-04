@@ -9,7 +9,7 @@
 #include <dune/common/typetraits.hh>
 #include <dune/common/typeutilities.hh>
 
-#if __has_include(<experimental/type_traits>)
+#if DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
 #include <experimental/type_traits>
 #endif
 
@@ -79,8 +79,8 @@ namespace Std
   /**
    * This type cannot be constructed, destroyed or copied.
    *
-   * \note This functionality is part of the C++ library fundamentals TS v2 and might
-   *       or might not became part of C++2a.
+   * \note This functionality is part of the C++ library fundamentals TS v3 and might
+   *       or might not became part of C++2c / C++26.
    *
    * \ingroup CxxUtilities
    */
@@ -119,8 +119,11 @@ namespace Std
        using st_b = typename detected_or<std::size_t,SizeType,B>::type;
      \endcode
    *
-   * \note This functionality is part of the C++ library fundamentals TS v2 and might
-   *       or might not became part of C++2a.
+   * Do not directly use the nested `typedefs` `value_t` and `type` as
+   * they are implementation details.
+   *
+   * \note This functionality is part of the C++ library fundamentals TS v3 and might
+   *       or might not became part of C++2c / C++26.
    *
    * \ingroup CxxUtilities
    */
@@ -132,8 +135,8 @@ namespace Std
    * This alias template checks whether `Op<Args...>` can be instantiated. It is
    * equivalent to `typename detected_or<nonesuch,Op,Args...>::value_t`.
    *
-   * \note This functionality is part of the C++ library fundamentals TS v2 and might
-   *       or might not became part of C++2a.
+   * \note This functionality is part of the C++ library fundamentals TS v3 and might
+   *       or might not became part of C++2c / C++26.
    *
    * \ingroup CxxUtilities
    */
@@ -146,8 +149,8 @@ namespace Std
    * This constexpr variable checks whether `Op<Args...>` can be instantiated. It is
    * equivalent to `is_detected<Op,Args...>::value`.
    *
-   * \note This functionality is part of the C++ library fundamentals TS v2 and might
-   *       or might not became part of C++2a.
+   * \note This functionality is part of the C++ library fundamentals TS v3 and might
+   *       or might not became part of C++2c / C++26.
    *
    * \ingroup CxxUtilities
    */
@@ -161,8 +164,8 @@ namespace Std
    * not SFINAE-safe by appropriately wrapping the instantiation. If instantiation fails,
    * the marker type nonesuch is returned instead.
    *
-   * \note This functionality is part of the C++ library fundamentals TS v2 and might
-   *       or might not became part of C++2a.
+   * \note This functionality is part of the C++ library fundamentals TS v3 and might
+   *       or might not became part of C++2c / C++26.
    *
    * \ingroup CxxUtilities
    */
@@ -176,8 +179,8 @@ namespace Std
    * not SFINAE-safe by appropriately wrapping the instantiation and automatically falling back
    * to `Default` if instantiation fails.
    *
-   * \note This functionality is part of the C++ library fundamentals TS v2 and might
-   *       or might not became part of C++2a.
+   * \note This functionality is part of the C++ library fundamentals TS v3 and might
+   *       or might not became part of C++2c / C++26.
    *
    * \ingroup CxxUtilities
    */
@@ -186,8 +189,8 @@ namespace Std
 
   //! Checks whether `Op<Args...>` is `Expected` without causing an error if `Op<Args...>` is invalid.
   /**
-   * \note This functionality is part of the C++ library fundamentals TS v2 and might
-   *       or might not became part of C++2a.
+   * \note This functionality is part of the C++ library fundamentals TS v3 and might
+   *       or might not became part of C++2c / C++26.
    *
    * \ingroup CxxUtilities
    */
@@ -197,8 +200,8 @@ namespace Std
 #ifdef __cpp_variable_templates
   //! Convenient access to the result value of is_detected_exact.
   /**
-   * \note This functionality is part of the C++ library fundamentals TS v2 and might
-   *       or might not became part of C++2a.
+   * \note This functionality is part of the C++ library fundamentals TS v3 and might
+   *       or might not became part of C++2c / C++26.
    *
    * \ingroup CxxUtilities
    */
@@ -208,8 +211,8 @@ namespace Std
 
   //! Checks whether `Op<Args...>` is convertible to `Target` without causing an error if `Op<Args...>` is invalid.
   /**
-   * \note This functionality is part of the C++ library fundamentals TS v2 and might
-   *       or might not became part of C++2a.
+   * \note This functionality is part of the C++ library fundamentals TS v3 and might
+   *       or might not became part of C++2c / C++26.
    *
    * \ingroup CxxUtilities
    */
@@ -219,8 +222,8 @@ namespace Std
 #ifdef __cpp_variable_templates
   //! Convenient access to the result value of is_detected_convertible.
   /**
-   * \note This functionality is part of the C++ library fundamentals TS v2 and might
-   *       or might not became part of C++2a.
+   * \note This functionality is part of the C++ library fundamentals TS v3 and might
+   *       or might not became part of C++2c / C++26.
    *
    * \ingroup CxxUtilities
    */
