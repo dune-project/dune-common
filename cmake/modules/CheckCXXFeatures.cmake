@@ -195,12 +195,6 @@ dune_require_cxx_standard(MODULE "DUNE" VERSION 17)
 # ******************************************************************************
 
 check_cxx_symbol_exists(
-  "std::experimental::make_array<int,int>"
-  "experimental/array"
-  DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY
-  )
-
-check_cxx_symbol_exists(
   "std::move<std::experimental::detected_t<std::decay_t,int>>"
   "utility;experimental/type_traits"
   DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED

@@ -233,55 +233,6 @@ namespace Std
 
 #endif // DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
 
-
-
-  // conjunction
-  // -----------
-
-  /**
-   * \brief forms the logical conjunction of the type traits B...
-   *
-   * \note This functionality is part of the C++17 standard.
-   *
-   * \ingroup CxxUtilities
-   **/
-  template< class... B >
-  struct [[deprecated("Will be removed after release 2.8. Use std::conjunction instead.")]] conjunction
-    : std::conjunction<B...>
-  {};
-
-
-  // disjunction
-  // -----------
-
-  /**
-   * \brief forms the logical disjunction of the type traits B...
-   *
-   * \note This functionality is part of the C++17 standard.
-   *
-   * \ingroup CxxUtilities
-   **/
-  template< class... B >
-  struct [[deprecated("Will be removed after release 2.8. Use std::disjunction instead.")]] disjunction
-    : std::disjunction<B...>
-  {};
-
-
-  // negation
-  // --------
-
-  /**
-   * \brief forms the logical negation of the type traits B...
-   *
-   * \note This functionality is part of the C++17 standard.
-   *
-   * \ingroup CxxUtilities
-   **/
-  template<class B>
-  struct [[deprecated("Will be removed after release 2.8. Use std::negation instead.")]] negation
-    : std::negation<B>
-  {};
-
 } // namespace Std
 
 

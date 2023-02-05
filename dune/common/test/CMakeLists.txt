@@ -10,9 +10,6 @@ dune_add_test(SOURCES arithmetictestsuitetest.cc
 dune_add_test(SOURCES arraylisttest.cc
               LABELS quick)
 
-dune_add_test(SOURCES arraytest.cc
-              LABELS quick)
-
 dune_add_test(SOURCES assertandreturntest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
@@ -195,10 +192,6 @@ dune_add_test(SOURCES fmatrixtest.cc
               LABELS quick)
 add_dune_vc_flags(fmatrixtest)
 
-dune_add_test(SOURCES functiontest.cc
-              LINK_LIBRARIES dunecommon
-              LABELS quick)
-
 dune_add_test(SOURCES fvectortest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
@@ -331,10 +324,6 @@ dune_add_test(SOURCES sllisttest.cc
               LABELS quick)
 
 dune_add_test(SOURCES stdidentity.cc
-              LABELS quick)
-
-dune_add_test(SOURCES stdapplytest.cc
-              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES stdchecktypes.cc

@@ -53,6 +53,18 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Deprecations and removals
 
+- The deprecated header `dune/common/function.hh` has been removed. Use C++ function
+  objects and `std::function` stuff instead!
+- The deprecated header `dune/common/std/utility.hh` has been removed. Use `<utility>`
+  instead.
+- The deprecated header `dune/common/std/variant.hh` has been removed. Use `<variant>`
+  instead.
+- The deprecated header `dune/common/to_unique_ptr.hh` has been removed. Use
+  `std::unique_ptr` or `std::shared_ptr` instead.
+- Deprecated `conjunction`, `disjunction`, and `negation` have been removed. Instead,
+  use the structs from `<type_traits>` introduced with C++17.
+- Remove deprecated `dune/common/std/apply.hh`, use `std::apply` instead.
+
 
 # Release 2.9
 
