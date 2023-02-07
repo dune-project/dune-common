@@ -530,7 +530,7 @@ function(dune_python_configure_package)
 
   # Construct the wheel installation commandline
   # TODO should the wheel be build for the internal env setup or for the external one?
-  set(WHEEL_COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE}
+  set(WHEEL_COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} --no-deps
                         "${DUNE_PIP_INDEX}"
                         # --use-feature=in-tree-build
                         "${WHEEL_OPTION}"
