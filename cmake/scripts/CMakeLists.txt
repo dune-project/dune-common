@@ -23,5 +23,6 @@ install(FILES
 install(PROGRAMS
   extract_cmake_data.py
   run-in-dune-env.sh.in
+  set-dune-pythonpath.sh.in
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts
 )

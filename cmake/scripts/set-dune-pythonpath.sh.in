@@ -1,0 +1,19 @@
+#!@BASH@
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
+if [ "$DUNE_PY_DIR" == "" ]; then
+  export DUNE_PY_DIR=@dune-common_DIR@/.cache
+fi
+
+MODULE_PATHS="@CMAKE_BINARY_DIR@/python@MODULE_DEP_PYTHON_PATH@"
+
+source @DUNE_OPTS_FILE@
+export DUNE_CMAKE_FLAGS="$CMAKE_FLAGS"
+
+# for all module paths: check if path is contained in PYTHONPATH otherwise add
+for MODPATH in $MODULE_PATHS; do
+  if [[ ${PYTHONPATH} != *${MODPATH}* ]]; then
+    export PYTHONPATH=$PYTHONPATH:$MODPATH
+  fi
+done

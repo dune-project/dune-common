@@ -82,6 +82,11 @@
 #
 include_guard(GLOBAL)
 
+# pre-populate DUNE_PYTHON_USE_VENV
+set(DUNE_PYTHON_USE_VENV ON CACHE BOOL
+  "Running in some form of virtual environment"
+  )
+
 # pre-populate DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
 set(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV "" CACHE PATH
   "Running in an external activated virtual environment"
@@ -111,6 +116,9 @@ endif()
 #     TODO: Replace this with a better mechanism (like writing the location into
 #           dune-commons package config file)
 set(DUNE_PYTHON_WHEELHOUSE "${CMAKE_INSTALL_PREFIX}/share/dune/wheelhouse" CACHE PATH "The place where the wheels will be stored")
+
+# if use of venv is enabled
+if(DUNE_PYTHON_USE_VENV)
 
 # Determine whether the given interpreter is running inside a virtualenv
 dune_execute_process(COMMAND "${Python3_EXECUTABLE}" "${scriptdir}/venvpath.py"
@@ -150,9 +158,11 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   if(NOT(DUNE_PYTHON_virtualenv_FOUND OR DUNE_PYTHON_venv_FOUND))
     message(WARNING "One of the python packages virtualenv/venv is needed on the host system! "
                     "If you are using Debian or Ubuntu, consider installing python3-venv "
-                    "and/or python-virtualenv")
-    set(DUNE_ENABLE_PYTHONBINDINGS OFF)
-    return()
+                    "and/or python-virtualenv. Disabling use of venv for now!")
+    #set(DUNE_ENABLE_PYTHONBINDINGS OFF)
+    set(DUNE_PYTHON_USE_VENV FALSE)
+    # don't return, we still have to configure some files
+    # return()
   endif()
 
   # Set some options depending on which virtualenv package is used
@@ -222,6 +232,8 @@ set(DUNE_PYTHON_VIRTUALENV_EXECUTABLE ${DUNE_PYTHON_VIRTUALENV_PATH}/bin/python)
 # build directories of the Dune stack
 dune_execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${DUNE_PYTHON_VIRTUALENV_PATH}/bin/activate ${CMAKE_BINARY_DIR}/activate)
 
+endif() # if(DUNE_PYTHON_USE_VENV)
+
 # Also write a small wrapper script 'run-in-dune-env' into the build directory
 # This is necessary to execute installed python scripts (the bin path of a virtualenv
 # is *not* in the sys path, so a simple `python scriptname` does not work.
@@ -236,6 +248,9 @@ if(UNIX)
 else()
   message(WARNING "Writing script 'run-in-dune-env' not implemented on your platform!")
 endif()
+
+
+if(DUNE_PYTHON_USE_VENV)
 
 # The virtualenv might not contain pip due to the distribution bug described in
 # https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847
@@ -289,3 +304,40 @@ dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
       setuptools>=41 ninja
   WARNING_MESSAGE "python 'setuptools' package could not be installed - possibly connection to the python package index failed"
   )
+
+else() # if (DUNE_PYTHON_USE_VENV)
+
+  # Also store the virtual env interpreter directly
+  set(DUNE_PYTHON_VIRTUALENV_EXECUTABLE  ${Python3_EXECUTABLE})
+
+  # Also write a small wrapper script 'run-in-dune-env' into the build directory
+  # This is necessary to execute installed python scripts (the bin path of a virtualenv
+  # is *not* in the sys path, so a simple `python scriptname` does not work.
+  if(UNIX)
+
+    # create list with python module paths
+    set(BUILDDIR_PYTHON "$ENV{BUILDDIR}/python")
+    foreach( mod ${ALL_DEPENDENCIES} )
+      if( NOT ${${mod}_INCLUDE_DIRS} STREQUAL "")
+        set(MODULE_DEP_PYTHON_PATH "${MODULE_DEP_PYTHON_PATH}\n ${${mod}_INCLUDE_DIRS}/${BUILDDIR_PYTHON}")
+      endif()
+    endforeach()
+
+    # for dune-common this variable is not set but needed by the script
+    if( NOT dune-common_DIR )
+      set( dune-common_DIR ${CMAKE_BINARY_DIR} )
+    endif()
+
+    find_package(UnixCommands QUIET)
+
+    dune_module_path(MODULE dune-common
+                     RESULT scriptdir
+                     SCRIPT_DIR)
+    configure_file(${scriptdir}/set-dune-pythonpath.sh.in
+                   ${CMAKE_BINARY_DIR}/set-dune-pythonpath
+                   @ONLY)
+  else()
+    message(WARNING "Writing script 'set-dune-pythonpath' not implemented on your platform!")
+  endif()
+
+endif() # if(DUNE_PYTHON_USE_VENV)
