@@ -84,7 +84,12 @@ include_guard(GLOBAL)
 
 # pre-populate DUNE_PYTHON_USE_VENV
 set(DUNE_PYTHON_USE_VENV ON CACHE BOOL
-  "Running in some form of virtual environment"
+  "Using virtual environments when configuring Dune Python bindings.\
+  When ON any Python binding packages are installed into an auto-generated\
+  or any activated virtual environment in editable mode at configure time.\
+  When OFF users have to take care of installing Python binding packages.\
+  When OFF a script 'set-dune-pythonpath' is generated that may be used to enable the\
+  Python binding packages by means of the PYTHONPATH variable."
   )
 
 # pre-populate DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
