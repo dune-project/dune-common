@@ -156,10 +156,14 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
   dune_python_find_package(PACKAGE virtualenv)
   dune_python_find_package(PACKAGE venv)
   if(NOT(DUNE_PYTHON_virtualenv_FOUND OR DUNE_PYTHON_venv_FOUND))
-    message(WARNING "One of the python packages virtualenv/venv is needed on the host system! "
+    message(WARNING "None of the Python packages virtualenv/venv was found. "
+                    "Python bindings are therefore disabled. "
                     "If you are using Debian or Ubuntu, consider installing python3-venv "
-                    "and/or python-virtualenv. Disabling use of venv for now!")
-    #set(DUNE_ENABLE_PYTHONBINDINGS OFF)
+                    "and/or python-virtualenv. "
+                    "If you know what you are doing, you may also choose to use "
+                    "Python bindings without a virtual environment by configuring "
+                    "Dune with DUNE_PYTHON_USE_VENV=FALSE.")
+    set(DUNE_ENABLE_PYTHONBINDINGS OFF)
     set(DUNE_PYTHON_USE_VENV FALSE)
     # don't return, we still have to configure some files
     # return()
