@@ -450,18 +450,19 @@ function(dune_python_configure_package)
     set(PYPKGCONF_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYPKGCONF_PATH})
   endif()
 
+  # only install dependencies if there is a virtual environment
   if(DUNE_PYTHON_USE_VENV)
-  dune_python_configure_dependencies(
-       PATH ${PYPKGCONF_PATH}
-       RESULT PYTHON_DEPENDENCIES_FAILED
-       ${PYPKGCONF_INSTALL_CONCRETE_DEPENDENCIES}
-  )
+    dune_python_configure_dependencies(
+      PATH ${PYPKGCONF_PATH}
+      RESULT PYTHON_DEPENDENCIES_FAILED
+      ${PYPKGCONF_INSTALL_CONCRETE_DEPENDENCIES}
+    )
 
-  if (PYTHON_DEPENDENCIES_FAILED)
-    set(${PYPKGCONF_RESULT} ${PYTHON_DEPENDENCIES_FAILED} PARENT_SCOPE)
-    return()
+    if (PYTHON_DEPENDENCIES_FAILED)
+      set(${PYPKGCONF_RESULT} ${PYTHON_DEPENDENCIES_FAILED} PARENT_SCOPE)
+      return()
+    endif()
   endif()
-  endif() # if(DUNE_PYTHON_USE_VENV)
 
   if(IS_DIRECTORY ${DUNE_PYTHON_WHEELHOUSE})
     set(WHEEL_OPTION "--find-links=file://${DUNE_PYTHON_WHEELHOUSE}")
