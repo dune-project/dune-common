@@ -471,6 +471,7 @@ function(dune_python_configure_package)
   # installation command for dune package into local env - external requirements are already sorted and we want this step to not require
   # internet access. Dune packages need to be installed at this stage and should not be obtained from pypi (those packages include the C++ part
   # of the module which we don't want to install. So only use available wheels.
+  # Only install dependencies if the use of virtual environments is enabled.
   if(NOT SKBUILD AND DUNE_PYTHON_USE_VENV)
     message(STATUS "Installing python package at ${PYPKGCONF_PATH} into Dune virtual environment ${DUNE_PIP_INDEX}")
     dune_execute_process(
@@ -534,6 +535,12 @@ function(dune_python_configure_package)
     if(NOT SKBUILD)
       add_dependencies(install_python ${PYPKGCONF_INSTALL_TARGET})
     endif()
+  endif()
+
+  # Only add installation rules to make install if virtual environments are enabled
+  # Otherwise installation of Python packages is in user-hands
+  if(NOT DUNE_PYTHON_USE_VENV)
+    return()
   endif()
 
   # Construct the wheel installation commandline
