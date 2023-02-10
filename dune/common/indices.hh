@@ -146,12 +146,9 @@ namespace Dune
 
       // convert a sequence of character digits into an unsigned integer
       template <class T, char... digits>
-      constexpr T chars2unsigned ()
+      constexpr T chars2number ()
       {
         const char arr[] = {digits...};
-        if (arr[0] == '-')
-          throw std::invalid_argument("Negative index constant not allowed.");
-
         T result = 0;
         T power  = 1;
         const T base = 10;
@@ -166,15 +163,6 @@ namespace Dune
         return result;
       }
 
-      // convert a sequence of character digits into a signed integer
-      template <class T, char digit0, char... digits>
-      constexpr T chars2signed ()
-      {
-        return digit0 == '-'
-          ? -chars2unsigned<T,digits...>()
-          :  chars2unsigned<T,digit0,digits...>();
-      }
-
     } //namespace Impl
 
     /**
@@ -186,7 +174,7 @@ namespace Dune
     template <char... digits>
     constexpr auto operator"" _ic()
     {
-      return std::integral_constant<std::size_t, Impl::chars2unsigned<std::size_t,digits...>()>{};
+      return std::integral_constant<std::size_t, Impl::chars2number<std::size_t,digits...>()>{};
     }
 
     /**
@@ -198,19 +186,31 @@ namespace Dune
     template <char... digits>
     constexpr auto operator"" _uc()
     {
-      return std::integral_constant<unsigned, Impl::chars2unsigned<unsigned,digits...>()>{};
+      return std::integral_constant<unsigned, Impl::chars2number<unsigned,digits...>()>{};
     }
 
     /**
      * \brief Literal to create a signed integer compile-time constant
      *
      * \b Example:
-     * `-1_sc -> std::integral_constant<int,-1>`
+     * `1_sc -> std::integral_constant<int,1>`
      **/
     template <char... digits>
     constexpr auto operator"" _sc()
     {
-      return std::integral_constant<int, Impl::chars2signed<int,digits...>()>{};
+      return std::integral_constant<int, Impl::chars2number<int,digits...>()>{};
+    }
+
+    /**
+     * \brief Negation operator for integral constants.
+     *
+     * \b Example:
+     * `-1_sc -> std::integral_constant<int,-1>`
+     **/
+    template <class T, T value>
+    constexpr auto operator- (std::integral_constant<T,value>)
+    {
+      return std::integral_constant<std::make_signed_t<T>, -value>{};
     }
 
   }} //namespace Indices::Literals
