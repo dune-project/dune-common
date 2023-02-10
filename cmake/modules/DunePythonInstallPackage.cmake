@@ -284,7 +284,7 @@ function(dune_link_dune_py)
   set(MULTI CMAKE_METADATA_FLAGS)
   cmake_parse_arguments(LINKDUNEPY "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(LINKDUNEPY_UNPARSED_ARGUMENTS)
-    message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
+    message(WARNING "Unparsed arguments in dune_link_dune_py: This often indicates typos!")
   endif()
 
 
@@ -439,7 +439,7 @@ function(dune_python_configure_package)
   set(MULTI ADDITIONAL_PIP_PARAMS)
   cmake_parse_arguments(PYPKGCONF "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYPKGCONF_UNPARSED_ARGUMENTS)
-    message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
+    message(WARNING "Unparsed arguments in dune_python_configure_package: This often indicates typos!")
   endif()
 
   if(NOT IS_ABSOLUTE "${PYPKGCONF_PATH}")
