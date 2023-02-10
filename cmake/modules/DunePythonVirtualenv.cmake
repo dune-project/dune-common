@@ -92,6 +92,10 @@ set(DUNE_PYTHON_USE_VENV ON CACHE BOOL
   Python binding packages by means of the PYTHONPATH variable."
   )
 
+if(NOT DUNE_PYTHON_USE_VENV AND DUNE_ENABLE_PYTHONBINDINGS)
+  message(STATUS "Found DUNE_PYTHON_USE_VENV=FALSE: Python bindings are configured but Python packages and dependencies are not installed")
+endif()
+
 # pre-populate DUNE_PYTHON_SYSTEM_IS_VIRTUALENV
 set(DUNE_PYTHON_SYSTEM_IS_VIRTUALENV "" CACHE PATH
   "Running in an external activated virtual environment"
