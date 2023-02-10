@@ -168,10 +168,10 @@ if(NOT IS_DIRECTORY "${DUNE_PYTHON_VIRTUALENV_PATH}")
                     "If you know what you are doing, you may also choose to use "
                     "Python bindings without a virtual environment by configuring "
                     "Dune with DUNE_PYTHON_USE_VENV=FALSE.")
+    # TODO: For now we stay with the solution to disable Python
+    # bindings entirely if venv was not actively disabled
     set(DUNE_ENABLE_PYTHONBINDINGS OFF)
-    set(DUNE_PYTHON_USE_VENV FALSE)
-    # don't return, we still have to configure some files
-    # return()
+    return()
   endif()
 
   # Set some options depending on which virtualenv package is used
