@@ -75,6 +75,9 @@ include(DunePythonTestCommand)
 # Find the Python Interpreter and libraries
 find_package(Python3 COMPONENTS Interpreter Development)
 
+# this option enables the build of Python bindings for DUNE modules per default
+option(DUNE_ENABLE_PYTHONBINDINGS "Enable Python bindings for DUNE" ON)
+
 # helper message used below in various user messages
 set(DUNE_PYTHON_BINDINGS_USER_NOTICE "If you do not plan to use the Dune Python bindings you can ignore this information")
 
@@ -95,7 +98,7 @@ if(Python3_Interpreter_FOUND)
   ##### Python bindings specific part begin ################
   # first we test if all requirements are satisfied, if not, Python bindings are
   # disabled and the user gets an informative message explaining why
-  if(NOT Python3_INCLUDE_DIRS)
+  if((DUNE_ENABLE_PYTHONBINDINGS) AND (NOT Python3_INCLUDE_DIRS))
     message(STATUS "Python bindings disabled")
     message(NOTICE
       "   ----------------------------------------------------------------------------------------\n"
@@ -104,13 +107,13 @@ if(Python3_Interpreter_FOUND)
       "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"
       "   ----------------------------------------------------------------------------------------\n"
     )
-    set(DUNE_ENABLE_PYTHONBINDINGS OFF)
+    set(DUNE_ENABLE_PYTHONBINDINGS OFF CACHE BOOL "Disabled Python bindings (requirements not satisfied)" FORCE)
     return()
   endif()
 
   # the Python bindings currently require the following minimum Python version
   set(DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION 3.6)
-  if(Python3_VERSION VERSION_LESS ${DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION})
+  if((DUNE_ENABLE_PYTHONBINDINGS) AND (Python3_VERSION VERSION_LESS ${DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION}))
     message(STATUS "Python bindings disabled")
     message(NOTICE
       "   ----------------------------------------------------------------------------------------\n"
@@ -118,15 +121,11 @@ if(Python3_Interpreter_FOUND)
       "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"
       "   ----------------------------------------------------------------------------------------\n"
     )
-    set(DUNE_ENABLE_PYTHONBINDINGS OFF)
+    set(DUNE_ENABLE_PYTHONBINDINGS OFF CACHE BOOL "Disabled Python bindings (requirements not satisfied)" FORCE)
     return()
   endif()
 
-  # this option enables the build of Python bindings for DUNE modules per default
-  option(DUNE_ENABLE_PYTHONBINDINGS "Enable Python bindings for DUNE" ON)
-  message(STATUS "Python bindings enabled")
-
-  if( DUNE_ENABLE_PYTHONBINDINGS )
+  if(DUNE_ENABLE_PYTHONBINDINGS)
     include_directories("${Python3_INCLUDE_DIRS}")
     include(DuneAddPybind11Module)
   endif()
@@ -162,7 +161,7 @@ else()
         "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"
         "   ----------------------------------------------------------------------------------------\n"
   )
-  set(DUNE_ENABLE_PYTHONBINDINGS OFF)
+  set(DUNE_ENABLE_PYTHONBINDINGS OFF CACHE BOOL "Disabled Python bindings (requirements not satisfied)" FORCE)
 endif()
 
 include(DuneSymlinkOrCopy)
