@@ -157,7 +157,7 @@
 #
 include_guard(GLOBAL)
 
-
+include(DunePythonVirtualenv)
 
 function(dune_python_configure_dependencies)
   # Parse Arguments
