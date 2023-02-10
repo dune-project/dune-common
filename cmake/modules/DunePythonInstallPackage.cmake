@@ -160,8 +160,8 @@ include_guard(GLOBAL)
 
 
 function(dune_python_configure_dependencies)
-  if( NOT DUNE_PYTHON_USE_VENV )
-    return()
+  if(NOT DUNE_PYTHON_USE_VENV)
+    message(FATAL_ERROR "Tried to install Python dependencies when the use of virtual environments has been disabled via DUNE_PYTHON_USE_VENV=FALSE")
   endif()
 
   # Parse Arguments
