@@ -319,9 +319,6 @@ if(DUNE_PYTHON_USE_VENV)
     )
 
 else()
-  # Also store the virtual env interpreter directly
-  set(DUNE_PYTHON_VIRTUALENV_EXECUTABLE  ${Python3_EXECUTABLE})
-
   # Write a small wrapper script 'run-in-dune-env' into the build directory
   # This is necessary to execute installed python scripts (the bin path of a virtualenv
   # is *not* in the sys path, so a simple `python scriptname` does not work.
