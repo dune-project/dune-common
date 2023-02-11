@@ -384,6 +384,33 @@ namespace Dune
   {};
 
 
+#ifndef DOXYGEN
+
+  namespace Impl {
+
+  struct IsCompileTimeConstant
+  {
+    template <class T, T value>
+    static std::true_type  check(std::integral_constant<T,value>);
+    static std::false_type check(...);
+  };
+
+  } // namespace Impl
+
+#endif // DOXYGEN
+
+  /**
+   * \brief Check if T is an integral constant or any type
+   * derived from `std::integral_constant`.
+   *
+   * The result is exported by deriving from std::true_type or std::false_type.
+   */
+  template<class T>
+  struct IsCompileTimeConstant
+    : public decltype(Impl::IsCompileTimeConstant::check(std::declval<T>()))
+  {};
+
+
 
   /**
    * \brief Compute size of variadic type list

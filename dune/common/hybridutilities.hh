@@ -448,7 +448,7 @@ public:
   template<class... Args>
   constexpr decltype(auto) operator()(const Args&... args) const
   {
-    if constexpr (std::conjunction_v<IsIntegralConstant<Args>...>)
+    if constexpr (std::conjunction_v<IsCompileTimeConstant<Args>...>)
     {
       constexpr auto result = _functor(Args::value...);
       // apply functor on integral constant arguments and return an integral constant of the result
