@@ -401,6 +401,9 @@ dune_add_test(SOURCES transposetest.cc
 dune_add_test(SOURCES tupleutilitytest.cc
               LABELS quick)
 
+dune_add_test(SOURCES typetraitstest.cc
+              LABELS quick)
+
 dune_add_test(SOURCES typeutilitytest.cc
               LABELS quick)
 
