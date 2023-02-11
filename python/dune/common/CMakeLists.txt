@@ -9,6 +9,7 @@ add_python_targets(common
   hashit
   locking
   module
+  parallel
   pickle
   project
   utility

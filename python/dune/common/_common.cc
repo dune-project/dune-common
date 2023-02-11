@@ -29,5 +29,7 @@ PYBIND11_MODULE( _common, module )
   int argc = 0;
   char **argv = NULL;
   Dune::MPIHelper::instance(argc,argv);
+  // pybind11::module parallel = module.def_submodule("parallel", "DUNE parallel communication infrastructure");
+  // Dune::Python::registerCommunication(parallel);
   Dune::Python::registerCommunication(module);
 }
