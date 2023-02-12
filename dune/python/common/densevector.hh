@@ -158,7 +158,19 @@ namespace Dune
       cls.def( "__len__", [] ( const T &self ) -> std::size_t { return self.size(); } );
 
       cls.def( pybind11::self += pybind11::self );
+
+// silence a warning (false positive) emitted by clang
+// https://bugs.llvm.org/show_bug.cgi?id=43124
+#ifdef __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif
+
       cls.def( pybind11::self -= pybind11::self );
+
+#ifdef __clang__
+#pragma GCC diagnostic pop
+#endif
 
       cls.def( pybind11::self == pybind11::self );
       cls.def( pybind11::self != pybind11::self );
