@@ -53,7 +53,20 @@ namespace Dune
       cls.def( "invert", [] ( Matrix &self ) { self.invert(); } );
 
       cls.def( pybind11::self += pybind11::self );
+
+// silence a warning (false positive) emitted by clang
+// https://bugs.llvm.org/show_bug.cgi?id=43124
+#ifdef __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif
+
       cls.def( pybind11::self -= pybind11::self );
+
+#ifdef __clang__
+#pragma GCC diagnostic pop
+#endif
+
       cls.def( pybind11::self *= field_type() );
       cls.def( pybind11::self /= field_type() );
 
