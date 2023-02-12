@@ -14,7 +14,7 @@
 include_guard(GLOBAL)
 
 macro(dune_set_minimal_debug_level)
-set(MINIMAL_DEBUG_LEVEL ON CACHE STRING "set the MINIMAL_DEBUG_LEVEL. Standard debug streams with level below MINIMAL_DEBUG_LEVEL will collapse to doing nothing if output is requested. (default=warn)")
+set(MINIMAL_DEBUG_LEVEL "warn" CACHE STRING "set the MINIMAL_DEBUG_LEVEL. Standard debug streams with level below MINIMAL_DEBUG_LEVEL will collapse to doing nothing if output is requested. (default=warn)")
 set_property(CACHE MINIMAL_DEBUG_LEVEL PROPERTY STRINGS
   "grave" "warn" "info" "verb" "vverb")
 if(MINIMAL_DEBUG_LEVEL STREQUAL "grave")
@@ -29,5 +29,5 @@ elseif(MINIMAL_DEBUG_LEVEL STREQUAL "vverb")
 else()
   set(DUNE_MINIMAL_DEBUG_LEVEL 4)
 endif()
-message(STATUS "Set Minimal Debug Level to ${DUNE_MINIMAL_DEBUG_LEVEL}")
+message(STATUS "Setting the Dune debug stream minimal verbosity level to ${DUNE_MINIMAL_DEBUG_LEVEL} (${MINIMAL_DEBUG_LEVEL})")
 endmacro(dune_set_minimal_debug_level)
