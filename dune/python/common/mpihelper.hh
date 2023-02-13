@@ -75,12 +75,19 @@ namespace Dune::Python
 
       // copy constructor
       cls.def( pybind11::init<Comm>() );
-#if HAVE_MPI
-      // construct from wrapped MPI_Comm
-      cls.def( pybind11::init( [](Impl::MPI_Comm_Wrapper comm)
-          -> Dune::Communication<MPI_Comm>*
+      // construct from No_Comm (should always work)
+      cls.def( pybind11::init( [](No_Comm comm)
+          -> Comm*
           {
-            return new Dune::Communication<MPI_Comm>(comm);
+            return new Comm(comm);
+          }));
+#if HAVE_MPI
+      // construct from wrapped MPI_Comm (works only with MPI)
+      cls.def( pybind11::init( [](Impl::MPI_Comm_Wrapper comm)
+          -> Comm*
+          {
+            static_assert(std::is_same_v<Comm, Dune::Communication<MPI_Comm>>, "trying to compile the constructor taking MPI_Comm for a Communication class without MPI support");
+            return new Comm(comm);
           }));
 #endif
 
@@ -126,6 +133,25 @@ namespace Dune::Python
     {
       using Comm = Dune::Communication< Dune::MPIHelper::MPICommunicator >;
 
+      // register No_Comm (eq. to MPI_Comm if MPI is missing)
+      auto nocomm = pybind11::class_<No_Comm>(scope, "No_Comm_Type"); // to we have to use insertClass ?
+      nocomm.def(pybind11::init<>());
+      nocomm.def("__call__", [](No_Comm& self) -> No_Comm& {
+        return self;
+      });
+      nocomm.def(pybind11::self == pybind11::self);
+      nocomm.def(pybind11::self != pybind11::self);
+
+      // make No_Comm a singleton
+      static No_Comm* No_Comm_Singleton;
+      std::once_flag init_No_Comm_Flag;
+      auto init_No_Comm_Singleton = [&]()
+      {
+        No_Comm_Singleton = new No_Comm;
+      };
+      std::call_once(init_No_Comm_Flag, init_No_Comm_Singleton);
+
+      // register MPI_Comm (or better) MPI_Comm_Wrapper _iff_ MPI is present
 #if HAVE_MPI
       // import C symbols of mpi4py (see https://enccs.se/news/2021/03/mpi-hybrid-c-python-code/)
       std::cout << "initialize mpi4py" << std::endl;
@@ -137,15 +163,22 @@ namespace Dune::Python
       auto mpi_comm_wrapper = pybind11::class_<MPI_Comm_Wrapper>(scope, "_MPI_Comm_Wrapper"); // to we have to use insertClass ?
 #endif
 
+      // register Dune::Communication type
       auto typeName = GenerateTypeName( "Dune::Communication", "Dune::MPIHelper::MPICommunicator" );
       auto includes = IncludeFiles{ "dune/common/parallel/communication.hh", "dune/common/parallel/mpihelper.hh" };
       auto [ cls, notRegistered ] = insertClass< Comm >( scope, "Communication", typeName, includes );
       if( notRegistered )
         registerCommunication( cls );
 
+      // add attributes for default Communicator and No_Comm
       scope.attr( "comm" ) = pybind11::cast<Comm>( Dune::MPIHelper::getCommunication() );
+      scope.attr( "No_Comm" ) = pybind11::cast( *No_Comm_Singleton );
 
+#if HAVE_MPI
+      // make sure we can convert the MPI_Comm to Dune::Communication
       pybind11::implicitly_convertible<MPI_Comm_Wrapper, Comm>();
+#endif
+      pybind11::implicitly_convertible<No_Comm, Comm>();
     }
 
 } // namespace Dune::Python
