@@ -695,6 +695,13 @@ constexpr void switchCases(const Cases& cases, const Value& value, Branches&& br
   Impl::switchCases<void>(cases, value, std::forward<Branches>(branches), []() {});
 }
 
+// This overload is selected if the range of cases is an IntegralRange
+template <class Result, class T, class Value, class Branches>
+constexpr void switchCases(IntegralRange<T> range, const Value& value, Branches&& branches)
+{
+  assert(range.contains(value) && "value not found in range");
+  branches(T(value));
+}
 
 } // namespace Hybrid
 } // namespace Dune
