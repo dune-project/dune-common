@@ -70,6 +70,113 @@ auto sumSubsequence(C&& c, I&& indices)
   return result;
 }
 
+// Test switchCases
+template <class StaticContainer, class DynamicContainer, class Cases>
+void testSwitchCases(Dune::TestSuite& test,
+                     const StaticContainer& staticContainer,  //< The container to access
+                     const DynamicContainer& dynContainer,    //< A storage of reference values
+                     const Cases& indexRange)                 //< The range of possible indices
+{
+  using namespace Dune::Indices;
+  assert(staticContainer.size() == dynContainer.size());
+  assert(staticContainer.size() < 8);
+
+  // Try to set foundValue to entry of staticContainer. Because the latter is a tuple,
+  // we let Hybrid::switchCases do a dynamic-to-static dispatch. This requires
+  // to pass a range of indices to check and optionally a default branch to be
+  // used if no case matches.
+
+  // First check with default branch and return value
+  auto getContainerValue = [&](auto index) {
+    return staticContainer[index];
+  };
+
+  auto getDefaultValue = [&]() {
+    return -2;
+  };
+
+  // First check with default branch and return value
+
+  {
+    auto foundValue = Dune::Hybrid::switchCases(indexRange, 7, getContainerValue, getDefaultValue);
+    test.check(foundValue == -2)
+      << "Hybrid::switchCases with non-matching index and with default failed.";
+  }
+
+  {
+    auto foundValue = Dune::Hybrid::switchCases(indexRange, 2, getContainerValue, getDefaultValue);
+    test.check(foundValue == dynContainer[2])
+      << "Hybrid::switchCases with matching index and with default failed.";
+  }
+
+  {
+    auto foundValue = Dune::Hybrid::switchCases(indexRange, 0, getContainerValue, getDefaultValue);
+    test.check(foundValue == dynContainer[0])
+      << "Hybrid::switchCases with matching index and with default failed.";
+  }
+
+  // Now check without default branch. Since this does not allow to determine a return
+  // value, it only implements a void case and thus modifies an external variable.
+
+  int foundValue;
+
+  auto setFoundValue = [&](auto index) {
+    foundValue = getContainerValue(index);
+  };
+
+  foundValue= -1;
+  Dune::Hybrid::switchCases(indexRange, 7, setFoundValue);
+  test.check(foundValue == -1)
+    << "Hybrid::switchCases with non-matching index and without default failed.";
+
+  foundValue= -1;
+  Dune::Hybrid::switchCases(indexRange, 2, setFoundValue);
+  test.check(foundValue == dynContainer[2])
+    << "Hybrid::switchCases with matching index and without default failed.";
+
+  foundValue= -1;
+  Dune::Hybrid::switchCases(indexRange, 0, setFoundValue);
+  test.check(foundValue == dynContainer[0])
+    << "Hybrid::switchCases with matching index and without default failed.";
+
+  // Now do the same checks with integral_constant index
+  // Notice that we cannot return the value as std::integral_constant,
+  // because this would be incompatible with the dynamic version, where
+  // the return type is always deduced from the default branch.
+
+  {
+    auto foundValue = Dune::Hybrid::switchCases(indexRange, _7, getContainerValue, getDefaultValue);
+    test.check(foundValue == -2)
+      << "Hybrid::switchCases with non-matching integral_constant index and with default failed.";
+  }
+
+  {
+    auto foundValue = Dune::Hybrid::switchCases(indexRange, _2, getContainerValue, getDefaultValue);
+    test.check(foundValue == dynContainer[2])
+      << "Hybrid::switchCases with matching integral_constant index and with default failed.";
+  }
+
+  {
+    auto foundValue = Dune::Hybrid::switchCases(indexRange, _0, getContainerValue, getDefaultValue);
+    test.check(foundValue == dynContainer[0])
+      << "Hybrid::switchCases with matching integral_constant index and with default failed.";
+  }
+
+  foundValue= -1;
+  Dune::Hybrid::switchCases(indexRange, _7, setFoundValue);
+  test.check(foundValue == -1)
+    << "Hybrid::switchCases with non-matching integral_constant index and without default failed.";
+
+  foundValue= -1;
+  Dune::Hybrid::switchCases(indexRange, _2, setFoundValue);
+  test.check(foundValue == dynContainer[2])
+    << "Hybrid::switchCases with matching integral_constant index and without default failed.";
+
+  foundValue= -1;
+  Dune::Hybrid::switchCases(indexRange, _0, setFoundValue);
+  test.check(foundValue == dynContainer[0])
+    << "Hybrid::switchCases with matching integral_constant index and without default failed.";
+}
 
 
 int main()
@@ -133,107 +240,24 @@ int main()
     << "Summing up subsequence failed.";
 
 
-  // Test switchCases
+  { // check switchCases utility
 
-  auto hybridContainer = std::make_tuple(40, 41, 42,43);
+    // the reference values for comparison
+    auto a = std::array{40,41,42,43};
 
-  auto indexRange = std::make_index_sequence<4>();
+    // check a static container, cases given as index_sequence
+    testSwitchCases(test, Dune::makeTupleVector(40,41,42,43), a, std::make_index_sequence<4>());
 
-  // Try to set foundValue to entry of hybridContainer. Because the latter is a tuple,
-  // we let Hybrid::switchCases do a dynamic-to-static dispatch. This requires
-  // to pass a range of indices to check and optionally a default branch to be
-  // used if no case matches.
+    // check a static container, cases given as StaticIntegralRange
+    testSwitchCases(test, Dune::makeTupleVector(40,41,42,43), a, Dune::StaticIntegralRange<std::size_t,4>());
 
-  // First check with default branch and return value
-  auto getContainerValue = [&](auto index) {
-    return std::get<decltype(index)::value>(hybridContainer);
-  };
+    // check a dynamic container, cases given as IntegralRange
+    testSwitchCases(test, a, a, Dune::IntegralRange<std::size_t>(4));
 
-  auto getDefaultValue = [&]() {
-    return -2;
-  };
-
-  // First check with default branch and return value
-
-  {
-    auto foundValue = Dune::Hybrid::switchCases(indexRange, 7, getContainerValue, getDefaultValue);
-    test.check(foundValue == -2)
-      << "Hybrid::switchCases with non-matching index and with default failed.";
+    // check a dynamic container, cases given as StaticIntegralRange
+    testSwitchCases(test, a, a, Dune::StaticIntegralRange<std::size_t,4>());
   }
 
-  {
-    auto foundValue = Dune::Hybrid::switchCases(indexRange, 2, getContainerValue, getDefaultValue);
-    test.check(foundValue == 42)
-      << "Hybrid::switchCases with matching index and with default failed.";
-  }
-
-  {
-    auto foundValue = Dune::Hybrid::switchCases(indexRange, 0, getContainerValue, getDefaultValue);
-    test.check(foundValue == 40)
-      << "Hybrid::switchCases with matching index and with default failed.";
-  }
-
-  // Now check without default branch. Since this does not allow to determine a return
-  // value, it only implements a void case and thus modifies an external variable.
-
-  int foundValue;
-
-  auto setFoundValue = [&](auto index) {
-    foundValue = getContainerValue(index);
-  };
-
-  foundValue= -1;
-  Dune::Hybrid::switchCases(indexRange, 7, setFoundValue);
-  test.check(foundValue == -1)
-    << "Hybrid::switchCases with non-matching index and without default failed.";
-
-  foundValue= -1;
-  Dune::Hybrid::switchCases(indexRange, 2, setFoundValue);
-  test.check(foundValue == 42)
-    << "Hybrid::switchCases with matching index and without default failed.";
-
-  foundValue= -1;
-  Dune::Hybrid::switchCases(indexRange, 0, setFoundValue);
-  test.check(foundValue == 40)
-    << "Hybrid::switchCases with matching index and without default failed.";
-
-  // Now do the same checks with integral_constant index
-  // Notice that we cannot return the value as std::integral_constant,
-  // because this would be incompatible with the dynamic version, where
-  // the return type is always deduced from the default branch.
-
-  {
-    auto foundValue = Dune::Hybrid::switchCases(indexRange, _7, getContainerValue, getDefaultValue);
-    test.check(foundValue == -2)
-      << "Hybrid::switchCases with non-matching integral_constant index and with default failed.";
-  }
-
-  {
-    auto foundValue = Dune::Hybrid::switchCases(indexRange, _2, getContainerValue, getDefaultValue);
-    test.check(foundValue == 42)
-      << "Hybrid::switchCases with matching integral_constant index and with default failed.";
-  }
-
-  {
-    auto foundValue = Dune::Hybrid::switchCases(indexRange, _0, getContainerValue, getDefaultValue);
-    test.check(foundValue == 40)
-      << "Hybrid::switchCases with matching integral_constant index and with default failed.";
-  }
-
-  foundValue= -1;
-  Dune::Hybrid::switchCases(indexRange, _7, setFoundValue);
-  test.check(foundValue == -1)
-    << "Hybrid::switchCases with non-matching integral_constant index and without default failed.";
-
-  foundValue= -1;
-  Dune::Hybrid::switchCases(indexRange, _2, setFoundValue);
-  test.check(foundValue == 42)
-    << "Hybrid::switchCases with matching integral_constant index and without default failed.";
-
-  foundValue= -1;
-  Dune::Hybrid::switchCases(indexRange, _0, setFoundValue);
-  test.check(foundValue == 40)
-    << "Hybrid::switchCases with matching integral_constant index and without default failed.";
 
   // Compile time checks
   static_assert(sum(values) == (30*29)/2, "Wrong compile time sum!");

@@ -201,6 +201,9 @@ namespace Dune
     /** \brief obtain number of elements in the range **/
     constexpr size_type size() const noexcept { return (static_cast<size_type>(to_) - static_cast<size_type>(from_)); }
 
+    /** \brief check whether given index is within range [from, to) **/
+    constexpr bool contains(value_type index) const noexcept { return from_ <= index && index < to_; }
+
   private:
     value_type from_, to_;
   };
@@ -265,6 +268,10 @@ namespace Dune
     static constexpr std::integral_constant<bool, from == to> empty() noexcept { return {}; }
     /** \brief obtain number of elements in the range **/
     static constexpr std::integral_constant<size_type, static_cast<size_type>(to) - static_cast<size_type>(from) > size() noexcept { return {}; }
+
+    /** \brief check whether given index is within range [from, to) **/
+    static constexpr bool contains(value_type index) noexcept { return from <= index && index < to; }
+
   };
 
   /**
