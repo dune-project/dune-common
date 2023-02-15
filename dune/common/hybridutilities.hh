@@ -695,8 +695,31 @@ constexpr void switchCases(const Cases& cases, const Value& value, Branches&& br
   Impl::switchCases<void>(cases, value, std::forward<Branches>(branches), []() {});
 }
 
-// This overload is selected if the range of cases is an IntegralRange
-template <class Result, class T, class Value, class Branches>
+/**
+ * \brief Switch statement
+ *
+ * \ingroup HybridUtilities
+ *
+ * \tparam T The type of the cases
+ * \tparam Value Type of value to check against the cases
+ * \tparam Branches Type of branch function
+ *
+ * \param cases A dynamic range of cases to check for
+ * \param value The value to check against the cases
+ * \param branches A callback that will be executed with matching entry from case list
+ *
+ * This overload of the `switchCases` utility is selected if the
+ * range of cases is passed as an `IntegralRange`. It simply passes
+ * the `value` to the `branches` callback. Compared to the other
+ * overloads with a static range, the value is **not** passed as an
+ * `std::integral_constant`, but just cast to the value-type `T` of
+ * the cases range.
+ *
+ * If NDEBUG is not set, then the `value` is checked against all
+ * entries of the given range and an `assert` is activated in case
+ * no entry is matching.
+ */
+template <class T, class Value, class Branches>
 constexpr void switchCases(IntegralRange<T> range, const Value& value, Branches&& branches)
 {
   assert(range.contains(value) && "value not found in range");
