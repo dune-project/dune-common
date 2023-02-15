@@ -686,8 +686,7 @@ constexpr decltype(auto) switchCases(const Cases& cases, const Value& value, Bra
  * If one matches, then branches is executed with the matching
  * value as single argument. If the range is an std::integer_sequence,
  * or StaticIntegralRange, the value is passed as std::integral_constant.
- * If non of the entries matches, then elseBranch is executed
- * without any argument.
+ * If non of the entries matches, the behavior is undefined.
  */
 template<class Cases, class Value, class Branches>
 constexpr void switchCases(const Cases& cases, const Value& value, Branches&& branches)
