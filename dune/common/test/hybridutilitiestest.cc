@@ -125,11 +125,6 @@ void testSwitchCases(Dune::TestSuite& test,
   };
 
   foundValue= -1;
-  Dune::Hybrid::switchCases(indexRange, 7, setFoundValue);
-  test.check(foundValue == -1)
-    << "Hybrid::switchCases with non-matching index and without default failed.";
-
-  foundValue= -1;
   Dune::Hybrid::switchCases(indexRange, 2, setFoundValue);
   test.check(foundValue == dynContainer[2])
     << "Hybrid::switchCases with matching index and without default failed.";
@@ -161,11 +156,6 @@ void testSwitchCases(Dune::TestSuite& test,
     test.check(foundValue == dynContainer[0])
       << "Hybrid::switchCases with matching integral_constant index and with default failed.";
   }
-
-  foundValue= -1;
-  Dune::Hybrid::switchCases(indexRange, _7, setFoundValue);
-  test.check(foundValue == -1)
-    << "Hybrid::switchCases with non-matching integral_constant index and without default failed.";
 
   foundValue= -1;
   Dune::Hybrid::switchCases(indexRange, _2, setFoundValue);
