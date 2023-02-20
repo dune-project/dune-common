@@ -617,6 +617,21 @@ namespace Impl {
       return Impl::switchCases<Result>(std::integer_sequence<T, tt...>(), value, branches, elseBranch);
   }
 
+  // This overload is selected if the range of cases is an IntegralRange
+  template <class Result, class T, class Value, class Branches, class ElseBranch>
+  constexpr Result switchCases(IntegralRange<T> range, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
+  {
+    return range.contains(value) ? branches(T(value)) : elseBranch();
+  }
+
+  // This overload is selected if the range of cases is a StaticIntegralRange
+  template <class Result, class T, T to, T from, class Value, class Branches, class ElseBranch>
+  constexpr Result switchCases(StaticIntegralRange<T, to, from> range, const Value& value, Branches&& branches, ElseBranch&& elseBranch)
+  {
+    using seq = typename decltype(range)::integer_sequence;
+    return Impl::switchCases<Result>(seq{}, value, branches, elseBranch);
+  }
+
 } // namespace Impl
 
 
@@ -639,7 +654,7 @@ namespace Impl {
  * Value is checked against all entries of the given range.
  * If one matches, then branches is executed with the matching
  * value as single argument. If the range is an std::integer_sequence,
- * the value is passed as std::integral_constant.
+ * or StaticIntegralRange, the value is passed as std::integral_constant.
  * If non of the entries matches, then elseBranch is executed
  * without any argument.
  *
@@ -670,16 +685,40 @@ constexpr decltype(auto) switchCases(const Cases& cases, const Value& value, Bra
  * Value is checked against all entries of the given range.
  * If one matches, then branches is executed with the matching
  * value as single argument. If the range is an std::integer_sequence,
- * the value is passed as std::integral_constant.
- * If non of the entries matches, then elseBranch is executed
- * without any argument.
+ * or StaticIntegralRange, the value is passed as std::integral_constant.
+ * If non of the entries matches, the behavior is undefined.
  */
 template<class Cases, class Value, class Branches>
 constexpr void switchCases(const Cases& cases, const Value& value, Branches&& branches)
 {
-  Impl::switchCases<void>(cases, value, std::forward<Branches>(branches), []() {});
+  Impl::switchCases<void>(cases, value, std::forward<Branches>(branches),
+    []{ assert(false && "value not found in range"); });
 }
 
+/**
+ * \brief Switch statement
+ *
+ * \ingroup HybridUtilities
+ *
+ * \tparam T The type of the cases
+ * \tparam Value Type of value to check against the cases
+ * \tparam Branches Type of branch function
+ *
+ * \param cases A dynamic range of cases to check for
+ * \param value The value to check against the cases
+ * \param branches A callback that will be executed with matching entry from case list
+ *
+ * This overload of the `switchCases` utility is selected if the
+ * range of cases is passed as an `IntegralRange`. If the `value`
+ * is contained in that `range`, it is passed as single argument
+ * to the callback `branches`. If not, the behavior is undefined.
+ */
+template <class T, class Value, class Branches>
+constexpr void switchCases(IntegralRange<T> range, const Value& value, Branches&& branches)
+{
+  assert(range.contains(value) && "value not found in range");
+  branches(T(value));
+}
 
 } // namespace Hybrid
 } // namespace Dune

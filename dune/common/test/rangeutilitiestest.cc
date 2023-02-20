@@ -301,7 +301,15 @@ int main()
     sum += i;
   suite.check(sum == 0) << "sum over range( -10, 11 ) must be 0.";
 
-  static_assert(std::is_same<decltype(range(std::integral_constant<int, 4>()))::integer_sequence, std::make_integer_sequence<int, 4>>::value,
+  // check whether entries are contained in a range
+  suite.check(range(6).contains(5));
+  suite.check(not range(6).contains(6));
+
+  using StaticRange4 = decltype(range(std::integral_constant<int,4>()));
+  static_assert(StaticRange4::contains(std::integral_constant<int,3>()));
+  static_assert(not StaticRange4::contains(4));
+
+  static_assert(std::is_same<StaticRange4::integer_sequence, std::make_integer_sequence<int, 4>>::value,
                 "decltype(range(std::integral_constant<int, 4>))::integer_sequence must be the same as std::make_integer_sequence<int, 4>");
 
   // Hybrid::forEach for integer ranges
