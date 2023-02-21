@@ -96,7 +96,7 @@ function(dune_python_add_test)
   endif()
 
   set(PYTEST_COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env)
-  set(PYTEST_CMD_ARGS python ${PYTEST_SCRIPT})
+  set(PYTEST_CMD_ARGS python3 ${PYTEST_SCRIPT})
 
   add_custom_target(target_${PYTEST_NAME})
   dune_add_test(NAME ${PYTEST_NAME}
