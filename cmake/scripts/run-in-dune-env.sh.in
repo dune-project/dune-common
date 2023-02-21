@@ -3,16 +3,30 @@
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 
+# setup with Dune-configured venv
 if [ -f "@DUNE_PYTHON_VIRTUALENV_PATH@/bin/activate" ]; then
   source @DUNE_PYTHON_VIRTUALENV_PATH@/bin/activate
+
+  # test if build directory matches installed dune python packages
+  python -m dune checkbuilddirs @PROJECT_NAME@ @CMAKE_BINARY_DIR@
+
+# setup with some other active venv
+# requires to install the correct dune python packages into this
+# venv before using this script
+elif [ -n "$VIRTUAL_ENV" ]; then
+  # test if build directory matches installed dune python packages
+  python -m dune checkbuilddirs @PROJECT_NAME@ @CMAKE_BINARY_DIR@
+
+# setup without venv and set-dune-pythonpath script available
+elif [ -f "@CMAKE_BINARY_DIR@/set-dune-pythonpath" ]; then
+  source @CMAKE_BINARY_DIR@/set-dune-pythonpath
+
 else
   echo "Dune internal virtual environment not found:"
   echo "No activate script in @DUNE_PYTHON_VIRTUALENV_PATH@/bin"
   exit 77
 fi
 
-# test if build directory matches installed dune python packages
-python -m dune checkbuilddirs @PROJECT_NAME@ @CMAKE_BINARY_DIR@
 if [ $? -eq 0 ] ; then
   "$@"
 else

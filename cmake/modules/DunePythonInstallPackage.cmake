@@ -160,6 +160,10 @@ include_guard(GLOBAL)
 
 
 function(dune_python_configure_dependencies)
+  if(NOT DUNE_PYTHON_USE_VENV)
+    message(FATAL_ERROR "Tried to install Python dependencies when the use of virtual environments has been disabled via DUNE_PYTHON_USE_VENV=FALSE")
+  endif()
+
   # Parse Arguments
   set(OPTION)
   set(SINGLE PATH RESULT INSTALL_CONCRETE_DEPENDENCIES)
@@ -446,15 +450,18 @@ function(dune_python_configure_package)
     set(PYPKGCONF_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${PYPKGCONF_PATH})
   endif()
 
-  dune_python_configure_dependencies(
-       PATH ${PYPKGCONF_PATH}
-       RESULT PYTHON_DEPENDENCIES_FAILED
-       ${PYPKGCONF_INSTALL_CONCRETE_DEPENDENCIES}
-  )
+  # only install dependencies if there is a virtual environment
+  if(DUNE_PYTHON_USE_VENV)
+    dune_python_configure_dependencies(
+      PATH ${PYPKGCONF_PATH}
+      RESULT PYTHON_DEPENDENCIES_FAILED
+      ${PYPKGCONF_INSTALL_CONCRETE_DEPENDENCIES}
+    )
 
-  if (PYTHON_DEPENDENCIES_FAILED)
-    set(${PYPKGCONF_RESULT} ${PYTHON_DEPENDENCIES_FAILED} PARENT_SCOPE)
-    return()
+    if (PYTHON_DEPENDENCIES_FAILED)
+      set(${PYPKGCONF_RESULT} ${PYTHON_DEPENDENCIES_FAILED} PARENT_SCOPE)
+      return()
+    endif()
   endif()
 
   if(IS_DIRECTORY ${DUNE_PYTHON_WHEELHOUSE})
@@ -464,7 +471,8 @@ function(dune_python_configure_package)
   # installation command for dune package into local env - external requirements are already sorted and we want this step to not require
   # internet access. Dune packages need to be installed at this stage and should not be obtained from pypi (those packages include the C++ part
   # of the module which we don't want to install. So only use available wheels.
-  if(NOT SKBUILD)
+  # Only install dependencies if the use of virtual environments is enabled.
+  if(NOT SKBUILD AND DUNE_PYTHON_USE_VENV)
     message(STATUS "Installing python package at ${PYPKGCONF_PATH} into Dune virtual environment ${DUNE_PIP_INDEX}")
     dune_execute_process(
       COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
@@ -492,8 +500,8 @@ function(dune_python_configure_package)
   # Now define rules for `make install_python`.
   #
 
-  # Only add installation rules if it was requested
-  if(NOT "${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none")
+  # Only add installation rules if it was requested and if pip was found
+  if(NOT "${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "none" AND DUNE_PYTHON_pip_FOUND)
     # Construct the installation location option string
     set(USER_INSTALL_OPTION "")
     if("${DUNE_PYTHON_INSTALL_LOCATION}" STREQUAL "user")
@@ -507,6 +515,7 @@ function(dune_python_configure_package)
     if (NOT PYPKGCONF_INSTALL_TARGET)
       string(REPLACE "/" "_" PYPKGCONF_INSTALL_TARGET "install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYPKGCONF_PATH}")
     endif()
+
     # TODO this creates an egg-info folder in the source directory
     add_custom_target(${PYPKGCONF_INSTALL_TARGET}
                       COMMAND ${Python3_EXECUTABLE} -m pip install
@@ -526,6 +535,12 @@ function(dune_python_configure_package)
     if(NOT SKBUILD)
       add_dependencies(install_python ${PYPKGCONF_INSTALL_TARGET})
     endif()
+  endif()
+
+  # Only add installation rules to make install if virtual environments are enabled
+  # Otherwise installation of Python packages is in user-hands
+  if(NOT DUNE_PYTHON_USE_VENV)
+    return()
   endif()
 
   # Construct the wheel installation commandline
