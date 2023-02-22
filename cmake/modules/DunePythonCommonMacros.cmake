@@ -75,6 +75,12 @@ include(DunePythonTestCommand)
 # Find the Python Interpreter and libraries
 find_package(Python3 COMPONENTS Interpreter Development)
 
+# this option enables the build of Python bindings for DUNE modules per default
+option(DUNE_ENABLE_PYTHONBINDINGS "Enable Python bindings for DUNE" ON)
+
+# helper message used below in various user messages
+set(DUNE_PYTHON_BINDINGS_USER_NOTICE "If you do not plan to use the Dune Python bindings you can ignore this information")
+
 if(Python3_Interpreter_FOUND)
   include(DuneExecuteProcess)
   include(DunePathHelper)
@@ -89,38 +95,41 @@ if(Python3_Interpreter_FOUND)
   add_custom_target(test_python COMMAND ctest CMD_ARGS -L python)
   add_custom_target(install_python)
 
-  # this option enables the build of Python bindings for DUNE modules
-  option(DUNE_ENABLE_PYTHONBINDINGS "Enable Python bindings for DUNE" ON)
-
-  if( DUNE_ENABLE_PYTHONBINDINGS )
-    if(NOT Python3_Interpreter_FOUND)
-      message(WARNING "Python bindings require a Python 3 interpreter")
-      set(DUNE_ENABLE_PYTHONBINDINGS OFF)
-      return()
-    endif()
-    if(NOT Python3_INCLUDE_DIRS)
-      message(WARNING "Found a Python interpreter but the Python bindings also requires the Python "
-                      "libraries (a package named like python-dev package or python3-devel)")
-      set(DUNE_ENABLE_PYTHONBINDINGS OFF)
-      return()
-    endif()
-
-    include_directories("${Python3_INCLUDE_DIRS}")
-
-    function(add_python_targets base)
-      include(DuneSymlinkOrCopy)
-      if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
-        message(WARNING "Source and binary dir are the same, skipping symlink!")
-      else()
-        foreach(file ${ARGN})
-          dune_symlink_to_source_files(FILES ${file}.py)
-        endforeach()
-      endif()
-    endfunction()
-
-    include(DuneAddPybind11Module)
+  ##### Python bindings specific part begin ################
+  # first we test if all requirements are satisfied, if not, Python bindings are
+  # disabled and the user gets an informative message explaining why
+  if((DUNE_ENABLE_PYTHONBINDINGS) AND (NOT Python3_INCLUDE_DIRS))
+    message(STATUS "Python bindings disabled")
+    message(NOTICE
+      "   ----------------------------------------------------------------------------------------\n"
+      "   Found a Python interpreter but the Python bindings also requires the Python libraries.\n"
+      "   On Linux systems they may be installed in form of a package like python3-dev, python3-devel, python-dev or python-devel (depending on your distribution).\n"
+      "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"
+      "   ----------------------------------------------------------------------------------------\n"
+    )
+    set(DUNE_ENABLE_PYTHONBINDINGS OFF CACHE BOOL "Disabled Python bindings (requirements not satisfied)" FORCE)
+    return()
   endif()
 
+  # the Python bindings currently require the following minimum Python version
+  set(DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION 3.6)
+  if((DUNE_ENABLE_PYTHONBINDINGS) AND (Python3_VERSION VERSION_LESS ${DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION}))
+    message(STATUS "Python bindings disabled")
+    message(NOTICE
+      "   ----------------------------------------------------------------------------------------\n"
+      "   Python bindings require at least Python version ${DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION} but only version ${Python3_VERSION} was found.\n"
+      "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"
+      "   ----------------------------------------------------------------------------------------\n"
+    )
+    set(DUNE_ENABLE_PYTHONBINDINGS OFF CACHE BOOL "Disabled Python bindings (requirements not satisfied)" FORCE)
+    return()
+  endif()
+
+  if(DUNE_ENABLE_PYTHONBINDINGS)
+    include_directories("${Python3_INCLUDE_DIRS}")
+    include(DuneAddPybind11Module)
+  endif()
+  ##### Python bindings end ################
 
   # Set up the Dune-internal virtualenv
   include(DunePythonVirtualenv)
@@ -144,4 +153,28 @@ if(Python3_Interpreter_FOUND)
     message(FATAL_ERROR "Specifying 'user' as install location is incompatible with using virtual environments (as per pip docs)")
   endif()
 
+else()
+  message(STATUS "Python bindings disabled")
+  message(NOTICE
+        "   ----------------------------------------------------------------------------------------\n"
+        "   Python bindings require a Python3 interpreter.\n"
+        "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"
+        "   ----------------------------------------------------------------------------------------\n"
+  )
+  set(DUNE_ENABLE_PYTHONBINDINGS OFF CACHE BOOL "Disabled Python bindings (requirements not satisfied)" FORCE)
 endif()
+
+include(DuneSymlinkOrCopy)
+
+# TODO: This function should have dune prefix and use named arguments
+function(add_python_targets base)
+  if(Python3_Interpreter_FOUND)
+    if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+      message(WARNING "Source and binary dir are the same, skipping symlink!")
+    else()
+      foreach(file ${ARGN})
+        dune_symlink_to_source_files(FILES ${file}.py)
+      endforeach()
+    endif()
+  endif()
+endfunction()
