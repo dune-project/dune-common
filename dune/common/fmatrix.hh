@@ -137,11 +137,10 @@ namespace Dune
 
     /** \brief Constructor initializing the matrix from a list of vector
      */
-    FieldMatrix(std::initializer_list<Dune::FieldVector<K, cols> > const &l) {
+    constexpr FieldMatrix(std::initializer_list<Dune::FieldVector<K, cols> > const &l) {
       assert(l.size() == rows); // Actually, this is not needed any more!
-      std::copy_n(l.begin(), std::min(static_cast<std::size_t>(ROWS),
-                                      l.size()),
-                 _data.begin());
+      for(std::size_t i=0; i<std::min(static_cast<std::size_t>(ROWS), l.size()); ++i)
+        _data[i] = std::data(l)[i];
     }
 
     template <class T,

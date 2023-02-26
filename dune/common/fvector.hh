@@ -129,12 +129,12 @@ namespace Dune {
 #endif
 
     /** \brief Construct from a std::initializer_list */
-    FieldVector (std::initializer_list<K> const &l)
+    constexpr FieldVector (std::initializer_list<K> const &l)
+      : _data{}
     {
       assert(l.size() == dimension);// Actually, this is not needed any more!
-      std::copy_n(l.begin(), std::min(static_cast<std::size_t>(dimension),
-                                      l.size()),
-                 _data.begin());
+      for(std::size_t i=0; i<std::min(static_cast<std::size_t>(dimension), l.size()); ++i)
+        _data[i] = std::data(l)[i];
     }
 
     //! copy assignment operator
