@@ -8,6 +8,8 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 ## Dependencies
 In order to build the DUNE core modules you need at least the following software:
 
+- The construction of `FiedlMatrix` and `FieldVector` from `std::initializer_list`
+  is now `constexpr`.
 - C++ compilers LLVM Clang >= 10 or GCC g++ >= 9
 - CMake >= 3.13
 - Optional: pkg-config to find other optional dependencies
