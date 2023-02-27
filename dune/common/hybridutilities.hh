@@ -149,14 +149,11 @@ namespace Impl {
     return Dune::StaticIntegralRange<std::size_t, End::value, Begin::value>();
   }
 
-  // This should be constexpr but gcc-4.9 does not support
-  // the relaxed constexpr requirements. Hence for being
-  // constexpr the function body can only contain a return
-  // statement and no assertion before this.
   template<class Begin, class End>
   constexpr auto integralRange(const Begin& begin, const End& end, const PriorityTag<0>&)
   {
-    return DUNE_ASSERT_AND_RETURN(begin<=end, Dune::IntegralRange<End>(begin, end));
+    assert(begin<=end && "You cannot create an integralRange where end<begin");
+    return Dune::IntegralRange<End>(begin, end);
   }
 
 } // namespace Impl
