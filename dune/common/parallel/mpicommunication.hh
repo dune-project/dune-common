@@ -129,6 +129,11 @@ namespace Dune
       : Communication(MPI_COMM_SELF)
     {}
 
+    //! Converting constructor for No_Comm that is interpreted as MPI_COMM_SELF
+    Communication (const No_Comm&)
+      : Communication(MPI_COMM_SELF)
+    {}
+
     //! @copydoc Communication::rank
     int rank () const
     {
