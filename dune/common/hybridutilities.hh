@@ -22,23 +22,15 @@ namespace Hybrid {
 
 namespace Impl {
 
-  // Try if tuple_size is implemented for class
-  template<class T, int i>
-  constexpr auto size(const Dune::FieldVector<T, i>&, const PriorityTag<5>&)
-    -> decltype(std::integral_constant<std::size_t,i>())
-  {
-    return {};
-  }
-
-  // Try if tuple_size is implemented for class
+  // Try if std::tuple_size is implemented for class
   template<class T>
-  constexpr auto size(const T&, const PriorityTag<3>&)
+  constexpr auto size(const T&, const PriorityTag<2>&)
     -> decltype(std::integral_constant<std::size_t,std::tuple_size<T>::value>())
   {
     return {};
   }
 
-  // Try if there's a static constexpr size()
+  // Try if there's a static constexpr size() method
   template<class T>
   constexpr auto size(const T&, const PriorityTag<1>&)
     -> decltype(std::integral_constant<std::size_t,T::size()>())
@@ -46,7 +38,7 @@ namespace Impl {
     return {};
   }
 
-  // As a last resort try if there's a static constexpr size()
+  // As a last resort try if there's a non-static size()
   template<class T>
   constexpr auto size(const T& t, const PriorityTag<0>&)
   {
@@ -75,8 +67,8 @@ namespace Impl {
  * Supported types for deriving the size at compile time are:
  * * instances of std::integer_sequence
  * * all types std::tuple_size is implemented for
- * * all typed that have a static method ::size()
- * * instances of Dune::FieldVector
+ * * all types that have a static constexpr method ::size()
+ * The latter e.g. includes Dune::FieldVector
  */
 template<class T>
 constexpr auto size(const T& t)

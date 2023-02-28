@@ -173,6 +173,7 @@ int main()
 {
   std::size_t one = 1; // run-time value
   auto vector = std::vector<int>{1, 2, 3};
+  auto fieldVector = Dune::FieldVector<double,3>({1, 2, 3});
   auto numberTuple = Dune::makeTupleVector(0.1, 2, 3);
 
   Dune::TestSuite test;
@@ -208,6 +209,10 @@ int main()
   test.check(numberTuple == Dune::makeTupleVector(1.1, 3, 4))
     << "Incrementing tuple entries with Hybrid::forEach failed.";
 
+  incrementAll(fieldVector);
+  test.check(fieldVector == Dune::FieldVector<double,3>({2, 3, 4}))
+    << "Incrementing FieldVector entries with Hybrid::forEach failed.";
+
   addIndex(vector);
   test.check(vector == std::vector<int>{2, 4, 6})
     << "Adding indices to vector entries with Hybrid::forEach failed.";
@@ -215,7 +220,14 @@ int main()
   addIndex(numberTuple);
   test.check(numberTuple == Dune::makeTupleVector(1.1, 4, 6))
     << "Adding indices to vector entries with Hybrid::forEach failed.";
+  test.check(Dune::IsIntegralConstant<decltype(Dune::Hybrid::size(numberTuple))>::value)
+    << "Hybrid::size() of std::tuple is not an std::integral_constant.";
 
+  addIndex(fieldVector);
+  test.check(fieldVector == Dune::FieldVector<double,3>({2, 4, 6}))
+    << "Adding indices to FieldVector entries with Hybrid::forEach failed.";
+  test.check(Dune::IsIntegralConstant<decltype(Dune::Hybrid::size(fieldVector))>::value)
+    << "Hybrid::size() of FieldVector is not an std::integral_constant.";
 
   auto mixedTuple = Dune::makeTupleVector(std::string("1"), 2, 3);
   incAndAppendToFirst(mixedTuple);
