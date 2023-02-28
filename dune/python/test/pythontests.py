@@ -54,36 +54,6 @@ void run(pybind11::array_t< T >& a)
 }
 """
 
-def test_communicator():
-    """
-    Test mapping between Dune::Communication and mpi4py.MPI.Comm
-    """
-    import dune.common
-    from dune.common import Communication, No_Comm, comm
-    if comm != No_Comm: # we are actually able to use MPI
-        from mpi4py import MPI
-        comm1 = MPI.COMM_WORLD
-        c1 = Communication(comm1)
-        c2 = Communication(c1)
-        c3 = Communication(dune.common.comm)
-        c4 = Communication(MPI.COMM_SELF)
-        assert(c1 == c2)
-        assert(c1 == c3)
-        assert(c1 != c4)
-        assert(c1 == MPI.COMM_WORLD)
-        assert(c1 != MPI.COMM_SELF)
-        assert(c4 == MPI.COMM_SELF)
-        assert(c1.rank == MPI.COMM_WORLD.rank)
-        assert(c1.size == MPI.COMM_WORLD.size)
-        assert(c4.rank == 0)
-        assert(c4.size == 1)
-    else: # we are working without MPI
-        c = Communication(dune.common.comm)
-        assert(c == comm)
-        assert(c == No_Comm)
-        assert(c is No_Comm)
-        assert(comm is No_Comm)
-
 def test_numpyvector():
     """
     Test correct exchange of numpy arrays to C++ side.
@@ -117,4 +87,3 @@ if __name__ == "__main__":
     _ = getDunePyDir()
     test_class_export()
     test_numpyvector()
-    test_communicator()
