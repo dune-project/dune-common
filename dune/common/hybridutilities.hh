@@ -12,7 +12,6 @@
 #include <dune/common/typeutilities.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/indices.hh>
-#include <dune/common/assertandreturn.hh>
 #include <dune/common/rangeutilities.hh>
 
 
