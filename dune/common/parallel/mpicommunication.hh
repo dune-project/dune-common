@@ -178,6 +178,8 @@ namespace Dune
     {
       MPIFuture<T> future(std::forward<T>(data));
       auto mpidata = future.get_mpidata();
+      if (mpidata.size() == 0)
+        DUNE_THROW(ParallelError, "Size if irecv data object is zero. Reserve sufficient size for the whole message");
       MPI_Irecv(mpidata.ptr(), mpidata.size(), mpidata.type(),
                              source_rank, tag, communicator, &future.req_);
       return future;
