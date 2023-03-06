@@ -12,7 +12,11 @@
 #endif
 
 #include <cassert>
+
+#define DUNE_DISABLE_DEPRECATION_WARNING_ASSERT_AND_RETURN
 #include <dune/common/assertandreturn.hh>
+#undef DUNE_DISABLE_DEPRECATION_WARNING_ASSERT_AND_RETURN
+
 #include <dune/common/exceptions.hh>
 #include <dune/common/parallel/mpihelper.hh>
 

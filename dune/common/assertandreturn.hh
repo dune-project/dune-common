@@ -5,6 +5,12 @@
 #ifndef DUNE_COMMON_ASSERTANDRETURN_HH
 #define DUNE_COMMON_ASSERTANDRETURN_HH
 
+#ifndef DUNE_DISABLE_DEPRECATION_WARNING_ASSERT_AND_RETURN
+#warning "The file assertandreturn.hh is deprecated. Since c++14 constexpr functions allow more \
+than a single return statement and thus this utility is useless. Will be removed after \
+Dune 2.10 release."
+#endif // DUNE_DISABLE_DEPRECATION_WARNING_ASSERT_AND_RETURN
+
 #include <cassert>
 
 //! Asserts a condition and return on success in constexpr context.
@@ -15,6 +21,7 @@
  * and then returns the value of the second argument.
  *
  * \ingroup CxxUtilities
+ * \deprecated Will be removed after Dune 2.10 release
  */
 #ifdef NDEBUG
   #define DUNE_ASSERT_AND_RETURN(C,X) X

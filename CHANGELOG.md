@@ -73,7 +73,8 @@ In order to build the DUNE core modules you need at least the following software
 - Deprecated `conjunction`, `disjunction`, and `negation` have been removed. Instead,
   use the structs from `<type_traits>` introduced with C++17.
 - Remove deprecated `dune/common/std/apply.hh`, use `std::apply` instead.
-
+- Deprecated the file `dune/common/assertandreturn.hh` and the contained utility
+  `DUNE_ASSERT_AND_RETURN`. Use `assert()` macro directly in `constexpr` functions.
 
 # Release 2.9
 
