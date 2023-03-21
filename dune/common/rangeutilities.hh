@@ -548,19 +548,19 @@ namespace Dune
         return *this;
       }
 
-      bool operator<(const TransformedRangeIterator& other) noexcept {
+      bool operator<(const TransformedRangeIterator& other) const noexcept {
         return it_<other.it_;
       }
 
-      bool operator<=(const TransformedRangeIterator& other) noexcept {
+      bool operator<=(const TransformedRangeIterator& other) const noexcept {
         return it_<=other.it_;
       }
 
-      bool operator>(const TransformedRangeIterator& other) noexcept {
+      bool operator>(const TransformedRangeIterator& other) const noexcept {
         return it_>other.it_;
       }
 
-      bool operator>=(const TransformedRangeIterator& other) noexcept {
+      bool operator>=(const TransformedRangeIterator& other) const noexcept {
         return it_>=other.it_;
       }
 
