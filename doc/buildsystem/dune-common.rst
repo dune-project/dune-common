@@ -212,6 +212,17 @@ You can modify your default compiler flags by setting the variables
 :ref:`CMAKE_<LANG>_FLAGS` in your opts file (again with :code:`LANG` being :code:`C` or
 :code:`CXX`).
 
+.. _cxxstandard:
+
+How to set the C++ standard?
+============================
+
+If you want to enforce a more recent C++ standard than used in the Dune core modules, use the CMake
+command :code:`target_compile_features(<target> <PRIVATE|PUBLIC|INTERFACE> cxx_std_[17|20|23|...])`
+to set the requirement on your target directly. Note, it is recommended to compile all modules with
+the same C++ standard. This can be achieved by setting the global CMake variable
+:code:`CMAKE_CXX_STANDARD` to the requested maximal standard for all dune modules.
+
 .. _symlink:
 
 How should I handle ini and grid files in an out-of-source-build setup?
