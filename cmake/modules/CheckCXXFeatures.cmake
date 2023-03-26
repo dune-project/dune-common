@@ -75,12 +75,6 @@ endif()
 
 # perform tests
 
-# Check for `std::make_array(...)`
-dune_check_cxx_source_compiles("
-  #include <experimental/array>
-  int main() { auto a = std::experimental::make_array(1,2,3); }
-" DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY)
-
 # Check for `std::is_detected<...>`
 dune_check_cxx_source_compiles("
   #include <experimental/type_traits>
