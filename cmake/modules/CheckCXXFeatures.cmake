@@ -64,6 +64,14 @@ function(dune_require_cxx_standard)
     "cmake variable CMAKE_CXX_STANDARD to the requested maximal standard for all dune modules.")
 endfunction()
 
+if(NOT CMAKE_CXX_STANDARD AND CXX_MAX_STANDARD)
+  message(DEPRECATION "The cmake variable CXX_MAX_STANDARD is deprecated. Use CMAKE_CXX_STANDARD instead!")
+  set(CMAKE_CXX_STANDARD ${CXX_MAX_STANDARD})
+elseif(CMAKE_CXX_STANDARD AND CXX_MAX_STANDARD)
+  message(DEPRECATION "The cmake variable CXX_MAX_STANDARD is deprecated. The variable CMAKE_CXX_STANDARD "
+    "takes precedence over CXX_MAX_STANDARD.")
+endif()
+
 
 # perform tests
 
