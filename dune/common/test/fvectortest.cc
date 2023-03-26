@@ -38,12 +38,10 @@ template<class ft, class rt, int d>
 struct FieldVectorMainTestCommons
 {
   FieldVectorMainTestCommons() {
-#if __GNUC__ != 5 || defined(__clang__)
     static_assert(
       !std::is_trivially_copyable<ft>::value || std::is_trivially_copyable< FieldVector<ft, d> >::value,
       "FieldVector<T, ...> must be a trivially copyable type when T is a trivial type"
       );
-#endif
     static_assert(
       std::is_standard_layout< FieldVector<ft, d> >::value,
       "FieldVector<...> must be a standard layout type"
