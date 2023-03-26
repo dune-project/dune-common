@@ -119,14 +119,8 @@ namespace Dune {
       std::fill(_data.begin(),_data.end(),t);
     }
 
-#if __GNUC__ == 5 && !defined(__clang__)
-    // `... = default;` causes an internal compiler error on GCC 5.4 (Ubuntu 16.04)
-    //! copy constructor
-    FieldVector(const FieldVector& x) : _data(x._data) {}
-#else
     //! Copy constructor
     FieldVector (const FieldVector&) = default;
-#endif
 
     /** \brief Construct from a std::initializer_list */
     constexpr FieldVector (std::initializer_list<K> const &l)
