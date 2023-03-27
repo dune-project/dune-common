@@ -120,8 +120,8 @@ class Builder:
             context["builddirs"]      = builddirs
             context["install_prefix"] = metaData.unique_value_across_modules("INSTALL_PREFIX")
             context["cmake_flags"]    = getCMakeFlags()
-            context["cxx_compiler"]   = context["cmake_flags"]["CMAKE_CXX_COMPILER"]
-            context["cxx_flags"]      = context["cmake_flags"]["CMAKE_CXX_FLAGS"]
+            context["cxx_compiler"]   = context["cmake_flags"].get("CMAKE_CXX_COMPILER","")
+            context["cxx_flags"]      = context["cmake_flags"].get("CMAKE_CXX_FLAGS","")
 
             # Find the correct template path
             path, _ = os.path.split(__file__)
