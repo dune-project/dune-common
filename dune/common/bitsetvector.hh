@@ -318,31 +318,11 @@ namespace Dune {
       return *this;
     }
 
-  private:
-
-    // For some reason, the following variant of operator^= triggers an ICE or a hanging
-    // compiler on Debian 9 with GCC 6.3 and full optimizations enabled (-O3).
-    // The only way to reliably avoid the issue is by making sure that the compiler does not
-    // see the XOR in the context of the function, so here is a little helper that will normally
-    // be inlined, but not on the broken compiler. This incurs a substantial overhead (a function
-    // call), but until someone else has a better idea, it's the only way to make it work reliably.
-
-    static bool xor_helper(bool a, bool b)
-#if defined(__GNUC__) && ! defined(__clang__) && __GNUC__ == 6 && __GNUC_MINOR__ == 3 && __cplusplus \
-  == 201402L
-      __attribute__((noinline))
-#endif
-      ;
-
-  public:
-
     //! Bitwise exclusive or (for BitSetVectorConstReference and BitSetVectorReference)
     BitSetVectorReference& operator^=(const BitSetVectorConstReference& x)
     {
-      // This uses the helper from above to hoist the actual XOR computation out of the function for
-      // the buggy version of GCC.
       for (size_type i=0; i<block_size; i++)
-        getBit(i) = xor_helper(test(i),x.test(i));
+        getBit(i) = (test(i) ^ x.test(i));
       return *this;
     }
 
@@ -425,14 +405,6 @@ namespace Dune {
       return blockBitField.getBit(this->block_number,i);
     }
   };
-
-  // implementation of helper - I put it into the template to avoid having
-  // to compile it in a dedicated compilation unit
-  template<int block_size, class Alloc>
-  bool BitSetVectorReference<block_size,Alloc>::xor_helper(bool a, bool b)
-  {
-    return a ^ b;
-  }
 
   /**
      typetraits for BitSetVectorReference
