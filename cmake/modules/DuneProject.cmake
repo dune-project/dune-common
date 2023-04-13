@@ -307,11 +307,13 @@ endif()
   if(${ProjectName}_EXPORT_SET)
     # install library export set
     install(EXPORT ${${ProjectName}_EXPORT_SET}
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName})
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName}
+      NAMESPACE Dune::)
 
     # export libraries for use in build tree
     export(EXPORT ${${ProjectName}_EXPORT_SET}
-      FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake)
+      FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake
+      NAMESPACE Dune::)
   endif()
 
   if("${ARGC}" EQUAL "1")

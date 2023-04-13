@@ -169,27 +169,26 @@ function(dune_add_library_normal _name)
     set_target_properties(${_name} PROPERTIES OUTPUT_NAME ${ARG_OUTPUT_NAME})
   endif()
 
+  if(NOT ARG_EXPORT_NAME)
+    set(ARG_EXPORT_NAME ${_name})
+  endif()
+
+  add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
+
   # Prepare the export of the library
   if(NOT ARG_NO_EXPORT)
-    if(NOT ARG_EXPORT_NAME)
-      set(ARG_EXPORT_NAME ${_name})
-    endif()
-
     set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
-
-    # Register library in global property <module>LIBRARIES
-    if(NOT ARG_NO_MODULE_LIBRARY)
-      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES ${ARG_EXPORT_NAME})
-    endif()
 
     # Install targets to use the libraries in other modules.
     install(TARGETS ${_name}
       EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     set(${ProjectName}_EXPORT_SET ${ProjectName}-targets CACHE INTERNAL "")
-  elseif(NOT ARG_NO_MODULE_LIBRARY)
-    # Register library in global property <module>_LIBRARIES
-    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES ${_name})
+  endif()
+
+  if(NOT ARG_NO_MODULE_LIBRARY)
+    # Register library in global property <module>LIBRARIES
+    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES Dune::${ARG_EXPORT_NAME})
   endif()
 endfunction(dune_add_library_normal)
 
@@ -212,27 +211,26 @@ function(dune_add_library_interface _name)
   # Set target options from COMPILE_FLAGS
   target_compile_options(${_name} INTERFACE "${ARG_COMPILE_OPTIONS}")
 
+  if(NOT ARG_EXPORT_NAME)
+    set(ARG_EXPORT_NAME ${_name})
+  endif()
+  add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
+
+
   # Prepare the export of the library
   if(NOT ARG_NO_EXPORT)
-    if(NOT ARG_EXPORT_NAME)
-      set(ARG_EXPORT_NAME ${_name})
-    endif()
-
     set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
-
-    # Register library in global property <module>_LIBRARIES
-    if(NOT ARG_NO_MODULE_LIBRARY)
-      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES ${ARG_EXPORT_NAME})
-    endif()
 
     # Install targets to use the libraries in other modules.
     install(TARGETS ${_name}
       EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     set(${ProjectName}_EXPORT_SET ${ProjectName}-targets CACHE INTERNAL "")
-  elseif(NOT ARG_NO_MODULE_LIBRARY)
-    # Register library in global property <module>_LIBRARIES
-    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES ${_name})
+  endif()
+
+  # Register library in global property <module>_LIBRARIES
+  if(NOT ARG_NO_MODULE_LIBRARY)
+    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES Dune::${ARG_EXPORT_NAME})
   endif()
 endfunction(dune_add_library_interface)
 
