@@ -170,7 +170,7 @@ function(dune_add_library_normal _name)
   endif()
 
   if(NOT ARG_EXPORT_NAME)
-    set(ARG_EXPORT_NAME ${_name})
+    dune_target_to_export_name(ARG_EXPORT_NAME ${_name})
   endif()
 
   add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
@@ -216,11 +216,10 @@ function(dune_add_library_interface _name)
   target_compile_options(${_name} INTERFACE "${ARG_COMPILE_OPTIONS}")
 
   if(NOT ARG_EXPORT_NAME)
-    set(ARG_EXPORT_NAME ${_name})
+    dune_target_to_export_name(ARG_EXPORT_NAME ${_name})
   endif()
 
   add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
-
 
   # Prepare the export of the library
   if(NOT ARG_NO_EXPORT)
@@ -300,3 +299,14 @@ function(dune_expand_object_libraries _SOURCES_var _ADD_LIBS_var _COMPILE_FLAGS_
     set(${${var}_var} "${_new${var}}" PARENT_SCOPE)
   endforeach()
 endfunction(dune_expand_object_libraries)
+
+
+# Converts a target name given into an lowercase string
+# _output with any dune prefix removed removed
+# Example: dune-common -> common
+macro(dune_target_to_export_name _output _module)
+  string(TOLOWER "${_module}" ${_output})
+  string(REPLACE "dune" "" ${_output} "${${_output}}")
+  string(REPLACE "-" "" ${_output} "${${_output}}")
+  string(REPLACE "_" "" ${_output} "${${_output}}")
+endmacro(dune_target_to_export_name)
