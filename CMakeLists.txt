@@ -14,7 +14,7 @@ include(DuneMacros)
 dune_project()
 
 # Create the module library for dune-common
-dune_add_library(dunecommon)
+dune_add_library(dunecommon EXPORT_NAME Common)
 
 # minimal c++ standard required
 target_compile_features(dunecommon PUBLIC cxx_std_17)

@@ -87,6 +87,11 @@ macro(dune_project)
   define_property(GLOBAL PROPERTY ${ProjectName}_LIBRARIES
         BRIEF_DOCS "List of libraries of the module. DO NOT EDIT!"
         FULL_DOCS "List of libraries of the module. Used to generate CMake's package configuration files. DO NOT EDIT!")
+
+  define_property(GLOBAL PROPERTY ${ProjectName}_LIBRARIES_ALIASES
+        BRIEF_DOCS "List of library aliases of the module. DO NOT EDIT!"
+        FULL_DOCS "List of libraries aliases of the module. Used to generate CMake's package configuration files. DO NOT EDIT!")
+
   dune_create_dependency_tree()
 
   # assert the project names matches
@@ -207,6 +212,7 @@ ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
 if(${ProjectName}_LIBRARIES)
   get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
   include(\"\${_dir}/${ProjectName}-targets.cmake\")
+  @DUNE_DEPRECATED_LIBRARY_ALIASES@
 endif()
 
 endif()")
@@ -227,6 +233,28 @@ endif()")
   else()
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
   endif()
+
+  # setup deprecated aliases
+  get_property(_library_aliases GLOBAL PROPERTY ${ProjectName}_LIBRARIES_ALIASES)
+  set(DUNE_DEPRECATED_LIBRARY_ALIASES "")
+  foreach(_alias "${_library_aliases}")
+    string(FIND "${_alias}" ":=" _pos)
+    if(NOT _pos EQUAL "-1")
+      string(SUBSTRING "${_alias}" 0 ${_pos} _alias_name)
+      math(EXPR _pos "${_pos}+2")
+      string(SUBSTRING "${_alias}" ${_pos} -1 _export_name)
+      set(DUNE_DEPRECATED_LIBRARY_ALIASES "${DUNE_DEPRECATED_LIBRARY_ALIASES}
+add_library(${_alias_name} INTERFACE)
+target_link_libraries(${_alias_name} INTERFACE ${_export_name})
+if(CMAKE_VERSION VERSION_GREATER_EQUAL \"3.17\")
+  set_property(TARGET ${_alias_name} PROPERTY DEPRECATION \"Use ${_export_name} instead.\")
+endif()")
+      unset(_alias_name)
+      unset(_export_name)
+    endif()
+    unset(_pos)
+  endforeach(_alias)
+  unset(_library_aliases)
 
   # Set the location of the doc file source. Needed by custom package configuration
   # file section of dune-grid.

@@ -186,9 +186,13 @@ function(dune_add_library_normal _name)
     set(${ProjectName}_EXPORT_SET ${ProjectName}-targets CACHE INTERNAL "")
   endif()
 
+  # Register library in global property <module>LIBRARIES
   if(NOT ARG_NO_MODULE_LIBRARY)
-    # Register library in global property <module>LIBRARIES
     set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES Dune::${ARG_EXPORT_NAME})
+    if(NOT ARG_NO_EXPORT)
+      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES_ALIASES "${_name}:=Dune::${ARG_EXPORT_NAME}")
+      get_property(_library_aliases GLOBAL PROPERTY ${ProjectName}_LIBRARIES_ALIASES)
+    endif()
   endif()
 endfunction(dune_add_library_normal)
 
@@ -214,6 +218,7 @@ function(dune_add_library_interface _name)
   if(NOT ARG_EXPORT_NAME)
     set(ARG_EXPORT_NAME ${_name})
   endif()
+
   add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
 
 
@@ -231,6 +236,9 @@ function(dune_add_library_interface _name)
   # Register library in global property <module>_LIBRARIES
   if(NOT ARG_NO_MODULE_LIBRARY)
     set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES Dune::${ARG_EXPORT_NAME})
+    if(NOT ARG_NO_EXPORT)
+      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES_ALIASES "${_name}:=Dune::${ARG_EXPORT_NAME}")
+    endif()
   endif()
 endfunction(dune_add_library_interface)
 
