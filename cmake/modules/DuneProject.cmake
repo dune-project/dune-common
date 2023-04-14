@@ -246,7 +246,7 @@ endif()")
       set(DUNE_DEPRECATED_LIBRARY_ALIASES "${DUNE_DEPRECATED_LIBRARY_ALIASES}
 add_library(${_alias_name} INTERFACE)
 target_link_libraries(${_alias_name} INTERFACE ${_export_name})
-if(CMAKE_VERSION VERSION_GREATER_EQUAL \"3.17\")
+if(CMAKE_VERSION VERSION_GREATER_EQUAL \"3.19\")
   set_property(TARGET ${_alias_name} PROPERTY DEPRECATION \"Use ${_export_name} instead.\")
 endif()")
       unset(_alias_name)

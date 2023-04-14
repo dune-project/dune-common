@@ -29,6 +29,6 @@ endif(NOT @DUNE_MOD_NAME@_FOUND)
 
 add_library(dunecommon INTERFACE)
 target_link_libraries(dunecommon INTERFACE Dune::Common)
-if(CMAKE_VERSION VERSION_GREATER_EQUAL \"3.17\")
-  set_property(TARGET dunecommon PROPERTY DEPRECATION \"Use Dune::Common instead.\")
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+  set_property(TARGET dunecommon PROPERTY DEPRECATION "Use Dune::Common instead.")
 endif()
