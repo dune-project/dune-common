@@ -169,14 +169,19 @@ function(dune_add_library_normal _name)
     set_target_properties(${_name} PROPERTIES OUTPUT_NAME ${ARG_OUTPUT_NAME})
   endif()
 
-  if(NOT ARG_EXPORT_NAME)
-    dune_target_to_export_name(ARG_EXPORT_NAME ${_name})
-  endif()
-
-  add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
-
   # Prepare the export of the library
   if(NOT ARG_NO_EXPORT)
+    if(NOT ARG_EXPORT_NAME)
+      message(DEPRECATION
+        "The function dune_add_library(<lib> ...) now requires to provide NO_EXPORT or EXPORT_NAME. "
+        "After Dune 2.12, the usage of <lib> as an exported name will be deprecated. "
+        "We recommend to choose an export name with a camel title case matching your library name "
+        "(i.e., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)")
+      set(ARG_EXPORT_NAME ${_name})
+    endif()
+
+    add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
+
     set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
 
     # Install targets to use the libraries in other modules.
@@ -215,14 +220,19 @@ function(dune_add_library_interface _name)
   # Set target options from COMPILE_FLAGS
   target_compile_options(${_name} INTERFACE "${ARG_COMPILE_OPTIONS}")
 
-  if(NOT ARG_EXPORT_NAME)
-    dune_target_to_export_name(ARG_EXPORT_NAME ${_name})
-  endif()
-
-  add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
-
   # Prepare the export of the library
   if(NOT ARG_NO_EXPORT)
+    if(NOT ARG_EXPORT_NAME)
+      message(DEPRECATION
+        "The function dune_add_library(<lib> ...) now requires to provide NO_EXPORT or EXPORT_NAME. "
+        "After Dune 2.10, the usage of <lib> as an exported name will be deprecated. "
+        "We recommend to choose an export name with a camel title case matching your library name "
+        "(i.e., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)")
+      set(ARG_EXPORT_NAME ${_name})
+    endif()
+
+    add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
+
     set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
 
     # Install targets to use the libraries in other modules.
@@ -299,14 +309,3 @@ function(dune_expand_object_libraries _SOURCES_var _ADD_LIBS_var _COMPILE_FLAGS_
     set(${${var}_var} "${_new${var}}" PARENT_SCOPE)
   endforeach()
 endfunction(dune_expand_object_libraries)
-
-
-# Converts a target name given into an lowercase string
-# _output with any dune prefix removed removed
-# Example: dune-common -> common
-macro(dune_target_to_export_name _output _module)
-  string(TOLOWER "${_module}" ${_output})
-  string(REPLACE "dune" "" ${_output} "${${_output}}")
-  string(REPLACE "-" "" ${_output} "${${_output}}")
-  string(REPLACE "_" "" ${_output} "${${_output}}")
-endmacro(dune_target_to_export_name)
