@@ -86,11 +86,11 @@ macro(dune_project)
 
   define_property(GLOBAL PROPERTY ${ProjectName}_LIBRARIES
         BRIEF_DOCS "List of libraries of the module. DO NOT EDIT!"
-        FULL_DOCS "List of libraries of the module. Used to generate CMake's package configuration files. DO NOT EDIT!")
+        FULL_DOCS "List of libraries of the module. Used to set up internal module configuration. DO NOT EDIT!")
 
-  define_property(GLOBAL PROPERTY ${ProjectName}_LIBRARIES_ALIASES
-        BRIEF_DOCS "List of library aliases of the module. DO NOT EDIT!"
-        FULL_DOCS "List of libraries aliases of the module. Used to generate CMake's package configuration files. DO NOT EDIT!")
+  define_property(GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES
+        BRIEF_DOCS "List of interface libraries of the module. DO NOT EDIT!"
+        FULL_DOCS "List of interface libraries of the module. Used to set up external module configuration. DO NOT EDIT!")
 
   dune_create_dependency_tree()
 
@@ -201,7 +201,7 @@ set(${ProjectName}_CXX_FLAGS_RELWITHDEBINFO \"${CMAKE_CXX_FLAGS_RELWITHDEBINFO}\
 set(${ProjectName}_DEPENDS \"@${ProjectName}_DEPENDS@\")
 set(${ProjectName}_SUGGESTS \"@${ProjectName}_SUGGESTS@\")
 set(${ProjectName}_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
-set(${ProjectName}_LIBRARIES \"@${ProjectName}_LIBRARIES@\")
+set(${ProjectName}_LIBRARIES \"@${ProjectName}_INTERFACE_LIBRARIES@\")
 set(${ProjectName}_HASPYTHON @DUNE_MODULE_HASPYTHON@)
 set(${ProjectName}_PYTHONREQUIRES \"@DUNE_MODULE_PYTHONREQUIRES@\")
 
@@ -211,8 +211,12 @@ ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
 #import the target
 if(${ProjectName}_LIBRARIES)
   get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
-  include(\"\${_dir}/${ProjectName}-targets.cmake\")
-  @DUNE_DEPRECATED_LIBRARY_ALIASES@
+  include(\"\${_dir}/${ProjectName}-targets-scoped.cmake\")
+  include(\"\${_dir}/${ProjectName}-targets-unscoped.cmake\")
+  # Deprecation warning for unscoped targets
+  if((CMAKE_VERSION VERSION_GREATER_EQUAL \"3.19\") AND (DUNE_COMMON_VERSION VERSION_GREATER_EQUAL \"2.12\"))
+    @DUNE_DEPRECATED_LIBRARY_ALIASES@
+  endif()
 endif()
 
 endif()")
@@ -220,41 +224,28 @@ endif()")
   else()
     set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
   endif()
-  get_property(${ProjectName}_LIBRARIES GLOBAL PROPERTY ${ProjectName}_LIBRARIES)
+  get_property(${ProjectName}_INTERFACE_LIBRARIES GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES)
 
   # compute under which libdir the package configuration files are to be installed.
   # If the module installs an object library we use CMAKE_INSTALL_LIBDIR
   # to capture the multiarch triplet of Debian/Ubuntu.
   # Otherwise we fall back to DUNE_INSTALL_NONOBJECTLIB which is lib
   # if not set otherwise.
-  get_property(${ProjectName}_LIBRARIES GLOBAL PROPERTY ${ProjectName}_LIBRARIES)
-  if(${ProjectName}_LIBRARIES)
+  if(${ProjectName}_INTERFACE_LIBRARIES)
     set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
   else()
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
   endif()
 
   # setup deprecated aliases
-  get_property(_library_aliases GLOBAL PROPERTY ${ProjectName}_LIBRARIES_ALIASES)
-  set(DUNE_DEPRECATED_LIBRARY_ALIASES "")
-  foreach(_alias "${_library_aliases}")
-    string(FIND "${_alias}" ":=" _pos)
-    if(NOT _pos EQUAL "-1")
-      string(SUBSTRING "${_alias}" 0 ${_pos} _alias_name)
-      math(EXPR _pos "${_pos}+2")
-      string(SUBSTRING "${_alias}" ${_pos} -1 _export_name)
-      set(DUNE_DEPRECATED_LIBRARY_ALIASES "${DUNE_DEPRECATED_LIBRARY_ALIASES}
-add_library(${_alias_name} INTERFACE)
-target_link_libraries(${_alias_name} INTERFACE ${_export_name})
-if((CMAKE_VERSION VERSION_GREATER_EQUAL \"3.19\") AND (DUNE_COMMON_VERSION VERSION_GREATER_EQUAL \"2.12\"))
-  set_property(TARGET ${_alias_name} PROPERTY DEPRECATION \"Use ${_export_name} instead.\")
-endif()")
-      unset(_alias_name)
-      unset(_export_name)
-    endif()
-    unset(_pos)
-  endforeach(_alias)
-  unset(_library_aliases)
+  foreach(_export_name ${${ProjectName}_INTERFACE_LIBRARIES})
+    get_target_property(_aliased_name ${_export_name} ALIASED_TARGET)
+    set(DUNE_DEPRECATED_LIBRARY_ALIASES
+"${DUNE_DEPRECATED_LIBRARY_ALIASES}
+set_property(TARGET ${_aliased_name} PROPERTY DEPRECATION \"Replace `${_aliased_name}` to new scoped `${_export_name}` targets.\")
+endif()
+")
+  endforeach()
 
   # Set the location of the doc file source. Needed by custom package configuration
   # file section of dune-grid.
@@ -332,16 +323,28 @@ endif()
   # install pkg-config files
   create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
 
-  if(${ProjectName}_EXPORT_SET)
+  if(${ProjectName}_EXPORT_SET_SCOPED)
     # install library export set
-    install(EXPORT ${${ProjectName}_EXPORT_SET}
+    install(EXPORT ${${ProjectName}_EXPORT_SET_SCOPED}
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName}
-      NAMESPACE Dune::)
+      NAMESPACE Dune::
+      FILE ${ProjectName}-targets-scoped.cmake)
 
     # export libraries for use in build tree
-    export(EXPORT ${${ProjectName}_EXPORT_SET}
-      FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake
+    export(EXPORT ${${ProjectName}_EXPORT_SET_SCOPED}
+      FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets-scoped.cmake
       NAMESPACE Dune::)
+  endif()
+
+  if(${ProjectName}_EXPORT_SET_UNSCOPED)
+    # install library export set
+    install(EXPORT ${${ProjectName}_EXPORT_SET_UNSCOPED}
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName}
+      FILE ${ProjectName}-targets-unscoped.cmake)
+
+    # export libraries for use in build tree
+    export(EXPORT ${${ProjectName}_EXPORT_SET_UNSCOPED}
+      FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets-unscoped.cmake)
   endif()
 
   if("${ARGC}" EQUAL "1")

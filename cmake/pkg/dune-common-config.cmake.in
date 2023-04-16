@@ -6,7 +6,8 @@ if(NOT @DUNE_MOD_NAME@_FOUND)
 
 #import the target
 get_filename_component(_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
-include("${_dir}/@DUNE_MOD_NAME@-targets.cmake")
+include("${_dir}/@DUNE_MOD_NAME@-targets-scoped.cmake")
+include("${_dir}/@DUNE_MOD_NAME@-targets-unscoped.cmake")
 
 #report other information
 set_and_check(@DUNE_MOD_NAME@_PREFIX "${PACKAGE_PREFIX_DIR}")
@@ -25,10 +26,7 @@ set(@DUNE_MOD_NAME@_SUGGESTS "@DUNE_SUGGESTS@")
 set(@DUNE_MOD_NAME@_HASPYTHON 1)
 set(@DUNE_MOD_NAME@_PYTHONREQUIRES "@DUNE_MODULE_PYTHONREQUIRES@")
 set_and_check(@DUNE_MOD_NAME@_MODULE_PATH "@PACKAGE_DUNE_INSTALL_MODULEDIR@")
-endif(NOT @DUNE_MOD_NAME@_FOUND)
-
-add_library(dunecommon INTERFACE)
-target_link_libraries(dunecommon INTERFACE Dune::Common)
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
-  set_property(TARGET dunecommon PROPERTY DEPRECATION "Use Dune::Common instead.")
+if((CMAKE_VERSION VERSION_GREATER_EQUAL 3.19) AND (DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12))
+  set_property(TARGET dunecommon PROPERTY DEPRECATION "Replace `dunecommon` to new scoped `Dune::Common` targets.")
 endif()
+endif(NOT @DUNE_MOD_NAME@_FOUND)

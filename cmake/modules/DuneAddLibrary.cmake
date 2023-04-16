@@ -47,12 +47,18 @@ Add a library to a Dune module.
 
   ``EXPORT_NAME``
     Name of the exported target to be used when linking against the library.
+    This target will always be under the `Dune::` namespace.
+    We recommend to choose an export name with a camel title case matching your
+    library name (e.g., Common, ISTL, and MultiDomainGrid will be exported as
+    Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)
 
   ``NO_EXPORT``
-    If omitted the library is exported for usage in other modules.
+    If omitted the library is added to the global property
+    ``<module>_INTERFACE_LIBRARIES`` and exported for usage in other modules.
 
   ``NO_MODULE_LIBRARY``
-    If omitted the library is added to the global property ``<module>_LIBRARIES``.
+    If omitted the library is added to the global property ``<module>_LIBRARIES``
+    and used for internal module configuration.
 
 
   .. code-block:: cmake
@@ -77,12 +83,18 @@ Add a library to a Dune module.
 
   ``EXPORT_NAME``
     Name of the exported target to be used when linking against the library.
+    This target will always be under the `Dune::` namespace.
+    We recommend to choose an export name with a camel title case matching your
+    library name (e.g., Common, ISTL, and MultiDomainGrid will be exported as
+    Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)
 
   ``NO_EXPORT``
-    If omitted the library is exported for usage in other modules.
+    If omitted the library is added to the global property
+    ``<module>_INTERFACE_LIBRARIES`` and exported for usage in other modules.
 
   ``NO_MODULE_LIBRARY``
-    If omitted the library is added to the global property ``<module>_LIBRARIES``.
+    If omitted the library is added to the global property ``<module>_LIBRARIES``
+    and used for internal module configuration.
 
 
   .. code-block:: cmake
@@ -176,28 +188,32 @@ function(dune_add_library_normal _name)
         "The function dune_add_library(<lib> ...) now requires to provide NO_EXPORT or EXPORT_NAME. "
         "After Dune 2.12, the usage of <lib> as an exported name will be deprecated. "
         "We recommend to choose an export name with a camel title case matching your library name "
-        "(i.e., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)")
+        "(e.g., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)")
       set(ARG_EXPORT_NAME ${_name})
     endif()
 
-    add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
-
-    set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
-
     # Install targets to use the libraries in other modules.
+    add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
+    set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
     install(TARGETS ${_name}
       EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-    set(${ProjectName}_EXPORT_SET ${ProjectName}-targets CACHE INTERNAL "")
+    # Install (unscoped) targets to use the libraries in other modules.
+    add_library(_dune_unscoped_${_name} INTERFACE)
+    target_link_libraries(_dune_unscoped_${_name} INTERFACE Dune::${ARG_EXPORT_NAME})
+    set_target_properties(_dune_unscoped_${_name} PROPERTIES EXPORT_NAME ${_name})
+    install(TARGETS _dune_unscoped_${_name}
+      EXPORT ${ProjectName}-targets-unscoped DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES Dune::${ARG_EXPORT_NAME})
+
+    set(${ProjectName}_EXPORT_SET_SCOPED ${ProjectName}-targets-scoped CACHE INTERNAL "")
+    set(${ProjectName}_EXPORT_SET_UNSCOPED ${ProjectName}-targets-unscoped CACHE INTERNAL "")
   endif()
 
   # Register library in global property <module>LIBRARIES
   if(NOT ARG_NO_MODULE_LIBRARY)
-    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES Dune::${ARG_EXPORT_NAME})
-    if(NOT ARG_NO_EXPORT)
-      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES_ALIASES "${_name}:=Dune::${ARG_EXPORT_NAME}")
-      get_property(_library_aliases GLOBAL PROPERTY ${ProjectName}_LIBRARIES_ALIASES)
-    endif()
+    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES ${name})
   endif()
 endfunction(dune_add_library_normal)
 
@@ -227,27 +243,32 @@ function(dune_add_library_interface _name)
         "The function dune_add_library(<lib> ...) now requires to provide NO_EXPORT or EXPORT_NAME. "
         "After Dune 2.10, the usage of <lib> as an exported name will be deprecated. "
         "We recommend to choose an export name with a camel title case matching your library name "
-        "(i.e., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)")
+        "(e.g., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)")
       set(ARG_EXPORT_NAME ${_name})
     endif()
 
-    add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
-
-    set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
-
     # Install targets to use the libraries in other modules.
+    add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
+    set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
     install(TARGETS ${_name}
       EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-    set(${ProjectName}_EXPORT_SET ${ProjectName}-targets CACHE INTERNAL "")
+    # Install (unscoped) targets to use the libraries in other modules.
+    add_library(_dune_unscoped_${_name} INTERFACE)
+    target_link_libraries(_dune_unscoped_${_name} INTERFACE Dune::${ARG_EXPORT_NAME})
+    set_target_properties(_dune_unscoped_${_name} PROPERTIES EXPORT_NAME ${_name})
+    install(TARGETS _dune_unscoped_${_name}
+      EXPORT ${ProjectName}-targets-unscoped DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES Dune::${ARG_EXPORT_NAME})
+
+    set(${ProjectName}_EXPORT_SET_SCOPED ${ProjectName}-targets-scoped CACHE INTERNAL "")
+    set(${ProjectName}_EXPORT_SET_UNSCOPED ${ProjectName}-targets-unscoped CACHE INTERNAL "")
   endif()
 
   # Register library in global property <module>_LIBRARIES
   if(NOT ARG_NO_MODULE_LIBRARY)
-    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES Dune::${ARG_EXPORT_NAME})
-    if(NOT ARG_NO_EXPORT)
-      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES_ALIASES "${_name}:=Dune::${ARG_EXPORT_NAME}")
-    endif()
+    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES ${name})
   endif()
 endfunction(dune_add_library_interface)
 
