@@ -208,7 +208,9 @@ function(dune_add_library_normal _name)
     set(${ProjectName}_EXPORT_SET_UNSCOPED ${ProjectName}-targets-unscoped CACHE INTERNAL "")
 
     # Register target as an exported library
-    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES Dune::${ARG_EXPORT_NAME})
+    if(NOT ARG_NO_MODULE_LIBRARY)
+      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES Dune::${ARG_EXPORT_NAME})
+    endif()
   endif()
 
   # Register library in global property <module>LIBRARIES
@@ -263,7 +265,9 @@ function(dune_add_library_interface _name)
     set(${ProjectName}_EXPORT_SET_UNSCOPED ${ProjectName}-targets-unscoped CACHE INTERNAL "")
 
     # Register target as an exported library
-    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES Dune::${ARG_EXPORT_NAME})
+    if(NOT ARG_NO_MODULE_LIBRARY)
+      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES Dune::${ARG_EXPORT_NAME})
+    endif()
   endif()
 
   # Register library in global property <module>_LIBRARIES
