@@ -196,7 +196,8 @@ function(dune_add_library_normal _name)
     add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
     set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
     install(TARGETS ${_name}
-      EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+      EXPORT ${ProjectName}-targets-scoped DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    set(${ProjectName}_EXPORT_SET_SCOPED ${ProjectName}-targets-scoped CACHE INTERNAL "")
 
     # Install (unscoped) targets to use the libraries in other modules.
     add_library(_dune_unscoped_${_name} INTERFACE)
@@ -204,11 +205,10 @@ function(dune_add_library_normal _name)
     set_target_properties(_dune_unscoped_${_name} PROPERTIES EXPORT_NAME ${_name})
     install(TARGETS _dune_unscoped_${_name}
       EXPORT ${ProjectName}-targets-unscoped DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES Dune::${ARG_EXPORT_NAME})
-
-    set(${ProjectName}_EXPORT_SET_SCOPED ${ProjectName}-targets-scoped CACHE INTERNAL "")
     set(${ProjectName}_EXPORT_SET_UNSCOPED ${ProjectName}-targets-unscoped CACHE INTERNAL "")
+
+    # Register target as an exported library
+    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES Dune::${ARG_EXPORT_NAME})
   endif()
 
   # Register library in global property <module>LIBRARIES
@@ -251,7 +251,8 @@ function(dune_add_library_interface _name)
     add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
     set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
     install(TARGETS ${_name}
-      EXPORT ${ProjectName}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+      EXPORT ${ProjectName}-targets-scoped DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    set(${ProjectName}_EXPORT_SET_SCOPED ${ProjectName}-targets-scoped CACHE INTERNAL "")
 
     # Install (unscoped) targets to use the libraries in other modules.
     add_library(_dune_unscoped_${_name} INTERFACE)
@@ -259,11 +260,10 @@ function(dune_add_library_interface _name)
     set_target_properties(_dune_unscoped_${_name} PROPERTIES EXPORT_NAME ${_name})
     install(TARGETS _dune_unscoped_${_name}
       EXPORT ${ProjectName}-targets-unscoped DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES Dune::${ARG_EXPORT_NAME})
-
-    set(${ProjectName}_EXPORT_SET_SCOPED ${ProjectName}-targets-scoped CACHE INTERNAL "")
     set(${ProjectName}_EXPORT_SET_UNSCOPED ${ProjectName}-targets-unscoped CACHE INTERNAL "")
+
+    # Register target as an exported library
+    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES Dune::${ARG_EXPORT_NAME})
   endif()
 
   # Register library in global property <module>_LIBRARIES
