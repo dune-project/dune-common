@@ -53,12 +53,12 @@ Add a library to a Dune module.
     Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)
 
   ``NO_EXPORT``
-    If omitted the library is added to the global property
-    ``<module>_INTERFACE_LIBRARIES`` and exported for usage in other modules.
+    If omitted the library is exported for usage in other modules.
 
   ``NO_MODULE_LIBRARY``
     If omitted the library is added to the global property ``<module>_LIBRARIES``
-    and used for internal module configuration.
+    and used for internal module configuration. If ``NO_EXPORT`` is omitted, the library
+    will additionally be added to the global property ``<module>_INTERFACE_LIBRARIES``.
 
 
   .. code-block:: cmake
@@ -89,12 +89,12 @@ Add a library to a Dune module.
     Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)
 
   ``NO_EXPORT``
-    If omitted the library is added to the global property
-    ``<module>_INTERFACE_LIBRARIES`` and exported for usage in other modules.
+    If omitted the library is exported for usage in other modules.
 
   ``NO_MODULE_LIBRARY``
     If omitted the library is added to the global property ``<module>_LIBRARIES``
-    and used for internal module configuration.
+    and used for internal module configuration. If ``NO_EXPORT`` is omitted, the library
+    will additionally be added to the global property ``<module>_INTERFACE_LIBRARIES``.
 
 
   .. code-block:: cmake
