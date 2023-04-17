@@ -243,7 +243,6 @@ endif()")
     set(DUNE_DEPRECATED_LIBRARY_ALIASES
 "${DUNE_DEPRECATED_LIBRARY_ALIASES}
 set_property(TARGET ${_aliased_name} PROPERTY DEPRECATION \"Replace `${_aliased_name}` to new scoped `${_export_name}` targets.\")
-endif()
 ")
   endforeach()
 
