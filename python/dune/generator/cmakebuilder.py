@@ -457,6 +457,9 @@ class MakefileBuilder(Builder):
             generatedDir = os.path.join(dunepy_dir,'python','dune','generated')
             buildScriptName = os.path.join(dunepy_dir,'python','dune','generated','buildScript.sh')
 
+            # compiler launcher, if set
+            launcher = None
+
             # check whether ninja is available with cmake or not
             useNinja = False # to be revised in later versions
             if useNinja:
@@ -474,7 +477,12 @@ class MakefileBuilder(Builder):
                 # call base class dunepy_from_template (re-initialize)
                 force = Builder.generate_dunepy_from_template(dunepy_dir, force=True)
 
-                Builder.callCMake(["cmake"] + defaultCMakeFlags() + ["."],
+                cmake_flags = defaultCMakeFlags()
+                for flag in cmake_flags:
+                    if flag.find('CMAKE_CXX_COMPILER_LAUNCHER') > 0:
+                        launcher = flag.split("=")[1]
+
+                Builder.callCMake(["cmake"] + cmake_flags + ["."],
                                   cwd=dunepy_dir,
                                   infoTxt="Configuring dune-py with CMake (make)",
                                   active=True, # print details anyway
@@ -545,6 +553,7 @@ class MakefileBuilder(Builder):
                     # write compiler commands
                     with open(commandSourceName) as commandFile:
                         compilerCmd = json.load(commandFile)[0]["command"]
+                    # replace target file
                     compilerCmd = compilerCmd.replace('extractCompiler', '$1')
                     # this line is extracted from build.make
                     usedBuildMake = False
@@ -564,6 +573,9 @@ class MakefileBuilder(Builder):
 
                     # forward errors so that compilation failure will be caught
                     buildScript.write('set -e\n')
+                    # if launcher was provided, add it before compiler
+                    if launcher is not None:
+                        buildScript.write(str(launcher) + " ")
                     buildScript.write(compilerCmd)
                     buildScript.write('\n')
                     # write linker commands
@@ -601,6 +613,9 @@ class MakefileBuilder(Builder):
                                          replace(' python/dune/generated/',' ') # better to move the script to the root of dune-py then this can be kept
                     compilerCmd = compilerCmd.split(' ',1)
                     compilerCmd = compilerCmd[0] + " " + compilerCmd[1]
+                    # if launcher was provided, add it before compiler
+                    if launcher is not None:
+                        buildScript.write(str(launcher) + " ")
                     buildScript.write(compilerCmd+"\n")
                     # this needs fixing: Issue is that at the linker line beginns with ': && '
                     linkerCmd = out[1].replace('extractCompiler','$1').\
