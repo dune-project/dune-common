@@ -189,25 +189,25 @@ function(dune_add_library_normal _name)
         "We recommend to choose an export name with a camel title case matching your library name "
         "(e.g., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)\n"
         " * Calls to `dune_add_library(<lib> ...)` without export specification will be supported until Dune 2.11\n"
-
         " * Consumption of unscoped targets `<lib>` will be supported until Dune 2.12")
-      set(ARG_EXPORT_NAME ${_name})
+      set(ARG_EXPORT_NAME __dune_impl_${_name})
     endif()
+
+    set(${ProjectName}_EXPORT_SET ${ProjectName}-targets CACHE INTERNAL "")
 
     # Install targets to use the libraries in other modules.
     add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
     set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
     install(TARGETS ${_name}
-      EXPORT ${ProjectName}-targets-scoped DESTINATION ${CMAKE_INSTALL_LIBDIR})
-    set(${ProjectName}_EXPORT_SET_SCOPED ${ProjectName}-targets-scoped CACHE INTERNAL "")
+      EXPORT ${${ProjectName}_EXPORT_SET} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-    # Install (unscoped) targets to use the libraries in other modules.
-    add_library(_dune_unscoped_${_name} INTERFACE)
-    target_link_libraries(_dune_unscoped_${_name} INTERFACE Dune::${ARG_EXPORT_NAME})
-    set_target_properties(_dune_unscoped_${_name} PROPERTIES EXPORT_NAME ${_name})
-    install(TARGETS _dune_unscoped_${_name}
-      EXPORT ${ProjectName}-targets-unscoped DESTINATION ${CMAKE_INSTALL_LIBDIR})
-    set(${ProjectName}_EXPORT_SET_UNSCOPED ${ProjectName}-targets-unscoped CACHE INTERNAL "")
+    # Install (unaliased) targets to use the libraries in other modules.
+    # NOTE: Remove when compatibility with 2.10 is not needed anymore (e.g., 2.13)
+    add_library(_dune_unaliased_${_name} INTERFACE)
+    target_link_libraries(_dune_unaliased_${_name} INTERFACE Dune::${ARG_EXPORT_NAME})
+    set_target_properties(_dune_unaliased_${_name} PROPERTIES EXPORT_NAME ${_name})
+    install(TARGETS _dune_unaliased_${_name}
+      EXPORT ${${ProjectName}_EXPORT_SET} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     # Register target as an exported library
     if(NOT ARG_NO_MODULE_LIBRARY)
@@ -248,24 +248,26 @@ function(dune_add_library_interface _name)
         "We recommend to choose an export name with a camel title case matching your library name "
         "(e.g., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)\n"
         " * Calls to `dune_add_library(<lib> ...)` without export specification will be supported until Dune 2.11\n"
+
         " * Consumption of unscoped targets `<lib>` will be supported until Dune 2.12")
-      set(ARG_EXPORT_NAME ${_name})
+      set(ARG_EXPORT_NAME __dune_impl_${_name})
     endif()
+
+    set(${ProjectName}_EXPORT_SET ${ProjectName}-targets CACHE INTERNAL "")
 
     # Install targets to use the libraries in other modules.
     add_library(Dune::${ARG_EXPORT_NAME} ALIAS ${_name})
     set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
     install(TARGETS ${_name}
-      EXPORT ${ProjectName}-targets-scoped DESTINATION ${CMAKE_INSTALL_LIBDIR})
-    set(${ProjectName}_EXPORT_SET_SCOPED ${ProjectName}-targets-scoped CACHE INTERNAL "")
+      EXPORT ${${ProjectName}_EXPORT_SET} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-    # Install (unscoped) targets to use the libraries in other modules.
-    add_library(_dune_unscoped_${_name} INTERFACE)
-    target_link_libraries(_dune_unscoped_${_name} INTERFACE Dune::${ARG_EXPORT_NAME})
-    set_target_properties(_dune_unscoped_${_name} PROPERTIES EXPORT_NAME ${_name})
-    install(TARGETS _dune_unscoped_${_name}
-      EXPORT ${ProjectName}-targets-unscoped DESTINATION ${CMAKE_INSTALL_LIBDIR})
-    set(${ProjectName}_EXPORT_SET_UNSCOPED ${ProjectName}-targets-unscoped CACHE INTERNAL "")
+    # Install (unaliased) targets to use the libraries in other modules.
+    # NOTE: Remove when compatibility with 2.10 is not needed anymore (e.g., 2.13)
+    add_library(_dune_unaliased_${_name} INTERFACE)
+    target_link_libraries(_dune_unaliased_${_name} INTERFACE Dune::${ARG_EXPORT_NAME})
+    set_target_properties(_dune_unaliased_${_name} PROPERTIES EXPORT_NAME ${_name})
+    install(TARGETS _dune_unaliased_${_name}
+      EXPORT ${${ProjectName}_EXPORT_SET} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     # Register target as an exported library
     if(NOT ARG_NO_MODULE_LIBRARY)

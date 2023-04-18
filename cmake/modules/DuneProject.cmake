@@ -214,7 +214,7 @@ if(${ProjectName}_LIBRARIES)
   include(\"\${_dir}/${ProjectName}-targets-scoped.cmake\")
   include(\"\${_dir}/${ProjectName}-targets-unscoped.cmake\")
   # Deprecation warning for unscoped targets
-  if((CMAKE_VERSION VERSION_GREATER_EQUAL \"3.19\") AND (DUNE_COMMON_VERSION VERSION_GREATER_EQUAL \"2.12\"))
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
     @DUNE_DEPRECATED_LIBRARY_ALIASES@
   endif()
 endif()
@@ -237,14 +237,18 @@ endif()")
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
   endif()
 
-  # setup deprecated aliases
-  foreach(_export_name ${${ProjectName}_INTERFACE_LIBRARIES})
-    get_target_property(_aliased_name ${_export_name} ALIASED_TARGET)
-    set(DUNE_DEPRECATED_LIBRARY_ALIASES
+  # add deprecated property for unaliased targets
+  if(${ProjectVersionString} VERSION_GREATER_EQUAL 2.11)
+    foreach(_interface_name ${${ProjectName}_INTERFACE_LIBRARIES})
+      get_target_property(_unaliased_name ${_interface_name} ALIASED_TARGET)
+      get_target_property(_export_unaliased_name ${_unaliased_name} EXPORT_NAME)
+      set(DUNE_DEPRECATED_LIBRARY_ALIASES
 "${DUNE_DEPRECATED_LIBRARY_ALIASES}
-set_property(TARGET ${_aliased_name} PROPERTY DEPRECATION \"Replace `${_aliased_name}` to new scoped `${_export_name}` targets.\")
-")
-  endforeach()
+    set_property(TARGET ${_unaliased_name} PROPERTY DEPRECATION \"Replace `${_unaliased_name}` to new scoped `${_interface_name}` targets.\")
+    set_property(TARGET ${_export_unaliased_name} PROPERTY DEPRECATION \"Replace `${_export_unaliased_name}` to new scoped `${_interface_name}` targets.\")"
+)
+    endforeach()
+  endif()
 
   # Set the location of the doc file source. Needed by custom package configuration
   # file section of dune-grid.
@@ -322,27 +326,26 @@ endif()
   # install pkg-config files
   create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
 
-  if(${ProjectName}_EXPORT_SET_SCOPED)
+  if(${ProjectName}_EXPORT_SET)
     # install library export set
-    install(EXPORT ${${ProjectName}_EXPORT_SET_SCOPED}
+    install(EXPORT ${${ProjectName}_EXPORT_SET}
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName}
       NAMESPACE Dune::
       FILE ${ProjectName}-targets-scoped.cmake)
 
     # export libraries for use in build tree
-    export(EXPORT ${${ProjectName}_EXPORT_SET_SCOPED}
+    export(EXPORT ${${ProjectName}_EXPORT_SET}
       FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets-scoped.cmake
       NAMESPACE Dune::)
-  endif()
 
-  if(${ProjectName}_EXPORT_SET_UNSCOPED)
-    # install library export set
-    install(EXPORT ${${ProjectName}_EXPORT_SET_UNSCOPED}
+    # NOTE: Remove when compatibility with 2.10 is not needed anymore (e.g., 2.13)
+    # install (unscoped) library export set
+    install(EXPORT ${${ProjectName}_EXPORT_SET}
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName}
       FILE ${ProjectName}-targets-unscoped.cmake)
 
-    # export libraries for use in build tree
-    export(EXPORT ${${ProjectName}_EXPORT_SET_UNSCOPED}
+    # export (unscoped) libraries for use in build tree
+    export(EXPORT ${${ProjectName}_EXPORT_SET}
       FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets-unscoped.cmake)
   endif()
 
