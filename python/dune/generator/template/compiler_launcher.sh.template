@@ -1,0 +1,5 @@
+#!/bin/bash
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
+DEFAULT_CXXFLAGS="{{ DEFAULT_CXXFLAGS }}" {{ dunepy_dir }}/dune-compiler_launcher.sh $@

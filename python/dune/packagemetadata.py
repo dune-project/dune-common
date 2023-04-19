@@ -324,17 +324,17 @@ def envCMakeFlags(flags=[]):
         flags += shlex.split(cmakeFlags)
     return flags
 
-def defaultCMakeFlags():
+def defaultCMakeFlags(overwrite=None):
     # defaults
     flags = dict([
         ('CMAKE_CXX_FLAGS', '-O3 -DNDEBUG'),              # same as release
         ('CMAKE_INSTALL_RPATH_USE_LINK_PATH', 'TRUE'),
-        ('DUNE_ENABLE_PYTHONBINDINGS', 'TRUE'),
-        #('ALLOW_CXXFLAGS_OVERWRITE', 'ON'),
         ('CMAKE_DISABLE_FIND_PACKAGE_LATEX', 'TRUE'),
         ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen', 'TRUE'),
         ('INKSCAPE', 'FALSE'),
     ])
+    if overwrite is not None:
+        flags.update(overwrite)
     # if inVEnv():
     #     flags['DUNE_PYTHON_VIRTUALENV_PATH'] = sys.prefix
     flags = cmakeArguments(flags)  # make cmake command line out of dict

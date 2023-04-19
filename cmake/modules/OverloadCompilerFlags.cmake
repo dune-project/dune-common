@@ -33,6 +33,6 @@ option(ALLOW_CFLAGS_OVERWRITE OFF)
 # init compiler script and store CXX flags
 macro(initialize_compiler_script)
   if(ALLOW_CXXFLAGS_OVERWRITE OR ALLOW_CFLAGS_OVERWRITE)
-    message(FATAL_ERROR "ALLOW_CXXFLAGS_OVERWRITE is not longer included in the cmake build process. Use dune-common/bin/compiler_launcher.sh instead! A description of usage is found there.")
+    message(WARNING "ALLOW_CXXFLAGS_OVERWRITE is not longer included in the cmake build process (see MR 1251 in dune-common for details). Use dune-common/bin/compiler_launcher.sh instead! A description of usage is found there.")
   endif()
 endmacro()

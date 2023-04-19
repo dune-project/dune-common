@@ -18,9 +18,7 @@ message("---- LOCK")
 file(LOCK ${lock})
 message("---- ACQUIRED")
 
-#set(ALLOW_CXXFLAGS_OVERWRITE ON) 
-#set(ALLOW_CXXFLAGS_OVERWRITE_FORCE ON)  
-set(DUNE_ENABLE_PYTHONBINDINGS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_PREFIX_PATH {{ install_prefix }})
 
 {% for mod, dir in builddirs.items() -%}
