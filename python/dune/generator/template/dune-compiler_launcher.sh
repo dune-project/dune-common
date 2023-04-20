@@ -4,7 +4,7 @@
 ####################################################################################
 # Usage: Use this script as compiler launcher within cmake, i.e.
 #
-# -DCMAKE_CXX_COMPILER_LAUNCHER=path_to_dune/dune-common/bin/compiler_launcher.sh
+# -DCMAKE_CXX_COMPILER_LAUNCHER=path_to_dune/dune-common/python/dune/generator/template/dune-compiler_launcher.sh
 #
 # In addition set -DCMAKE_CXX_FLAGS="" to only get compiler flags added by the
 # cmake configuration. Set you own compiler flags by setting
