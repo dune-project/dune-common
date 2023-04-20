@@ -594,7 +594,10 @@ class MakefileBuilder(Builder):
                     # forward errors so that compilation failure will be caught
                     buildScript.write('set -e\n')
                     # add launcher before compiler
-                    buildScript.write(launcher + " " + compilerCmd+"\n")
+                    buildScript.write('if [ "$DUNE_CXX_COMPILER_LAUNCHER" == "" ]; then\n')
+                    buildScript.write(' DUNE_CXX_COMPILER_LAUNCHER='+launcher+'\n')
+                    buildScript.write('fi\n')
+                    buildScript.write("$DUNE_CXX_COMPILER_LAUNCHER " + compilerCmd+"\n")
                     # write linker commands
                     with open(linkerSourceName, "r") as linkerSource:
                         linkerCmd = linkerSource.read()
