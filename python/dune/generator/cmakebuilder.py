@@ -171,6 +171,8 @@ class Builder:
                         outfile.write(env.get_template(relative_template_file).render(**context))
                         os.fsync(outfile) # make sure files are correctly synced before calling make or cmake
 
+        logger.debug("Context used to configure dune-py: {}".format(context))
+
         # return force variable because this might be needed in the overloaded versions
         return force
 
@@ -502,7 +504,6 @@ class MakefileBuilder(Builder):
                 # the default flags contain CXX_FLAGS but we need to keep
                 # those empty to get the correct compiler command
                 cmake_flags = defaultCMakeFlags(overwrite={'CMAKE_CXX_FLAGS':' '})
-                print("CMAKE_FLAGS=",cmake_flags)
                 # the launcher might be given through a environment
                 # variable which is taken care of here
                 for flag in cmake_flags:
