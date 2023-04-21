@@ -52,6 +52,12 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Build System
 
+- Remove the `ALLOW_CXXFLAGS_OVERWRITE` configure option. The `CXXFLAGS`
+  overload is still turned on for the JIT compiled Python modules. See the
+  description of the MR
+  https://gitlab.dune-project.org/core/dune-common/-/merge_requests/1251
+  for more details on how to use this feature in the source modules and on
+  some new feature.
 - Remove deprecated `add_directory_test_target` function.
 
 - Do not overwrite the `add_test` cmake function with an error message.
