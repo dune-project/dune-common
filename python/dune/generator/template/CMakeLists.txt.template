@@ -29,7 +29,15 @@ set({{ mod }}_DIR {{ dir }})
 
 {% for flag, value in cmake_flags.items() -%}
 {% if flag != "" %}
+# boolean flags need to be forced to be written to the cache
+# otherwise they will be overwritten by the default from dune-common
+{% if value == True %}
+set({{ flag }} TRUE CACHE BOOL "stored user config {{flag}}" FORCE)
+{% elif value == False %}
+set({{ flag }} FALSE CACHE BOOL "stored user config {{flag}}" FORCE)
+{% else %}
 set({{ flag }} "{{ value }}")
+{% endif %}
 {% endif %}
 {%- endfor %}
 
