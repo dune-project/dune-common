@@ -202,7 +202,7 @@ function(dune_add_library_normal _name)
       EXPORT ${${ProjectName}_EXPORT_SET} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     # Install (unaliased) targets to use the libraries in other modules.
-    # NOTE: Remove when compatibility with 2.10 is not needed anymore (e.g., 2.13)
+    # NOTE: Remove when compatibility with 2.9 is not needed anymore (e.g., 2.13)
     add_library(_dune_unaliased_${_name} INTERFACE)
     target_link_libraries(_dune_unaliased_${_name} INTERFACE Dune::${ARG_EXPORT_NAME})
     set_target_properties(_dune_unaliased_${_name} PROPERTIES EXPORT_NAME ${_name})
@@ -262,7 +262,7 @@ function(dune_add_library_interface _name)
       EXPORT ${${ProjectName}_EXPORT_SET} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     # Install (unaliased) targets to use the libraries in other modules.
-    # NOTE: Remove when compatibility with 2.10 is not needed anymore (e.g., 2.13)
+    # NOTE: Remove when compatibility with 2.9 is not needed anymore (e.g., 2.13)
     add_library(_dune_unaliased_${_name} INTERFACE)
     target_link_libraries(_dune_unaliased_${_name} INTERFACE Dune::${ARG_EXPORT_NAME})
     set_target_properties(_dune_unaliased_${_name} PROPERTIES EXPORT_NAME ${_name})
