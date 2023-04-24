@@ -336,9 +336,6 @@ endif()
     feature_summary(WHAT ALL)
   endif()
 
-  # check if CXX flag overloading has been enabled
-  # and write compiler script (see OverloadCompilerFlags.cmake)
-  finalize_compiler_script()
 endmacro(finalize_dune_project)
 
 

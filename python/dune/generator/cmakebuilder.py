@@ -119,9 +119,24 @@ class Builder:
             context["modules"]        = modules
             context["builddirs"]      = builddirs
             context["install_prefix"] = metaData.unique_value_across_modules("INSTALL_PREFIX")
-            context["cmake_flags"]    = getCMakeFlags()
-            context["cxx_compiler"]   = context["cmake_flags"].get("CMAKE_CXX_COMPILER","")
-            context["cxx_flags"]      = context["cmake_flags"].get("CMAKE_CXX_FLAGS","")
+            context["cmake_flags"]    = getCMakeFlags().copy()
+            context["dunepy_dir"]     = dunepy_dir
+
+            # to use the default launcher we move the CMAKE_CXX_FLAGS to DEFAULT_CXXFLAGS
+            # to get the compile command without CXX_FLAGS we then remove them
+            try:
+                cxxflags = context["cmake_flags"].pop("CMAKE_CXX_FLAGS")
+                context["DEFAULT_CXXFLAGS"] = cxxflags
+            except KeyError:
+                pass
+            # we also need to make sure that no 'build type' (is set to 'release' in the packaging framework skbuild)
+            # Note: this means the value can not be set by the user
+            #       perhaps we can find a better solution here but for now
+            #       if we keep it the launcher will not work with packages
+            try:
+                context["cmake_flags"].pop("CMAKE_BUILD_TYPE")
+            except KeyError:
+                pass
 
             # Find the correct template path
             path, _ = os.path.split(__file__)
@@ -146,9 +161,17 @@ class Builder:
                     if gen_file.endswith(".cmake") or gen_file.endswith("Makefile"): continue # issues due to template taken from build dir
 
                     os.makedirs(os.path.split(gen_file)[0], exist_ok=True)
-                    with open(gen_file, "w") as outfile:
+                    # make sure the launcher can be executed
+                    def opener(path,flags):
+                        if "compiler_launcher" in path:
+                            return os.open(path, flags, 0o774)
+                        else:
+                            return os.open(path, flags, 0o664)
+                    with open(gen_file, "w", opener=opener) as outfile:
                         outfile.write(env.get_template(relative_template_file).render(**context))
                         os.fsync(outfile) # make sure files are correctly synced before calling make or cmake
+
+        logger.debug("Context used to configure dune-py: {}".format(context))
 
         # return force variable because this might be needed in the overloaded versions
         return force
@@ -474,7 +497,24 @@ class MakefileBuilder(Builder):
                 # call base class dunepy_from_template (re-initialize)
                 force = Builder.generate_dunepy_from_template(dunepy_dir, force=True)
 
-                Builder.callCMake(["cmake"] + defaultCMakeFlags() + ["."],
+                # extract compiler launcher if provided by user
+                launcher = getCMakeFlags().get('CMAKE_CXX_COMPILER_LAUNCHER',
+                               os.path.join(dunepy_dir,"compiler_launcher.sh"))
+
+                # the default flags contain CXX_FLAGS but we need to keep
+                # those empty to get the correct compiler command
+                cmake_flags = defaultCMakeFlags(overwrite={'CMAKE_CXX_FLAGS':' '})
+                # the launcher might be given through a environment
+                # variable which is taken care of here
+                for flag in cmake_flags:
+                    if flag.find('CMAKE_CXX_COMPILER_LAUNCHER') > 0:
+                        launcher = flag.split("=")[1]
+
+                # adding CMAKE_EXPORT_COMPILE_COMMANDS=ON because only
+                # having that in the CMakeLists.txt file fails for some of
+                # the CI runs
+                # Builder.callCMake(["cmake"] + cmake_flags + ["."],
+                Builder.callCMake(["cmake","-DCMAKE_EXPORT_COMPILE_COMMANDS=ON","."],
                                   cwd=dunepy_dir,
                                   infoTxt="Configuring dune-py with CMake (make)",
                                   active=True, # print details anyway
@@ -518,16 +558,6 @@ class MakefileBuilder(Builder):
                 except CompileError:
                     deprecationMessage(dunepy_dir)
 
-                # now also generate compiler command
-                stdout, stderr = \
-                  Builder.callCMake(["cmake","-DCMAKE_EXPORT_COMPILE_COMMANDS=ON","."],
-                                     cwd=dunepy_dir,
-                                     env={**os.environ,
-                                          "CXXFLAGS":" ",
-                                          },
-                                     infoTxt="extract compiler command",
-                                     active=True, # print details anyway
-                                   )
                 ########################################################################
                 #   Write buildScript.sh
                 ########################################################################
@@ -538,13 +568,13 @@ class MakefileBuilder(Builder):
                 buildSourceName = os.path.join(buildDirBase,'build.make')
 
                 commandSourceName = os.path.join(dunepy_dir,'compile_commands.json')
-                # we do not need the buildScript template since the compiler command generated uses CXX_compiler.sh
                 with open(buildScriptName, "w") as buildScript:
                     # write bash line
                     buildScript.write("#!" + MakefileBuilder.bashCmd + "\n")
                     # write compiler commands
                     with open(commandSourceName) as commandFile:
                         compilerCmd = json.load(commandFile)[0]["command"]
+                    # replace target file
                     compilerCmd = compilerCmd.replace('extractCompiler', '$1')
                     # this line is extracted from build.make
                     usedBuildMake = False
@@ -564,8 +594,11 @@ class MakefileBuilder(Builder):
 
                     # forward errors so that compilation failure will be caught
                     buildScript.write('set -e\n')
-                    buildScript.write(compilerCmd)
-                    buildScript.write('\n')
+                    # add launcher before compiler
+                    buildScript.write('if [ "$DUNE_CXX_COMPILER_LAUNCHER" == "" ]; then\n')
+                    buildScript.write(' DUNE_CXX_COMPILER_LAUNCHER='+launcher+'\n')
+                    buildScript.write('fi\n')
+                    buildScript.write("$DUNE_CXX_COMPILER_LAUNCHER " + compilerCmd+"\n")
                     # write linker commands
                     with open(linkerSourceName, "r") as linkerSource:
                         linkerCmd = linkerSource.read()
@@ -601,7 +634,8 @@ class MakefileBuilder(Builder):
                                          replace(' python/dune/generated/',' ') # better to move the script to the root of dune-py then this can be kept
                     compilerCmd = compilerCmd.split(' ',1)
                     compilerCmd = compilerCmd[0] + " " + compilerCmd[1]
-                    buildScript.write(compilerCmd+"\n")
+                    # add launcher before compiler
+                    buildScript.write(launcher + " " + compilerCmd+"\n")
                     # this needs fixing: Issue is that at the linker line beginns with ': && '
                     linkerCmd = out[1].replace('extractCompiler','$1').\
                                        replace(' python/dune/generated/',' ') # better to move the script to the root of dune-py then this can be kept

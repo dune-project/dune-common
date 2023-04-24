@@ -324,17 +324,17 @@ def envCMakeFlags(flags=[]):
         flags += shlex.split(cmakeFlags)
     return flags
 
-def defaultCMakeFlags():
+def defaultCMakeFlags(overwrite=None):
     # defaults
     flags = dict([
         ('CMAKE_CXX_FLAGS', '-O3 -DNDEBUG'),              # same as release
         ('CMAKE_INSTALL_RPATH_USE_LINK_PATH', 'TRUE'),
-        ('DUNE_ENABLE_PYTHONBINDINGS', 'TRUE'),
-        ('ALLOW_CXXFLAGS_OVERWRITE', 'ON'),
         ('CMAKE_DISABLE_FIND_PACKAGE_LATEX', 'TRUE'),
         ('CMAKE_DISABLE_FIND_PACKAGE_Doxygen', 'TRUE'),
         ('INKSCAPE', 'FALSE'),
     ])
+    if overwrite is not None:
+        flags.update(overwrite)
     # if inVEnv():
     #     flags['DUNE_PYTHON_VIRTUALENV_PATH'] = sys.prefix
     flags = cmakeArguments(flags)  # make cmake command line out of dict
@@ -599,10 +599,8 @@ def _extractCMakeFlags():
         stdout, _ = proc.communicate()
         cmakeArgs = shlex.split(stdout.decode('utf-8'))
 
-    """
     # check environment variable
-    cmakeArgs += shlex.split(os.environ.get('CMAKE_FLAGS', ''))
-
+    cmakeArgs += shlex.split(os.environ.get('DUNE_CMAKE_FLAGS', ''))
     for y in cmakeArgs:
         try:
             k, v = y.split("=", 1)
@@ -611,7 +609,6 @@ def _extractCMakeFlags():
             cmakeFlags[k] = v.strip()
         except ValueError:  # no '=' in line
             pass
-    """
 
     # try to unify 'ON' and 'OFF' values
     for k, v in cmakeFlags.items():
