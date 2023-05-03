@@ -358,10 +358,10 @@ namespace Dune
     /**
      * @brief Recv and unpack the message from another process and add the indices.
      * @param numberer Functor providing local indices for added global indices.
-     * @param source process of message to be received.
+     * @param hardSource process of message to be received.
      */
     template<typename T1>
-    void recvAndUnpack(T1& numberer, int hard_source);
+    void recvAndUnpack(T1& numberer, int hardSource);
 
     /**
      * @brief Register the MPI datatype for the MessageInformation.
@@ -1004,7 +1004,7 @@ namespace Dune
 
   template<typename T>
   template<typename T1>
-  void IndicesSyncer<T>::recvAndUnpack(T1& numberer, int hard_source)
+  void IndicesSyncer<T>::recvAndUnpack(T1& numberer, int hardSource)
   {
     const ParallelIndexSet& constIndexSet = indexSet_;
     auto iEnd   = constIndexSet.end();
@@ -1017,7 +1017,7 @@ namespace Dune
     MPI_Status status;
 
     // We have to determine the message size and source before the receive
-    MPI_Probe(hard_source, 345, remoteIndices_.communicator(), &status);
+    MPI_Probe(hardSource, 345, remoteIndices_.communicator(), &status);
 
     int source=status.MPI_SOURCE;
     int count;
