@@ -2,27 +2,13 @@
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 add_subdirectory(detail)
+add_subdirectory(eigen)
+add_subdirectory(stl)
 
 SET(HEADERS
-  attr.h
-  buffer_info.h
-  cast.h
-  chrono.h
-  common.h
-  complex.h
-  eigen.h
-  embed.h
-  eval.h
-  extensions.h
-  functional.h
-  iostream.h
-  numpy.h
-  operators.h
-  options.h
-  pybind11.h
-  pytypes.h
-  stl_bind.h
-  stl.h
-)
+attr.h         common.h   eval.h        iostream.h   pybind11.h
+buffer_info.h  complex.h  extensions.h  numpy.h      pytypes.h
+cast.h         eigen.h    functional.h  operators.h  stl_bind.h
+chrono.h       embed.h    gil.h         options.h    stl.h)
 
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/python/pybind11)
