@@ -54,6 +54,12 @@
 #
 include_guard(GLOBAL)
 
+# switches ``Python3_FIND_STRATEGY`` from VERSION to LOCATION
+# which was introduced in CMake 3.15 and will become the new default
+if(POLICY CMP0094)
+  cmake_policy(SET CMP0094 NEW)
+endif()
+
 # unless the user has defined the variable, unversioned names (like python3) are found
 # first, to match what users most probably use later on to call the executable
 if(NOT DEFINED Python3_FIND_UNVERSIONED_NAMES)
