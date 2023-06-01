@@ -242,6 +242,12 @@ endif()")
     foreach(_interface_name ${${ProjectName}_INTERFACE_LIBRARIES})
       get_target_property(_unaliased_name ${_interface_name} ALIASED_TARGET)
       get_target_property(_export_unaliased_name ${_unaliased_name} EXPORT_NAME)
+  # add deprecated property for unaliased targets
+  unset(DUNE_DEPRECATED_LIBRARY_ALIASES)
+  if(${ProjectVersionString} VERSION_GREATER_EQUAL 2.11)
+    foreach(_interface_name ${${ProjectName}_INTERFACE_LIBRARIES})
+      get_target_property(_unaliased_name ${_interface_name} ALIASED_TARGET)
+      get_target_property(_export_unaliased_name ${_unaliased_name} EXPORT_NAME)
       set(DUNE_DEPRECATED_LIBRARY_ALIASES
 "${DUNE_DEPRECATED_LIBRARY_ALIASES}
     set_property(TARGET ${_unaliased_name} PROPERTY DEPRECATION \"Replace `${_unaliased_name}` to new scoped `${_interface_name}` targets.\")
