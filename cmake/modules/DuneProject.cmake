@@ -238,11 +238,6 @@ endif()")
   endif()
 
   # add deprecated property for unaliased targets
-  if(${ProjectVersionString} VERSION_GREATER_EQUAL 2.11)
-    foreach(_interface_name ${${ProjectName}_INTERFACE_LIBRARIES})
-      get_target_property(_unaliased_name ${_interface_name} ALIASED_TARGET)
-      get_target_property(_export_unaliased_name ${_unaliased_name} EXPORT_NAME)
-  # add deprecated property for unaliased targets
   unset(DUNE_DEPRECATED_LIBRARY_ALIASES)
   if(${ProjectVersionString} VERSION_GREATER_EQUAL 2.11)
     foreach(_interface_name ${${ProjectName}_INTERFACE_LIBRARIES})
