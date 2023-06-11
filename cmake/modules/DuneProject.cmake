@@ -14,13 +14,16 @@ Initialize and finalize a Dune module.
 
   .. code-block:: cmake
 
-    dune_project()
+    dune_project([NAMESPACE <namespace>])
 
   This function needs to be called from every module top-level
   ``CMakeLists.txt`` file. It sets up the module, defines basic variables and
   manages dependencies. Don't forget to call :command:`finalize_dune_project`
   at the end of that ``CMakeLists.txt`` file.
 
+  ``NAMESPACE``
+    Name to be prepended to the export name of all targets set up by this project.
+    By default this is set to ``Dune::``.
 
 .. cmake:command:: finalize_dune_project
 
@@ -59,6 +62,8 @@ include(OverloadCompilerFlags)
 # Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
 
+cmake_parse_arguments(ARG "" "NAMESPACE" "" ${ARGN})
+
   # check if CXX flag overloading has been enabled (see OverloadCompilerFlags.cmake)
   initialize_compiler_script()
 
@@ -91,6 +96,15 @@ macro(dune_project)
   define_property(GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES
         BRIEF_DOCS "List of interface libraries of the module. DO NOT EDIT!"
         FULL_DOCS "List of interface libraries of the module. Used to set up external module configuration. DO NOT EDIT!")
+
+  define_property(GLOBAL PROPERTY ${ProjectName}_NAMESPACE
+        BRIEF_DOCS "The CMake namespace to export targets of this library. DO NOT EDIT!"
+        FULL_DOCS "The CMake namespace to export targets of this library. DO NOT EDIT!")
+
+  if(NOT ARG_NAMESPACE)
+    set(ARG_NAMESPACE Dune::)
+  endif()
+  set_property(GLOBAL PROPERTY ${ProjectName}_NAMESPACE ${ARG_NAMESPACE})
 
   dune_create_dependency_tree()
 
@@ -168,6 +182,10 @@ macro(finalize_dune_project)
   #configure all headerchecks
   finalize_headercheck()
 
+  ##########################
+  ### CREATE CONFIG FILE ###
+  ##########################
+
   #create cmake-config files for installation tree
   include(CMakePackageConfigHelpers)
   include(GNUInstallDirs)
@@ -177,6 +195,13 @@ macro(finalize_dune_project)
   # Needed by custom package configuration
   # file section of dune-grid.
   set(DUNE_MODULE_SRC_DOCDIR "\${${ProjectName}_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
+
+  if(${ProjectName} STREQUAL "dune-common")
+    set(DUNE_CUSTOM_PKG_CONFIG_SECTION
+"set_and_check(@DUNE_MOD_NAME@_SCRIPT_DIR \"@PACKAGE_SCRIPT_DIR@\")
+set_and_check(DOXYSTYLE_FILE \"@PACKAGE_DOXYSTYLE_DIR@/Doxystyle\")
+set_and_check(DOXYGENMACROS_FILE \"@PACKAGE_DOXYSTYLE_DIR@/doxygen-macros\")")
+endif()
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
     # Generate a standard cmake package configuration file
@@ -211,12 +236,7 @@ ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
 #import the target
 if(${ProjectName}_LIBRARIES)
   get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
-  include(\"\${_dir}/${ProjectName}-targets-scoped.cmake\")
-  include(\"\${_dir}/${ProjectName}-targets-unscoped.cmake\")
-  # Deprecation warning for unscoped targets
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
-    @DUNE_DEPRECATED_LIBRARY_ALIASES@
-  endif()
+  include(\"\${_dir}/${ProjectName}-targets.cmake\")
 endif()
 
 endif()")
@@ -235,20 +255,6 @@ endif()")
     set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
   else()
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
-  endif()
-
-  # add deprecated property for unaliased targets
-  unset(DUNE_DEPRECATED_LIBRARY_ALIASES)
-  if(${ProjectVersionString} VERSION_GREATER_EQUAL 2.11)
-    foreach(_interface_name ${${ProjectName}_INTERFACE_LIBRARIES})
-      get_target_property(_unaliased_name ${_interface_name} ALIASED_TARGET)
-      get_target_property(_export_unaliased_name ${_unaliased_name} EXPORT_NAME)
-      set(DUNE_DEPRECATED_LIBRARY_ALIASES
-"${DUNE_DEPRECATED_LIBRARY_ALIASES}
-    set_property(TARGET ${_unaliased_name} PROPERTY DEPRECATION \"Replace `${_unaliased_name}` to new scoped `${_interface_name}` targets.\")
-    set_property(TARGET ${_export_unaliased_name} PROPERTY DEPRECATION \"Replace `${_export_unaliased_name}` to new scoped `${_interface_name}` targets.\")"
-)
-    endforeach()
   endif()
 
   # Set the location of the doc file source. Needed by custom package configuration
@@ -291,6 +297,10 @@ endmacro()")
     ${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake @ONLY)
 
+  ###########################
+  ### CREATE VERSION FILE ###
+  ###########################
+
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-config-version.cmake.in)
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config-version.cmake.in
 "set(PACKAGE_VERSION \"${ProjectVersionString}\")
@@ -311,11 +321,100 @@ endif()
     ${CONFIG_VERSION_FILE}
     ${PROJECT_BINARY_DIR}/${ProjectName}-config-version.cmake @ONLY)
 
+  ###########################
+  ### CREATE TARGETS FILE ###
+  ###########################
+
+  # find all namespaces (this was setup in dune_add_library)
+  set(_namespaces "")
+  foreach(_target ${${ProjectName}_INTERFACE_LIBRARIES})
+    # find namespaces: alias without export name
+    get_target_property(_export_name ${_target} EXPORT_NAME)
+    string(REPLACE "${_export_name}" "" _namespace ${_target})
+    list(APPEND _namespaces ${_namespace})
+  endforeach()
+  list(REMOVE_DUPLICATES _namespaces)
+
+  # install files with targets, one per export set
+  set(_glob_target_file "
+get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
+")
+  foreach(_namespace ${_namespaces})
+    set(_export_set ${ProjectName}-${_namespace}-export-set)
+    string(MD5 _hash "${_export_set}")
+    set(_target_file  ${ProjectName}-scoped-targets-${_hash}.cmake)
+
+    # install library export set
+    install(EXPORT ${_export_set}
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName}
+      NAMESPACE ${_namespace}
+      FILE ${_target_file})
+
+    # export libraries for use in build tree
+    export(EXPORT ${_export_set}
+      FILE ${PROJECT_BINARY_DIR}/${_target_file}
+      NAMESPACE ${_namespace})
+
+    set(_glob_target_file "${_glob_target_file}
+include(\"\${_dir}/${_target_file}\")")
+  endforeach()
+
+  # add deprecated unaliased targets and warnings (remove after dune 2.11)
+  set(${ProjectName}_POLICY_UNSCOPED_EXPORTED_TARGET_VISIBILITY TRUE CACHE INTERNAL
+    "If this policy is set to FALSE, unscoped export names will not be visible in downstream projects.
+    This was the default behavior previous to DUNE 2.10.
+    Set this variable to FALSE only if you do not want compatibility with Dune 2.9 or earlier.
+    The old behavior will be completely removed after Dune 2.11")
+  if(${ProjectVersionString} VERSION_LESS_EQUAL 2.11)
+    foreach(_interface_name ${${ProjectName}_INTERFACE_LIBRARIES})
+      # alias with original target name (e.g. dunecommon)
+      get_target_property(_unaliased_name ${_interface_name} ALIASED_TARGET)
+      if(NOT "${_unaliased_name}" STREQUAL "${_interface_name}")
+        set(_glob_target_file "${_glob_target_file}
+add_library(${_unaliased_name} INTERFACE IMPORTED)
+set_target_properties(${_unaliased_name} PROPERTIES INTERFACE_LINK_LIBRARIES ${_interface_name})")
+        if(${ProjectVersionString} VERSION_EQUAL 2.11)
+          set(_glob_target_file "${_glob_target_file}
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+  set_property(TARGET ${_unaliased_name} PROPERTY DEPRECATION \"Replace `${_unaliased_name}` to new scoped `${_interface_name}` targets.\")
+endif()")
+        endif()
+      endif()
+
+      # alias with unscoped export name (e.g. Common instead of Dune::Common)
+      get_target_property(_export_name ${_interface_name} EXPORT_NAME)
+      if(     (NOT "${_export_name}" STREQUAL "${_interface_name}")
+          AND (NOT "${_export_name}" STREQUAL "${_unaliased_name}")
+          AND ${${ProjectName}_POLICY_UNSCOPED_EXPORTED_TARGET_VISIBILITY})
+        set(_glob_target_file "${_glob_target_file}
+add_library(${_export_name} INTERFACE IMPORTED)
+set_target_properties(${_export_name} PROPERTIES INTERFACE_LINK_LIBRARIES ${_interface_name})")
+        if(${ProjectVersionString} VERSION_EQUAL 2.11)
+          set(_glob_target_file "${_glob_target_file}
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+  set_property(TARGET ${_export_name} PROPERTY DEPRECATION \"Replace `${_export_name}` to new scoped `${_interface_name}` targets.\")
+endif()")
+        endif()
+      endif()
+    endforeach()
+  elseif(${ProjectName} STREQUAL "dune-common")
+    message(DEPRECATION "Remove me: Unscoped exported targets is fully unssported")
+  endif()
+
+  # write targets file
+  file(WRITE ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake ${_glob_target_file})
+
+  ###########################
+  ### INSTALL CMAKE FILEs ###
+  ###########################
+
   # install dune.module file
   install(FILES dune.module DESTINATION ${DUNE_INSTALL_NONOBJECTLIBDIR}/dunecontrol/${ProjectName})
 
   # install cmake-config files
-  install(FILES ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
+  install(FILES
+    ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
+    ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake
     ${PROJECT_BINARY_DIR}/${ProjectName}-config-version.cmake
     DESTINATION ${DUNE_INSTALL_LIBDIR}/cmake/${ProjectName})
 
@@ -327,28 +426,9 @@ endif()
   # install pkg-config files
   create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
 
-  if(${ProjectName}_EXPORT_SET)
-    # install library export set
-    install(EXPORT ${${ProjectName}_EXPORT_SET}
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName}
-      NAMESPACE Dune::
-      FILE ${ProjectName}-targets-scoped.cmake)
-
-    # export libraries for use in build tree
-    export(EXPORT ${${ProjectName}_EXPORT_SET}
-      FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets-scoped.cmake
-      NAMESPACE Dune::)
-
-    # NOTE: Remove when compatibility with 2.10 is not needed anymore (e.g., 2.13)
-    # install (unscoped) library export set
-    install(EXPORT ${${ProjectName}_EXPORT_SET}
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName}
-      FILE ${ProjectName}-targets-unscoped.cmake)
-
-    # export (unscoped) libraries for use in build tree
-    export(EXPORT ${${ProjectName}_EXPORT_SET}
-      FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets-unscoped.cmake)
-  endif()
+  ###########################
+  ### HEADER CONFIG FILEs ###
+  ###########################
 
   if("${ARGC}" EQUAL "1")
     message(STATUS "Adding custom target for config.h generation")
