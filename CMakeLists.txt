@@ -14,7 +14,7 @@ include(DuneMacros)
 dune_project()
 
 # Create a target for dune-common with a Dune::Common alias
-dune_add_library(dunecommon EXPORT_NAME Common)
+dune_add_library(dunecommon EXPORT_NAME Common NAMESPACE Dune::)
 
 # minimal c++ standard required
 target_compile_features(dunecommon PUBLIC cxx_std_17)
