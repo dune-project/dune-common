@@ -46,8 +46,8 @@ Add a library to a Dune module.
     Name of the library file, e.g. ``lib<libname>.so`` or ``lib<libname>.a``.
 
   ``NAMESPACE``
-    Name to be prepended to the export name of the target. This namespace
-    will be concatenated with the project namespace set up in `dune_project()`.
+    Name to be prepended to the export name of the target.
+    By default this is set to ``Dune::``.
 
   ``EXPORT_NAME``
     Name of the exported target to be used when linking against the library.
@@ -91,8 +91,8 @@ Add a library to a Dune module.
     Any additional compile flags for building the library.
 
   ``NAMESPACE``
-    Name to be prepended to the export name of the target. This namespace
-    will be concatenated with the project namespace set up in `dune_project()`.
+    Name to be prepended to the export name of the target.
+    By default this is set to ``Dune::``.
 
   ``EXPORT_NAME``
     Name of the exported target to be used when linking against the library.
@@ -206,15 +206,18 @@ function(dune_add_library_normal _name)
       set(ARG_EXPORT_NAME ${_name})
     endif()
 
-    get_property(namespace GLOBAL PROPERTY ${ProjectName}_NAMESPACE)
-    set(namespace ${namespace}${ARG_NAMESPACE})
-
-    set(alias ${namespace}${ARG_EXPORT_NAME})
-    if(NOT TARGET ${alias})
-      add_library(${alias} ALIAS ${_name})
+    if(NOT ARG_NAMESPACE)
+      set(ARG_NAMESPACE Dune::)
     endif()
 
-    set(export_set ${ProjectName}-${namespace}-export-set)
+    set(alias ${ARG_NAMESPACE}${ARG_EXPORT_NAME})
+    if(NOT TARGET ${alias})
+      add_library(${alias} ALIAS ${_name})
+    else()
+      message(WARNING "Target `${_name}` could not be aliased as `${alias}"`)
+    endif()
+
+    set(export_set ${ProjectName}-${ARG_NAMESPACE}-export-set)
 
     # Install targets to use the libraries in other modules.
     set_target_properties(${_name} PROPERTIES EXPORT_NAME ${ARG_EXPORT_NAME})
@@ -265,12 +268,15 @@ function(dune_add_library_interface _name)
       set(ARG_EXPORT_NAME ${_name})
     endif()
 
-    get_property(namespace GLOBAL PROPERTY ${ProjectName}_NAMESPACE)
-    set(namespace ${namespace}${ARG_NAMESPACE})
+    if(NOT ARG_NAMESPACE)
+      set(ARG_NAMESPACE Dune::)
+    endif()
 
     set(alias ${ARG_NAMESPACE}${ARG_EXPORT_NAME})
     if(NOT TARGET ${alias})
       add_library(${alias} ALIAS ${_name})
+    else()
+      message(WARNING "Target `${_name}` could not be aliased as `${alias}"`)
     endif()
 
     set(export_set ${ProjectName}-${ARG_NAMESPACE}-export-set)

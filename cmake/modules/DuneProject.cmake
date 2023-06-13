@@ -14,16 +14,13 @@ Initialize and finalize a Dune module.
 
   .. code-block:: cmake
 
-    dune_project([NAMESPACE <namespace>])
+    dune_project()
 
   This function needs to be called from every module top-level
   ``CMakeLists.txt`` file. It sets up the module, defines basic variables and
   manages dependencies. Don't forget to call :command:`finalize_dune_project`
   at the end of that ``CMakeLists.txt`` file.
 
-  ``NAMESPACE``
-    Name to be prepended to the export name of all targets set up by this project.
-    By default this is set to ``Dune::``.
 
 .. cmake:command:: finalize_dune_project
 
@@ -62,8 +59,6 @@ include(OverloadCompilerFlags)
 # Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
 
-cmake_parse_arguments(ARG "" "NAMESPACE" "" ${ARGN})
-
   # check if CXX flag overloading has been enabled (see OverloadCompilerFlags.cmake)
   initialize_compiler_script()
 
@@ -96,15 +91,6 @@ cmake_parse_arguments(ARG "" "NAMESPACE" "" ${ARGN})
   define_property(GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES
         BRIEF_DOCS "List of interface libraries of the module. DO NOT EDIT!"
         FULL_DOCS "List of interface libraries of the module. Used to set up external module configuration. DO NOT EDIT!")
-
-  define_property(GLOBAL PROPERTY ${ProjectName}_NAMESPACE
-        BRIEF_DOCS "The CMake namespace to export targets of this library. DO NOT EDIT!"
-        FULL_DOCS "The CMake namespace to export targets of this library. DO NOT EDIT!")
-
-  if(NOT ARG_NAMESPACE)
-    set(ARG_NAMESPACE Dune::)
-  endif()
-  set_property(GLOBAL PROPERTY ${ProjectName}_NAMESPACE ${ARG_NAMESPACE})
 
   dune_create_dependency_tree()
 
