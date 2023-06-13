@@ -53,7 +53,7 @@ In order to build the DUNE core modules you need at least the following software
 ## Build System
 
 - The function `dune_add_library(<lib> ...)` now requires to provide `EXPORT_NAME` or `NO_EXPORT`.
-  The exported target will be under the `Dune::` namespace with the provided export name.
+  Moreover, a namespace can be specified via the argument `NAMESPACE` which defaults to `Dune::` and is prepended to the export name.
   We recommend to choose an export name with a camel title case matching your
   library name (e.g., `Common`, `ISTL`, and `MultiDomainGrid` will be exported as
   `Dune::Common`, `Dune::ISTL`, and `Dune::MultiDomainGrid`).
