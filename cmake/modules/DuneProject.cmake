@@ -345,13 +345,13 @@ get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
 include(\"\${_dir}/${_target_file}\")")
   endforeach()
 
-  # add deprecated unaliased targets and warnings (remove after dune 2.11)
+  # add deprecated unaliased targets and warnings (remove after dune 2.12)
   set(${ProjectName}_POLICY_UNSCOPED_EXPORTED_TARGET_VISIBILITY TRUE CACHE INTERNAL
     "If this policy is set to FALSE, unscoped export names will not be visible in downstream projects.
     This was the default behavior previous to DUNE 2.10.
     Set this variable to FALSE only if you do not want compatibility with Dune 2.9 or earlier.
-    The old behavior will be completely removed after Dune 2.11")
-  if(${ProjectVersionString} VERSION_LESS_EQUAL 2.11)
+    The old behavior will be completely removed after Dune 2.12")
+  if(${ProjectVersionString} VERSION_LESS_EQUAL 2.12)
     foreach(_interface_name ${${ProjectName}_INTERFACE_LIBRARIES})
       # alias with original target name (e.g. dunecommon)
       get_target_property(_unaliased_name ${_interface_name} ALIASED_TARGET)
@@ -359,7 +359,7 @@ include(\"\${_dir}/${_target_file}\")")
         set(_glob_target_file "${_glob_target_file}
 add_library(${_unaliased_name} INTERFACE IMPORTED)
 set_target_properties(${_unaliased_name} PROPERTIES INTERFACE_LINK_LIBRARIES ${_interface_name})")
-        if(${ProjectVersionString} VERSION_EQUAL 2.11)
+        if(${ProjectVersionString} VERSION_EQUAL 2.12)
           set(_glob_target_file "${_glob_target_file}
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
   set_property(TARGET ${_unaliased_name} PROPERTY DEPRECATION \"Replace `${_unaliased_name}` to new scoped `${_interface_name}` targets.\")
@@ -375,7 +375,7 @@ endif()")
         set(_glob_target_file "${_glob_target_file}
 add_library(${_export_name} INTERFACE IMPORTED)
 set_target_properties(${_export_name} PROPERTIES INTERFACE_LINK_LIBRARIES ${_interface_name})")
-        if(${ProjectVersionString} VERSION_EQUAL 2.11)
+        if(${ProjectVersionString} VERSION_EQUAL 2.12)
           set(_glob_target_file "${_glob_target_file}
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
   set_property(TARGET ${_export_name} PROPERTY DEPRECATION \"Replace `${_export_name}` to new scoped `${_interface_name}` targets.\")
@@ -384,7 +384,7 @@ endif()")
       endif()
     endforeach()
   elseif(${ProjectName} STREQUAL "dune-common")
-    message(WARNING "TODO: Remove this and code above once DUNE 2.11 is released -Unscoped exported targets is fully unsupported-")
+    message(WARNING "TODO: Remove this and code above once DUNE 2.12 is released -Unscoped exported targets is fully unsupported-")
   endif()
 
   # write targets file

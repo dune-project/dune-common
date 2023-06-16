@@ -263,7 +263,6 @@ function(dune_add_library_interface _name)
         "We recommend to choose an export name with a camel title case matching your library name "
         "(e.g., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)\n"
         " * Calls to `dune_add_library(<lib> ...)` without export specification will be supported until Dune 2.11\n"
-
         " * Consumption of unscoped targets `<lib>` will be supported until Dune 2.12")
       set(ARG_EXPORT_NAME ${_name})
     endif()

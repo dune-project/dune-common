@@ -59,7 +59,7 @@ In order to build the DUNE core modules you need at least the following software
   `Dune::Common`, `Dune::ISTL`, and `Dune::MultiDomainGrid`).
   _Warning:_ Both `<lib>` and `Dune::${EXPORT_NAME}` are currently exported. Keep in mind that:
    * Libraries that _consume_ `Dune::${EXPORT_NAME}` will only be forward compatible with Dune 2.10.
-   * Libraries that _consume_ `<lib>` will be supported until compatibility with Dune 2.10 is not required anymore.
+   * Libraries that _consume_ `<lib>` will be supported until compatibility with Dune 2.9 is not required anymore.
 
 - Remove the `ALLOW_CXXFLAGS_OVERWRITE` configure option. The `CXXFLAGS`
   overload is still turned on for the JIT compiled Python modules. See the
