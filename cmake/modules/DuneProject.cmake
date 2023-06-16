@@ -384,7 +384,7 @@ endif()")
       endif()
     endforeach()
   elseif(${ProjectName} STREQUAL "dune-common")
-    message(DEPRECATION "Remove me: Unscoped exported targets is fully unssported")
+    message(WARNING "TODO: Remove this and code above once DUNE 2.11 is released -Unscoped exported targets is fully unsupported-")
   endif()
 
   # write targets file
