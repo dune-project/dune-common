@@ -51,7 +51,7 @@ Add a library to a Dune module.
 
   ``EXPORT_NAME``
     Name of the exported target to be used when linking against the library.
-    This target will always be under the project and target namespace (e.g. Dune::).
+    The name is prepended with the given namespace (e.g. the default Dune::).
     We recommend to choose an export name with a camel title case matching your
     library name (e.g., Common, ISTL, and MultiDomainGrid will be exported as
     Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)
@@ -96,7 +96,7 @@ Add a library to a Dune module.
 
   ``EXPORT_NAME``
     Name of the exported target to be used when linking against the library.
-    This target will always be under the project and target namespace (e.g. Dune::).
+    The name is prepended with the given namespace (e.g. the default Dune::).
     We recommend to choose an export name with a camel title case matching your
     library name (e.g., Common, ISTL, and MultiDomainGrid will be exported as
     Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)
