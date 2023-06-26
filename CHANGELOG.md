@@ -52,12 +52,22 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Build System
 
+- The function `dune_add_library(<lib> ...)` now requires to provide `EXPORT_NAME` or `NO_EXPORT`.
+  Moreover, a namespace can be specified via the argument `NAMESPACE` which defaults to `Dune::` and is prepended to the export name.
+  We recommend to choose an export name with a camel title case matching your
+  library name (e.g., `Common`, `ISTL`, and `MultiDomainGrid` will be exported as
+  `Dune::Common`, `Dune::ISTL`, and `Dune::MultiDomainGrid`).
+  _Warning:_ Both `<lib>` and `Dune::${EXPORT_NAME}` are currently exported. Keep in mind that:
+   * Libraries that _consume_ `Dune::${EXPORT_NAME}` will only be forward compatible with Dune 2.10.
+   * Libraries that _consume_ `<lib>` will be supported until compatibility with Dune 2.9 is not required anymore.
+
 - Remove the `ALLOW_CXXFLAGS_OVERWRITE` configure option. The `CXXFLAGS`
   overload is still turned on for the JIT compiled Python modules. See the
   description of the MR
   https://gitlab.dune-project.org/core/dune-common/-/merge_requests/1251
   for more details on how to use this feature in the source modules and on
   some new feature.
+  
 - Remove deprecated `add_directory_test_target` function.
 
 - Do not overwrite the `add_test` cmake function with an error message.

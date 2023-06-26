@@ -86,7 +86,12 @@ macro(dune_project)
 
   define_property(GLOBAL PROPERTY ${ProjectName}_LIBRARIES
         BRIEF_DOCS "List of libraries of the module. DO NOT EDIT!"
-        FULL_DOCS "List of libraries of the module. Used to generate CMake's package configuration files. DO NOT EDIT!")
+        FULL_DOCS "List of libraries of the module. Used to set up internal module configuration. DO NOT EDIT!")
+
+  define_property(GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES
+        BRIEF_DOCS "List of interface libraries of the module. DO NOT EDIT!"
+        FULL_DOCS "List of interface libraries of the module. Used to set up external module configuration. DO NOT EDIT!")
+
   dune_create_dependency_tree()
 
   # assert the project names matches
@@ -163,6 +168,10 @@ macro(finalize_dune_project)
   #configure all headerchecks
   finalize_headercheck()
 
+  ##########################
+  ### CREATE CONFIG FILE ###
+  ##########################
+
   #create cmake-config files for installation tree
   include(CMakePackageConfigHelpers)
   include(GNUInstallDirs)
@@ -172,6 +181,13 @@ macro(finalize_dune_project)
   # Needed by custom package configuration
   # file section of dune-grid.
   set(DUNE_MODULE_SRC_DOCDIR "\${${ProjectName}_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
+
+  if(${ProjectName} STREQUAL "dune-common")
+    set(DUNE_CUSTOM_PKG_CONFIG_SECTION
+"set_and_check(@DUNE_MOD_NAME@_SCRIPT_DIR \"@PACKAGE_SCRIPT_DIR@\")
+set_and_check(DOXYSTYLE_FILE \"@PACKAGE_DOXYSTYLE_DIR@/Doxystyle\")
+set_and_check(DOXYGENMACROS_FILE \"@PACKAGE_DOXYSTYLE_DIR@/doxygen-macros\")")
+endif()
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
     # Generate a standard cmake package configuration file
@@ -196,7 +212,7 @@ set(${ProjectName}_CXX_FLAGS_RELWITHDEBINFO \"${CMAKE_CXX_FLAGS_RELWITHDEBINFO}\
 set(${ProjectName}_DEPENDS \"@${ProjectName}_DEPENDS@\")
 set(${ProjectName}_SUGGESTS \"@${ProjectName}_SUGGESTS@\")
 set(${ProjectName}_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
-set(${ProjectName}_LIBRARIES \"@${ProjectName}_LIBRARIES@\")
+set(${ProjectName}_LIBRARIES \"@${ProjectName}_INTERFACE_LIBRARIES@\")
 set(${ProjectName}_HASPYTHON @DUNE_MODULE_HASPYTHON@)
 set(${ProjectName}_PYTHONREQUIRES \"@DUNE_MODULE_PYTHONREQUIRES@\")
 
@@ -214,15 +230,14 @@ endif()")
   else()
     set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
   endif()
-  get_property(${ProjectName}_LIBRARIES GLOBAL PROPERTY ${ProjectName}_LIBRARIES)
+  get_property(${ProjectName}_INTERFACE_LIBRARIES GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES)
 
   # compute under which libdir the package configuration files are to be installed.
   # If the module installs an object library we use CMAKE_INSTALL_LIBDIR
   # to capture the multiarch triplet of Debian/Ubuntu.
   # Otherwise we fall back to DUNE_INSTALL_NONOBJECTLIB which is lib
   # if not set otherwise.
-  get_property(${ProjectName}_LIBRARIES GLOBAL PROPERTY ${ProjectName}_LIBRARIES)
-  if(${ProjectName}_LIBRARIES)
+  if(${ProjectName}_INTERFACE_LIBRARIES)
     set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
   else()
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
@@ -268,6 +283,10 @@ endmacro()")
     ${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/${ProjectName}-config.cmake @ONLY)
 
+  ###########################
+  ### CREATE VERSION FILE ###
+  ###########################
+
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}-config-version.cmake.in)
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config-version.cmake.in
 "set(PACKAGE_VERSION \"${ProjectVersionString}\")
@@ -288,11 +307,100 @@ endif()
     ${CONFIG_VERSION_FILE}
     ${PROJECT_BINARY_DIR}/${ProjectName}-config-version.cmake @ONLY)
 
+  ###########################
+  ### CREATE TARGETS FILE ###
+  ###########################
+
+  # find all namespaces (this was setup in dune_add_library)
+  set(_namespaces "")
+  foreach(_target ${${ProjectName}_INTERFACE_LIBRARIES})
+    # find namespaces: alias without export name
+    get_target_property(_export_name ${_target} EXPORT_NAME)
+    string(REPLACE "${_export_name}" "" _namespace ${_target})
+    list(APPEND _namespaces ${_namespace})
+  endforeach()
+  list(REMOVE_DUPLICATES _namespaces)
+
+  # install files with targets, one per export set
+  set(_glob_target_file "
+get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
+")
+  foreach(_namespace ${_namespaces})
+    set(_export_set ${ProjectName}-${_namespace}-export-set)
+    string(MD5 _hash "${_export_set}")
+    set(_target_file  ${ProjectName}-scoped-targets-${_hash}.cmake)
+
+    # install library export set
+    install(EXPORT ${_export_set}
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName}
+      NAMESPACE ${_namespace}
+      FILE ${_target_file})
+
+    # export libraries for use in build tree
+    export(EXPORT ${_export_set}
+      FILE ${PROJECT_BINARY_DIR}/${_target_file}
+      NAMESPACE ${_namespace})
+
+    set(_glob_target_file "${_glob_target_file}
+include(\"\${_dir}/${_target_file}\")")
+  endforeach()
+
+  # add deprecated unaliased targets and warnings (remove after dune 2.12)
+  set(${ProjectName}_POLICY_UNSCOPED_EXPORTED_TARGET_VISIBILITY TRUE CACHE INTERNAL
+    "If this policy is set to FALSE, unscoped export names will not be visible in downstream projects.
+    This was the default behavior previous to DUNE 2.10.
+    Set this variable to FALSE only if you do not want compatibility with Dune 2.9 or earlier.
+    The old behavior will be completely removed after Dune 2.12")
+  if(${ProjectVersionString} VERSION_LESS_EQUAL 2.12)
+    foreach(_interface_name ${${ProjectName}_INTERFACE_LIBRARIES})
+      # alias with original target name (e.g. dunecommon)
+      get_target_property(_unaliased_name ${_interface_name} ALIASED_TARGET)
+      if(NOT "${_unaliased_name}" STREQUAL "${_interface_name}")
+        set(_glob_target_file "${_glob_target_file}
+add_library(${_unaliased_name} INTERFACE IMPORTED)
+set_target_properties(${_unaliased_name} PROPERTIES INTERFACE_LINK_LIBRARIES ${_interface_name})")
+        if(${ProjectVersionString} VERSION_EQUAL 2.12)
+          set(_glob_target_file "${_glob_target_file}
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+  set_property(TARGET ${_unaliased_name} PROPERTY DEPRECATION \"Replace `${_unaliased_name}` to new scoped `${_interface_name}` targets.\")
+endif()")
+        endif()
+      endif()
+
+      # alias with unscoped export name (e.g. Common instead of Dune::Common)
+      get_target_property(_export_name ${_interface_name} EXPORT_NAME)
+      if(     (NOT "${_export_name}" STREQUAL "${_interface_name}")
+          AND (NOT "${_export_name}" STREQUAL "${_unaliased_name}")
+          AND ${${ProjectName}_POLICY_UNSCOPED_EXPORTED_TARGET_VISIBILITY})
+        set(_glob_target_file "${_glob_target_file}
+add_library(${_export_name} INTERFACE IMPORTED)
+set_target_properties(${_export_name} PROPERTIES INTERFACE_LINK_LIBRARIES ${_interface_name})")
+        if(${ProjectVersionString} VERSION_EQUAL 2.12)
+          set(_glob_target_file "${_glob_target_file}
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+  set_property(TARGET ${_export_name} PROPERTY DEPRECATION \"Replace `${_export_name}` to new scoped `${_interface_name}` targets.\")
+endif()")
+        endif()
+      endif()
+    endforeach()
+  elseif(${ProjectName} STREQUAL "dune-common")
+    message(WARNING "TODO: Remove this and code above once DUNE 2.12 is released -Unscoped exported targets is fully unsupported-")
+  endif()
+
+  # write targets file
+  file(WRITE ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake ${_glob_target_file})
+
+  ###########################
+  ### INSTALL CMAKE FILEs ###
+  ###########################
+
   # install dune.module file
   install(FILES dune.module DESTINATION ${DUNE_INSTALL_NONOBJECTLIBDIR}/dunecontrol/${ProjectName})
 
   # install cmake-config files
-  install(FILES ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
+  install(FILES
+    ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
+    ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake
     ${PROJECT_BINARY_DIR}/${ProjectName}-config-version.cmake
     DESTINATION ${DUNE_INSTALL_LIBDIR}/cmake/${ProjectName})
 
@@ -304,15 +412,9 @@ endif()
   # install pkg-config files
   create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
 
-  if(${ProjectName}_EXPORT_SET)
-    # install library export set
-    install(EXPORT ${${ProjectName}_EXPORT_SET}
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${ProjectName})
-
-    # export libraries for use in build tree
-    export(EXPORT ${${ProjectName}_EXPORT_SET}
-      FILE ${PROJECT_BINARY_DIR}/${ProjectName}-targets.cmake)
-  endif()
+  ###########################
+  ### HEADER CONFIG FILEs ###
+  ###########################
 
   if("${ARGC}" EQUAL "1")
     message(STATUS "Adding custom target for config.h generation")
