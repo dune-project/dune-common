@@ -48,7 +48,6 @@ try
 //
 // dune_add_test(NAME assertandreturntest_runtime_fail
 //               SOURCES assertandreturntest.cc
-//               LINK_LIBRARIES dunecommon
 //               COMPILE_DEFINITIONS "TEST_RUNTIME_FAIL"
 //               EXPECT_FAIL
 //               LABELS quick)

@@ -104,41 +104,16 @@ dune_add_test(NAME debugalignsimdtest
 
 dune_add_test(SOURCES densematrixassignmenttest.cc
               LABELS quick)
-dune_add_test(NAME densematrixassignmenttest_fail0
-              SOURCES densematrixassignmenttest.cc
-              COMPILE_DEFINITIONS "FAILURE0"
-              EXPECT_COMPILE_FAIL
-              LABELS quick)
-dune_add_test(NAME densematrixassignmenttest_fail1
-              SOURCES densematrixassignmenttest.cc
-              COMPILE_DEFINITIONS "FAILURE1"
-              EXPECT_COMPILE_FAIL
-              LABELS quick)
-dune_add_test(NAME densematrixassignmenttest_fail2
-              SOURCES densematrixassignmenttest.cc
-              COMPILE_DEFINITIONS "FAILURE2"
-              EXPECT_COMPILE_FAIL
-              LABELS quick)
-dune_add_test(NAME densematrixassignmenttest_fail3
-              SOURCES densematrixassignmenttest.cc
-              COMPILE_DEFINITIONS "FAILURE3"
-              EXPECT_COMPILE_FAIL
-              LABELS quick)
-dune_add_test(NAME densematrixassignmenttest_fail4
-              SOURCES densematrixassignmenttest.cc
-              COMPILE_DEFINITIONS "FAILURE4"
-              EXPECT_COMPILE_FAIL
-              LABELS quick)
-dune_add_test(NAME densematrixassignmenttest_fail5
-              SOURCES densematrixassignmenttest.cc
-              COMPILE_DEFINITIONS "FAILURE5"
-              EXPECT_COMPILE_FAIL
-              LABELS quick)
-dune_add_test(NAME densematrixassignmenttest_fail6
-              SOURCES densematrixassignmenttest.cc
-              COMPILE_DEFINITIONS "FAILURE6"
-              EXPECT_COMPILE_FAIL
-              LABELS quick)
+add_dune_gmp_flags(densematrixassignmenttest)
+
+foreach(FAIL RANGE 0 6)
+  dune_add_test(NAME densematrixassignmenttest_fail${FAIL}
+                SOURCES densematrixassignmenttest.cc
+                COMPILE_DEFINITIONS "FAILURE${FAIL}"
+                EXPECT_COMPILE_FAIL
+                LABELS quick)
+  add_dune_gmp_flags(densematrixassignmenttest)
+endforeach()
 
 dune_add_test(SOURCES densevectorassignmenttest.cc
               LABELS quick)
@@ -147,7 +122,6 @@ dune_add_test(SOURCES diagonalmatrixtest.cc
               LABELS quick)
 
 dune_add_test(SOURCES dunethrowtest.cc
-              LINK_LIBRARIES dunecommon
               LABELS quick)
 
 dune_add_test(SOURCES dynmatrixtest.cc
@@ -259,6 +233,7 @@ dune_add_test(SOURCES powertest.cc
 
 dune_add_test(SOURCES quadmathtest.cc
               CMAKE_GUARD HAVE_QUADMATH)
+add_dune_quadmath_flags(quadmathtest)
 
 dune_add_test(SOURCES rangeutilitiestest.cc
               LABELS quick)
@@ -272,6 +247,7 @@ dune_add_test(SOURCES reservedvectortest.cc
 dune_add_test(SOURCES scotchtest.cc
               CMAKE_GUARD PTScotch_FOUND
               LABELS quick)
+add_dune_ptscotch_flags(scotchtest)
 
 dune_add_test(SOURCES shared_ptrtest.cc
               LABELS quick)
