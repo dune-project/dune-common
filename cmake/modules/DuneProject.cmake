@@ -316,7 +316,7 @@ endif()
   foreach(_target ${${ProjectName}_INTERFACE_LIBRARIES})
     # find namespaces: alias without export name
     get_target_property(_export_name ${_target} EXPORT_NAME)
-    string(REPLACE "${_export_name}" "" _namespace ${_target})
+    string(REPLACE "::${_export_name}" "::" _namespace ${_target})
     list(APPEND _namespaces ${_namespace})
   endforeach()
   list(REMOVE_DUPLICATES _namespaces)
