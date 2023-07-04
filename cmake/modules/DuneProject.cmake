@@ -94,11 +94,11 @@ macro(dune_project)
 
   define_property(GLOBAL PROPERTY ${ProjectName}_LIBRARIES
         BRIEF_DOCS "List of libraries of the module. DO NOT EDIT!"
-        FULL_DOCS "List of libraries of the module. Used to set up internal module configuration. DO NOT EDIT!")
+        FULL_DOCS "List of all module-libraries. DO NOT EDIT!")
 
-  define_property(GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES
-        BRIEF_DOCS "List of interface libraries of the module. DO NOT EDIT!"
-        FULL_DOCS "List of interface libraries of the module. Used to set up external module configuration. DO NOT EDIT!")
+  define_property(GLOBAL PROPERTY ${ProjectName}_EXPORTED_LIBRARIES
+        BRIEF_DOCS "List of libraries exported by the module. DO NOT EDIT!"
+        FULL_DOCS "List of libraries exported by the module. DO NOT EDIT!")
 
   dune_create_dependency_tree()
 
@@ -228,7 +228,7 @@ set(${ProjectName}_DEPENDS \"@${ProjectName}_DEPENDS@\")
 set(${ProjectName}_SUGGESTS \"@${ProjectName}_SUGGESTS@\")
 set(${ProjectName}_MODULE_PATH \"@PACKAGE_DUNE_INSTALL_MODULEDIR@\")
 set(${ProjectName}_PYTHON_WHEELHOUSE \"@PACKAGE_DUNE_PYTHON_WHEELHOUSE@\")
-set(${ProjectName}_LIBRARIES \"@${ProjectName}_INTERFACE_LIBRARIES@\")
+set(${ProjectName}_LIBRARIES \"@${ProjectName}_LIBRARIES@\")
 set(${ProjectName}_HASPYTHON @DUNE_MODULE_HASPYTHON@)
 set(${ProjectName}_PYTHONREQUIRES \"@DUNE_MODULE_PYTHONREQUIRES@\")
 
@@ -246,14 +246,15 @@ endif()")
   else()
     set(CONFIG_SOURCE_FILE ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
   endif()
-  get_property(${ProjectName}_INTERFACE_LIBRARIES GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES)
+  get_property(${ProjectName}_LIBRARIES GLOBAL PROPERTY ${ProjectName}_LIBRARIES)
+  get_property(${ProjectName}_EXPORTED_LIBRARIES GLOBAL PROPERTY ${ProjectName}_EXPORTED_LIBRARIES)
 
   # compute under which libdir the package configuration files are to be installed.
   # If the module installs an object library we use CMAKE_INSTALL_LIBDIR
   # to capture the multiarch triplet of Debian/Ubuntu.
   # Otherwise we fall back to DUNE_INSTALL_NONOBJECTLIB which is lib
   # if not set otherwise.
-  if(${ProjectName}_INTERFACE_LIBRARIES)
+  if(${ProjectName}_EXPORTED_LIBRARIES)
     set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
   else()
     set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
@@ -339,7 +340,7 @@ endif()
 
   # find all namespaces (this was setup in dune_add_library)
   set(_namespaces "")
-  foreach(_target ${${ProjectName}_INTERFACE_LIBRARIES})
+  foreach(_target ${${ProjectName}_EXPORTED_LIBRARIES})
     # find namespaces: alias without export name
     get_target_property(_export_name ${_target} EXPORT_NAME)
     string(FIND "${_target}" "${_export_name}" _pos_export_name REVERSE)
@@ -379,7 +380,7 @@ include(\"\${_dir}/${_target_file}\")")
     Set this variable to FALSE only if you do not want compatibility with Dune 2.9 or earlier.
     The old behavior will be completely removed after Dune 2.12")
   if(${ProjectVersionString} VERSION_LESS_EQUAL 2.12)
-    foreach(_interface_name ${${ProjectName}_INTERFACE_LIBRARIES})
+    foreach(_interface_name ${${ProjectName}_LIBRARIES})
       # alias with original target name (e.g. dunecommon)
       get_target_property(_unaliased_name ${_interface_name} ALIASED_TARGET)
       if(NOT "${_unaliased_name}" STREQUAL "${_interface_name}")

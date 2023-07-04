@@ -102,12 +102,12 @@ Add a library to a Dune module.
     Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)
 
   ``NO_EXPORT``
-    If omitted the library is exported for usage in other modules.
+    If omitted the library is exported for usage in other modules and is added to
+    the global property ``<module>_EXPORTED_LIBRARIES``.
 
   ``NO_MODULE_LIBRARY``
-    If omitted the library is added to the global property ``<module>_LIBRARIES``
-    and used for internal module configuration. If ``NO_EXPORT`` is omitted, the library
-    will additionally be added to the global property ``<module>_INTERFACE_LIBRARIES``.
+    If omitted and if ``NO_EXPORT`` is also omitted, the library
+    will be added to the global property ``<module>_LIBRARIES``.
 
 
   .. code-block:: cmake
@@ -224,15 +224,13 @@ function(dune_add_library_normal _name)
     install(TARGETS ${_name}
       EXPORT ${export_set} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-    # Register target as an exported library
+    # Register library in global property <module>_LIBRARIES
     if(NOT ARG_NO_MODULE_LIBRARY)
-      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES ${alias})
+      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES ${alias})
     endif()
-  endif()
 
-  # Register library in global property <module>_LIBRARIES
-  if(NOT ARG_NO_MODULE_LIBRARY)
-    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES ${_name})
+    # Register target as an exported library
+    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_EXPORTED_LIBRARIES ${alias})
   endif()
 endfunction(dune_add_library_normal)
 
@@ -285,15 +283,13 @@ function(dune_add_library_interface _name)
     install(TARGETS ${_name}
       EXPORT ${export_set} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-    # Register target as an exported library
+    # Register library in global property <module>_LIBRARIES
     if(NOT ARG_NO_MODULE_LIBRARY)
-      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_INTERFACE_LIBRARIES ${alias})
+      set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES ${alias})
     endif()
-  endif()
 
-  # Register library in global property <module>_LIBRARIES
-  if(NOT ARG_NO_MODULE_LIBRARY)
-    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_LIBRARIES ${_name})
+    # Register target as an exported library
+    set_property(GLOBAL APPEND PROPERTY ${ProjectName}_EXPORTED_LIBRARIES ${alias})
   endif()
 endfunction(dune_add_library_interface)
 
