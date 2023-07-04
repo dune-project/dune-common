@@ -601,14 +601,14 @@ def _extractCMakeFlags():
 
     # check environment variable
     cmakeArgs += shlex.split(os.environ.get('DUNE_CMAKE_FLAGS', ''))
+    cmakeArgPattern = re.compile(r"-D\s*(?P<key>[A-Za-z0-9_-]+)(?:\:(?<type>BOOL|FILESYSTEM|PATH|STRING|INTERNAL))?=(?<value>.+)")
     for y in cmakeArgs:
-        try:
-            k, v = y.split("=", 1)
-            if k.startswith('-D'):
-                k = k[2:]
-            cmakeFlags[k] = v.strip()
-        except ValueError:  # no '=' in line
-            pass
+        match = cmakeArgPattern.match(y)
+        if match:
+          k = match.group("key")
+          v = match.group("value")
+          # the type of the variable is ignored
+          cmakeFlags[k] = v.strip()
 
     # try to unify 'ON' and 'OFF' values
     for k, v in cmakeFlags.items():
