@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
+#include <cstdint>
 #include <ostream>
 
 #include <dune/common/math.hh>
