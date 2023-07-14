@@ -207,7 +207,8 @@
 #    You may set this variable through your opts file or on a per module level (in the toplevel
 #    :code:`CMakeLists.txt` before :code:`include(DuneMacros)`) to have the Dune build system
 #    build all tests during `make all`. Note, that this may take quite some time for some modules.
-#    If not in use, you have to build tests through the target :code:`build_tests`.
+#    If not in use, you have to build tests through the target :code:`build_tests`. This option
+#    does not apply on non-mutable targets (i.e., aliased and imported targets).
 #
 # .. cmake_variable:: PYTHON_TEST
 #
@@ -358,11 +359,15 @@ function(dune_add_test)
     set(ADDTEST_TARGET ${ADDTEST_NAME})
   endif()
 
-  # Make sure to exclude the target from all, even when it is user-provided
-  if(DUNE_BUILD_TESTS_ON_MAKE_ALL AND (NOT ADDTEST_EXPECT_COMPILE_FAIL))
-    set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 0)
-  else()
-    set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 1)
+  # If target is mutable, make sure to exclude the target from all, even when it is user-provided
+  get_target_property(aliased ${ADDTEST_TARGET} ALIASED_TARGET)
+  get_target_property(imported ${ADDTEST_TARGET} IMPORTED)
+  if ((NOT aliased) AND (NOT imported))
+    if(DUNE_BUILD_TESTS_ON_MAKE_ALL AND (NOT ADDTEST_EXPECT_COMPILE_FAIL))
+      set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 0)
+    else()
+      set_property(TARGET ${ADDTEST_TARGET} PROPERTY EXCLUDE_FROM_ALL 1)
+    endif()
   endif()
 
   # make sure each label exists and its name is acceptable
