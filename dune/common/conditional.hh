@@ -18,7 +18,8 @@ namespace Dune
         \endcode
 
         In contrast to if-then-else the cond function can also be
-        evaluated for vector valued SIMD data types, see simd.hh.
+        evaluated for vector valued SIMD data types, see
+        dune/common/simd/simd.hh.
 
         \param b boolean value
         \param v1 value of b==true
