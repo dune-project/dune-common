@@ -6,13 +6,14 @@
   absence of Vc.
 #endif
 
+#include <Vc/Vc>
+
 #include <cstdlib>
 #include <map>
 #include <iostream>
 #include <string>
 
 #include <dune/common/exceptions.hh>
-#include <dune/common/vc.hh>
 
 const std::map<Vc::Implementation, std::string> impl_names = {
   {Vc::ScalarImpl, "Scalar" },

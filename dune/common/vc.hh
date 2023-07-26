@@ -3,6 +3,8 @@
 #ifndef DUNE_COMMON_VC_HH
 #define DUNE_COMMON_VC_HH
 
+#warning This header is deprecated, include <Vc/Vc> instead.
+
 /**
    \file
 
