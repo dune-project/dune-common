@@ -601,7 +601,7 @@ def _extractCMakeFlags():
 
     # check environment variable
     cmakeArgs += shlex.split(os.environ.get('DUNE_CMAKE_FLAGS', ''))
-    cmakeArgPattern = re.compile(r"-D[ ]*(?P<key>[A-Za-z0-9_-]+)(?:\:(?P<type>BOOL|FILESYSTEM|PATH|STRING|INTERNAL))?=(?<value>\S+)")
+    cmakeArgPattern = re.compile(r"-D[ ]*(?P<key>[A-Za-z0-9_-]+)(?:\:(?P<type>BOOL|FILESYSTEM|PATH|STRING|INTERNAL))?=(?P<value>\S+)")
     for match in re.finditer(cmakeArgPattern, ' '.join(cmakeArgs)):
         k = match.group("key")
         v = match.group("value")
