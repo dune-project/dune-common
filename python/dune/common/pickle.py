@@ -40,7 +40,7 @@ def load(f):
     mods = _pickle.load(f)
     while len(mods)>0:
         remainingMods = []
-        cond = False
+        cont = False
         for m in mods:
             try:
                 module = builder.load(m[0].split(".")[-1], m[1], None)
