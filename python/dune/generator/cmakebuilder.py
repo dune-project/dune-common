@@ -703,7 +703,7 @@ class MakefileBuilder(Builder):
                 # dependency file has already been generate leave
                 # dependencies empty otherwise use existing depFile:
                 depFileName  = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.cc.o.d')
-                makeFileName = os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.make')
+                makeFileName = self._makeFileName( moduleName )
                 with open(makeFileName, "w") as makeFile:
                     makeFile.write('.SUFFIXES:\n')
                     try:
@@ -745,28 +745,34 @@ class MakefileBuilder(Builder):
                 if exit_code > 0:
                     # make sure directory entries are properly written to avoid raceconditions on network storage.
                     # Builder.sync_dir(self.generated_dir)
-
                     # call make to build shared library
-                    with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
-                                          cwd=self.generated_dir,
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.PIPE) as make:
-                        try:
-                            stdout, stderr = make.communicate(timeout=2) # no message if delay is <2sec
-                        except subprocess.TimeoutExpired:
-                            # compilation is taking place, replace loading with rebuilding
-                            compilationMessage = compilationMessage.replace("loading", "rebuilding")
-                            logger.log(logging.INFO,compilationMessage)
-                            # wait for cmd to finish
-                            stdout, stderr = make.communicate()
-                        exit_code = make.returncode
+                    self.makeModule( makeFileName, moduleName )
 
-                    if self.savedOutput is not None:
-                        self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
-                        self.savedOutput[0].write(str(stdout.decode()) + "\n")
-                        self.savedOutput[1].write(str(stderr.decode()) + "\n")
+    def _makeFileName( self, moduleName ):
+        return os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.make')
+    def makeModule(self, moduleName, makeFileName=None ):
+        if makeFileName is None:
+            makeFileName = self._makeFileName( moduleName )
+        with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
+                              cwd=self.generated_dir,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE) as make:
+            try:
+                stdout, stderr = make.communicate(timeout=2) # no message if delay is <2sec
+            except subprocess.TimeoutExpired:
+                # compilation is taking place, replace loading with rebuilding
+                compilationMessage = "rebuilding"
+                logger.log(logging.INFO,compilationMessage)
+                # wait for cmd to finish
+                stdout, stderr = make.communicate()
+            exit_code = make.returncode
 
-                    # check return code
-                    if exit_code > 0:
-                        # retrieve stderr output
-                        raise CompileError(buffer_to_str(stderr))
+        if self.savedOutput is not None:
+            self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
+            self.savedOutput[0].write(str(stdout.decode()) + "\n")
+            self.savedOutput[1].write(str(stderr.decode()) + "\n")
+
+        # check return code
+        if exit_code > 0:
+            # retrieve stderr output
+            raise CompileError(buffer_to_str(stderr))

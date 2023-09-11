@@ -19,8 +19,10 @@ In order to build the DUNE core modules you need at least the following software
   for storing and recreating the JIT generated modules required for the
   pickling of dune objects to work. In addition a class for writing time
   series of pickled data is provided.
-- Python: Add a new argument class to the generator to make add pickling support.
+- Python: Add a new argument class to the generator to add pickling support.
   The approach is similar to adding extra constructors or methods.
+- Python: Add a new command to `dune.__main__` to compile existing modules
+  in parallel, e.g., python -m dune make -j8 hierarchicalgrid
 
 ## Changelog
 

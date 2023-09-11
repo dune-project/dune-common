@@ -3,7 +3,10 @@
 
 import sys
 from argparse import ArgumentParser
-from dune.commands import printinfo, configure, listgenerated, rmgenerated, fixdunepy, listdunetype, checkbuilddirs
+from dune.commands import ( printinfo, configure, listgenerated,
+                            rmgenerated, makegenerated,
+                            fixdunepy, listdunetype, checkbuilddirs
+                          )
 
 # NOTE: do not import from dune.common (and consequently from dune.generator)
 #       at top level to avoid failure due to missing mpi4py.
@@ -33,6 +36,13 @@ def run(arguments=None):
     parserRemove.add_argument('--beforedate', dest='date', action='store_const', const=True, default=False,
               help='Instead of a pattern provide a date to remove all modules not having been loaded after that date')
     parserRemove.add_argument('modules', nargs='*',  default=[],
+              help='Patterns of modules ("*.cc" and dune-py path is added to each argument) or "all"')
+
+    # make
+    parserMake = subparsers.add_parser('make', help='Remake generated modules')
+    parserMake.add_argument('-j', dest='threads', type=int, default=4,
+              help='number of threads to use for compilation of modules. Defaults to 4.')
+    parserMake.add_argument('modules', nargs='*',  default=[],
               help='Patterns of modules ("*.cc" and dune-py path is added to each argument) or "all"')
 
     # Fix dune-py
@@ -69,6 +79,12 @@ def run(arguments=None):
             parserRemove.print_help()
         else:
             ret = rmgenerated(args.modules, args.date)
+
+    elif args.command == 'make':
+        if args.modules == []:
+            parserMake.print_help()
+        else:
+            ret = makegenerated(args.threads, args.modules)
 
     elif args.command == 'fix-dunepy':
         ret = fixdunepy(args.force)

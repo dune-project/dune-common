@@ -54,6 +54,10 @@ def rmgenerated(args, date):
     removeGenerated(args, date)
     return 0
 
+def makegenerated(threads, args):
+    from dune.generator.make import makeGenerated
+    makeGenerated(threads, args)
+    return 0
 
 def fixdunepy(force):
     from dune.common.module import getDunePyDir
