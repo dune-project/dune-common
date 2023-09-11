@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-import os
+import os, sys
 import logging
 
 import dune.common.module as moduleInfo
@@ -126,3 +126,14 @@ class Pickler(object):
 
     def __str__(self):
         return self.register()
+
+def requiredModules(outFile=None):
+    path = "dune.generated."
+    mods = [m[len(path):] for m in sys.modules.keys() if path in m]
+    if outFile is not None:
+        try:
+            with open(outFile, "w") as f:
+                print("\n".join(mods), file=f)
+        except TypeError:
+            print("\n".join(mods), file=outFile)
+    return mods

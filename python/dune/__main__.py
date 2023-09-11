@@ -35,6 +35,8 @@ def run(arguments=None):
     parserRemove = subparsers.add_parser('remove', help='Remove generated modules')
     parserRemove.add_argument('--beforedate', dest='date', action='store_const', const=True, default=False,
               help='Instead of a pattern provide a date to remove all modules not having been loaded after that date')
+    parserRemove.add_argument('--file',  dest='file', default="",
+              help='name of a file containing list of modules to remove (one per line)')
     parserRemove.add_argument('modules', nargs='*',  default=[],
               help='Patterns of modules ("*.cc" and dune-py path is added to each argument) or "all"')
 
@@ -42,6 +44,12 @@ def run(arguments=None):
     parserMake = subparsers.add_parser('make', help='Remake generated modules')
     parserMake.add_argument('-j', dest='threads', type=int, default=4,
               help='number of threads to use for compilation of modules. Defaults to 4.')
+    parserMake.add_argument('--file',  dest='file', default="",
+              help='name of a file containing list of modules to make (one per line)')
+    parserMake.add_argument('--force', dest='force', action='store_const', const=True, default=False,
+              help='force make without checking dependencies (same as "make -B"')
+    parserMake.add_argument('-B', dest='bforce', action='store_const', const=True, default=False,
+              help='force make without checking dependencies (same as "make -B"')
     parserMake.add_argument('modules', nargs='*',  default=[],
               help='Patterns of modules ("*.cc" and dune-py path is added to each argument) or "all"')
 
@@ -75,16 +83,17 @@ def run(arguments=None):
         ret = listgenerated(args.sort, args.ccfiles)
 
     elif args.command == 'remove':
-        if args.modules == []:
+        if args.modules == [] and args.file == '':
             parserRemove.print_help()
         else:
-            ret = rmgenerated(args.modules, args.date)
+            ret = rmgenerated(args.modules, args.file, args.date)
 
     elif args.command == 'make':
-        if args.modules == []:
+        if args.modules == [] and args.file == '':
             parserMake.print_help()
         else:
-            ret = makegenerated(args.threads, args.modules)
+            ret = makegenerated(args.modules, args.file, args.threads,
+                                args.force or args.bforce)
 
     elif args.command == 'fix-dunepy':
         ret = fixdunepy(args.force)

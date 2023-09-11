@@ -746,14 +746,19 @@ class MakefileBuilder(Builder):
                     # make sure directory entries are properly written to avoid raceconditions on network storage.
                     # Builder.sync_dir(self.generated_dir)
                     # call make to build shared library
-                    self.makeModule( makeFileName, moduleName )
+                    self.makeModule( moduleName, makeFileName, compilationMessage )
 
     def _makeFileName( self, moduleName ):
         return os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.make')
-    def makeModule(self, moduleName, makeFileName=None ):
+    def makeModule(self, moduleName, makeFileName=None, compilationMessage=None, force=False ):
         if makeFileName is None:
             makeFileName = self._makeFileName( moduleName )
-        with subprocess.Popen([MakefileBuilder.makeCmd, "-f",makeFileName, moduleName+'.so'],
+        if compilationMessage is None:
+            compilationMessage = f"{moduleName} rebuilding"
+        makeArgs = [MakefileBuilder.makeCmd]
+        if force:
+            makeArgs += ["-B"]
+        with subprocess.Popen(makeArgs + ["-f",makeFileName, moduleName+'.so'],
                               cwd=self.generated_dir,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE) as make:
@@ -761,7 +766,7 @@ class MakefileBuilder(Builder):
                 stdout, stderr = make.communicate(timeout=2) # no message if delay is <2sec
             except subprocess.TimeoutExpired:
                 # compilation is taking place, replace loading with rebuilding
-                compilationMessage = "rebuilding"
+                compilationMessage = compilationMessage.replace("loading", "rebuilding")
                 logger.log(logging.INFO,compilationMessage)
                 # wait for cmd to finish
                 stdout, stderr = make.communicate()

@@ -49,14 +49,14 @@ def checkbuilddirs(args):
     return 0
 
 
-def rmgenerated(args, date):
+def rmgenerated(args, fileName, date):
     from dune.generator.remove import removeGenerated
-    removeGenerated(args, date)
+    removeGenerated(args, fileName, date)
     return 0
 
-def makegenerated(threads, args):
+def makegenerated(args=[], fileName=None, threads=4, force=False):
     from dune.generator.make import makeGenerated
-    makeGenerated(threads, args)
+    makeGenerated(args, fileName, threads, force)
     return 0
 
 def fixdunepy(force):

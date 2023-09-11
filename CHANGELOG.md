@@ -23,6 +23,8 @@ In order to build the DUNE core modules you need at least the following software
   The approach is similar to adding extra constructors or methods.
 - Python: Add a new command to `dune.__main__` to compile existing modules
   in parallel, e.g., python -m dune make -j8 hierarchicalgrid
+  Add the option to both 'remove' and 'make' commands to read
+  module list from a file.
 
 ## Changelog
 
