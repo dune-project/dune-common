@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 dune_py_dir = dune.common.module.getDunePyDir()
 generated_dir = os.path.join(dune_py_dir, 'python', 'dune', 'generated')
 
-def removeGenerated(modules = [], date=False):
-    if len(modules) == 0:
+def removeGenerated(modules = [], fileName=None, date=False):
+    if len(modules) == 0 and fileName is None:
         return
 
     moduleFiles = set()
@@ -50,6 +50,10 @@ def removeGenerated(modules = [], date=False):
     if not date:
         if 'all' in modules:
             modules = ['']
+        if fileName is not None:
+            with open(fileName,'r') as f:
+                for line in f:
+                    modules += [line.rstrip()]
         for m in modules:
             files = []
             for ext in ('.so', '.cc'):
