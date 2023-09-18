@@ -24,12 +24,12 @@ logging.basicConfig(format=logformat, level=loglevel)
 
 cmakeFlags = getCMakeFlags()
 
-if 'HAVE_MPI' in cmakeFlags and cmakeFlags['HAVE_MPI']:
-    try:
-        from mpi4py import MPI
-        if MPI.COMM_WORLD.Get_rank() == 0:
-            logger.debug('MPI initialized successfully')
-    except ImportError:
+try:
+    from mpi4py import MPI
+    if MPI.COMM_WORLD.Get_rank() >= 0:
+        logger.debug('MPI initialized successfully using mpi4py')
+except ImportError:
+    if 'HAVE_MPI' in cmakeFlags and cmakeFlags['HAVE_MPI']:
         logger.debug('mpi4py not found but MPI used during configuration of dune-common')
         raise RuntimeError(textwrap.dedent("""
             The Dune modules were configured using MPI. For the Python bindings to work,
@@ -38,10 +38,11 @@ if 'HAVE_MPI' in cmakeFlags and cmakeFlags['HAVE_MPI']:
                 pip install mpi4py
             before rerunning your Dune script.
         """))
+    else:
+        logger.debug('dune not configured with mpi')
 
 from ._common import *
 from .deprecated import DeprecatedObject
-
 
 def _fieldVectorGetItem(self,index):
     try:
