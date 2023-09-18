@@ -50,7 +50,7 @@ def removeGenerated(modules = [], fileName=None, date=False):
     if not date:
         if 'all' in modules:
             modules = ['']
-        if fileName is not None:
+        if fileName:
             with open(fileName,'r') as f:
                 for line in f:
                     modules += [line.rstrip()]

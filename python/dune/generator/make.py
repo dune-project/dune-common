@@ -1,6 +1,11 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
+try:
+    from mpi4py import MPI
+except ImportError:
+    MPI = None
+
 import glob, os, sys
 from concurrent.futures import ThreadPoolExecutor
 import logging
@@ -15,6 +20,16 @@ dune_py_dir = dune.common.module.getDunePyDir()
 generated_dir = os.path.join(dune_py_dir, 'python', 'dune', 'generated')
 
 def makeGenerated(modules, fileName=None, threads=4, force=False):
+    if MPI is not None:
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+    else:
+        rank == 0
+
+    if rank > 0:
+        comm.barrier()
+        return
+
     if len(modules) == 0 and fileName is None:
         return
 
@@ -50,3 +65,4 @@ def makeGenerated(modules, fileName=None, threads=4, force=False):
     with ThreadPoolExecutor(max_workers=threads) as executor:
         for i, base in enumerate(bases):
             executor.submit(makeJit, base)
+    comm.barrier()
