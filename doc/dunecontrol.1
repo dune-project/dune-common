@@ -145,29 +145,95 @@ When looking for Dune modules, do not check whether they have the required versi
 .HP
 \fB--opts=\fP\fIfile\fP
 .IP
-Load default options from \fIfile\fP
+Load default options from \fIfile\fP, for details see the section
+below.
+
+Instead of a command line parameter, it is also possible to define an
+environment variable \fIDUNE_OPTS_FILE\fP.
 .HP
 \fB--builddir=\fP\fIname\fP
 .IP
-Make out-of-source builds in a subdir \fIname\fP. This directory is created inside each module.
+Make out-of-source builds in a subdir \fIname\fP.
+
+If \fIname\fP is a relative path, this directory is created inside each
+module, if it is an absolute path, a subdirectory for each
+module is created inside.
+
+Instead of a command line parameter, it is also possible to define an
+environment variable \fIDUNE_BUILDDIR\fP (see below) or to specify a
+\fIBUILDDIR\fP variable in the opts file.
 .HP
 \fB--[COMMAND]-opts=\fP\fIopts\fP
 .IP
 Set options for COMMAND (this is mainly useful for the 'all' COMMAND)
 
+.SH OPTS FILE
+
+The options file contains different entries to specify the build
+environment, e.g. which compiler to use, which options to pass to
+cmake, where to build DUNE, etc.
+
+Variables are
+
+.HP
+\fDUNE_CONTROL_PATH\fP
+.IP
+just as the environment variable DUNE_CONTROL_PATH, it is possible to
+define it in the options file. For details see the description below.
+
+.HP
+\fBBUILDDIR\fP=\Ifname\fP
+.IP
+to specify the build directory, just as via the command line.
+Defining the build directory in the opts file, allows to easily switch
+between different build directories for different DUNE configurations.
+
+.HP
+\fB[COMMAND]_FLAGS\fP=\fIopts\fP
+.IP
+Set options for \fICOMMAND\fP, e.g. CMAKE_FLAGS, to specify parameters
+passed to the specific command. In case of cmake this might look as
+follows
+
+CMAKE_FLAGS="-DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_CXX_FLAGS='-fPIC -g -O3' -DFOO_PREFIX=/path/to/libfoo"
+
+In case of make a common use case is to enable concurrency, e.g.
+
+MAKE_FLAGS="-j4"
 
 .SH ENVIRONMENT VARIABLES
-.B dunecontrol
-looks for Dune modules in all directories given in the
+
+.HP
 .B DUNE_CONTROL_PATH
-variable, and additionally recursively in all subdirectories of those directories.
-The default for the case that DUNE_CONTROL_PATH is empty is the current directory,
-plus a system-wide installation in /usr.
+.IP
+Colon-separated list to specify where 
+.B dunecontrol
+searches for Dune modules.
+Entries are either directories, which are then used recursively for
+.B dune.module
+files or the user can directly specify the full path to specific
+dune.module files.
+.IP
+.B default:
+The default for the case that DUNE_CONTROL_PATH is empty is to search
+the current directory, its subdirectories and a system-wide installation in /usr.
+
+.HP
+.B DUNE_OPTS_FILE
+.IP
+Specify a default value for an options file, if the user does not
+specify the --opts= parameter on the commandline.
+
+.HP
+.B DUNE_BUILDIR
+.IP
+Specify a default value for an build directory, if the user does not
+specify the --builddir= parameter on the commandline.
 
 .SH AUTHOR
 Dune was written by the Dune team (https://www.dune-project.org/community/people).
 .PP
-This manual page was written by Oliver Sander.
+This manual page was written by Oliver Sander and Christian Engwer.
 
 .SH COPYRIGHT
 Copying and distribution of this file, with or without modification,
