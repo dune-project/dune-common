@@ -1,0 +1,214 @@
+#! /usr/bin/env python3
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+
+import argparse
+import dataclasses
+import errno
+import logging
+import re
+
+# REUSE-IgnoreStart
+parser = argparse.ArgumentParser(
+    description='add SPDX header to DUNE project modules'
+)
+parser.add_argument(
+    '--license', '-l', dest='license',
+    help='SPDX license name',
+    default='LicenseRef-GPL-2.0-only-with-DUNE-exception',
+)
+parser.add_argument(
+    '--copyright', '-c', dest='copyright',
+    help='copyright information',
+    default='Copyright © DUNE Project contributors, see file LICENSE.md in module root',
+)
+parser.add_argument(
+    '--like', dest='like',
+    help='handle files like a file named like this',
+),
+parser.add_argument(
+    '--log', dest='log',
+    help='set log level',
+),
+parser.add_argument(
+    'files', nargs='+',
+    help='files to add copyright and license headers to',
+)
+
+
+@dataclasses.dataclass
+class Rule:
+    pattern: str
+    prefix: str = ""
+    suffix: str = ""
+    line_prefix: str = ""
+    line_suffix: str = ""
+    use_license_file: bool = False
+    skip_lines: re.Pattern = None
+
+    def match(self, filename) -> bool:
+        return bool(re.search(self.pattern, filename))
+
+
+rules = [
+    Rule(
+        pattern=r"\.(?:c|cc|cc\.in|h|hh|hh\.in|ct|ht|t|geo)$|config\.h\.cmake$",
+        line_prefix="// ",
+    ),
+    Rule(
+        pattern=r"\.(?:rst|rst\.in)$",
+        prefix="::\n",
+        line_prefix="  ",
+        suffix="\n",
+    ),
+    Rule(
+        pattern=r"\.bib$",
+        line_prefix="@Comment ",
+        suffix="\n",
+    ),
+    Rule(
+        pattern=r"\.dgf$",
+        line_prefix="% ",
+        skip_lines=re.compile("^DGF"),
+    ),
+    Rule(
+        pattern=r"\.tex$",
+        line_prefix="% ",
+        suffix="\n",
+    ),
+    Rule(
+        pattern=r"(?:\.amc|\.cmake|\.cmake\.in|\.gitignore|\.ini|\.pc\.in"
+                r"|\.pl|\.py|\.py\.in|\.sh|\.toml|\.toml\.in|\.yml"
+                r"|CMakeLists.txt|Doxylocal|dune.module|MANIFEST\.in)$",
+        line_prefix="# ",
+        suffix="\n",
+    ),
+    Rule(
+        pattern=r"/doxygen/.*\.txt$",
+        line_prefix="// ",
+        suffix="\n",
+    ),
+    Rule(
+        pattern=r"(?:\.md|INSTALL)$",
+        prefix="<!--\n",
+        suffix="-->\n\n",
+    ),
+    Rule(
+        pattern=r"\.(?:cel|eps|fig|pdf|png|svg|vrt)$",
+        use_license_file=True,
+    ),
+    Rule(
+        # gmsh's MSH file format support comments via unknown sections
+        # ($Comment ... $EndComment), but DUNE does not handle that.
+        # Reference: https://gmsh.info/doc/texinfo/gmsh.html#MSH-file-format
+        pattern=r"\.msh",
+        use_license_file=True,
+    ),
+]
+
+
+skip_lines = re.compile(r'-\*-|vi(?:m)?:|^#!')
+
+
+class Notice:
+    def __init__(self, copyright, license):
+        self.copyright = f'SPDX-FileCopyrightInfo: {copyright}'
+        self.license = f'SPDX-License-Identifier: {license}'
+
+    def match(self, lines) -> bool:
+        pattern = re.compile(f'(?:{re.escape(self.copyright)}|{re.escape(self.license)})')
+        return any(pattern.search(line) for line in lines)
+
+
+def rule_for_file(filename) -> Rule:
+    for rule in rules:
+        if rule.match(filename):
+            return rule
+    return None
+
+
+def line_for_notice(lines, rule: Rule) -> int:
+    for index, line in enumerate(lines):
+        if not skip_lines.search(line) \
+           and (rule.skip_lines is None or not rule.skip_lines.search(line)):
+            return index
+    return len(lines)
+
+
+def apply_rule_to_file(filename, rule: Rule, notice: Notice):
+    if rule.use_license_file:
+        try:
+            with open(f"{filename}.license", "xt") as fh:
+                logging.debug(f"{filename}: create separate .license file")
+                print(notice.copyright, file=fh)
+                print(notice.license, file=fh)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                logging.info(f"{filename}: separate .license file already exists")
+            else:
+                raise
+    else:
+        with open(filename, "rt") as fh:
+            lines = fh.readlines()
+        if notice.match(lines):
+            logging.info(f"{filename}: already contains a notice")
+            return
+        index = line_for_notice(lines, rule)
+        logging.debug(f"{filename}: Will insert notice at line {index}")
+        if rule.suffix:
+            lines.insert(index, rule.suffix)
+        lines.insert(index, f"{rule.line_prefix}{notice.license}{rule.line_suffix}\n")
+        lines.insert(index, f"{rule.line_prefix}{notice.copyright}{rule.line_suffix}\n")
+        if rule.prefix:
+            lines.insert(index, rule.prefix)
+        with open(filename, "wt") as fh:
+            print(*lines, sep='', end='', file=fh)
+
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    if args.log:
+        logging.basicConfig(level=getattr(logging, args.log.upper()))
+    notice = Notice(args.copyright, args.license)
+    for filename in args.files:
+        logging.debug(f"Processing {filename}")
+        if args.like:
+            rule = rule_for_file(args.like)
+        else:
+            rule = rule_for_file(filename)
+        if rule is None:
+            logging.warning(f"{filename}: No rule found for this file. Add a rule or try --like.")
+            continue
+        apply_rule_to_file(filename, rule, notice)
+
+
+# add-spdx() {
+#     local file line_prefix prefix suffix
+#     local copying_file="LICENSE.md"
+#     local license="LicenseRef-GPL-2.0-only-with-DUNE-exception"
+#     xxlicense="LGPL-2.1-or-later"
+#     for file in "$@"; do
+#         prefix=""
+#         line_prefix=""
+#         suffix=""
+#         license_file="${file}"
+#         case "${file}" in
+#             *.cc|*.hh|*config.h.cmake|*.cc.in|*.ct|*.ht|*.t) line_prefix="// " ;;
+#             */doxygen/*.txt) line_prefix="// "; suffix=$'\n' ;;
+#             *CMakeLists.txt|*.py|*.gitignore|*.yml|*Doxylocal|*.toml|*.pc.in|*dune.module|*.cmake|*.ini) line_prefix="# "; suffix=$'\n' ;;
+#             *.md|*INSTALL) prefix=$'<!--\n'; suffix=$'\n-->\n' ;;
+#             *.tex) line_prefix="% "; suffix=$'\n' ;;
+#             *.svg|*.png|*.eps|*.pdf) license_file="${file}.license"; file="" ;;
+#         esac
+#
+#         ed ${file} <<EOT
+# 0i
+# ${prefix}${line_prefix}SPDX-FileCopyrightText: Copyright © DUNE Project contributors, see file ${copying_file} in module root
+# ${line_prefix}SPDX-License-Identifier: ${license}${suffix}
+# .
+# w ${license_file}
+# q
+# EOT
+#     done
+# }
+# REUSE-IgnoreEnd
