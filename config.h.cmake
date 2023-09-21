@@ -6,7 +6,6 @@
    overwritten
 */
 
-/* begin private */
 /* Define to the version of dune-common */
 #define DUNE_COMMON_VERSION "${DUNE_COMMON_VERSION}"
 
