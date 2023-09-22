@@ -15,18 +15,20 @@ In order to build the DUNE core modules you need at least the following software
 - Optional: pkg-config to find other optional dependencies
 - Optional: Python >= 3.7 for Python bindings
 
+## Changelog
+
 - Python: Add a dump/load functions to dune.common.pickle which add support
   for storing and recreating the JIT generated modules required for the
   pickling of dune objects to work. In addition a class for writing time
   series of pickled data is provided.
+
 - Python: Add a new argument class to the generator to add pickling support.
   The approach is similar to adding extra constructors or methods.
+
 - Python: Add a new command to `dune.__main__` to compile existing modules
   in parallel, e.g., python -m dune make -j8 hierarchicalgrid
   Add the option to both 'remove' and 'make' commands to read
   module list from a file.
-
-## Changelog
 
 - Add concepts directory `dune/common/concepts/` and some fundamental concept definitions using
   c++20-concepts. Those concepts are still experimental and are marked with the new `doxygen`
