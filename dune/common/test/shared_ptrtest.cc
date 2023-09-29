@@ -8,10 +8,6 @@
 #undef NDEBUG
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <dune/common/deprecated.hh>
 #include <dune/common/shared_ptr.hh>
 

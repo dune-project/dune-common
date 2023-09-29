@@ -6,6 +6,7 @@
 #define DUNE_COMMON_STD_TYPE_TRAITS_HH
 
 #include <type_traits>
+#include <dune-common-config.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/typeutilities.hh>
 

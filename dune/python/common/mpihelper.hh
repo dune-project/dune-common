@@ -4,9 +4,6 @@
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 #ifndef DUNE_PYTHON_COMMON_MPIHELPER_HH
 #define DUNE_PYTHON_COMMON_MPIHELPER_HH
-
-#include <config.h>
-
 #include <vector>
 
 #include <dune/common/parallel/communication.hh>

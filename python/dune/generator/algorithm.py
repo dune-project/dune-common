@@ -75,8 +75,7 @@ def load(functionName, includes, *args, pythonName=None):
     '''
 
     # header guard is added further down
-    source  = '#include <config.h>\n\n'
-    source += '#define USING_DUNE_PYTHON 1\n\n'
+    source  = '#define USING_DUNE_PYTHON 1\n\n'
     if isString(includes):
         with open(includes, "r") as include:
             source += include.read()

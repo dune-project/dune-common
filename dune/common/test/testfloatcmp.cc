@@ -3,11 +3,6 @@
 // SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 // Test the new (Dune) interface of float_cmp
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <iostream>
 
 #include <dune/common/float_cmp.hh>

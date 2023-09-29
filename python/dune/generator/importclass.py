@@ -20,8 +20,7 @@ def load(className, includeFiles, *args,
     if dynamicAttr:
         clsParams += ['pybind11::dynamic_attr()']
 
-    source = '#include <config.h>\n\n'
-    source += '#define USING_DUNE_PYTHON 1\n\n'
+    source = '#define USING_DUNE_PYTHON 1\n\n'
     includes = []
     if isString(includeFiles) or hasattr(includeFiles,"readable"):
         includeFiles = [includeFiles]

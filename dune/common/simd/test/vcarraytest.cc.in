@@ -2,10 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 // @GENERATED_SOURCE@
 
-#if HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #if !HAVE_VC
 #error Inconsistent buildsystem.  This program should not be built in the \
   absence of Vc.

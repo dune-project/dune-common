@@ -7,6 +7,8 @@
 
 #include <functional>
 
+#include <dune-common-config.hh>
+
 namespace Dune
 {
 
