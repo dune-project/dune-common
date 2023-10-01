@@ -531,12 +531,13 @@ def _extractBuildMetaData():
     # add meta data of packages from the dune namespace
     def addPackageMetaData(package, metaDataFile):
         result.setdefault(package, {})
-        for line in open(metaDataFile, "r"):
-            try:
-                key, value = line.split("=", 1)
-                result[package][key] = value.strip()
-            except ValueError:  # no '=' in line
-                pass
+        with open(metaDataFile, "r") as mdFile:
+            for line in mdFile:
+                try:
+                    key, value = line.split("=", 1)
+                    result[package][key] = value.strip()
+                except ValueError:  # no '=' in line
+                    pass
 
     try:
         import dune.data

@@ -623,14 +623,25 @@ class MakefileBuilder(Builder):
     def compile(self, infoTxt, target='all', verbose=False):
         pass
 
+    # open and safely close source file and return content
+    def _equalToExistingFile(self, source, sourceFileName ):
+        with open(os.path.join(sourceFileName), 'r') as sFile:
+            content = sFile.read()
+            if len(content) == len(source):
+                return content == source
+        # by default return False
+        return False
+
     def _configureWithMake(self, moduleName, source, pythonName):
         sourceFileName = os.path.join(self.generated_dir, moduleName + ".cc")
+
         if not os.path.isfile(sourceFileName):
             compilationInfoMessage = f"Compiling {pythonName} (new)"
             code = str(source)
             with open(os.path.join(sourceFileName), 'w') as out:
                 out.write(code)
-        elif isString(source) and not source == open(os.path.join(sourceFileName), 'r').read():
+        elif isString(source) and not self._equalToExistingFile(source, sourceFileName):
+            # if source is not equal to existing source then replace it
             compilationInfoMessage = f"Compiling {pythonName} (updated)"
             code = str(source)
             with open(os.path.join(sourceFileName), 'w') as out:
