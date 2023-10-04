@@ -58,6 +58,8 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Build System
 
+- Try to find SuiteSparse during configuration.
+
 - The function `dune_add_library(<lib> ...)` now requires to provide `EXPORT_NAME` or `NO_EXPORT`.
   Moreover, a namespace can be specified via the argument `NAMESPACE` which defaults to `Dune::` and is prepended to the export name.
   We recommend to choose an export name with a camel title case matching your

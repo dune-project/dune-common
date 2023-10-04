@@ -37,6 +37,10 @@ include(AddMETISFlags)
 find_package(ParMETIS 4.0)
 include(AddParMETISFlags)
 
+# find libraries for sparse matrix factorizations
+find_package(SuiteSparse OPTIONAL_COMPONENTS CHOLMOD LDL SPQR UMFPACK)
+include(AddSuiteSparseFlags)
+
 # try to find the Vc library
 set(MINIMUM_VC_VERSION)
 if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) AND
