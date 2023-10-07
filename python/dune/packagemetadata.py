@@ -46,7 +46,7 @@ class Version:
             self.revision = s.revision
             self.build = s.build
         else:
-            match = re.match('(?P<major>[0-9]+)([.](?P<minor>[0-9*]+))?([.](?P<revision>[0-9*]+))?([.](?P<build>[a-z0-9*]+))?', s)
+            match = re.match(r'(?P<major>[0-9]+)([.](?P<minor>[0-9*]+))?([.](?P<revision>[0-9*]+))?([.](?P<build>[a-z0-9*]+))?', s)
             if not match:
                 raise ValueError('Invalid version: \'' + s + '\'.')
             self.major = int(match.group('major'))

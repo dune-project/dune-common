@@ -440,7 +440,7 @@ def getCXXFlags():
        These are extracted from the CMackeCache.txt file.
     '''
     cache = os.path.join(getDunePyDir(), "CMakeCache.txt")
-    matches = [match for match in [re.match('DEFAULT_CXXFLAGS:STRING=', line) for line in open(cache)] if match is not None]
+    matches = [match for match in [re.match(r'DEFAULT_CXXFLAGS:STRING=', line) for line in open(cache)] if match is not None]
     if not matches:
         return ''
     if matches.__len__() > 1:
