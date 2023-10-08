@@ -30,9 +30,9 @@ def assertHave(identifier):
     if not os.path.isfile(config):
         raise ConfigurationError("dune-py not configured yet")
 
-    matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
+    matches = [match for match in [re.match(r'^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
     if not matches:
-        matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+ENABLE', line) for line in open(config)] if match is not None]
+        matches = [match for match in [re.match(r'^[ ]*#define[ ]+' + identifier.strip() + '[ ]+ENABLE', line) for line in open(config)] if match is not None]
     if not matches:
         raise ConfigurationError(identifier + " is not set in dune-py's config.h")
     elif matches.__len__() > 1:
@@ -51,9 +51,9 @@ def assertCMakeHave(identifier):
     if not os.path.isfile(config):
         raise ConfigurationError("dune-py not configured yet")
 
-    matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
+    matches = [match for match in [re.match(r'^[ ]*#define[ ]+' + identifier.strip() + '[ ]+1$', line) for line in open(config)] if match is not None]
     if not matches:
-        matches = [match for match in [re.match('^[ ]*#define[ ]+' + identifier.strip() + '[ ]+ENABLE', line) for line in open(config)] if match is not None]
+        matches = [match for match in [re.match(r'^[ ]*#define[ ]+' + identifier.strip() + '[ ]+ENABLE', line) for line in open(config)] if match is not None]
     if not matches:
         raise ConfigurationError(identifier + " is not set in dune-py's config.h")
     elif matches.__len__() > 1:
@@ -65,7 +65,7 @@ def assertCMakeVariable(identifier,value,defaultFails):
     cache = os.path.join(dune.common.module.getDunePyDir(), "CMakeCache.txt")
 
     identifier = identifier.lower().strip()
-    matches = [line.lower() for line in open(cache) if re.match('^[ ]*'+identifier+':+', line.lower()) is not None]
+    matches = [line.lower() for line in open(cache) if re.match(r'^[ ]*'+identifier+':+', line.lower()) is not None]
     if not matches and defaultFails:
         raise ConfigurationError(identifier + " default behavior is used in dune-py and that is not allowed")
     elif len(matches) > 1:
