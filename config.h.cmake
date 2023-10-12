@@ -95,48 +95,9 @@
 /* old feature support macros which were tested until 2.9, kept around for one more release */
 #define DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY 0
 
-/* Define to ENABLE_UMFPACK if the UMFPack library is available */
-#cmakedefine HAVE_UMFPACK ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse library is available */
-#cmakedefine HAVE_SUITESPARSE ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's AMD library is available */
-#cmakedefine HAVE_SUITESPARSE_AMD ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's BTF library is available */
-#cmakedefine HAVE_SUITESPARSE_BTF ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CAMD library is available */
-#cmakedefine HAVE_SUITESPARSE_CAMD ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CCOLAMD library is available */
-#cmakedefine HAVE_SUITESPARSE_CCOLAMD ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CHOLMOD library is available */
-#cmakedefine HAVE_SUITESPARSE_CHOLMOD ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's COLAMD library is available */
-#cmakedefine HAVE_SUITESPARSE_COLAMD ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's CXSPARSE library is available */
-#cmakedefine HAVE_SUITESPARSE_CXSPARSE ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's KLU library is available */
-#cmakedefine HAVE_SUITESPARSE_KLU ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's LDL library is available */
-#cmakedefine HAVE_SUITESPARSE_LDL ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's RBIO library is available */
-#cmakedefine HAVE_SUITESPARSE_RBIO ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's SPQR library is available
-   and if it's version is at least 4.3 */
-#cmakedefine HAVE_SUITESPARSE_SPQR ENABLE_SUITESPARSE
-
-/* Define to ENABLE_SUITESPARSE if the SuiteSparse's UMFPACK library is available */
-#cmakedefine HAVE_SUITESPARSE_UMFPACK ENABLE_SUITESPARSE
+/* Define to ENABLE_UMFPACK if the UMFPack library is available. */
+/// \deprecated Use HAVE_SUITESPARSE_UMFPACK instead
+#define HAVE_UMFPACK HAVE_SUITESPARSE_UMFPACK
 
 /* Define to 1 if METIS is available */
 #cmakedefine HAVE_METIS ENABLE_METIS
