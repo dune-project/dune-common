@@ -59,6 +59,11 @@ include(OverloadCompilerFlags)
 # Don't forget to call finalize_dune_project afterwards.
 macro(dune_project)
 
+  if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    message(DEPRECATION "The function `dune_project` shall only be called on CMake project root directory.
+    Note that CMake projects may be nested: https://cmake.org/cmake/help/latest/command/project.html.")
+  endif()
+
   # check if CXX flag overloading has been enabled (see OverloadCompilerFlags.cmake)
   initialize_compiler_script()
 
