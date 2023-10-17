@@ -67,7 +67,8 @@ try:
                     minData = amin(data)
                     maxData = amax(data)
                     if clim == None:
-                        clim = [minData, maxData]
+                        epsData = abs(maxData - minData)*1e-8
+                        clim = [minData-epsData, maxData+epsData]
                     if clim[0] > minData and clim[1] < maxData:
                         extend = 'both'
                     elif clim[0] > minData:
