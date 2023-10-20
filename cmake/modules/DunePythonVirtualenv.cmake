@@ -325,10 +325,9 @@ else()
   if(UNIX)
 
     # create list with python module paths
-    set(BUILDDIR_PYTHON "$ENV{BUILDDIR}/python")
     foreach( mod ${ALL_DEPENDENCIES} )
-      if( NOT ${${mod}_INCLUDE_DIRS} STREQUAL "")
-        set(MODULE_DEP_PYTHON_PATH "${MODULE_DEP_PYTHON_PATH}\n ${${mod}_INCLUDE_DIRS}/${BUILDDIR_PYTHON}")
+      if( NOT "_${${mod}_PYTHON_WHEELHOUSE}_" STREQUAL "__")
+        set(MODULE_DEP_PYTHON_PATH "${MODULE_DEP_PYTHON_PATH}\n ${${mod}_PYTHON_WHEELHOUSE}")
       endif()
     endforeach()
 
