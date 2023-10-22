@@ -131,7 +131,7 @@ function(dune_cmake_sphinx_doc)
       # add it to index.rst then.
       set(CMAKE_DOC_DEPENDENCIES "${CMAKE_DOC_DEPENDENCIES}   ${dep}\n")
       # ... and copy the rst file to the current build.
-      configure_file(${RSTFILE} ${CMAKE_CURRENT_BINARY_DIR}/${dep}.rst)
+      configure_file(${RSTFILE} ${CMAKE_CURRENT_BINARY_DIR}/${dep}.rst COPYONLY)
     endif()
   endforeach()
 
