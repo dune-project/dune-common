@@ -28,10 +28,16 @@ macro(dune_check_cxx_source_compiles SOURCE VAR)
   message(STATUS "Performing Test ${VAR}")
   file(WRITE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src_${VAR}.cxx" "${SOURCE}\n")
 
+  set(_cxx_std 17)
+  if(DEFINED CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD GREATER_EQUAL 17)
+    set(_cxx_std ${CMAKE_CXX_STANDARD})
+  endif()
+
   try_compile(${VAR} ${CMAKE_BINARY_DIR}
       ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src_${VAR}.cxx
-    CXX_STANDARD 17
+    CXX_STANDARD ${_cxx_std}
     OUTPUT_VARIABLE OUTPUT)
+  unset(_cxx_std)
 
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
     "Performing C++ SOURCE FILE Test ${VAR} succeeded with the following output:\n"
