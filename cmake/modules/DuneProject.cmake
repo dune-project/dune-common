@@ -256,6 +256,10 @@ endif()")
     set(DUNE_MODULE_PYTHONREQUIRES "")
   endif()
 
+  if(NOT DEFINED DUNE_PYTHON_WHEELHOUSE)
+    set(DUNE_PYTHON_WHEELHOUSE "")
+  endif()
+
   configure_package_config_file(${CONFIG_SOURCE_FILE}
     ${PROJECT_BINARY_DIR}/cmake/pkg/${ProjectName}-config.cmake
     INSTALL_DESTINATION  ${DUNE_INSTALL_LIBDIR}/cmake/${ProjectName}
