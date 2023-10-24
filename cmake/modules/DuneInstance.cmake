@@ -469,13 +469,15 @@
 include_guard(GLOBAL)
 
 # macro to print additional information to the cmake output file.
-# Note: in cmake 3.15 this is available through the message(VERBOSE "...") function.
+#
+# .. deprecated:: 2.10
+#
+# Use `message(VERBOSE "message text")` instead. This macro will be
+# removed after Dune 2.10.
 macro(message_verbose TEXT)
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.15")
-    message(VERBOSE "${TEXT}")
-  else()
-    file(APPEND ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log "${TEXT}\n")
-  endif()
+  message(VERBOSE "${TEXT}")
+
+  message(DEPRECATION "message_verbose is deprecated, use directly message(VERBOSE \"message text\")")
 endmacro(message_verbose)
 
 

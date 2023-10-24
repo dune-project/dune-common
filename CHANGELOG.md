@@ -95,6 +95,10 @@ In order to build the DUNE core modules you need at least the following software
 - The cmake options `CXX_MAX_STANDARD`, `CXX_MAX_SUPPORTED_STANDARD` and `DISABLE_CXX_VERSION_CHECK`
   are removed. The cmake function `dune_require_cxx_standard()` is now deprecated.
 
+- Deprecate CMake macro `message_verbose`. Use `message(VERBOSE "message text")` instead.
+  This macro will be removed after Dune 2.10.
+
+
 ## Deprecations and removals
 
 - The deprecated header `dune/common/function.hh` has been removed. Use C++ function
