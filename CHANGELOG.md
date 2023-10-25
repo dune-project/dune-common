@@ -58,6 +58,10 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Build System
 
+- Documentation files in `doc/buildsystem/${ModuleName}.rst` are now only copied.
+  Previously, they were configured through the CMake function `configure_file()`
+  as a cmake template file.
+
 - Try to find SuiteSparse during configuration.
 
 - The function `dune_add_library(<lib> ...)` now requires to provide `EXPORT_NAME` or `NO_EXPORT`.
