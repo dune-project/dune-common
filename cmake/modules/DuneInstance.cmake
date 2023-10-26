@@ -622,7 +622,7 @@ endfunction(dune_instance_set_generated)
 # protect against problems with empty elements and against cmakes list()
 # command butchering it's own quoting.
 function(dune_instance_parse_embedded name content_parts template_parts template_names)
-  message_verbose("Parsing ${name} for embedded templates")
+  message(VERBOSE "Parsing ${name} for embedded templates")
   file(READ "${name}" content)
   # ensure that the file content ends in a newline, which makes searching for
   # template marker easier
@@ -722,7 +722,7 @@ function(dune_instance_generate_file TEMPLATE INSTANCE)
   dune_instance_set_generated()
 
   # do the generation
-  message_verbose("Generating ${TEMPLATE} -> ${INSTANCE}")
+  message(VERBOSE "Generating ${TEMPLATE} -> ${INSTANCE}")
   file(READ "${TEMPLATE}" _content)
   string(CONFIGURE "${_content}" _content)
 
@@ -926,7 +926,7 @@ function(dune_instance_end)
     # remove the final newline that we appended when reading the template file
     string(REGEX REPLACE "\n\$" "" _content "${_content}")
 
-    message_verbose("Writing ${INSTANCE}")
+    message(VERBOSE "Writing ${INSTANCE}")
     # only write if the content changes, avoiding recompilations
     dune_write_changed_file("${BINDIR_INSTANCE}" "${_content}")
 
