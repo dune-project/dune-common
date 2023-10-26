@@ -348,7 +348,7 @@ Preparing the Sources
 Additional to the software mentioned in README you'll need the
 following programs installed on your system:
 
-  cmake >= 3.13
+  cmake >= 3.16
 
 Getting started
 ---------------
@@ -400,7 +400,7 @@ R_DELIM
 ################## CMakeLists.txt ##################
 echo "- $PROJECT/CMakeLists.txt"
 cat> "$PROJECT/CMakeLists.txt" << M_DELIM
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 project($PROJECT CXX)
 
 if(NOT (dune-common_DIR OR dune-common_ROOT OR
