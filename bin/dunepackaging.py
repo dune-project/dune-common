@@ -138,7 +138,7 @@ def main(argv):
 """)
     requires = data.asPythonRequirementString(data.depends + data.python_requires)
     requires = list(set(requires)) # make requirements unique
-    minimal = ["pip", "setuptools", "wheel", "scikit-build", "cmake>=3.13", "ninja", "requests"]
+    minimal = ["pip", "setuptools", "wheel", "scikit-build", "cmake>=3.16", "ninja", "requests"]
     requires += [r for r in minimal if not any([a.startswith(r) for a in requires])]
     requires.sort()
     f.write("[build-system]\n")
