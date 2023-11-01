@@ -21,7 +21,7 @@ CMake...
 
 You can install CMake through your favorite package manager or downloading source code from
 `KITWare <http://www.cmake.org>`_
-The minimum required version to build Dune with CMake is 3.13.
+The minimum required version to build Dune with CMake is 3.16.
 
 .. _howtouse:
 
