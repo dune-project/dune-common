@@ -7,6 +7,7 @@
 #include "config.h"
 #endif
 
+#include <iostream>
 #include "stdstreams.hh"
 
 namespace Dune {
