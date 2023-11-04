@@ -27,7 +27,7 @@ Dependencies
 
 dune-common depends on the following software packages
 
-- CMake >= 3.13
+- CMake >= 3.16
 - Compiler (C, C++): GNU >= 9 or Clang >= 10
 
   Other compilers might work too, they need to support C++17 to the extent the

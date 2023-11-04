@@ -68,7 +68,7 @@ def make_project(dir, description, subdirs=None, enable_all_packages=True, is_du
     with open(os.path.join(dir, 'dune.module'), 'w') as file:
         file.write(repr(description))
 
-    cmake_content = ['cmake_minimum_required(VERSION 3.13)', 'project(' + description.name + ' C CXX)']
+    cmake_content = ['cmake_minimum_required(VERSION 3.16)', 'project(' + description.name + ' C CXX)']
     if is_dunepy:
         cmake_content += ['', 'set(DUNE_ENABLE_PYTHONBINDINGS ON)']
     cmake_content += ['',
