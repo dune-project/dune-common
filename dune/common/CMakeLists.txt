@@ -79,7 +79,6 @@ install(FILES
         parametertreeparser.hh
         path.hh
         poolallocator.hh
-        power.hh
         precision.hh
         propertymap.hh
         promotiontraits.hh
