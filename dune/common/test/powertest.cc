@@ -10,7 +10,6 @@
 #include <dune/common/deprecated.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/math.hh>
-#include <dune/common/power.hh>
 
 using namespace Dune;
 
@@ -42,21 +41,6 @@ int main (int argc, char** argv) try
   // Test whether the result can be used in a compile-time expression
   [[maybe_unused]] constexpr static int dummy = power(2,2);
 
-  // Test legacy power implementation
-  DUNE_NO_DEPRECATED_BEGIN
-  if (Power<0>::eval(4) != 1)
-    DUNE_THROW(MathError, "Power implementation does not compute the correct result");
-
-  if (Power<1>::eval(4) != 4)
-    DUNE_THROW(MathError, "Power implementation does not compute the correct result");
-
-  if (Power<2>::eval(4) != 16)
-    DUNE_THROW(MathError, "Power implementation does not compute the correct result");
-
-  if (Power<3>::eval(4) != 64)
-    DUNE_THROW(MathError, "Power implementation does not compute the correct result");
-
-  DUNE_NO_DEPRECATED_END
   return 0;
 }
 catch (Exception& e)
