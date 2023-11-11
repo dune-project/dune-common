@@ -36,9 +36,6 @@
 /* Define if you have LAPACK library. */
 #cmakedefine HAVE_LAPACK 1
 
-/* Define if you have the MPI library.  */
-#cmakedefine HAVE_MPI ENABLE_MPI
-
 /* Deactivate cxx bindings for MPI */
 #if defined(HAVE_MPI) && HAVE_MPI
 #define MPICH_SKIP_MPICXX 1

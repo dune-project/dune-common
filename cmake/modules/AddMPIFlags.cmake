@@ -24,7 +24,7 @@ set_package_properties("MPI" PROPERTIES
 if(MPI_C_FOUND)
   set(HAVE_MPI ${MPI_C_FOUND})
 
-  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_MPI=1"
+  dune_register_package_flags(COMPILE_DEFINITIONS "HAVE_MPI=1"
                               LIBRARIES MPI::MPI_C)
 endif()
 
@@ -36,7 +36,7 @@ function(add_dune_mpi_flags)
   if(MPI_C_FOUND)
     foreach(target ${targets})
       target_link_libraries(${target} PUBLIC MPI::MPI_C)
-      target_compile_definitions(${target} PUBLIC "ENABLE_MPI=1")
+      target_compile_definitions(${target} PUBLIC "HAVE_MPI=1")
     endforeach(target)
   endif()
 endfunction(add_dune_mpi_flags)
