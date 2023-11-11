@@ -216,6 +216,9 @@ find_package_handle_standard_args("SuiteSparse"
   HANDLE_COMPONENTS
 )
 
+# list to indicate which components are found
+set(SuiteSparse_FOUND_COMPONENTS)
+
 # if both headers and library for all required components are found,
 # then create imported targets for all components
 if(SuiteSparse_FOUND)
@@ -241,6 +244,9 @@ if(SuiteSparse_FOUND)
 
   foreach(_component ${SUITESPARSE_COMPONENTS})
     if(TARGET SuiteSparse::${_component})
+      # add component in the list of found components
+      list(APPEND SuiteSparse_FOUND_COMPONENTS ${_component})
+
       # Link required dependencies
       foreach(_dependency ${SUITESPARSE_${_component}_REQUIRED_DEPENDENCIES})
         target_link_libraries(SuiteSparse::${_component}
