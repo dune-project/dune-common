@@ -321,14 +321,14 @@ function(dune_link_dune_py)
   # Collect some variables that we would like to export
   set(_deps ${ProjectName})
   set(_export_builddirs "${CMAKE_BINARY_DIR}")
-  foreach(mod ${ALL_DEPENDENCIES})
+  foreach(mod ${DUNE_FOUND_DEPENDENCIES})
     string(APPEND _deps " ${mod}")
     string(APPEND _export_builddirs "\;${${mod}_DIR}")
   endforeach()
 
   # add the list of HAVE_{MODULE} flags to the meta data
   set(_cmake_flags "")
-  foreach(_dep ${ProjectName} ${ALL_DEPENDENCIES})
+  foreach(_dep ${ProjectName} ${DUNE_FOUND_DEPENDENCIES})
     dune_module_to_uppercase(upper ${_dep})
     if(DEFINED HAVE_${upper})
       list(APPEND _cmake_flags "HAVE_${upper}:=${HAVE_${upper}}")
@@ -368,7 +368,7 @@ function(dune_link_dune_py)
     message(STATUS "Checking if the modules used to configure this module match those from any installed dune packages")
     dune_execute_process(COMMAND "${CMAKE_COMMAND}" -E echo "configured for interpreter ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}"
                          COMMAND "${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}" "${scriptdir}/checkvenvconf.py"
-                                  checkbuilddirs \"${PROJECT_NAME};${ALL_DEPENDENCIES}\" "${_export_builddirs}"
+                                  checkbuilddirs \"${PROJECT_NAME};${DUNE_FOUND_DEPENDENCIES}\" "${_export_builddirs}"
                         )
   endif()
 
@@ -605,7 +605,7 @@ function(dune_python_configure_bindings)
     #    in the dune wheelhouse (e.g. used in the nightly-build)
     set(RequiredPythonModules "${ProjectPythonRequires}")
 
-    foreach(mod ${ALL_DEPENDENCIES})
+    foreach(mod ${DUNE_FOUND_DEPENDENCIES})
       if(${${mod}_HASPYTHON}) # module found and has python bindings
         string(APPEND RequiredPythonModules " ${mod}")
       endif()

@@ -50,6 +50,7 @@ include(CMakePackageConfigHelpers)
 include(DuneModuleDependencies)
 include(DuneModuleInformation)
 include(DuneSymlinkOrCopy)
+include(DuneUtilities)
 include(FeatureSummary)
 include(GNUInstallDirs)
 include(Headercheck)
@@ -100,11 +101,11 @@ macro(dune_project)
         BRIEF_DOCS "List of libraries exported by the module. DO NOT EDIT!"
         FULL_DOCS "List of libraries exported by the module. DO NOT EDIT!")
 
-  if(DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12)
-    # this is only needed if config files of upstream modules were generated with dune-common < 2.10
-    # so this behavior is unsupported in dune-common == 2.12
-    dune_create_dependency_tree()
-  endif()
+  # find weak requirements
+  foreach(_mod IN LISTS ${ProjectName}_SUGGESTS)
+    split_module_version(${_mod} _mod_name _mod_ver)
+    find_dune_package(${_mod_name} VERSION ${_mod_ver})
+  endforeach()
 
   # find hard requirements
   foreach(_mod IN LISTS ${ProjectName}_DEPENDS)
@@ -112,11 +113,37 @@ macro(dune_project)
     find_dune_package(${_mod_name} VERSION ${_mod_ver} REQUIRED)
   endforeach()
 
-  # find weak requirements
-  foreach(_mod IN LISTS ${ProjectName}_SUGGESTS)
-    split_module_version(${_mod} _mod_name _mod_ver)
-    find_dune_package(${_mod_name} VERSION ${_mod_ver})
-  endforeach()
+  if(DUNE_COMMON_VERSION VERSION_LESS 2.12)
+    # this is only needed if config files of upstream modules were generated with dune-common < 2.10
+    # this behavior will be unsupported when dune-common == 2.12
+
+    # creates dependency tree, finds all the modules, adds cmake module paths and creates ALL_DEPENDENCIES
+    dune_create_dependency_tree()
+
+    # check if all the dependencies in the tree were indeed added into DUNE_FOUND_DEPENDENCIES
+    set(_legacy_order OFF)
+    foreach(_mod IN LISTS ALL_DEPENDENCIES)
+      list(FIND DUNE_FOUND_DEPENDENCIES ${_mod} _mod_in_dune_deps)
+      if (${_mod}_FOUND AND (${_mod_in_dune_deps} EQUAL -1))
+        set(_legacy_order ON)
+      endif()
+    endforeach()
+
+    # at least one found upstream module was not included into DUNE_FOUND_DEPENDENCIES (config file pre 2.10)
+    # so we reconstruct it from ALL_DEPENDENCIES
+    if (_legacy_order)
+      set(DUNE_FOUND_DEPENDENCIES ${ALL_DEPENDENCIES})
+      # remove not found modules
+      foreach(_mod IN LISTS ALL_DEPENDENCIES)
+        if (NOT ${_mod}_FOUND)
+          list(REMOVE_ITEM DUNE_FOUND_DEPENDENCIES ${_mod})
+        endif()
+      endforeach()
+    endif()
+    variable_watch(ALL_DEPENDENCIES dune_deprecate_variable)
+  else()
+    message(AUTHOR_WARNING "This needs to be removed!")
+  endif()
 
   # assert the project names matches
   if(NOT (ProjectName STREQUAL PROJECT_NAME))
@@ -231,7 +258,7 @@ endif()
   endif()
 endmacro()
 ")
-      foreach(_mod IN LISTS ${ProjectName}_DEPENDS ${ProjectName}_SUGGESTS)
+      foreach(_mod IN LISTS ${ProjectName}_SUGGESTS ${ProjectName}_DEPENDS)
         split_module_version(${_mod} _mod_name _mod_ver)
         if(${_mod_name}_FOUND)
           set(DUNE_DEPENDENCY_HEADER
@@ -276,11 +303,13 @@ include(CMakeFindDependencyMacro)
 ${DUNE_DEPENDENCY_HEADER}
 
 # Set up DUNE_LIBS, ALL_DEPENDENCIES, DUNE_*_FOUND, and HAVE_* variables
+
+# Set up DUNE_LIBS, DUNE_FOUND_DEPENDENCIES, DUNE_*_FOUND, and HAVE_* variables
 if(${ProjectName}_LIBRARIES)
   message(STATUS \"Setting ${ProjectName}_LIBRARIES=\${${ProjectName}_LIBRARIES}\")
   list(PREPEND DUNE_LIBS \${${ProjectName}_LIBRARIES})
 endif()
-list(APPEND ALL_DEPENDENCIES ${ProjectName})
+list(APPEND DUNE_FOUND_DEPENDENCIES ${ProjectName})
 set(DUNE_${ProjectName}_FOUND TRUE)
 set(HAVE_${_upcase_module} TRUE)
 
