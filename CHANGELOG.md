@@ -79,7 +79,7 @@ In order to build the DUNE core modules you need at least the following software
   https://gitlab.dune-project.org/core/dune-common/-/merge_requests/1251
   for more details on how to use this feature in the source modules and on
   some new feature.
-  
+
 - Remove deprecated `add_directory_test_target` function.
 
 - Do not overwrite the `add_test` cmake function with an error message.
@@ -98,6 +98,11 @@ In order to build the DUNE core modules you need at least the following software
 - Deprecate CMake macro `message_verbose`. Use `message(VERBOSE "message text")` instead.
   This macro will be removed after Dune 2.10.
 
+- We have changed the way optional dependencies are activated in the build-system internally.
+  The cmake macros `add_dune_xy_flags` do not set the compiler flag `-DENABLE_XY=1` anymore, but instead
+  set directly the flag `-DHAVE_XY=1`. Neither `ENABLE_XY` nor `HAVE_XY` should be modified manually
+  by the user. Since the `HAVE_XY` flag is now set as a compiler flag, it is not included in the
+  `config.h` files anymore.
 
 ## Deprecations and removals
 
