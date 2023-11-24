@@ -73,6 +73,13 @@ In order to build the DUNE core modules you need at least the following software
    * Libraries that _consume_ `Dune::${EXPORT_NAME}` will only be forward compatible with Dune 2.10.
    * Libraries that _consume_ `<lib>` will be supported until compatibility with Dune 2.9 is not required anymore.
 
+- Generation of `config.h` is overhauled and split in a public and a private config file. Only
+  the public file is installed and consumed by down-stream modules. For compatibility, the
+  old single file is created, too.
+
+- The CMake macro `finalize_dune_project` no longer has an optional argument, a config file is
+  always created.
+
 - Remove the `ALLOW_CXXFLAGS_OVERWRITE` configure option. The `CXXFLAGS`
   overload is still turned on for the JIT compiled Python modules. See the
   description of the MR

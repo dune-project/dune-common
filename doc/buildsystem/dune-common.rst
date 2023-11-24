@@ -2,28 +2,182 @@
   SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
   SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
+
 ===========
 dune-common
 ===========
 
-.. _whatis:
+.. _buildsystem:
 
-What is CMake anyway?
-=====================
+---------------------
+The DUNE Build System
+---------------------
 
-CMake...
 
-- is an open source build system tool developed at KITware.
-- offers a one-tool-solution to all building tasks, like configuring, building, linking, testing and packaging.
-- is a build system generator: It supports a set of backends called *generators*
-- is portable
-- is controlled by ONE rather simple language
+DUNE provides a set of utilities to aid the set up of a project. Most of the
+utilities are CMake scripts that automate common use cases or required steps
+needed to use a dune project. Among other things, these utilities have
 
+* Automatic intra-module project configuration
+* Find package scripts for commonly used software in the DUNE context
+* Testing utilities
+* Configuration files
+* Setup of DUNE python bindings
+
+.. _duneproject:
+
+Dune Project
+============
+
+In this documentation pages, we call *dune project* in the sense of the build
+system those projects that call CMake functions ``dune_project()`` and
+``finalize_dune_project()``. A typical *dune project* usually looks like this:
+
+.. code-block::
+    :caption: CMakeLists.txt
+
+    cmake_minimum_required(VERSION 3.16)
+    project("dune-foo" CXX)
+
+    # find dune-common
+    find_package(dune-common)
+
+    # include dune-common modules in the current CMake path
+    list(APPEND CMAKE_MODULE_PATH "${dune-common_MODULE_PATH}")
+
+    # include the dune macros from dune-common
+    include(DuneMacros)
+
+    # initialize the dune project context
+    dune_project()
+
+    # ...
+
+    # finalize the dune project context
+    finalize_dune_project()
+
+Then, the project will be able to use the build system utilities provided by dune.
+
+The minimum required version to build Dune with CMake is 3.16.
 You can install CMake through your favorite package manager or downloading source code from
 `KITWare <http://www.cmake.org>`_
-The minimum required version to build Dune with CMake is 3.16.
 
-.. _howtouse:
+.. _configfile:
+
+Configuration File Header
+=========================
+
+*Dune projects* may provide a configuration file template ``config.h.cmake``.
+This file will be parsed by the build system and provides you with a C++ header
+file based on the configuration options at configuration time.
+
+.. code-block::
+    :caption: config.h.cmake
+
+    /* begin private */
+
+    /* Everything within begin/end private will be exclusively generated to the current project */
+
+    #define DUNE_FOO_BUILD_OPTION 1
+
+    /* end private */
+
+    /* Everything outside of begin/end private will be generated to all of the downstream projects using the module */
+
+    #define DUNE_FOO_HEADER_OPTION 0
+
+
+DUNE generates two version of configuration files based on the configuration template ``config.h.cmake``:
+
+* ``config.h.cmake``                    [configuration template, installed]
+* ``${ProjectName}-config.hh``          [eager configuration instantiatiation - used in header files - installed]
+* ``${ProjectName}-config-private.hh``  [eager configuration instantiatiation - used in binaries - not installed]
+* ``config.h``                          [lazy configuration instantiatiation - used in binaries - not installed]
+
+**Eager generation**
+  The configuration files are generated at configuration time of the project in
+  question. This means that once the project runs the configuration stage on
+  cmake, its configuration template is instantiated in c++ header files and can
+  be consumed by other projects without any further intervention of cmake.
+    - ``${ProjectName}-config-private.hh``    [used in binaries - not installed]
+    - ``${ProjectName}-config.hh``            [used in header files - installed]
+
+**Lazy generation**
+  The configuration files are generated at configuration time of the consumer
+  project. This means that every time a downstream project runs the
+  configuration stage on cmake, the configuration template of all preceding
+  projects are instantiated with the cmake options of the consumer project.
+  This requires the consumer project to be a dune-project in the sense of the
+  cmake build system.
+    - ``config.h``                            [used in binaries - not installed]
+
+
+Example
+^^^^^^^
+
+Suppose that project ``dune-bar`` depends on ``dune-foo`` and they have the
+following configuration template files:
+
+.. code-block::
+    :caption: dune-foo/config.h.cmake
+
+    #cmakedefine OPTION_FOO 1
+
+
+The options ``OPTION_FOO`` will be defined depending on whether the variable
+``OPTION_FOO`` is present in cmake at the time of the generation of the
+configuration template file. This means that the contents of the generated files
+will look like this.
+
+===========================================================  ========================  ========================
+                                                               ``dune-foo-config.hh``         ``config.h``
+===========================================================  ========================  ========================
+``OPTION_FOO=1`` in dune-foo & ``OPTION_FOO=1`` in dune-bar  ``#define OPTION_FOO 1``  ``#define OPTION_FOO 1``
+``OPTION_FOO=1`` in dune-foo & ``OPTION_FOO=0`` in dune-bar  ``#define OPTION_FOO 1``         -
+``OPTION_FOO=0`` in dune-foo & ``OPTION_FOO=0`` in dune-bar           -                   -
+``OPTION_FOO=0`` in dune-foo & ``OPTION_FOO=1`` in dune-bar           -                ``#define OPTION_FOO 1``
+===========================================================  ========================  ========================
+
+Whether the combination of those options are valid and possible, is a
+responsibility of the developer of the ``dune-foo`` module. Very often the
+second combination is invalid and impossible to generate whereas the fourth is a
+feature for late discovery of dependencies.
+
+Since both ``dune-foo-config.hh`` and ``config.h`` are guarded with a
+``HAVE_DUNE_FOO_CONFIG_HH``, the first apearence will determine which version is
+being used. Thus, an executable in dune-bar with the following structure
+
+.. code-block::
+    :caption: dune-bar.cc
+
+    #ifdef HAVE_CONFIG_H
+    #include "config.h"
+    #endif
+
+    #include <dune/foo/feature.hh> // already includes dune-foo-config.hh
+
+    /*...*/
+
+
+will be use the lazy or the eager configuration options depending on whether
+``HAVE_CONFIG_H`` is defined.
+
+In the mid term, we want to remove the lazy configuration file generation
+because:
+
+* Projects aren't fully configured even after installation and distribution.
+  Thus, c++ source code has unclear interpretation for the consumer of the
+  project.
+* In practice, this forces all downstream users to also be *dune project* in the
+  sense of the cmake build system.
+
+
+.. _faq:
+
+--------------------------------
+Frequently Asked Questions (FAQ)
+--------------------------------
+
 
 How do I use Dune with CMake?
 =============================
