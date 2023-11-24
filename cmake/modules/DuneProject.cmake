@@ -28,16 +28,16 @@ Initialize and finalize a Dune module.
 
   .. code-block:: cmake
 
-    finalize_dune_project([<generate-config-h>])
+    finalize_dune_project()
 
   This function needs to be run at the end of every top-level
   ``CMakeLists.txt`` file. Among other things it creates the cmake package
   configuration file and package version file. Modules can add additional
   entries to these files by setting the variable ``${ProjectName}_INIT``.
 
-  If any argument ``<generate-config-h>`` is passed to this macro, a
-  ``config.h`` file is created containing preprocessor definitions about found
-  packages and module information.
+  If the file ``config.h.cmake`` is found, a ``config.h`` is created
+  containing preprocessor definitions about found packages and module
+  information.
 
 #]=======================================================================]
 include_guard(GLOBAL)
@@ -114,6 +114,8 @@ macro(dune_project)
   include_directories("${PROJECT_SOURCE_DIR}")
   include_directories("${CMAKE_CURRENT_BINARY_DIR}")
   include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+  include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
+  include_directories("${CMAKE_CURRENT_BINARY_DIR}/include_private")
   add_definitions(-DHAVE_CONFIG_H)
 
   # Create custom target for building the documentation
@@ -171,6 +173,11 @@ macro(finalize_dune_project)
   ##########################
   ### CREATE CONFIG FILE ###
   ##########################
+
+  # deprecation warning introduced with Dune 2.10
+  if(NOT "${ARGC}" EQUAL 0)
+    message(DEPRECATION "Passing arguments to finalize_dune_project is no longer needed.")
+  endif()
 
   #create cmake-config files for installation tree
   include(CMakePackageConfigHelpers)
@@ -268,7 +275,7 @@ endif()")
 
 
   #create cmake-config files for build tree
-  set(PACKAGE_CMAKE_INSTALL_INCLUDEDIR ${PROJECT_SOURCE_DIR})
+  set(PACKAGE_CMAKE_INSTALL_INCLUDEDIR ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/include)
   set(PACKAGE_CMAKE_INSTALL_DATAROOTDIR ${PROJECT_BINARY_DIR})
   set(PACKAGE_DOXYSTYLE_DIR ${PROJECT_SOURCE_DIR}/doc/doxygen)
   set(PACKAGE_SCRIPT_DIR ${PROJECT_SOURCE_DIR}/cmake/scripts)
@@ -279,9 +286,14 @@ endif()")
 set(PACKAGE_PREFIX_DIR ${PROJECT_SOURCE_DIR})
 macro(set_and_check _var _file)
   set(\${_var} \"\${_file}\")
-  if(NOT EXISTS \"\${_file}\")
-    message(FATAL_ERROR \"File or directory \${_file} referenced by variable \${_var} does not exist !\")
+  if(\"_\${_file}_\" STREQUAL \"__\")
+    message(FATAL_ERROR \"File or directory referenced by variable \${_var} is unset !\")
   endif()
+  foreach(_f \${_file})
+    if(NOT EXISTS \"\${_f}\")
+      message(FATAL_ERROR \"File or directory \${_f} referenced by variable \${_var} does not exist !\")
+    endif()
+  endforeach(_f)
 endmacro()")
   set(MODULE_INSTALLED OFF)
 
@@ -423,23 +435,33 @@ endif()")
   ### HEADER CONFIG FILEs ###
   ###########################
 
-  if("${ARGC}" EQUAL "1")
-    message(STATUS "Adding custom target for config.h generation")
-    dune_regenerate_config_cmake()
-    # add a target to generate config.h.cmake
-    if(NOT TARGET OUTPUT)
-      add_custom_target(OUTPUT config_collected.h.cmake
-        COMMAND dune_regenerate_config_cmake())
-    endif()
-    # actually write the config.h file to disk
-    # using generated file
-    configure_file(${CMAKE_CURRENT_BINARY_DIR}/config_collected.h.cmake
-      ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-  else()
-    message(STATUS "Not adding custom target for config.h generation")
-    # actually write the config.h file to disk
-    configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+  # generate and install headers file: ${ProjectName}-config.hh and ${ProjectName}-config-private.hh
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/)
+  if(EXISTS ${PROJECT_SOURCE_DIR}/config.h.cmake)
+    dune_parse_module_config_file(${ProjectName} FILE ${PROJECT_SOURCE_DIR}/config.h.cmake)
+
+    # configure private config file
+    file(WRITE ${PROJECT_BINARY_DIR}/include_private/${ProjectName}-config-private.hh.cmake "${${ProjectName}_CONFIG_PRIVATE_HH}")
+    configure_file(${CMAKE_CURRENT_BINARY_DIR}/include_private/${ProjectName}-config-private.hh.cmake ${CMAKE_CURRENT_BINARY_DIR}/include_private/${ProjectName}-config-private.hh)
+
+    # configure and install public config file
+    file(WRITE ${PROJECT_BINARY_DIR}/include/${ProjectName}-config.hh.cmake "${${ProjectName}_CONFIG_HH}\n${${ProjectName}_CONFIG_BOTTOM_HH}")
+    # parse again dune.module file of current module to set PACKAGE_* variables
+    dune_module_information(${PROJECT_SOURCE_DIR} QUIET)
+    configure_file(${CMAKE_CURRENT_BINARY_DIR}/include/${ProjectName}-config.hh.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/${ProjectName}-config.hh)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/${ProjectName}-config.hh DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
   endif()
+
+  message(STATUS "Adding custom target for config.h generation")
+  dune_regenerate_config_cmake()
+  # add a target to generate config.h.cmake
+  if(NOT TARGET OUTPUT)
+    add_custom_target(OUTPUT config_collected.h.cmake
+      COMMAND dune_regenerate_config_cmake())
+  endif()
+  # actually write the config.h file to disk
+  # using generated file
+  configure_file(${CMAKE_CURRENT_BINARY_DIR}/config_collected.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
   if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
     feature_summary(WHAT ALL)
@@ -452,64 +474,114 @@ endmacro(finalize_dune_project)
 # Internal macros
 # ------------------------------------------------------------------------
 
+# parse config.h.cmake file and return public, private and bottom parts of the header
+# as ${module}_CONFIG_HH, ${module}_CONFIG_PRIVATE_HH, and ${module}_CONFIG_BOTTOM_HH
+function(dune_parse_module_config_file module)
+  cmake_parse_arguments(ARG "" "FILE" "" ${ARGN})
+  dune_module_to_uppercase(upper ${module})
+
+  file(READ "${ARG_FILE}" _config)
+  string(REGEX REPLACE
+    ".*/\\*[ ]*begin[ ]+${module}[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*${module}[^\\*]*\\*/" "\\1"
+    _tfile "${_config}")
+  # extract the private section
+  string(REGEX MATCH "/[\\*][ ]*begin private.*/[\\*][ ]*end[ ]*private[^\\*]\\*/" _tprivate "${_tfile}")
+  string(REGEX REPLACE ".*/\\*[ ]*begin[ ]+private[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*private[^\\*]*\\*/" "\\1" _config_private "${_tprivate}" )
+  string(REGEX REPLACE "(.*)/[\\*][ ]*begin private.*/[\\*][ ]*end[ ]*private[^\\*]\\*/(.*)" "\\1\\2" _ttfile "${_tfile}")
+
+  # extract the bottom section
+  string(REGEX MATCH "/[\\*][ ]*begin bottom.*/[\\*][ ]*end[ ]*bottom[^\\*]\\*/" _tbottom "${_ttfile}")
+  string(REGEX REPLACE ".*/\\*[ ]*begin[ ]+bottom[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*bottom[^\\*]*\\*/" "\\1" _config_bottom "${_tbottom}" )
+  string(REGEX REPLACE "(.*)/[\\*][ ]*begin bottom.*/[\\*][ ]*end[ ]*bottom[^\\*]\\*/(.*)" "\\1\\2" _config  "${_ttfile}")
+
+  # resolve headers of dependencies
+  unset(_headers)
+  foreach(_deps ${${module}_DEPENDS} ${${module}_SUGGESTS})
+    split_module_version(${_deps} dep_name dep_version)
+    set(_headers "${_headers}
+#if __has_include(<${dep_name}-config.hh>)
+  #include <${dep_name}-config.hh>
+#endif
+")
+  endforeach()
+
+  # resolve public header part
+  set(HAVE_${upper} ${${module}_FOUND} PARENT_SCOPE)
+  set(${module}_CONFIG_HH
+"
+#ifndef ${upper}_CONFIG_HH
+#define ${upper}_CONFIG_HH
+
+/* Define to 1 if you have module ${module} available */
+#cmakedefine01 HAVE_${upper}
+
+${_config}
+
+${_headers}
+
+#endif // ${upper}_CONFIG_HH
+" PARENT_SCOPE)
+
+  # resolve private header part
+  set(${module}_CONFIG_PRIVATE_HH
+"
+#ifndef ${upper}_CONFIG_PRIVATE_HH
+#define ${upper}_CONFIG_PRIVATE_HH
+
+${_config_private}
+
+#include <${module}-config.hh>
+
+#endif // ${upper}_CONFIG_PRIVATE_HH
+" PARENT_SCOPE)
+
+  # resolve bottom header part
+  # TODO: when legacy config file is removed private and bottom parts can be
+  # merged into one, with dependency headers in between
+  set(${module}_CONFIG_BOTTOM_HH
+"
+#ifndef ${upper}_CONFIG_BOTTOM_HH
+#define ${upper}_CONFIG_BOTTOM_HH
+
+${_config_bottom}
+
+#endif // ${upper}_CONFIG_BOTTOM_HH
+" PARENT_SCOPE)
+endfunction()
+
+
 
 # Creates a new config_collected.h.cmake file in ${CMAKE_CURRENT_BINARY_DIR} that
 # consists of entries from ${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
 # and includes non-private entries from the config.h.cmake files
 # of all dependent modules. Finally config.h is created from config_collected.h.cmake.
 macro(dune_regenerate_config_cmake)
-  set(CONFIG_H_CMAKE_FILE "${PROJECT_BINARY_DIR}/config_collected.h.cmake")
-  if(EXISTS ${PROJECT_SOURCE_DIR}/config.h.cmake)
-    file(READ ${PROJECT_SOURCE_DIR}/config.h.cmake _file)
-    string(REGEX MATCH
-      "/[\\*/][ ]*begin[ ]+${ProjectName}.*\\/[/\\*][ ]*end[ ]*${ProjectName}[^\\*]*\\*/"
-      _myfile "${_file}")
-  endif()
-  # overwrite file with new content
-  file(WRITE ${CONFIG_H_CMAKE_FILE} "/* config.h.  Generated from config_collected.h.cmake by CMake.
-   It was generated from config_collected.h.cmake which in turn is generated automatically
-   from the config.h.cmake files of modules this module depends on. */"
-   )
 
-  foreach(_dep ${ProjectName} ${ALL_DEPENDENCIES})
-    dune_module_to_uppercase(upper ${_dep})
-    set(HAVE_${upper} ${${_dep}_FOUND})
-    file(APPEND ${CONFIG_H_CMAKE_FILE}
-      "\n\n/* Define to 1 if you have module ${_dep} available */
-#cmakedefine01 HAVE_${upper}\n")
-  endforeach()
-
-  # add previous module specific section
+  # collect header parts from all dependencies
+  unset(collected_config_file)
+  unset(collected_config_file_bottom)
   foreach(_dep ${ALL_DEPENDENCIES})
-    foreach(_mod_conf_file ${${_dep}_PREFIX}/config.h.cmake
-        ${${_dep}_PREFIX}/share/${_dep}/config.h.cmake)
+    foreach(_mod_conf_file ${${_dep}_PREFIX}/config.h.cmake ${${_dep}_PREFIX}/share/${_dep}/config.h.cmake)
       if(EXISTS ${_mod_conf_file})
-        file(READ "${_mod_conf_file}" _file)
-        string(REGEX REPLACE
-          ".*/\\*[ ]*begin[ ]+${_dep}[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*${_dep}[^\\*]*\\*/" "\\1"
-          _tfile "${_file}")
-        # strip the private section
-        string(REGEX REPLACE "(.*)/[\\*][ ]*begin private.*/[\\*][ ]*end[ ]*private[^\\*]\\*/(.*)" "\\1\\2" _ttfile "${_tfile}")
-
-        # extract the bottom section
-        string(REGEX MATCH "/[\\*][ ]*begin bottom.*/[\\*][ ]*end[ ]*bottom[^\\*]\\*/" _tbottom "${_ttfile}")
-        string(REGEX REPLACE ".*/\\*[ ]*begin[ ]+bottom[^\\*]*\\*/(.*)/[/\\*][ ]*end[ ]*bottom[^\\*]*\\*/" "\\1" ${_dep}_CONFIG_H_BOTTOM "${_tbottom}" )
-        string(REGEX REPLACE "(.*)/[\\*][ ]*begin bottom.*/[\\*][ ]*end[ ]*bottom[^\\*]\\*/(.*)" "\\1\\2" _file  "${_ttfile}")
-
-        # append bottom section
-        if(${_dep}_CONFIG_H_BOTTOM)
-          set(CONFIG_H_BOTTOM "${CONFIG_H_BOTTOM} ${${_dep}_CONFIG_H_BOTTOM}")
-        endif()
-
-        file(APPEND ${CONFIG_H_CMAKE_FILE} "${_file}")
+        dune_parse_module_config_file(${_dep} FILE ${_mod_conf_file})
+        set(collected_config_file        "${collected_config_file}\n${${_dep}_CONFIG_HH}\n")
+        set(collected_config_file_bottom "${collected_config_file_bottom}\n${${_dep}_CONFIG_BOTTOM_HH}\n")
       endif()
     endforeach()
   endforeach()
-  # parse again dune.module file of current module to set PACKAGE_* variables
-  dune_module_information(${PROJECT_SOURCE_DIR} QUIET)
-  file(APPEND ${CONFIG_H_CMAKE_FILE} "\n${_myfile}")
-  # append CONFIG_H_BOTTOM section at the end if found
-  if(CONFIG_H_BOTTOM)
-    file(APPEND ${CONFIG_H_CMAKE_FILE} "${CONFIG_H_BOTTOM}")
+
+  # collect header parts from this module
+  if(EXISTS ${PROJECT_SOURCE_DIR}/config.h.cmake)
+    dune_parse_module_config_file(${ProjectName} FILE ${PROJECT_SOURCE_DIR}/config.h.cmake)
   endif()
+
+  # write collected header into config.h.cmake
+  file(WRITE ${PROJECT_BINARY_DIR}/config_collected.h.cmake "
+${collected_config_file}
+${${ProjectName}_CONFIG_HH}
+${${ProjectName}_CONFIG_PRIVATE_HH}
+${collected_config_file_bottom}
+${${ProjectName}_CONFIG_BOTTOM_HH}
+")
+
 endmacro(dune_regenerate_config_cmake)
