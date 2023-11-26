@@ -541,4 +541,4 @@ namespace Dune
   = Communication<T>;
 }
 
-#endif
+#endif // DUNE_COMMON_PARALLEL_COMMUNICATION_HH

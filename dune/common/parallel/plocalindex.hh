@@ -2,15 +2,18 @@
 // vi: set et ts=4 sw=2 sts=2:
 // SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
-
-#ifndef DUNE_PLOCALINDEX_HH
-#define DUNE_PLOCALINDEX_HH
-
-#include "localindex.hh"
-#include "indexset.hh"
-#include "mpitraits.hh"
+#ifndef DUNE_COMMON_PARALLEL_PLOCALINDEX_HH
+#define DUNE_COMMON_PARALLEL_PLOCALINDEX_HH
 
 #include <iostream>
+
+#if HAVE_MPI
+#include <mpi.h>
+#endif
+
+#include <dune/common/parallel/indexset.hh>
+#include <dune/common/parallel/localindex.hh>
+#include <dune/common/parallel/mpitraits.hh>
 
 namespace Dune
 {
@@ -313,10 +316,10 @@ namespace Dune
   template<typename T>
   MPI_Datatype MPITraits<ParallelLocalIndex<T> >::type = MPI_DATATYPE_NULL;
 
-#endif
+#endif // HAVE_MPI
 
 
   /** @} */
 } // namespace Dune
 
-#endif
+#endif // DUNE_COMMON_PARALLEL_PLOCALINDEX_HH

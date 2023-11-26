@@ -65,17 +65,21 @@
  * (https://software.intel.com/en-us/mpi-developer-reference-linux-asynchronous-progress-control)
  */
 
-
-#include <config.h>
-
+#include <chrono>
+#include <functional>
 #include <iostream>
 #include <iomanip>
+#include <string>
 #include <thread>
+#include <tuple>
+#include <vector>
 
-#include <dune/common/parallel/mpihelper.hh>
+#include <dune/common/exceptions.hh>
 #include <dune/common/timer.hh>
 #include <dune/common/parametertree.hh>
 #include <dune/common/parametertreeparser.hh>
+#include <dune/common/parallel/future.hh>
+#include <dune/common/parallel/mpihelper.hh>
 
 Dune::ParameterTree options;
 std::vector<std::string> all_methods = {"allreduce",

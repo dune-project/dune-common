@@ -1,11 +1,16 @@
 // SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
-#include <config.h>
-
+#include <algorithm>
+#include <functional>
 #include <iostream>
 #include <numeric>
-#include <dune/common/parallel/mpihelper.hh>
+#include <vector>
+
 #include <dune/common/dynvector.hh>
+#include <dune/common/typetraits.hh>
+#include <dune/common/parallel/mpidata.hh>
+#include <dune/common/parallel/mpifuture.hh>
+#include <dune/common/parallel/mpihelper.hh>
 
 namespace Dune {
   template<class Dummy>

@@ -10,13 +10,17 @@
  * @ingroup ParallelCommunication
  */
 
-#ifndef DUNE_COMMON_MPIGUARD_HH
-#define DUNE_COMMON_MPIGUARD_HH
+#ifndef DUNE_COMMON_PARALLEL_MPIGUARD_HH
+#define DUNE_COMMON_PARALLEL_MPIGUARD_HH
 
-#include "mpihelper.hh"
-#include "communication.hh"
-#include "mpicommunication.hh"
+#if HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include <dune/common/exceptions.hh>
+#include <dune/common/parallel/communication.hh>
+#include <dune/common/parallel/mpicommunication.hh>
+#include <dune/common/parallel/mpihelper.hh>
 
 namespace Dune
 {
@@ -232,4 +236,4 @@ namespace Dune
 
 }
 
-#endif // DUNE_COMMON_MPIGUARD_HH
+#endif // DUNE_COMMON_PARALLEL_MPIGUARD_HH
