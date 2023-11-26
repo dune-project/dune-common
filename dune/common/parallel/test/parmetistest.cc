@@ -9,33 +9,13 @@
 #error "ParMETIS is required for this test."
 #endif
 
-#include <mpi.h>
-
-#if HAVE_PTSCOTCH_PARMETIS
-extern "C" {
-  #include <ptscotch.h>
-}
-#endif
-
-extern "C" {
-  #include <parmetis.h>
-}
+#include <dune/common/parallel/mpi.hh>
+#include <dune/common/parallel/parmetis.hh>
 
 int main(int argc, char **argv)
 {
-#if defined(REALTYPEWIDTH)
-  using real_t = ::real_t;
-#else
-  using real_t = float;
-#endif
-
-#if defined(IDXTYPEWIDTH)
-  using idx_t = ::idx_t;
-#elif HAVE_PTSCOTCH_PARMETIS
-  using idx_t = SCOTCH_Num;
-#else
-  using idx_t = int;
-#endif
+  using real_t = Dune::ParMetis::real_t;
+  using idx_t = Dune::ParMetis::idx_t;
 
   MPI_Init(&argc, &argv);
 
