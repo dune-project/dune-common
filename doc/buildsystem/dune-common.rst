@@ -172,6 +172,30 @@ because:
   sense of the cmake build system.
 
 
+.. _policies:
+
+Dune Build System Policies
+=========================
+
+Similar to the cmake `policy system <https://cmake.org/cmake/help/latest/manual/cmake-policies.7.html>`_
+we have introduced a way to maintain backwards compatibility in the behavior of our
+build system across multiple versions of Dune. A policy is an identifier that controls
+whether the ``OLD`` or the ``NEW`` introduced behavior should be used for a given
+Dune module. By default, the ``OLD`` behavior is still enabled, unless a module author
+explicitly changes it to  ``NEW``, or unless a specific version is reached where the ``NEW``
+behavior is enabled by default.
+
+The `OLD` behavior is deprecated by default and results in an author warning about unhandled
+policies. However, if it is explicitly set to `OLD` or `NEW`, the warning disappears. If you do
+not want to see any policy warnings and just stick with the defaults, the global option
+``DUNE_POLICY_DISABLE_WARNING`` can be set to ``TRUE``.
+
+Policies Introduced by Dune 2.10
+--------------------------------
+
+Here we will list and explain the introduced policies.
+
+
 .. _faq:
 
 --------------------------------

@@ -111,6 +111,9 @@ In order to build the DUNE core modules you need at least the following software
   by the user. Since the `HAVE_XY` flag is now set as a compiler flag, it is not included in the
   `config.h` files anymore.
 
+- Add a policy system to smoothly change behavior in the build-system. This follows the cmake policy
+  system but uses own IDs and is connected to dune module version instead of cmake versions.
+
 ## Deprecations and removals
 
 - The deprecated header `dune/common/function.hh` has been removed. Use C++ function
