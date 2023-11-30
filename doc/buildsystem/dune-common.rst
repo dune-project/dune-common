@@ -67,7 +67,7 @@ You can install CMake through your favorite package manager or downloading sourc
 Configuration File Header
 =========================
 
-*Dune projects* may provide a configuration file template ``config.h.cmake``.
+Dune projects may provide a configuration file template ``config.h.cmake``.
 This file will be parsed by the build system and provides you with a C++ header
 file based on the configuration options at configuration time.
 
@@ -87,9 +87,22 @@ file based on the configuration options at configuration time.
     #define DUNE_FOO_HEADER_OPTION 0
 
 
+Additional to the template config definitions in ``config.h.cmake``, the dune
+build system will also include a ``HAVE_${module_upper}`` preprocessor
+definition for each found dune module, where ``module_upper`` is the module
+name in upper case version (e.g., ``DUNE_COMMON`` for the ``dune-common`` module):
+
+.. code-block::
+
+    /* Define to 1 if you have module ${module} available */
+    #ifndef HAVE_${module_upper}
+    #cmakedefine01 HAVE_${module_upper}
+    #endif
+
+
 DUNE generates two version of configuration files based on the configuration template ``config.h.cmake``:
 
-* ``config.h.cmake``                    [configuration template, installed]
+* ``config.h.cmake``                    [configuration template - installed]
 * ``${ProjectName}-config.hh``          [eager configuration instantiatiation - used in header files - installed]
 * ``${ProjectName}-config-private.hh``  [eager configuration instantiatiation - used in binaries - not installed]
 * ``config.h``                          [lazy configuration instantiatiation - used in binaries - not installed]
