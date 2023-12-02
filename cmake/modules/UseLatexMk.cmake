@@ -103,6 +103,11 @@
 #
 include_guard(GLOBAL)
 
+# ensure CMake version is recent enough
+if(CMAKE_VERSION VERSION_LESS 3.10)
+  message(FATAL_ERROR "UseLatexMk.cmake requires CMake 3.10 or newer")
+endif()
+
 # Find LATEX and LatexMk
 find_package(LATEX)
 find_package(LatexMk)
@@ -203,16 +208,18 @@ function(add_latex_document)
     set(LATEXMKRC_OPTIONS ${LATEXMKRC_OPTIONS} -r ${LATEXMKRC_FILE})
   endforeach()
 
-  # Add the BYPRODUCTS parameter, if the CMake version supports it
-  set(BYPRODUCTS_PARAMETER "")
-  if (CMAKE_VERSION VERSION_GREATER "3.2")
-    set(BYPRODUCTS_PARAMETER BYPRODUCTS ${OUTPUT_PDF})
-  endif()
+  # Add the BYPRODUCTS parameter
+  set(BYPRODUCTS_PARAMETER BYPRODUCTS ${OUTPUT_PDF})
 
   # Maybe allow latexmk the use of absolute paths
+  set(ENV_COMMAND "")
   if(NOT LATEXMK_PARANOID)
-    set($ENV{openout_any} "a")
+    set(ENV_COMMAND ${CMAKE_COMMAND} -E env openout_any="a")
   endif()
+
+  # Get an absolute path to the source
+  set(LMK_SOURCE_REPLACED ${CMAKE_CURRENT_BINARY_DIR}/${LMK_TARGET}_source.cc)
+  configure_file(${LMK_SOURCE} ${LMK_SOURCE_REPLACED} @ONLY)
 
   # Call the latexmk executable
   # NB: Using add_custom_target here results in the target always being outofdate.
@@ -220,7 +227,7 @@ function(add_latex_document)
   #     intentional decision of UseLatexMk to avoid listing dependencies of the tex source.
   add_custom_target(${LMK_TARGET}
                     ${ALL_OPTION}
-                    COMMAND ${LATEXMK_EXECUTABLE} ${LATEXMKRC_OPTIONS} ${LMK_SOURCE}
+                    COMMAND ${ENV_COMMAND} ${LATEXMK_EXECUTABLE} ${LATEXMKRC_OPTIONS} ${LMK_SOURCE_REPLACED}
                     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
                     COMMENT "Building PDF from ${LMK_SOURCE}..."
                     ${BYPRODUCTS_PARAMETER}
@@ -246,7 +253,7 @@ function(add_latex_document)
 
   # Add a clean up rule to the clean_latex target
   add_custom_target(${LMK_TARGET}_clean
-                    COMMAND ${LATEXMK_EXECUTABLE} -C ${LATEXMKRC_OPTIONS} ${LMK_SOURCE}
+                    COMMAND ${ENV_COMMAND} ${LATEXMK_EXECUTABLE} -C ${LATEXMKRC_OPTIONS}  ${LMK_SOURCE_REPLACED}
                     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
                     COMMENT "Cleaning build results from target ${LMK_TARGET}"
                     )
