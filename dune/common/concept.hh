@@ -323,8 +323,6 @@ constexpr bool requireSameType()
 
 } // namespace Dune::Concept
 
-  /** @} */
-
 } // namespace Dune
 
 

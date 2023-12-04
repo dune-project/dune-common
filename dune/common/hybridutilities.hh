@@ -692,7 +692,7 @@ constexpr void switchCases(const Cases& cases, const Value& value, Branches&& br
  * \tparam Value Type of value to check against the cases
  * \tparam Branches Type of branch function
  *
- * \param cases A dynamic range of cases to check for
+ * \param range A dynamic range of cases to check for
  * \param value The value to check against the cases
  * \param branches A callback that will be executed with matching entry from case list
  *

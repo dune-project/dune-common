@@ -57,14 +57,14 @@ namespace Dune {
    * A prototypic example would be a default overload
    * that should be used if the others do not apply.
    *
-   * By adding additional arguments of type PriorityTag<k>
+   * By adding additional arguments of type \c PriorityTag\<k\>
    * with increasing priority k to all overloads and calling
-   * the method with PriorityTag<m> where m is larger or equal
+   * the method with \c PriorityTag\<m\> where m is larger or equal
    * to the maximal used priority, those can be made unambiguous.
    *
    * In this case the matching overload with highest priority
-   * will be used. This is achieved by the fact that PriorityTag<k>
-   * derives from all types PriorityTag<i> with i less than k.
+   * will be used. This is achieved by the fact that \c PriorityTag\<k\>
+   * derives from all types \c PriorityTag\<i\> with i less than k.
    *
    * \tparam priority The priority of this tag.
    */
@@ -79,8 +79,8 @@ namespace Dune {
    *
    * \ingroup TypeUtilities
    *
-   * PriorityTag<0> does not derive from any
-   * other PriorityTag.
+   * \c PriorityTag\<0\> does not derive from any
+   * other \c PriorityTag.
    */
   template<>
   struct PriorityTag<0>

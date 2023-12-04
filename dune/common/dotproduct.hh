@@ -76,7 +76,6 @@ namespace Dune {
   {
     return a.dot(b);
   }
-  /** @} */
 
   /**
    * @brief Computes an indefinite vector dot product for fundamental data types according to Petsc's VectTDot function: dotT(a,b) := a*b

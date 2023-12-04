@@ -529,8 +529,6 @@ namespace Dune {
                             int bufferSize, bool sendTwo, bool fromOurSelf=false);
   };
 
-  /** @} */
-
   /**
    * @brief Modifier for adding and/or deleting remote indices from
    * the remote index list.

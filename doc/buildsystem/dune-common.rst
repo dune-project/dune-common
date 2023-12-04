@@ -103,26 +103,28 @@ name in upper case version (e.g., ``DUNE_COMMON`` for the ``dune-common`` module
 DUNE generates two version of configuration files based on the configuration template ``config.h.cmake``:
 
 * ``config.h.cmake``                    [configuration template - installed]
-* ``${ProjectName}-config.hh``          [eager configuration instantiatiation - used in header files - installed]
-* ``${ProjectName}-config-private.hh``  [eager configuration instantiatiation - used in binaries - not installed]
-* ``config.h``                          [lazy configuration instantiatiation - used in binaries - not installed]
+* ``${ProjectName}-config.hh``          [eager configuration instantiation - used in header files - installed]
+* ``${ProjectName}-config-private.hh``  [eager configuration instantiation - used in binaries - not installed]
+* ``config.h``                          [lazy configuration instantiation - used in binaries - not installed]
 
 **Eager generation**
-  The configuration files are generated at configuration time of the project in
-  question. This means that once the project runs the configuration stage on
-  cmake, its configuration template is instantiated in c++ header files and can
-  be consumed by other projects without any further intervention of cmake.
-    - ``${ProjectName}-config-private.hh``    [used in binaries - not installed]
-    - ``${ProjectName}-config.hh``            [used in header files - installed]
+The configuration files are generated at configuration time of the project in
+question. This means that once the project runs the configuration stage on
+cmake, its configuration template is instantiated in c++ header files and can
+be consumed by other projects without any further intervention of cmake.
+
+* ``${ProjectName}-config-private.hh``    [used in binaries - not installed]
+* ``${ProjectName}-config.hh``            [used in header files - installed]
 
 **Lazy generation**
-  The configuration files are generated at configuration time of the consumer
-  project. This means that every time a downstream project runs the
-  configuration stage on cmake, the configuration template of all preceding
-  projects are instantiated with the cmake options of the consumer project.
-  This requires the consumer project to be a dune-project in the sense of the
-  cmake build system.
-    - ``config.h``                            [used in binaries - not installed]
+The configuration files are generated at configuration time of the consumer
+project. This means that every time a downstream project runs the
+configuration stage on cmake, the configuration template of all preceding
+projects are instantiated with the cmake options of the consumer project.
+This requires the consumer project to be a dune-project in the sense of the
+cmake build system.
+
+* ``config.h``                            [used in binaries - not installed]
 
 
 Example
@@ -188,7 +190,7 @@ because:
 .. _policies:
 
 Dune Build System Policies
-=========================
+==========================
 
 Similar to the cmake `policy system <https://cmake.org/cmake/help/latest/manual/cmake-policies.7.html>`_
 we have introduced a way to maintain backwards compatibility in the behavior of our
@@ -204,7 +206,7 @@ not want to see any policy warnings and just stick with the defaults, the global
 ``DUNE_POLICY_DISABLE_WARNING`` can be set to ``TRUE``.
 
 Policies Introduced by Dune 2.10
---------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Here we will list and explain the introduced policies.
 
@@ -239,7 +241,7 @@ What files in a dune module belong to the CMake build system?
 
 Every directory in a project contains a file called :code:`CMakeLists.txt`, which is written in the CMake language.
 You can think of these as a distributed configure script. Upon configure, the top-level :code:`CMakeLists.txt` is executed.
-Whenever an :ref:`add_subdirectory` command is encountered, the :code:`CMakeLists.txt` file of that sub-directory is executed.
+Whenever an :code:`add_subdirectory` command is encountered, the :code:`CMakeLists.txt` file of that sub-directory is executed.
 The top-level :code:`CMakeLists.txt` file is special, because it sets up the entire Dune module correctly. You should not delete the
 auto-generated parts of it.
 
@@ -390,7 +392,7 @@ How do I change my compiler and compiler flags?
 
 In general, there are multiple ways to do this:
 
-* Setting the CMake variables :ref:`CMAKE_<LANG>_COMPILER` (with :code:`LANG` being :code:`C`
+* Setting the CMake variables :code:`CMAKE_<LANG>_COMPILER` (with :code:`LANG` being :code:`C`
   or :code:`CXX`) from the opts file, e.g. via :code:`CMAKE_FLAGS="-DCMAKE_CXX_COMPILER=otherc++"`.
 * Setting those variables within the project with the :code:`set` command
 * Setting the environment variables :code:`CC`, :code:`CXX`, :code:`FC` etc.
@@ -400,7 +402,7 @@ directories. For some CMake versions, there is a known CMake bug, that requires 
 to your compiler, but Dune will issue a warning, if you violate that.
 
 You can modify your default compiler flags by setting the variables
-:ref:`CMAKE_<LANG>_FLAGS` in your opts file (again with :code:`LANG` being :code:`C` or
+:code:`CMAKE_<LANG>_FLAGS` in your opts file (again with :code:`LANG` being :code:`C` or
 :code:`CXX`).
 
 .. _cxxstandard:

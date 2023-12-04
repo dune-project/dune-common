@@ -322,8 +322,6 @@ namespace Dune
      * unerased entry or the end if the list is empty.
      * This does not invalidate any iterators positioned after
      * the current position but those positioned at previous ones.
-     * @return An iterator to the first position after the deleted
-     * ones or to the end if the list is empty.
      */
     inline void eraseToHere();
 
