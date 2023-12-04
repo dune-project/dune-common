@@ -483,7 +483,6 @@ namespace Dune
   /**
    * \brief Get entry of std::integer_sequence
    *
-   * \param seq An object of type std::integer_sequence<...>
    * \param i Index
    *
    * \return The i-th entry of the integer_sequence encoded as std::integral_constant<std::size_t, entry>.

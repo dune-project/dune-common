@@ -38,6 +38,6 @@
 #endif
 #endif
 
-/* @} */
+/** @} */
 
 #endif // DUNE_BOUNDSCHECKING_HH
