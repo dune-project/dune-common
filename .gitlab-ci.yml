@@ -46,10 +46,19 @@ ubuntu:20.04 gcc-9-17-nopython:
 
 debian:11 clang-11-20-nobindings:
   extends: .common
+  after_script:
+    - source /duneci/venv/bin/activate
+    - CodeChecker analyze build-cmake/compile_commands.json --analyzers=clang-tidy --file="*/dune-common/*.cc" -o ./reports || echo "CodeChecker analyzer failed with exit status $?"
+    - CodeChecker parse --trim-path-prefix $PWD --file="*/dune-common/*" -e codeclimate ./reports > ./reports/gl-code-quality-report.json || echo "CodeChecker parser failed with exit status $?"
   image: registry.dune-project.org/docker/ci/debian:11
   variables:
     DUNECI_TOOLCHAIN: clang-11-20
     DUNECI_CMAKE_FLAGS: '-DDUNE_ENABLE_PYTHONBINDINGS=OFF'
+    CMAKE_EXPORT_COMPILE_COMMANDS: "ON"
+  artifacts:
+    reports:
+      codequality: reports/gl-code-quality-report.json
+
 
 system-test:
   stage: downstream
