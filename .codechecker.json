@@ -1,9 +1,0 @@
-{
-  "analyze": [
-    "--analyzers=clang-tidy",
-    "--file=*/dune-common/*.cc"
-  ],
-  "parse": [
-    "--file=*/dune-common/*"
-  ]
-}

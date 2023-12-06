@@ -1,0 +1,12 @@
+{
+  "analyze": [
+    "--disable", "default",
+    "--analyzers=clang-tidy",
+    "--file=*/dune-common/*.cc",
+    "--skip", ".codechecker/skipfile",
+    "-e", "misc-include-cleaner"
+  ],
+  "parse": [
+    "--file=*/dune-common/*"
+  ]
+}
