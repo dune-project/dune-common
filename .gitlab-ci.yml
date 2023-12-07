@@ -46,19 +46,10 @@ ubuntu:20.04 gcc-9-17-nopython:
 
 debian:11 clang-11-20-nobindings:
   extends: .common
-  after_script:
-    - source /duneci/venv/bin/activate
-    - CodeChecker analyze build-cmake/compile_commands.json --config .codechecker/config.json -o ./reports
-    - CodeChecker parse --config .codechecker/config.json --trim-path-prefix $PWD -e codeclimate ./reports > ./reports/gl-code-quality-report.json
   image: registry.dune-project.org/docker/ci/debian:11
   variables:
     DUNECI_TOOLCHAIN: clang-11-20
     DUNECI_CMAKE_FLAGS: '-DDUNE_ENABLE_PYTHONBINDINGS=OFF'
-    CMAKE_EXPORT_COMPILE_COMMANDS: "ON"
-  artifacts:
-    reports:
-      codequality: reports/gl-code-quality-report.json
-
 
 system-test:
   stage: downstream
