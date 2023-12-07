@@ -81,3 +81,24 @@ reuse:
   before_script: ""
   script:
     - reuse lint
+
+codechecker:
+  extends: .common
+  image: registry.dune-project.org/docker/ci/debian:11
+  variables:
+    DUNECI_TOOLCHAIN: clang-11-20
+    CMAKE_EXPORT_COMPILE_COMMANDS: "ON"
+    DUNECI_CONFIGURE_ONLY: "ON"
+  rules:
+    - exists:
+        - .codechecker/config.json
+  script:
+    - duneci-standard-test
+      source /duneci/venv/bin/activate
+      CodeChecker analyze build-cmake/compile_commands.json --config .codechecker/config.json -o ./reports
+      CodeChecker parse --config .codechecker/config.json --trim-path-prefix $PWD -e codeclimate ./reports > ./reports/gl-code-quality-report.json
+      report=$(cat ./reports/gl-code-quality-report.json)
+      [[ "$report" == "[]" ]] && exit 1
+  artifacts:
+    reports:
+      codequality: reports/gl-code-quality-report.json
