@@ -94,11 +94,14 @@ codechecker:
         - .codechecker/config.json
   script:
     - duneci-standard-test
-      source /duneci/venv/bin/activate
-      CodeChecker analyze build-cmake/compile_commands.json --config .codechecker/config.json -o ./reports
-      CodeChecker parse --config .codechecker/config.json --trim-path-prefix $PWD -e codeclimate ./reports > ./reports/gl-code-quality-report.json
-      report=$(cat ./reports/gl-code-quality-report.json)
-      [[ "$report" == "[]" ]] && exit 1
+    - source /duneci/venv/bin/activate
+    - CodeChecker analyze build-cmake/compile_commands.json --config .codechecker/config.json -o ./reports
+    - CodeChecker parse --config .codechecker/config.json --trim-path-prefix $PWD -e codeclimate ./reports > ./reports/gl-code-quality-report.json
+    - report=$(cat ./reports/gl-code-quality-report.json)
+    - |- 
+      if [[ -n "$report" && "$report" != "[]" ]]; then
+        exit 1
+      fi
   artifacts:
     reports:
       codequality: reports/gl-code-quality-report.json
