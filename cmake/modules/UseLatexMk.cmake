@@ -181,10 +181,6 @@ function(add_latex_document)
     endif()
   endif()
 
-  # Determine the output name
-  get_filename_component(output ${LMK_SOURCE} NAME_WE)
-  set(OUTPUT_PDF ${CMAKE_CURRENT_BINARY_DIR}/${output}.pdf)
-
   # Inspect the EXCLUDE_FROM_ALL option
   if(LMK_EXCLUDE_FROM_ALL)
     set(ALL_OPTION "")
@@ -217,9 +213,20 @@ function(add_latex_document)
     set(ENV_COMMAND ${CMAKE_COMMAND} -E env openout_any="a")
   endif()
 
-  # Get an absolute path to the source
-  set(LMK_SOURCE_REPLACED ${CMAKE_CURRENT_BINARY_DIR}/${LMK_TARGET}_source.cc)
+  # For LaTeX package minted, replace value of outputdir from CMAKE_CURRENT_BINARY_DIR to
+  # its actual value by coping the LaTeX file to the build dir
+  set(LMK_SOURCE_REPLACED ${CMAKE_CURRENT_BINARY_DIR}/${LMK_SOURCE})
+  # for in-source-build, adjust
+  if("${CMAKE_CURRENT_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+    get_filename_component(source_filename ${LMK_SOURCE} NAME_WE)
+    get_filename_component(source_extension ${LMK_SOURCE} LAST_EXT)
+    set(LMK_SOURCE_REPLACED "${CMAKE_CURRENT_BINARY_DIR}/${source_filename}_source${source_extension}")
+  endif()
   configure_file(${LMK_SOURCE} ${LMK_SOURCE_REPLACED} @ONLY)
+
+  # Determine the output name
+  get_filename_component(output ${LMK_SOURCE_REPLACED} NAME_WE)
+  set(OUTPUT_PDF ${CMAKE_CURRENT_BINARY_DIR}/${output}.pdf)
 
   # Call the latexmk executable
   # NB: Using add_custom_target here results in the target always being outofdate.
