@@ -75,7 +75,7 @@ set( UNIXCMD_SCRIPT_FILE "[
 
 file(WRITE "${CMAKE_BINARY_DIR}/unix_commands.json" ${UNIXCMD_SCRIPT_FILE})
 
-finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
+finalize_dune_project()
 
 # we are done, so release lock
 message("---- RELEASE")
