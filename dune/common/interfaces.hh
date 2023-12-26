@@ -23,8 +23,7 @@ namespace Dune {
     virtual Cloneable* clone() const = 0;
 
     /** \brief Destructor */
-    virtual ~Cloneable()
-    {}
+    virtual ~Cloneable() = default;
 
   };
 
