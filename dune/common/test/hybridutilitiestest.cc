@@ -110,8 +110,8 @@ int main()
 
   // Compile time checks
   static_assert(sum(values) == (30*29)/2, "Wrong compile time sum!");
-  constexpr auto numberTupleConstexpr = Dune::makeTupleVector(0.1, 2, 3);
-  static_assert(sum(numberTupleConstexpr) == 5.1, "Wrong compile time sum!");
+  constexpr auto numberTupleConstexpr = Dune::makeTupleVector(0.25, 2, 3);
+  static_assert(sum(numberTupleConstexpr) == 5.25, "Wrong compile time sum!");
 
   return test.exit();
 }
