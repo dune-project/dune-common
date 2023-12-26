@@ -48,8 +48,8 @@ namespace Dune {
       DUNE_ASSERT_BOUNDS(blockBitField_.size() > static_cast<size_t>(block_number_));
     }
 
-    //! hide assignment operator
-    BitSetVectorConstReference& operator=(const BitSetVectorConstReference & b);
+    //! disable assignment operator
+    BitSetVectorConstReference& operator=(const BitSetVectorConstReference & b) = delete;
 
   public:
 
