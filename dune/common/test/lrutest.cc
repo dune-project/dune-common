@@ -20,7 +20,7 @@ void lru_test()
   lru.insert(11, 2.0);
   assert(lru.front() == 2.0 && lru.back() == 1.0);
   lru.insert(12, 99);
-  lru.insert(13, 1.3);
+  lru.insert(13, 1.125);
   lru.insert(14, 12345);
   lru.insert(15, -17);
   assert(lru.front() == -17 && lru.back() == 1.0);
@@ -29,7 +29,7 @@ void lru_test()
   assert(lru.front() == 1.0 && lru.back() == 2.0);
   // update
   lru.touch(13);
-  assert(lru.front() == 1.3 && lru.back() == 2.0);
+  assert(lru.front() == 1.125 && lru.back() == 2.0);
   // remove item
   lru.pop_front();
   assert(lru.front() == 1.0 && lru.back() == 2.0);
