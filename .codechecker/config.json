@@ -4,7 +4,9 @@
     "--analyzers=clang-tidy",
     "--file=*/dune-common/*.cc",
     "--skip", ".codechecker/skipfile",
-    "-e", "misc-definitions-in-headers"
+    "--enable", "misc-definitions-in-headers",
+    "--disable", "Wdeprecated-copy",
+    "--disable", "Wunused"
   ],
   "parse": [
     "--file=*/dune-common/*"
