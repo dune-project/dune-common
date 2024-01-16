@@ -4,7 +4,6 @@
     "--analyzers=clang-tidy",
     "--file=*/dune-common/*.cc",
     "--skip", ".codechecker/skipfile",
-    "--enable", "misc-definitions-in-headers",
     "--disable", "clang-diagnostic-deprecated-copy",
     "--disable", "clang-diagnostic-unused"
   ],
