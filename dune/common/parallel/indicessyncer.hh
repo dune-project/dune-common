@@ -82,17 +82,19 @@ namespace Dune
     void sync();
 
     /**
-     * @brief Synce the index set and assign local numbers to new indices
+     * @brief Sync the index set and assign local numbers to new indices
      *
      * Computes the missing indices in the local and the remote index list and adds them.
      * No global communication is necessary!
      * @param numberer Functor providing the local indices for the added global indices.
      * has to provide a function size_t operator()(const TG& global) that provides the
      * local index to a global one. It will be called for ascending global indices.
+     * @param useFixedOrder Flag indicating if the new indices should be created
+     * in a fixed order. If set to true, this makes the runs reproducible but might slow down performance.
      *
      */
     template<typename T1>
-    void sync(T1& numberer);
+    void sync(T1& numberer, bool useFixedOrder = false);
 
   private:
 
@@ -359,9 +361,10 @@ namespace Dune
      * @brief Recv and unpack the message from another process and add the indices.
      * @param numberer Functor providing local indices for added global indices.
      * @param hardSource process of message to be received.
+     * @param useHardSource Flag indicating if hardSource should be used or not. If set to true, this makes the runs reproducible but might slow down performance.
      */
     template<typename T1>
-    void recvAndUnpack(T1& numberer, int hardSource);
+    void recvAndUnpack(T1& numberer, int hardSource, bool useHardSource);
 
     /**
      * @brief Register the MPI datatype for the MessageInformation.
@@ -734,7 +737,7 @@ namespace Dune
 
   template<typename T>
   template<typename T1>
-  void IndicesSyncer<T>::sync(T1& numberer)
+  void IndicesSyncer<T>::sync(T1& numberer, bool useFixedOrder)
   {
     // The pointers to the local indices in the remote indices
     // will become invalid due to the resorting of the index set.
@@ -806,7 +809,7 @@ namespace Dune
 
     // Probe for incoming messages, receive and unpack them
     for(std::size_t i = 0; i<noOldNeighbours; ++i)
-      recvAndUnpack(numberer, oldNeighbours[i]);
+      recvAndUnpack(numberer, oldNeighbours[i], useFixedOrder);
     //       }else{
     //  recvAndUnpack(oldNeighbours[i], numberer);
     //  packAndSend(oldNeighbours[i]);
@@ -1004,7 +1007,7 @@ namespace Dune
 
   template<typename T>
   template<typename T1>
-  void IndicesSyncer<T>::recvAndUnpack(T1& numberer, int hardSource)
+  void IndicesSyncer<T>::recvAndUnpack(T1& numberer, int hardSource, bool useHardSource)
   {
     const ParallelIndexSet& constIndexSet = indexSet_;
     auto iEnd   = constIndexSet.end();
@@ -1017,7 +1020,8 @@ namespace Dune
     MPI_Status status;
 
     // We have to determine the message size and source before the receive
-    MPI_Probe(hardSource, 345, remoteIndices_.communicator(), &status);
+
+    MPI_Probe(useHardSource ? hardSource : MPI_ANY_SOURCE, 345, remoteIndices_.communicator(), &status);
 
     int source=status.MPI_SOURCE;
     int count;
