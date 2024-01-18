@@ -44,6 +44,7 @@ include_guard(GLOBAL)
 include(DuneEnableAllPackages)
 include(DuneModuleInformation)
 include(DuneUtilities)
+include(DunePkgConfig)
 
 # checks that a module version is compatible with the found version of a module
 # notice that this has the side effect of populating the ${module}_VERSION information
@@ -101,6 +102,10 @@ macro(dune_check_module_version module)
 endmacro(dune_check_module_version module)
 
 macro(dune_create_dependency_tree)
+  if(DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12)
+    message(DEPRECATION "The cmake function dune_create_dependency_tree() is deprecated and "
+                        "will be removed after release 2.12")
+  endif()
   if(dune-common_MODULE_PATH)
     list(REMOVE_ITEM CMAKE_MODULE_PATH "${dune-common_MODULE_PATH}")
   endif()
@@ -182,16 +187,18 @@ macro(dune_process_dependency_macros)
           message(STATUS "No module specific tests for module '${_mod}' ('${_macro}.cmake' not found)")
         endif()
       endif()
-      dune_module_to_uppercase(_upper_case "${_mod}")
       if(${_mod}_INCLUDE_DIRS)
         message(STATUS "Setting ${_mod}_INCLUDE_DIRS=${${_mod}_INCLUDE_DIRS}")
         include_directories("${${_mod}_INCLUDE_DIRS}")
       endif()
-      if(${_mod}_LIBRARIES)
-        message(STATUS "Setting ${_mod}_LIBRARIES=${${_mod}_LIBRARIES}")
-        foreach(_lib ${${_mod}_LIBRARIES})
-          list(INSERT DUNE_LIBS 0 "${_lib}")
-        endforeach()
+      # check if module is configured at find_package time (post dune 2.9)
+      if(NOT ${_mod}_CMAKE_CONFIG_VERSION)
+        if(${_mod}_LIBRARIES)
+          message(STATUS "Setting ${_mod}_LIBRARIES=${${_mod}_LIBRARIES}")
+          foreach(_lib ${${_mod}_LIBRARIES})
+            list(INSERT DUNE_LIBS 0 "${_lib}")
+          endforeach()
+        endif()
       endif()
 
       # register dune module
@@ -289,6 +296,10 @@ endmacro(find_dune_package module)
 
 macro(dune_process_dependency_leafs modules versions is_required next_level_deps
     next_level_sugs)
+  if(DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12)
+    message(DEPRECATION "The cmake function dune_process_dependency_leafs() is deprecated and "
+                        "will be removed after release 2.12")
+  endif()
   # modules, and versions are not real variables, make them one
   set(mmodules ${modules})
   set(mversions ${versions})
@@ -304,12 +315,14 @@ macro(dune_process_dependency_leafs modules versions is_required next_level_deps
     foreach(i RANGE 0 ${length})
       list(GET mmodules ${i} _mod)
       list(GET mversions ${i} _ver)
-      find_dune_package(${_mod} ${is_required} VERSION "${_ver}")
+      if(NOT ${_mod}_FOUND)
+        find_dune_package(${_mod} ${is_required} VERSION "${_ver}")
+      endif()
       set(${_mod}_SEARCHED ON)
       if(NOT "${is_required}" STREQUAL "")
         set(${_mod}_REQUIRED ON)
         set(${next_level_deps} ${${_mod}_DEPENDS} ${${next_level_deps}})
-      else(NOT "${is_required}" STREQUAL "")
+      else()
         set(${next_level_sugs} ${${_mod}_DEPENDS} ${${next_level_sugs}})
       endif()
       set(${next_level_sugs} ${${_mod}_SUGGESTS} ${${next_level_sugs}})
@@ -325,8 +338,10 @@ endmacro(dune_process_dependency_leafs)
 
 
 function(remove_processed_modules modules versions is_required)
-  message(DEPRECATION "The cmake function remove_processed_modules() is deprecated and "
-                      "will be removed after release 2.9.")
+  if(DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12)
+    message(DEPRECATION "The cmake function remove_processed_modules() is deprecated and "
+                        "will be removed after release 2.12")
+  endif()
   list(LENGTH ${modules} mlength)
   if(mlength GREATER 0)
     math(EXPR length "${mlength}-1")
@@ -347,6 +362,10 @@ endfunction(remove_processed_modules modules versions is_required)
 
 
 macro(dune_create_dependency_leafs depends depends_versions suggests suggests_versions)
+  if(DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12)
+    message(DEPRECATION "The cmake function dune_create_dependency_leafs() is deprecated and "
+                        "will be removed after release 2.12")
+  endif()
   set(deps "")
   set(sugs "")
   #Process dependencies

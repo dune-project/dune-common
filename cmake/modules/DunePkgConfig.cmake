@@ -7,6 +7,8 @@
 #
 include_guard(GLOBAL)
 
+include(FeatureSummary)
+
 find_package(PkgConfig)
 # text for feature summary
 set_package_properties("PkgConfig" PROPERTIES

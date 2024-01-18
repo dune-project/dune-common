@@ -100,7 +100,23 @@ macro(dune_project)
         BRIEF_DOCS "List of libraries exported by the module. DO NOT EDIT!"
         FULL_DOCS "List of libraries exported by the module. DO NOT EDIT!")
 
-  dune_create_dependency_tree()
+  if(DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12)
+    # this is only needed if config files of upstream modules were generated with dune-common < 2.10
+    # so this behavior is unsupported in dune-common == 2.12
+    dune_create_dependency_tree()
+  endif()
+
+  # find hard requirements
+  foreach(_mod IN LISTS ${ProjectName}_DEPENDS)
+    split_module_version(${_mod} _mod_name _mod_ver)
+    find_dune_package(${_mod_name} VERSION ${_mod_ver} REQUIRED)
+  endforeach()
+
+  # find weak requirements
+  foreach(_mod IN LISTS ${ProjectName}_SUGGESTS)
+    split_module_version(${_mod} _mod_name _mod_ver)
+    find_dune_package(${_mod_name} VERSION ${_mod_ver})
+  endforeach()
 
   # assert the project names matches
   if(NOT (ProjectName STREQUAL PROJECT_NAME))
@@ -130,9 +146,6 @@ macro(dune_project)
   # and provide macros for installing the docs and force
   # building them before.
   include(DuneDoc)
-
-  # activate pkg-config
-  include(DunePkgConfig)
 
   # Process the macros provided by the dependencies and ourself
   dune_process_dependency_macros()
@@ -196,6 +209,8 @@ macro(finalize_dune_project)
   # Needed by custom package configuration
   # file section of dune-grid.
   set(DUNE_MODULE_SRC_DOCDIR "\${${ProjectName}_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
+  get_property(${ProjectName}_LIBRARIES GLOBAL PROPERTY ${ProjectName}_LIBRARIES)
+  get_property(${ProjectName}_INTERFACE_LIBRARIES GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES)
 
   if(${ProjectName} STREQUAL "dune-common")
     set(DUNE_CUSTOM_PKG_CONFIG_SECTION
@@ -205,6 +220,27 @@ set_and_check(DOXYGENMACROS_FILE \"@PACKAGE_DOXYSTYLE_DIR@/doxygen-macros\")")
 endif()
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
+    if(NOT (${ProjectName} STREQUAL "dune-common"))
+      # set up dune dependencies
+      set(DUNE_DEPENDENCY_HEADER
+"macro(find_and_check_dune_dependency module version)
+  find_dependency(\${module})
+  include(DuneModuleDependencies)
+  if(dune-common_VERSION VERSION_GREATER_EQUAL \"2.10\")
+    dune_check_module_version(\${module} VERSION \"\${version}\")
+  endif()
+endmacro()
+")
+      foreach(_mod IN LISTS ${ProjectName}_DEPENDS ${ProjectName}_SUGGESTS)
+        split_module_version(${_mod} _mod_name _mod_ver)
+        if(${_mod_name}_FOUND)
+          set(DUNE_DEPENDENCY_HEADER
+"${DUNE_DEPENDENCY_HEADER}
+find_and_check_dune_dependency(${_mod_name} \"${_mod_ver}\")")
+        endif()
+      endforeach()
+    endif()
+    dune_module_to_uppercase(_upcase_module "${ProjectName}")
     # Generate a standard cmake package configuration file
     file(WRITE ${PROJECT_BINARY_DIR}/CMakeFiles/${ProjectName}-config.cmake.in
 "if(NOT ${ProjectName}_FOUND)
@@ -219,6 +255,7 @@ set(${ProjectName}_INSTALLED @MODULE_INSTALLED@)
 #report other information
 set_and_check(${ProjectName}_PREFIX \"\${PACKAGE_PREFIX_DIR}\")
 set_and_check(${ProjectName}_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")
+set(${ProjectName}_CMAKE_CONFIG_VERSION \"${DUNE_COMMON_VERSION}\")
 set(${ProjectName}_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")
 set(${ProjectName}_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG}\")
 set(${ProjectName}_CXX_FLAGS_MINSIZEREL \"${CMAKE_CXX_FLAGS_MINSIZEREL}\")
@@ -231,6 +268,21 @@ set(${ProjectName}_PYTHON_WHEELHOUSE \"@PACKAGE_DUNE_PYTHON_WHEELHOUSE@\")
 set(${ProjectName}_LIBRARIES \"@${ProjectName}_LIBRARIES@\")
 set(${ProjectName}_HASPYTHON @DUNE_MODULE_HASPYTHON@)
 set(${ProjectName}_PYTHONREQUIRES \"@DUNE_MODULE_PYTHONREQUIRES@\")
+
+list(APPEND CMAKE_MODULE_PATH \"\${${ProjectName}_MODULE_PATH}\")
+
+# Resolve dune dependencies
+include(CMakeFindDependencyMacro)
+${DUNE_DEPENDENCY_HEADER}
+
+# Set up DUNE_LIBS, ALL_DEPENDENCIES, DUNE_*_FOUND, and HAVE_* variables
+if(${ProjectName}_LIBRARIES)
+  message(STATUS \"Setting ${ProjectName}_LIBRARIES=\${${ProjectName}_LIBRARIES}\")
+  list(PREPEND DUNE_LIBS \${${ProjectName}_LIBRARIES})
+endif()
+list(APPEND ALL_DEPENDENCIES ${ProjectName})
+set(DUNE_${ProjectName}_FOUND TRUE)
+set(HAVE_${_upcase_module} TRUE)
 
 # Lines that are set by the CMake build system via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
 ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
@@ -584,6 +636,7 @@ macro(dune_regenerate_config_cmake)
     endif()
 
     dune_parse_module_config_file(${_dep} FILE ${CONFIG_H_CMAKE})
+
     set(collected_config_file        "${collected_config_file}\n${${_dep}_CONFIG_HH}\n")
     set(collected_config_file_bottom "${collected_config_file_bottom}\n${${_dep}_CONFIG_BOTTOM_HH}\n")
   endforeach()
