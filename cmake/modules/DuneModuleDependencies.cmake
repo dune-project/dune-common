@@ -8,6 +8,17 @@ DuneModuleDependencies
 Macros to extract dependencies between Dune modules by inspecting the
 ``dune.module`` files.
 
+.. cmake:command:: dune_check_module_version
+
+  .. code-block:: cmake
+
+    dune_check_module_version(<dune-module> VERSION <version-requirement>)
+
+  Check that the version of a dune module `<dune-module>` is compatible with
+  `<version-requirement>`. Notice that the `dune_module_information` macro is
+  invoked with the dune.module file of `<dune-module>`, thus, the variables for
+  `<dune-module>_VERSION` are populated here.
+
 .. cmake:command:: dune_create_dependency_tree
 
   .. code-block:: cmake
@@ -34,6 +45,60 @@ include(DuneEnableAllPackages)
 include(DuneModuleInformation)
 include(DuneUtilities)
 
+# checks that a module version is compatible with the found version of a module
+# notice that this has the side effect of populating the ${module}_VERSION information
+macro(dune_check_module_version module)
+  cmake_parse_arguments(DUNE_VCHECK "" "VERSION" "" ${ARGN})
+  if(DUNE_VCHECK_VERSION MATCHES "(>=|=|<=).*")
+    string(REGEX REPLACE "(>=|=|<=)(.*)" "\\1" DUNE_VCHECK_VERSION_OP ${DUNE_VCHECK_VERSION})
+    string(REGEX REPLACE "(>=|=|<=)(.*)" "\\2" DUNE_VCHECK_VERSION_NUMBER ${DUNE_VCHECK_VERSION})
+    string(STRIP ${DUNE_VCHECK_VERSION_NUMBER} DUNE_VCHECK_VERSION_NUMBER)
+    extract_major_minor_version("${DUNE_VCHECK_VERSION_NUMBER}" DUNE_VCHECK_VERSION)
+    set(DUNE_VCHECK_VERSION_STRING "${DUNE_VCHECK_VERSION_MAJOR}.${DUNE_VCHECK_VERSION_MINOR}.${DUNE_VCHECK_VERSION_REVISION}")
+  else()
+    set(DUNE_VCHECK_VERSION_STRING "0.0.0")
+  endif()
+
+  unset(${module}_dune_module)
+  foreach(_dune_module_file
+      ${${module}_PREFIX}/dune.module
+      ${${module}_PREFIX}/lib/dunecontrol/${module}/dune.module
+      ${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module)
+    if(EXISTS ${_dune_module_file})
+      get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
+      dune_module_information(${_dune_module_file_path})# QUIET)
+      set(${module}_dune_module 1)
+      set(DUNE_VCHECK_MOD_VERSION_STRING "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
+      # check whether dependency matches version requirement
+      unset(module_version_wrong)
+      if(DUNE_VCHECK_VERSION_OP MATCHES ">=")
+        if(NOT (DUNE_VCHECK_MOD_VERSION_STRING VERSION_EQUAL DUNE_VCHECK_VERSION_STRING OR
+                DUNE_VCHECK_MOD_VERSION_STRING VERSION_GREATER DUNE_VCHECK_VERSION_STRING))
+          set(module_version_wrong 1)
+        endif()
+      elseif(DUNE_VCHECK_VERSION_OP MATCHES "<=")
+        if(NOT (DUNE_VCHECK_MOD_VERSION_STRING VERSION_EQUAL DUNE_VCHECK_VERSION_STRING OR
+                DUNE_VCHECK_MOD_VERSION_STRING VERSION_LESS DUNE_VCHECK_VERSION_STRING))
+          set(module_version_wrong 1)
+        endif()
+      elseif(DUNE_VCHECK_VERSION_OP MATCHES "=" AND
+          NOT (DUNE_VCHECK_MOD_VERSION_STRING VERSION_EQUAL DUNE_VCHECK_VERSION_STRING))
+        set(module_version_wrong 1)
+      endif()
+    endif()
+  endforeach()
+  if(NOT ${module}_dune_module)
+    message(${_warning_level} "Could not find dune.module file for module ${module} "
+      "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/, "
+      "${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module")
+    set(${module}_FOUND OFF)
+  endif()
+  if(module_version_wrong)
+    message(${_warning_level} "Could not find requested version of module ${module}. "
+      "Requested version was ${DUNE_FIND_VERSION}, found version is ${DUNE_FIND_MOD_VERSION_STRING}")
+    set(${module}_FOUND OFF)
+  endif()
+endmacro(dune_check_module_version module)
 
 macro(dune_create_dependency_tree)
   if(dune-common_MODULE_PATH)
@@ -152,15 +217,6 @@ macro(find_dune_package module)
     set(_warning_level "WARNING")
     set_package_properties(${module} PROPERTIES TYPE OPTIONAL)
   endif()
-  if(DUNE_FIND_VERSION MATCHES "(>=|=|<=).*")
-    string(REGEX REPLACE "(>=|=|<=)(.*)" "\\1" DUNE_FIND_VERSION_OP ${DUNE_FIND_VERSION})
-    string(REGEX REPLACE "(>=|=|<=)(.*)" "\\2" DUNE_FIND_VERSION_NUMBER ${DUNE_FIND_VERSION})
-    string(STRIP ${DUNE_FIND_VERSION_NUMBER} DUNE_FIND_VERSION_NUMBER)
-    extract_major_minor_version("${DUNE_FIND_VERSION_NUMBER}" DUNE_FIND_VERSION)
-    set(DUNE_FIND_VERSION_STRING "${DUNE_FIND_VERSION_MAJOR}.${DUNE_FIND_VERSION_MINOR}.${DUNE_FIND_VERSION_REVISION}")
-  else()
-    set(DUNE_FIND_VERSION_STRING "0.0.0")
-  endif()
   if(NOT ${module}_FOUND)
     if(NOT (${module}_DIR OR ${module}_ROOT OR
        "${CMAKE_PREFIX_PATH}" MATCHES ".*${module}.*"))
@@ -219,45 +275,7 @@ macro(find_dune_package module)
   endif()
   if(${module}_FOUND)
     # parse other module's dune.module file to generate variables for config.h
-    unset(${module}_dune_module)
-    foreach(_dune_module_file
-        ${${module}_PREFIX}/dune.module
-        ${${module}_PREFIX}/lib/dunecontrol/${module}/dune.module
-        ${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module)
-      if(EXISTS ${_dune_module_file})
-        get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
-        dune_module_information(${_dune_module_file_path})# QUIET)
-        set(${module}_dune_module 1)
-        set(DUNE_FIND_MOD_VERSION_STRING "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
-        # check whether dependency matches version requirement
-        unset(module_version_wrong)
-        if(DUNE_FIND_VERSION_OP MATCHES ">=")
-          if(NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
-                  DUNE_FIND_MOD_VERSION_STRING VERSION_GREATER DUNE_FIND_VERSION_STRING))
-            set(module_version_wrong 1)
-          endif()
-        elseif(DUNE_FIND_VERSION_OP MATCHES "<=")
-          if(NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING OR
-                  DUNE_FIND_MOD_VERSION_STRING VERSION_LESS DUNE_FIND_VERSION_STRING))
-            set(module_version_wrong 1)
-          endif()
-        elseif(DUNE_FIND_VERSION_OP MATCHES "=" AND
-           NOT (DUNE_FIND_MOD_VERSION_STRING VERSION_EQUAL DUNE_FIND_VERSION_STRING))
-          set(module_version_wrong 1)
-        endif()
-      endif()
-    endforeach()
-    if(NOT ${module}_dune_module)
-      message(${_warning_level} "Could not find dune.module file for module ${module} "
-        "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/, "
-        "${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module")
-      set(${module}_FOUND OFF)
-    endif()
-    if(module_version_wrong)
-      message(${_warning_level} "Could not find requested version of module ${module}. "
-        "Requested version was ${DUNE_FIND_VERSION}, found version is ${DUNE_FIND_MOD_VERSION_STRING}")
-      set(${module}_FOUND OFF)
-    endif()
+    dune_check_module_version(${module} VERSION ${DUNE_FIND_VERSION})
   else(${module}_FOUND)
     if(required)
       message(FATAL_ERROR "Could not find required module ${module}.")
