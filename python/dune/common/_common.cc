@@ -26,8 +26,6 @@ PYBIND11_MODULE( _common, module )
   Dune::Python::registerDynamicVector<double>(module);
   Dune::Python::registerDynamicMatrix<double>(module);
 
-  int argc = 0;
-  char **argv = NULL;
-  Dune::MPIHelper::instance(argc,argv);
+  Dune::MPIHelper::instance();
   Dune::Python::registerCommunication(module);
 }
