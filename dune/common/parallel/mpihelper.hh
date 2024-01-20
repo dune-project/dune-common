@@ -240,26 +240,50 @@ namespace Dune
      *   ...
      * }
      * \endcode
+     *
+     * The MPIHelper will be globally initialized on its first call.
+     * Afterwards, all arguments to this function will be ignored.
+     *
      * @param argc The number of arguments provided to main.
      * @param argv The arguments provided to main.
      */
     DUNE_EXPORT static MPIHelper& instance(int& argc, char**& argv)
     {
-      // create singleton instance
-      if (!instance_){
-        static std::mutex mutex;
-        std::lock_guard<std::mutex> guard(mutex);
-        if(!instance_)
-          instance_.reset(new MPIHelper(argc,argv));
-      }
-      return *instance_;
+      return instance(&argc, &argv);
     }
 
-    DUNE_EXPORT static MPIHelper& instance()
+    /**
+     * @brief Get the singleton instance of the helper.
+     *
+     * This method can be called either without any arguments,
+     * or with the same arguments that the main method of the
+     * program was called, passed as pointer:
+     * \code
+     * int main(int argc, char** argv){
+     *   MPIHelper::instance();
+     *   // or: MPIHelper::instance(&argc, &argv);
+     *   // program code comes here
+     *   ...
+     * }
+     * \endcode
+     *
+     * The MPIHelper will be globally initialized on its first call.
+     * Afterwards, all arguments to this function will be ignored.
+     *
+     * @note This overload accepts all arguments by pointer similar
+     * to the `MPI_Init` function and allows to pass `nullptr` for
+     * all arguments.
+     *
+     * @relates instance(int&, char**&)
+     *
+     * @param argc The number of arguments provided to main.
+     * @param argv The arguments provided to main.
+     */
+    DUNE_EXPORT static MPIHelper& instance(int* argc = nullptr, char*** argv = nullptr)
     {
-      if(!instance_)
-        DUNE_THROW(InvalidStateException, "MPIHelper not initialized! Call MPIHelper::instance(argc, argv) with arguments first.");
-      return *instance_;
+      assert((argc == nullptr) == (argv == nullptr));
+      static MPIHelper instance{argc, argv};
+      return instance;
     }
 
     /**
@@ -289,10 +313,9 @@ namespace Dune
     int size_;
     bool initializedHere_;
     void prevent_warning(int){}
-    static inline std::unique_ptr<MPIHelper> instance_ = {};
 
     //! \brief calls MPI_Init with argc and argv as parameters
-    MPIHelper(int& argc, char**& argv)
+    MPIHelper(int* argc, char*** argv)
     : initializedHere_(false)
     {
       int wasInitialized = -1;
@@ -301,7 +324,7 @@ namespace Dune
       {
         rank_ = -1;
         size_ = -1;
-        static int is_initialized = MPI_Init(&argc, &argv);
+        static int is_initialized = MPI_Init(argc, argv);
         prevent_warning(is_initialized);
         initializedHere_ = true;
       }
