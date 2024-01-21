@@ -249,15 +249,12 @@ endif()")
   get_property(${ProjectName}_LIBRARIES GLOBAL PROPERTY ${ProjectName}_LIBRARIES)
   get_property(${ProjectName}_EXPORTED_LIBRARIES GLOBAL PROPERTY ${ProjectName}_EXPORTED_LIBRARIES)
 
-  # compute under which libdir the package configuration files are to be installed.
-  # If the module installs an object library we use CMAKE_INSTALL_LIBDIR
-  # to capture the multiarch triplet of Debian/Ubuntu.
-  # Otherwise we fall back to DUNE_INSTALL_NONOBJECTLIB which is lib
-  # if not set otherwise.
-  if(${ProjectName}_EXPORTED_LIBRARIES)
-    set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
+  # DUNE_INSTALL_LIBDIR is deprecated and used here to generate a proper deprecation warnings.
+  # After Dune 2.10 CMAKE_INSTALL_LIBDIR has to be used, DUNE_INSTALL_LIBDIR will be removed.
+  if(DEFINED DUNE_INSTALL_LIBDIR)
+    message(DEPRECATED "DUNE_INSTALL_LIBDIR is deprecated, use CMAKE_INSTALL_LIBDIR instead")
   else()
-    set(DUNE_INSTALL_LIBDIR ${DUNE_INSTALL_NONOBJECTLIBDIR})
+    set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
   endif()
 
   # Set the location of the doc file source. Needed by custom package configuration
