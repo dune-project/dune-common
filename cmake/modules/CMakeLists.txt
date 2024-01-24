@@ -34,7 +34,6 @@ install(FILES
   DunePolicy.cmake
   DuneProject.cmake
   DunePythonCommonMacros.cmake
-  DunePythonDeprecations.cmake
   DunePythonFindPackage.cmake
   DunePythonInstallPackage.cmake
   DunePythonTestCommand.cmake

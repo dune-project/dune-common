@@ -115,6 +115,9 @@ In order to build the DUNE core modules you need at least the following software
 - Remove deprecated `rmgenerated.py`. Call `python -m dune remove` with the same
   arguments instead.
 
+- Remove `DunePythonDeprecations.cmake` that was used to ease the overhaul
+  of Python CMake integration.
+
 - We have changed the way optional dependencies are activated in the build-system internally.
   The cmake macros `add_dune_xy_flags` do not set the compiler flag `-DENABLE_XY=1` anymore, but instead
   set directly the flag `-DHAVE_XY=1`. Neither `ENABLE_XY` nor `HAVE_XY` should be modified manually
