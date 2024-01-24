@@ -109,6 +109,9 @@ In order to build the DUNE core modules you need at least the following software
 - Remove deprecated CMake file `DuneCMakeCompat.cmake` that only contained a
   deprecation message.
 
+- Remove deprecated CMake function `inkscape_generate_png_from_svg`. Use
+  `dune_create_inkscape_image_converter_target` instead.
+
 - We have changed the way optional dependencies are activated in the build-system internally.
   The cmake macros `add_dune_xy_flags` do not set the compiler flag `-DENABLE_XY=1` anymore, but instead
   set directly the flag `-DHAVE_XY=1`. Neither `ENABLE_XY` nor `HAVE_XY` should be modified manually
@@ -367,7 +370,7 @@ In order to build the DUNE core modules you need at least the following software
   setting `BUILD_SHARED_LIBS` accordingly. Building both static
   and shared libraries is no longer supported.
 
-- Remove the CMake function deprecated `inkscape_generate_png_from_svg`.
+- Deprecate the CMake function `inkscape_generate_png_from_svg`.
 
 - Remove the old and deprecated use of UseLATEX.cmake.
   `dune_add_latex_document' is a redirection to `add_latex_document`
