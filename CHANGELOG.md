@@ -148,6 +148,8 @@ In order to build the DUNE core modules you need at least the following software
   `DUNE_ASSERT_AND_RETURN`. Use `assert()` macro directly in `constexpr` functions.
 - Remove deprecated header `power.hh`. Use `Dune::power` from `math.hh` instead.
 - Deprecate class `SizeOf`. Use `sizeof...` instead.
+- Remove deprecated header `dune/python/common/numpycommdatahandle.hh`. Use
+  `dune/python/grid/numpycommdatahandle.hh` instead.
 
 
 # Release 2.9
