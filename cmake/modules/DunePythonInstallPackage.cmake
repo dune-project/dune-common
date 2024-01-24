@@ -145,11 +145,6 @@
 #      2. If PATH contains a `setup.py.in` file, such file will be configured and used to `pip install` the package from the binary directory
 #      3. Otherwise, this script will provide a template for `setup.py.in` and continue with 2.
 #
-# .. cmake_function:: dune_python_install_package
-#
-#    This function is deprecated, use :dune_python_configure_bindings: or
-#    :dune_python_configure_package: according to the needed behavior.
-#
 # .. cmake_variable:: DUNE_PYTHON_ADDITIONAL_PIP_PARAMS
 #
 #    Use this variable to set additional flags for pip in this build. This can e.g.
@@ -627,7 +622,7 @@ function(dune_python_configure_bindings)
   endif()
 
   if(NOT EXISTS ${PYCONFBIND_FULLPATH})
-    message(FATAL_ERROR "dune_python_install_package: ${PYCONFBIND_FULLPATH} does not exists")
+    message(FATAL_ERROR "dune_python_configure_bindings: ${PYCONFBIND_FULLPATH} does not exists")
   endif()
 
   dune_python_configure_package(
@@ -653,31 +648,5 @@ function(dune_python_configure_bindings)
   else()
     message(WARNING "python binding configuration failed - no linking done")
   endif()
-
-endfunction()
-
-
-function(dune_python_install_package)
-  # Parse Arguments
-  set(SINGLE PATH PACKAGENAME)
-  set(MULTI ADDITIONAL_PIP_PARAMS DEPENDS CMAKE_METADATA_FLAGS)
-  cmake_parse_arguments(PYINST "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
-  if(PYINST_UNPARSED_ARGUMENTS)
-    message(WARNING "Unparsed arguments in dune_python_install_package: This often indicates typos!")
-  endif()
-
-  message(DEPRECATION "This function is deprecated. Use 'dune_python_configure_bindings' for python binding packages or 'dune_python_configure_package' for installable python packages")
-
-  if(PYINST_DEPENDS)
-    message(DEPRECATION "Argument DEPENDS is deprecated and will be ignored!")
-  endif()
-
-  dune_python_configure_bindings(
-    PATH ${PYINST_PATH}
-    PACKAGENAME ${PYINST_PACKAGENAME}
-    ADDITIONAL_PIP_PARAMS ${PYINST_ADDITIONAL_PIP_PARAMS}
-    CMAKE_METADATA_FLAGS ${PYINST_CMAKE_METADATA_FLAGS}
-    INSTALL_TARGET install_python_package_${PYINST_PACKAGENAME}
-  )
 
 endfunction()

@@ -118,6 +118,10 @@ In order to build the DUNE core modules you need at least the following software
 - Remove `DunePythonDeprecations.cmake` that was used to ease the overhaul
   of Python CMake integration.
 
+- Remove deprecated CMake function `dune_python_install_package`. Use
+  `dune_python_configure_bindings` or `dune_python_configure_package`
+  according to the needed behavior.
+
 - We have changed the way optional dependencies are activated in the build-system internally.
   The cmake macros `add_dune_xy_flags` do not set the compiler flag `-DENABLE_XY=1` anymore, but instead
   set directly the flag `-DHAVE_XY=1`. Neither `ENABLE_XY` nor `HAVE_XY` should be modified manually

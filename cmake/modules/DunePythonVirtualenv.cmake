@@ -23,8 +23,8 @@
 #    To directly execute a command in the virtualenv, you can use the script
 #    :code:`run-in-dune-env <command>`, which is also placed into every build directory.
 #
-#    All packages installed with :ref:`dune_python_install_package` are automatically
-#    installed into the virtualenv.
+#    All packages installed with :ref:`dune_python_configure_bindings` or
+#    :ref:`dune_python_configure_package` are automatically installed into the virtualenv.
 #
 #    After execution of this module, the following are available for use in
 #    downstream modules:
