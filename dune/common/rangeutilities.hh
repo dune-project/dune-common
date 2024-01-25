@@ -248,6 +248,9 @@ namespace Dune
     /** \brief cast into corresponding std::integer_sequence **/
     constexpr operator integer_sequence() const noexcept { return {}; }
 
+    /** \brief return corresponding std::integer_sequence **/
+    static constexpr integer_sequence to_integer_sequence() noexcept { return {}; }
+
     /** \brief obtain a random-access iterator to the first element **/
     static constexpr iterator begin() noexcept { return iterator(from); }
     /** \brief obtain a random-access iterator past the last element **/
