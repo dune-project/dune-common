@@ -131,6 +131,9 @@ In order to build the DUNE core modules you need at least the following software
 - Add a policy system to smoothly change behavior in the build-system. This follows the cmake policy
   system but uses own IDs and is connected to dune module version instead of cmake versions.
 
+- Remove deprecated macros `DUNE_VERSION_NEWER` and `DUNE_VERSION_NEWER_REV`, use `DUNE_VERSION_GTE`
+  and `DUNE_VERSION_GTE_REV` instead. There was no deprecation compiler warning.
+
 ## Deprecations and removals
 
 - The deprecated header `dune/common/function.hh` has been removed. Use C++ function
