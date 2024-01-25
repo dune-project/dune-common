@@ -4,6 +4,7 @@
 
 #include <array>
 #include <map>
+#include <utility>
 #include <vector>
 #include <numeric>
 #include <type_traits>
@@ -61,6 +62,10 @@ template<class T>
 struct is_mutable_reference : public std::conjunction<std::is_reference<T>, std::negation<is_const_reference<T>>>
 {};
 
+template<typename F, typename T, T... I>
+void checkIndexExpansion(std::integer_sequence<T, I...> seq, F&& f){
+  f(seq);
+}
 
 auto testTransformedRangeView()
 {
@@ -305,12 +310,18 @@ int main()
   suite.check(range(6).contains(5));
   suite.check(not range(6).contains(6));
 
-  using StaticRange4 = decltype(range(std::integral_constant<int,4>()));
+  auto range4 = range(std::integral_constant<int,4>());
+  using StaticRange4 = decltype(range4);
   static_assert(StaticRange4::contains(std::integral_constant<int,3>()));
   static_assert(not StaticRange4::contains(4));
 
   static_assert(std::is_same<StaticRange4::integer_sequence, std::make_integer_sequence<int, 4>>::value,
                 "decltype(range(std::integral_constant<int, 4>))::integer_sequence must be the same as std::make_integer_sequence<int, 4>");
+
+  checkIndexExpansion(range4.to_integer_sequence(), [](auto seq){
+    static_assert(std::is_same<decltype(seq), std::make_integer_sequence<int, 4>>::value,
+                  "decltype(range(std::integral_constant<int, 4>))::integer_sequence must be the same as std::make_integer_sequence<int, 4>");
+  });
 
   // Hybrid::forEach for integer ranges
   Dune::Hybrid::forEach(range(std::integral_constant<int, 1>()), [] (auto &&i) {
