@@ -20,7 +20,6 @@ install(FILES
   CMakeBuiltinFunctionsDocumentation.cmake
   DuneAddLibrary.cmake
   DuneAddPybind11Module.cmake
-  DuneCMakeCompat.cmake
   DuneCommonMacros.cmake
   DuneDoc.cmake
   DuneDoxygen.cmake
@@ -35,7 +34,6 @@ install(FILES
   DunePolicy.cmake
   DuneProject.cmake
   DunePythonCommonMacros.cmake
-  DunePythonDeprecations.cmake
   DunePythonFindPackage.cmake
   DunePythonInstallPackage.cmake
   DunePythonTestCommand.cmake

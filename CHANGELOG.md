@@ -106,6 +106,22 @@ In order to build the DUNE core modules you need at least the following software
 - Deprecate CMake macro `message_verbose`. Use `message(VERBOSE "message text")` instead.
   This macro will be removed after Dune 2.10.
 
+- Remove deprecated CMake file `DuneCMakeCompat.cmake` that only contained a
+  deprecation message.
+
+- Remove deprecated CMake function `inkscape_generate_png_from_svg`. Use
+  `dune_create_inkscape_image_converter_target` instead.
+
+- Remove deprecated `rmgenerated.py`. Call `python -m dune remove` with the same
+  arguments instead.
+
+- Remove `DunePythonDeprecations.cmake` that was used to ease the overhaul
+  of Python CMake integration.
+
+- Remove deprecated CMake function `dune_python_install_package`. Use
+  `dune_python_configure_bindings` or `dune_python_configure_package`
+  according to the needed behavior.
+
 - We have changed the way optional dependencies are activated in the build-system internally.
   The cmake macros `add_dune_xy_flags` do not set the compiler flag `-DENABLE_XY=1` anymore, but instead
   set directly the flag `-DHAVE_XY=1`. Neither `ENABLE_XY` nor `HAVE_XY` should be modified manually
@@ -114,6 +130,9 @@ In order to build the DUNE core modules you need at least the following software
 
 - Add a policy system to smoothly change behavior in the build-system. This follows the cmake policy
   system but uses own IDs and is connected to dune module version instead of cmake versions.
+
+- Remove deprecated macros `DUNE_VERSION_NEWER` and `DUNE_VERSION_NEWER_REV`, use `DUNE_VERSION_GTE`
+  and `DUNE_VERSION_GTE_REV` instead. There was no deprecation compiler warning.
 
 ## Deprecations and removals
 
@@ -132,6 +151,8 @@ In order to build the DUNE core modules you need at least the following software
   `DUNE_ASSERT_AND_RETURN`. Use `assert()` macro directly in `constexpr` functions.
 - Remove deprecated header `power.hh`. Use `Dune::power` from `math.hh` instead.
 - Deprecate class `SizeOf`. Use `sizeof...` instead.
+- Remove deprecated header `dune/python/common/numpycommdatahandle.hh`. Use
+  `dune/python/grid/numpycommdatahandle.hh` instead.
 
 
 # Release 2.9
@@ -364,7 +385,7 @@ In order to build the DUNE core modules you need at least the following software
   setting `BUILD_SHARED_LIBS` accordingly. Building both static
   and shared libraries is no longer supported.
 
-- Remove the CMake function deprecated `inkscape_generate_png_from_svg`.
+- Deprecate the CMake function `inkscape_generate_png_from_svg`.
 
 - Remove the old and deprecated use of UseLATEX.cmake.
   `dune_add_latex_document' is a redirection to `add_latex_document`

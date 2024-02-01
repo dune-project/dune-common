@@ -13,7 +13,6 @@ set(HEADERS
   getdimension.hh
   logger.hh
   mpihelper.hh
-  numpycommdatahandle.hh
   numpyvector.hh
   pythonvector.hh
   string.hh

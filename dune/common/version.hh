@@ -99,24 +99,6 @@
   ! DUNE_VERSION_GTE(module,major,minor)
 
 /**
- * \brief True if 'module' has the version major.minor or newer
- * \note Deprecated, use DUNE_VERSION_GTE instead.
- *
- * For the DUNE core modules you need to use the following module names:
- *  - DUNE_COMMON for dune-common
- *  - DUNE_GRID for dune-grid
- *  - DUNE_GEOMETRY for dune-geometry
- *  - DUNE_ISTL for dune-istl
- *  - DUNE_LOCALFUNCTIONS for dune-localfunctions
- *
- * For external DUNE modules, you should capitalize the name and
- * replace '-' by underscores. For example for the module foo-bar you
- * need to use FOO_BAR as module name in the context of this macro.
- */
-#define DUNE_VERSION_NEWER(module,major,minor) \
-  DUNE_VERSION_GTE(module,major,minor)
-
-/**
  * \brief True if 'module' has a version greater than major.minor
  *
  * For the DUNE core modules you need to use the following module names:
@@ -187,24 +169,6 @@
  */
 #define DUNE_VERSION_LT_REV(module,major,minor,revision) \
   ! DUNE_VERSION_GTE_REV(module,major,minor,revision)
-
-/**
- * \brief True if 'module' has the version major.minor.revision or newer
- * \note Deprecated, use DUNE_VERSION_GTE_REV instead.
- *
- * For the DUNE core modules you need to use the following module names:
- *  - DUNE_COMMON for dune-common
- *  - DUNE_GRID for dune-grid
- *  - DUNE_GEOMETRY for dune-geometry
- *  - DUNE_ISTL for dune-istl
- *  - DUNE_LOCALFUNCTIONS for dune-localfunctions
- *
- * For external DUNE modules, you should capitalize the name and
- * replace '-' by underscores. For example for the module foo-bar you
- * need to use FOO_BAR as module name in the context of this macro.
- */
-#define DUNE_VERSION_NEWER_REV(module,major,minor,revision) \
-  DUNE_VERSION_GTE_REV(module,major,minor,revision)
 
 /**
  * \brief True if 'module' has a greater version than major.minor.revision

@@ -77,8 +77,8 @@
 /* end private */
 
 
-/* old feature support macros which were tested until 2.9, kept around for one more release */
-#define DUNE_HAVE_CXX_EXPERIMENTAL_MAKE_ARRAY 0
+/* old feature support macros which were tested until 2.10, kept around for one more release */
+/* none for 2.10 */
 
 /* Define to ENABLE_UMFPACK if the UMFPack library is available. */
 /// \deprecated Use HAVE_SUITESPARSE_UMFPACK instead
