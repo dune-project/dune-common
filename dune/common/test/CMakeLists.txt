@@ -211,6 +211,9 @@ dune_add_test(SOURCES hybridutilitiestest.cc
 dune_add_test(SOURCES indicestest.cc
               LABELS quick)
 
+dune_add_test(SOURCES integersequencetest.cc
+              LABELS quick)
+
 dune_add_test(SOURCES iscallabletest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)

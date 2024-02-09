@@ -63,6 +63,7 @@ install(FILES
         hybridutilities.hh
         indent.hh
         indices.hh
+        integersequence.hh
         interfaces.hh
         ios_state.hh
         iteratorfacades.hh
