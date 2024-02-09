@@ -20,7 +20,11 @@ using namespace Dune;
 ParameterTree::ParameterTree()
 {}
 
-const Dune::ParameterTree Dune::ParameterTree::empty_;
+ParameterTree::ParameterTree(ParameterTree::EmptyTag)
+: prefix_{"<unknown>"}
+{}
+
+const ParameterTree ParameterTree::empty_ = ParameterTree{ParameterTree::EmptyTag()};
 
 void ParameterTree::report(std::ostream& stream, const std::string& prefix) const
 {

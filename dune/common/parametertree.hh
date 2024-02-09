@@ -207,6 +207,9 @@ namespace Dune {
 
   protected:
 
+    struct EmptyTag {};
+    ParameterTree(EmptyTag);
+
     static const ParameterTree empty_;
 
     std::string prefix_;
