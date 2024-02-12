@@ -3,6 +3,8 @@
 #ifndef DUNE_COMMON_KEYWORDS_HH
 #define DUNE_COMMON_KEYWORDS_HH
 
+#warning This header is deprecated and will be removed after Dune 2.10. All key words are supported by C++ 17.
+
 /** \file
  * \brief Definitions of several macros that conditionally make C++ syntax
  *      available.
