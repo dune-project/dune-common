@@ -76,7 +76,7 @@ namespace Dune
 
       template< class T >
       struct DimRange< T, std::enable_if_t< std::is_same< typename T::NodeTag, Dune::TypeTree::PowerNodeTag >::value > >
-        : public std::integral_constant< std::size_t, sum< int >( T::CHILDREN * DimRange< typename T::ChildType >::value ) >
+        : public std::integral_constant< std::size_t, sum< int >( T::degree() * DimRange< typename T::ChildType >::value ) >
       {};
 #endif // #if HAVE_DUNE_TYPETREE
 
