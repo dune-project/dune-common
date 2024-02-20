@@ -77,6 +77,14 @@ find_package(Python3 COMPONENTS Interpreter Development)
 # this option enables the build of Python bindings for DUNE modules per default
 option(DUNE_ENABLE_PYTHONBINDINGS "Enable Python bindings for DUNE" ON)
 
+# this option enables pre-compilation of certain modules in dune-common and dune-geometry
+option(DUNE_ENABLE_PYTHONMODULE_PRECOMP "Enable module precompilation for certain Python modules in DUNE" OFF)
+
+# if python bindings are disabled then this option has to be disabled also
+if(NOT DUNE_ENABLE_PYTHONBINDINGS)
+  set(DUNE_ENABLE_PYTHONMODULE_PRECOMPILE OFF)
+endif()
+
 # helper message used below in various user messages
 set(DUNE_PYTHON_BINDINGS_USER_NOTICE "If you do not plan to use the Dune Python bindings you can ignore this information")
 

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include <dune/common/hybridutilities.hh>
+#include <dune/common/tupleutility.hh>
 #include <dune/python/common/dynmatrix.hh>
 #include <dune/python/common/dynvector.hh>
 #include <dune/python/common/fmatrix.hh>
@@ -28,4 +28,10 @@ PYBIND11_MODULE( _common, module )
 
   Dune::MPIHelper::instance();
   Dune::Python::registerCommunication(module);
+
+#ifdef DUNE_ENABLE_PYTHONMODULE_PRECOMP
+  // pre-compile FieldVector from 0,...,10
+  Dune::Hybrid::forEach(std::make_index_sequence<11>{},
+        [&module](auto dim){ Dune::Python::registerFieldVector<double, dim>(module); } );
+#endif
 }
