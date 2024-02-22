@@ -16,6 +16,10 @@
 #include <dune/python/pybind11/pybind11.h>
 #include <dune/python/pybind11/stl.h>
 
+#ifdef DUNE_ENABLE_PYTHONMODULE_PRECOMPILE
+#include "registerfvector.hh"
+#endif
+
 PYBIND11_MODULE( _common, module )
 {
   Dune::Python::addToTypeRegistry<double>(Dune::Python::GenerateTypeName("double"));
@@ -29,9 +33,9 @@ PYBIND11_MODULE( _common, module )
   Dune::MPIHelper::instance();
   Dune::Python::registerCommunication(module);
 
-#ifdef DUNE_ENABLE_PYTHONMODULE_PRECOMP
-  // pre-compile FieldVector from 0,...,10
-  Dune::Hybrid::forEach(std::make_index_sequence<11>{},
-        [&module](auto dim){ Dune::Python::registerFieldVector<double, dim>(module); } );
+#ifdef DUNE_ENABLE_PYTHONMODULE_PRECOMPILE
+  // register pre-compiled FieldVector objects
+  Dune::Hybrid::forEach(std::make_index_sequence<4>{},
+      [&module](auto s){ registerFieldVectorToModule<s>(module); } );
 #endif
 }

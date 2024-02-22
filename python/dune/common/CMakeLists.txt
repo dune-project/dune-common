@@ -13,7 +13,13 @@ add_python_targets(common
   project
   utility
 )
-dune_add_pybind11_module(NAME _common)
+
+set(COMMON_SOURCES _common.cc)
+if( DUNE_ENABLE_PYTHONMODULE_PRECOMPILE )
+  set(COMMON_SOURCES ${COMMON_SOURCES} registerfvector_a.cc  registerfvector_b.cc registerfvector_c.cc  registerfvector_d.cc)
+endif()
+
+dune_add_pybind11_module(NAME _common SOURCES ${COMMON_SOURCES})
 set_property(TARGET _common PROPERTY LINK_LIBRARIES dunecommon APPEND)
 if(SKBUILD)
   install(TARGETS _common LIBRARY DESTINATION python/dune/common)
