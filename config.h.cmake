@@ -36,6 +36,15 @@
 /* Define if you have LAPACK library. */
 #cmakedefine HAVE_LAPACK 1
 
+/* Deactivate cxx bindings for MPI */
+#if defined(HAVE_MPI) && HAVE_MPI
+#define MPICH_SKIP_MPICXX 1
+#define OMPI_SKIP_MPICXX 1
+#define MPI_NO_CPPBIND 1
+#define MPIPP_H
+#define _MPICC_H
+#endif
+
 /* Define to 1 if you have the Threading Building Blocks (TBB) library */
 #cmakedefine HAVE_TBB 1
 
