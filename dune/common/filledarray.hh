@@ -12,6 +12,9 @@
 
 #include <array>
 #include <cstddef>
+#include <utility>
+
+#include <dune/common/indices.hh>
 
 namespace Dune
 {
@@ -22,9 +25,6 @@ namespace Dune
 
   //! Return an array filled with the provided value.
   /**
-   * \note This function is `constexpr` only in C++17, or, more precisely,
-   *       when `std::array::begin()` and `std::array::end()` are `constexpr`.
-   *
    * \tparam n     Size of the returned array.
    * \tparam T     Value type of the returned array.  This is usually deduced
    *               from `t`.
@@ -32,11 +32,9 @@ namespace Dune
   template<std::size_t n, class T>
   constexpr std::array<T, n> filledArray(const T& t)
   {
-    std::array<T, n> arr{};
-    // this is constexpr in c++17, `arr.fill(t)` is not
-    for(auto &el : arr)
-      el = t;
-    return arr;
+    return unpackIntegerSequence([&](auto... i) {
+      return std::array<T, n>{(i,t)...};
+    }, std::make_index_sequence<n>{});
   }
 
   /** @} */
