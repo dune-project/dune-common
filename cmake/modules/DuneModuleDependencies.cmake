@@ -19,15 +19,33 @@ Macros to extract dependencies between Dune modules by inspecting the
   invoked with the dune.module file of `<dune-module>`, thus, the variables for
   `<dune-module>_VERSION` are populated here.
 
+.. cmake:command:: dune_cmake_path_setup
+
+  .. code-block:: cmake
+
+    dune_cmake_path_setup(<dependencies>)
+
+  Set up the cmake module paths. The paths of all projects, including the
+  current project, are added so that they follow the reverse order of the
+  dependencies. This is an internal function of dune-common.
+
+  ``dependencies``
+  The list of dependencies of the project. The dependencies must be order
+  as list resulting of a depth-first search of the dependency tree.
+
 .. cmake:command:: dune_create_dependency_tree
 
   .. code-block:: cmake
 
-    dune_create_dependency_tree()
+    dune_create_dependency_tree([SKIP_CMAKE_PATH_SETUP])
 
   Create a tree of dune module dependencies by inspecting the ``dune.module``
-  files recursively.
-
+  files recursively. All of the searched dependencies are stored in a list
+  variable named ``ALL_DEPENDENCIES`` which is the result of a depth-first
+  search on the dependency tree. If ``SKIP_CMAKE_PATH_SETUP`` is omitted,
+  this function will additionally set up the cmake paths on
+  ``ALL_DEPENDENCIES``. This is an internal function of dune-common and will be
+  removed after version 2.12.
 
 .. cmake:command:: dune_process_dependency_macros
 
@@ -102,62 +120,24 @@ macro(dune_check_module_version module)
 endmacro(dune_check_module_version module)
 
 macro(dune_create_dependency_tree)
+  cmake_parse_arguments(DUNE_DEPENDENCY_TREE "SKIP_CMAKE_PATH_SETUP" "" "" ${ARGN})
   if(DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12)
     message(DEPRECATION "The cmake function dune_create_dependency_tree() is deprecated and "
-                        "will be removed after release 2.12")
+                        "will be removed after release 2.12. If you reached this warning, it "
+                        "means that at least one of your dependencies was configured with a "
+                        "dune-common version 2.9 or lower. To remove this warning, you could"
+                        "either reconfigure all your dune dependencies with a newer version of "
+                        "dune-common, or by downgrading your current dune-common version to "
+                        "something below 2.13.")
   endif()
-  if(dune-common_MODULE_PATH)
-    list(REMOVE_ITEM CMAKE_MODULE_PATH "${dune-common_MODULE_PATH}")
-  endif()
-  list(FIND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules start)
   set(ALL_DEPENDENCIES "")
   if(${ProjectName}_DEPENDS_MODULE OR ${ProjectName}_SUGGESTS_MODULE)
     set(ALL_DEPENDENCIES ${${ProjectName}_DEPENDS_MODULE} ${${ProjectName}_SUGGESTS_MODULE})
     dune_create_dependency_leafs("${${ProjectName}_DEPENDS_MODULE}" "${${ProjectName}_DEPENDS_VERSION}"
       "${${ProjectName}_SUGGESTS_MODULE}" "${${ProjectName}_SUGGESTS_VERSION}")
   endif()
-  set(_my_path "")
-  if(ALL_DEPENDENCIES)
-    # Reverse the order of the modules and remove duplicates
-    # At end of this clause we have have a list modules
-    # where for each entry all dependencies are before the
-    # module in the list.
-    set(NEW_ALL_DEPS "")
-    list(LENGTH ALL_DEPENDENCIES length)
-    if(length GREATER 0)
-      math(EXPR length "${length}-1")
-      list(GET ALL_DEPENDENCIES ${length} _mod)
-      set(${_mod}_cmake_path_processed 1)
-      set(_my_path ${${_mod}_MODULE_PATH})
-      list(APPEND NEW_ALL_DEPS ${_mod})
-      if(length GREATER 0)
-        math(EXPR length "${length}-1")
-        foreach(i RANGE ${length} 0 -1)
-          list(GET ALL_DEPENDENCIES ${i} _mod)
-          if(NOT ${_mod}_cmake_path_processed)
-            set(${_mod}_cmake_path_processed 1)
-            if(${_mod}_MODULE_PATH)
-              list(INSERT _my_path 0 ${${_mod}_MODULE_PATH})
-            endif()
-            list(APPEND NEW_ALL_DEPS ${_mod})
-          endif()
-        endforeach()
-      endif()
-      list(LENGTH CMAKE_MODULE_PATH length)
-      math(EXPR length "${length}-1")
-      if(start EQUAL -1)
-        list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules ${_my_path})
-      else()
-        if(start EQUAL ${length})
-          list(APPEND CMAKE_MODULE_PATH ${_my_path})
-        else()
-          if(_my_path)
-            list(INSERT CMAKE_MODULE_PATH ${start} ${_my_path})
-          endif()
-        endif()
-      endif()
-    endif()
-    set(ALL_DEPENDENCIES ${NEW_ALL_DEPS})
+  if (NOT ${DUNE_DEPENDENCY_TREE_SKIP_CMAKE_PATH_SETUP})
+    dune_cmake_path_setup(ALL_DEPENDENCIES)
   endif()
 endmacro(dune_create_dependency_tree)
 
@@ -217,6 +197,29 @@ endmacro(dune_process_dependency_macros)
 # Internal macros
 # ------------------------------------------------------------------------
 
+macro(dune_cmake_path_setup project_list)
+  # clean up module path from previeous modifications (a typical case is dune-common)
+  list(REMOVE_ITEM CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
+  foreach(_proj IN LISTS ${project_list})
+    if(${mod}_MODULE_PATH)
+      list(REMOVE_ITEM CMAKE_MODULE_PATH "${${_proj}_MODULE_PATH}")
+    endif()
+  endforeach()
+
+  # include current project cmake modules
+  list(FIND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" src_proj_index)
+  if(src_proj_index EQUAL -1)
+    list(LENGTH CMAKE_MODULE_PATH src_proj_index)
+    list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
+  endif()
+
+  # start over again including them in reversed order so that newer modules have precedence
+  foreach(_proj IN LISTS ${project_list})
+    if(${_proj}_MODULE_PATH)
+      list(INSERT CMAKE_MODULE_PATH ${src_proj_index} "${${_proj}_MODULE_PATH}")
+    endif()
+  endforeach()
+endmacro(dune_cmake_path_setup)
 
 macro(find_dune_package module)
   cmake_parse_arguments(DUNE_FIND "REQUIRED" "VERSION" "" ${ARGN})
@@ -301,10 +304,7 @@ endmacro(find_dune_package module)
 
 macro(dune_process_dependency_leafs modules versions is_required next_level_deps
     next_level_sugs)
-  if(DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12)
-    message(DEPRECATION "The cmake function dune_process_dependency_leafs() is deprecated and "
-                        "will be removed after release 2.12")
-  endif()
+  # TODO: Remove after dune 2.12
   # modules, and versions are not real variables, make them one
   set(mmodules ${modules})
   set(mversions ${versions})
@@ -343,10 +343,8 @@ endmacro(dune_process_dependency_leafs)
 
 
 function(remove_processed_modules modules versions is_required)
-  if(DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12)
-    message(DEPRECATION "The cmake function remove_processed_modules() is deprecated and "
-                        "will be removed after release 2.12")
-  endif()
+  message(DEPRECATION "The cmake function remove_processed_modules() is deprecated and "
+                      "will be removed after release 2.9.")
   list(LENGTH ${modules} mlength)
   if(mlength GREATER 0)
     math(EXPR length "${mlength}-1")
@@ -367,10 +365,7 @@ endfunction(remove_processed_modules modules versions is_required)
 
 
 macro(dune_create_dependency_leafs depends depends_versions suggests suggests_versions)
-  if(DUNE_COMMON_VERSION VERSION_GREATER_EQUAL 2.12)
-    message(DEPRECATION "The cmake function dune_create_dependency_leafs() is deprecated and "
-                        "will be removed after release 2.12")
-  endif()
+  # TODO: Remove after dune 2.12
   set(deps "")
   set(sugs "")
   #Process dependencies

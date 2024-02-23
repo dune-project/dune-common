@@ -117,8 +117,8 @@ macro(dune_project)
     # this is only needed if config files of upstream modules were generated with dune-common < 2.10
     # this behavior will be unsupported when dune-common == 2.12
 
-    # creates dependency tree, finds all the modules, adds cmake module paths and creates ALL_DEPENDENCIES
-    dune_create_dependency_tree()
+    # creates dependency tree, finds all the modules and creates ALL_DEPENDENCIES variable
+    dune_create_dependency_tree(SKIP_CMAKE_PATH_SETUP)
 
     # check if all the dependencies in the tree were indeed added into DUNE_FOUND_DEPENDENCIES
     set(_legacy_order OFF)
@@ -173,6 +173,9 @@ macro(dune_project)
   # and provide macros for installing the docs and force
   # building them before.
   include(DuneDoc)
+
+  # make sure that cmake paths of all modules are correctly setup
+  dune_cmake_path_setup(DUNE_FOUND_DEPENDENCIES)
 
   # Process the macros provided by the dependencies and ourself
   dune_process_dependency_macros()
@@ -252,7 +255,7 @@ endif()
       set(DUNE_DEPENDENCY_HEADER
 "macro(find_and_check_dune_dependency module version)
   find_dependency(\${module})
-  include(DuneModuleDependencies)
+  include(\${dune-common_MODULE_PATH}/DuneModuleDependencies.cmake)
   if(dune-common_VERSION VERSION_GREATER_EQUAL \"2.10\")
     dune_check_module_version(\${module} VERSION \"\${version}\")
   endif()
@@ -296,13 +299,9 @@ set(${ProjectName}_LIBRARIES \"@${ProjectName}_LIBRARIES@\")
 set(${ProjectName}_HASPYTHON @DUNE_MODULE_HASPYTHON@)
 set(${ProjectName}_PYTHONREQUIRES \"@DUNE_MODULE_PYTHONREQUIRES@\")
 
-list(APPEND CMAKE_MODULE_PATH \"\${${ProjectName}_MODULE_PATH}\")
-
 # Resolve dune dependencies
 include(CMakeFindDependencyMacro)
 ${DUNE_DEPENDENCY_HEADER}
-
-# Set up DUNE_LIBS, ALL_DEPENDENCIES, DUNE_*_FOUND, and HAVE_* variables
 
 # Set up DUNE_LIBS, DUNE_FOUND_DEPENDENCIES, DUNE_*_FOUND, and HAVE_* variables
 if(${ProjectName}_LIBRARIES)
@@ -654,7 +653,7 @@ macro(dune_regenerate_config_cmake)
   # collect header parts from all dependencies
   unset(collected_config_file)
   unset(collected_config_file_bottom)
-  foreach(_dep ${ALL_DEPENDENCIES})
+  foreach(_dep ${DUNE_FOUND_DEPENDENCIES})
     if(EXISTS ${${_dep}_PREFIX}/config.h.cmake)
       set(CONFIG_H_CMAKE ${${_dep}_PREFIX}/config.h.cmake)
     elseif(EXISTS ${${_dep}_PREFIX}/share/${_dep}/config.h.cmake)
