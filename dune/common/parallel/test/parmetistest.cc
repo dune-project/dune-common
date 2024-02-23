@@ -9,7 +9,12 @@
 #error "ParMETIS is required for this test."
 #endif
 
-#include <dune/common/parallel/mpi.hh>
+#if ! HAVE_MPI
+#error "MPI is needed for this test."
+#endif
+
+#include <mpi.h>
+
 #include <dune/common/parallel/parmetis.hh>
 
 int main(int argc, char **argv)

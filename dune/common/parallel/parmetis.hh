@@ -7,7 +7,9 @@
 
 #if HAVE_PARMETIS
 
-#include <dune/common/parallel/mpi.hh>
+#if HAVE_MPI
+#include <mpi.h>
+#endif
 
 #if HAVE_PTSCOTCH_PARMETIS
 extern "C" {
