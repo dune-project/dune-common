@@ -57,6 +57,9 @@ include(GNUInstallDirs)
 include(Headercheck)
 include(OverloadCompilerFlags)
 
+include(DunePolicy)
+dune_define_policy(DP0001 dune-common 3.0
+  "OLD behavior: Use global include_directories. NEW behavior: Include directories must be set on a module library target and are not set globally anymore.")
 
 # Macro that should be called near the beginning of the top level CMakeLists.txt.
 # Namely it sets up the module, defines basic variables and manages
@@ -163,12 +166,17 @@ macro(dune_project)
   include(CheckCXXFeatures)
 
   # set include path and link path for the current project.
-  include_directories("${PROJECT_BINARY_DIR}")
-  include_directories("${PROJECT_SOURCE_DIR}")
-  include_directories("${CMAKE_CURRENT_BINARY_DIR}")
-  include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-  include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
-  include_directories("${CMAKE_CURRENT_BINARY_DIR}/include_private")
+  dune_policy(GET DP0001 _include_policy)
+  if(_include_policy STREQUAL "OLD")
+    include_directories("${PROJECT_BINARY_DIR}")
+    include_directories("${PROJECT_SOURCE_DIR}")
+    include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+    include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
+    include_directories("${CMAKE_CURRENT_BINARY_DIR}/include_private")
+    set(CONFIG_INCLUDE_DIRS "set_and_check(${ProjectName}_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")")
+  endif()
+  unset(_include_policy)
   add_definitions(-DHAVE_CONFIG_H)
 
   # Create custom target for building the documentation
@@ -288,7 +296,7 @@ set(${ProjectName}_INSTALLED @MODULE_INSTALLED@)
 
 #report other information
 set_and_check(${ProjectName}_PREFIX \"\${PACKAGE_PREFIX_DIR}\")
-set_and_check(${ProjectName}_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")
+${CONFIG_INCLUDE_DIRS}
 set(${ProjectName}_CMAKE_CONFIG_VERSION \"${DUNE_COMMON_VERSION}\")
 set(${ProjectName}_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")
 set(${ProjectName}_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG}\")

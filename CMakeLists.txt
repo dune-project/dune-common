@@ -14,12 +14,16 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 #include the dune macros
 include(DuneMacros)
+dune_policy(SET DP0001 NEW)
 
 # start a dune project with information from dune.module
 dune_project()
 
 # Create a target for dune-common with a Dune::Common alias
 dune_add_library(dunecommon EXPORT_NAME Common NAMESPACE Dune::)
+
+# set include directories for dunecommon library
+dune_default_include_directories(dunecommon PUBLIC)
 
 # minimal c++ standard required
 target_compile_features(dunecommon PUBLIC cxx_std_17)
