@@ -934,5 +934,6 @@ function(dune_instance_end)
     list(APPEND DUNE_INSTANCE_GENERATED "${BINDIR_INSTANCE}")
   endforeach(_file_index)
 
+  include_directories(${CMAKE_CURRENT_BINARY_DIR})
   set(DUNE_INSTANCE_GENERATED "${DUNE_INSTANCE_GENERATED}" PARENT_SCOPE)
 endfunction(dune_instance_end)

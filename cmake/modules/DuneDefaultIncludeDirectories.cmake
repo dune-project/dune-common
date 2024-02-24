@@ -22,12 +22,12 @@ include_guard(GLOBAL)
 
 function(dune_default_include_directories _target _scope)
   target_include_directories(${_target} ${_scope}
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>          # config.h
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>  # <module>-config.hh
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   if(NOT _scope STREQUAL "INTERFACE")
     target_include_directories(${_target} PRIVATE
-      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include_private>)
+      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include_private>) # <module>-config-private.hh
   endif()
 endfunction(dune_default_include_directories)
