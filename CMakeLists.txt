@@ -14,6 +14,8 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 #include the dune macros
 include(DuneMacros)
+
+# deactivate global include-directories for dune-common
 dune_policy(SET DP0001 NEW)
 
 # start a dune project with information from dune.module
