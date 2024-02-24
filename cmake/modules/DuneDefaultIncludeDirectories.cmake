@@ -25,6 +25,9 @@ function(dune_default_include_directories _target _scope)
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include_private>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  if(NOT _scope STREQUAL "INTERFACE")
+    target_include_directories(${_target} PRIVATE
+      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include_private>)
+  endif()
 endfunction(dune_default_include_directories)
