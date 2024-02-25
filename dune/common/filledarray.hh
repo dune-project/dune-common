@@ -33,7 +33,7 @@ namespace Dune
   constexpr std::array<T, n> filledArray(const T& t)
   {
     return unpackIntegerSequence([&](auto... i) {
-      return std::array<T, n>{(i,t)...};
+      return std::array<T, n>{((void)(i),t)...};
     }, std::make_index_sequence<n>{});
   }
 
