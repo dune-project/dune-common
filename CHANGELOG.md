@@ -155,7 +155,8 @@ In order to build the DUNE core modules you need at least the following software
   `DUNE_GENERALIZED_CONSTEXPR` and `DUNE_INLINE_VARIABLE`. Use the key words directly.
 - Remove deprecated header `dune/python/common/numpycommdatahandle.hh`. Use
   `dune/python/grid/numpycommdatahandle.hh` instead.
-
+- Remove in `dune/python/common/dimrange.hh` the `DimRange` specializations for
+  dune-typetree and dune-functions types. Those are moved to dune-functions.
 
 # Release 2.9
 
