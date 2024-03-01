@@ -46,7 +46,7 @@ def cppType(arg):
             raise Exception("Cannot deduce C++ type for the following argument: " + repr(arg))
     return t,i
 
-def load(functionName, includes, *args):
+def load(functionName, includes, *args, pythonName=None):
     '''Just in time compile an algorithm.
 
     Generates binding for a single (template) function. The name of the
@@ -64,6 +64,11 @@ def load(functionName, includes, *args):
         functionName:    name of the C++ function to provide bindings for
         includes:        single or list of files to add to the generated module
         *args:           list of arguments that will be passed to the generated module
+
+    Kwargs:
+        pythonName:      A readable name for the generated function that is used in
+                         diagnostic messages. If this is not provided, the function
+                         signature is used.
 
     Returns:
         Callalble object
@@ -120,9 +125,13 @@ def load(functionName, includes, *args):
     source += "}\n"
     source += "#endif\n"
 
+    # Use signature as python name if none was expicitely provided
+    if not pythonName:
+      pythonName = signature
+
     # make sure to reload the builder here in case it got updated
     from . import builder
-    return builder.load(moduleName, source, signature).run
+    return builder.load(moduleName, source, pythonName).run
 
 
 def run(functionName, includes, *args):
