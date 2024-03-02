@@ -60,6 +60,8 @@ In order to build the DUNE core modules you need at least the following software
 - Add dedicated includes `dune/common/metis.hh` for METIS and `dune/common/parallel/parmetis.hh`
   for ParMETIS to be used instead of the direct includes `metis.h` and `parmetis.h`.
 
+- Add utilities and algorithms to work with `std::integer_sequences`.
+
 ## Build System
 
 - Documentation files in `doc/buildsystem/${ModuleName}.rst` are now only copied.
