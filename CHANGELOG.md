@@ -134,6 +134,9 @@ In order to build the DUNE core modules you need at least the following software
 - Remove deprecated macros `DUNE_VERSION_NEWER` and `DUNE_VERSION_NEWER_REV`, use `DUNE_VERSION_GTE`
   and `DUNE_VERSION_GTE_REV` instead. There was no deprecation compiler warning.
 
+- Rename `<module>_INTERFACE_LIBRARIES` into `<module>_LIBRARIES` (representing all module-libraries)
+  and introduce `<module>_EXPORTED_LIBRARIES` as a list of all libraries exported by the module.
+
 ## Deprecations and removals
 
 - The deprecated header `dune/common/function.hh` has been removed. Use C++ function
