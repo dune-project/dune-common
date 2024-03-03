@@ -8,36 +8,12 @@
 #error "METIS is required for this test"
 #endif
 
-#if HAVE_SCOTCH_METIS
-extern "C" {
-  #include <scotch.h>
-}
-#endif
-
-extern "C" {
-  #include <metis.h>
-}
-
-#if HAVE_SCOTCH_METIS && !defined(SCOTCH_METIS_RETURN)
-  // NOTE: scotchmetis does not define a return type for METIS functions
-  #define METIS_OK 1
-#endif
+#include <dune/common/metis.hh>
 
 int main()
 {
-#if defined(REALTYPEWIDTH) || defined(SCOTCH_METIS_DATATYPES)
-  using real_t = ::real_t;
-#else
-  using real_t = double;
-#endif
-
-#if defined(IDXTYPEWIDTH) || defined(SCOTCH_METIS_DATATYPES)
-  using idx_t = ::idx_t;
-#elif HAVE_SCOTCH_METIS
-  using idx_t = SCOTCH_Num;
-#else
-  using idx_t = int;
-#endif
+  using real_t = Dune::Metis::real_t;
+  using idx_t = Dune::Metis::idx_t;
 
   idx_t nVertices = 6; // number of vertices
   idx_t nCon      = 1; // number of constraints

@@ -12,6 +12,15 @@ dune_add_test(SOURCES indexsettest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
+dune_add_test(SOURCES parmetistest.cc
+              LINK_LIBRARIES dunecommon
+              MPI_RANKS 3
+              TIMEOUT 300
+              CMAKE_GUARD "HAVE_MPI AND ParMETIS_FOUND"
+              LABELS quick)
+add_dune_mpi_flags(parmetistest)
+add_dune_parmetis_flags(parmetistest)
+
 dune_add_test(SOURCES remoteindicestest.cc
               LINK_LIBRARIES dunecommon
               MPI_RANKS 1 2 4
