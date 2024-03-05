@@ -62,6 +62,8 @@ In order to build the DUNE core modules you need at least the following software
 
 - Add utilities and algorithms to work with `std::integer_sequences`.
 
+- Fixed MPI implementation of `Communication::isend`.
+
 ## Build System
 
 - Documentation files in `doc/buildsystem/${ModuleName}.rst` are now only copied.
