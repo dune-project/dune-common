@@ -64,6 +64,9 @@ In order to build the DUNE core modules you need at least the following software
 
 - Fixed MPI implementation of `Communication::isend`.
 
+- Move special MPI-related compile flags, like `MPI_NO_CPPBIND`, from `config.h` into
+  the cmake utiltiy `add_dune_mpi_flags` and the related global package registration.
+
 ## Build System
 
 - Documentation files in `doc/buildsystem/${ModuleName}.rst` are now only copied.
