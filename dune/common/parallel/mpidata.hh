@@ -6,10 +6,11 @@
 #ifndef DUNE_COMMON_PARALLEL_MPIDATA_HH
 #define DUNE_COMMON_PARALLEL_MPIDATA_HH
 
+#if HAVE_MPI
+
 #include <vector>
 #include <string>
-
-#if HAVE_MPI
+#include <type_traits>
 
 #include <dune/common/typetraits.hh>
 #include <dune/common/std/type_traits.hh>
@@ -136,5 +137,5 @@ namespace Dune{
  * @}
  */
 
-#endif
-#endif
+#endif // HAVE_MPI
+#endif // DUNE_COMMON_PARALLEL_MPIDATA_HH

@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
-#ifndef DUNE_REMOTEINDICES_HH
-#define DUNE_REMOTEINDICES_HH
+#ifndef DUNE_COMMON_PARALLEL_REMOTEINDICES_HH
+#define DUNE_COMMON_PARALLEL_REMOTEINDICES_HH
 
 #if HAVE_MPI
 
@@ -13,17 +13,18 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include <mpi.h>
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/sllist.hh>
+#include <dune/common/stdstreams.hh>
 #include <dune/common/parallel/indexset.hh>
 #include <dune/common/parallel/mpitraits.hh>
 #include <dune/common/parallel/plocalindex.hh>
-#include <dune/common/sllist.hh>
-#include <dune/common/stdstreams.hh>
 
 namespace Dune {
   /** @addtogroup Common_Parallel
@@ -1863,5 +1864,4 @@ namespace Dune {
 }
 
 #endif // HAVE_MPI
-
-#endif
+#endif // DUNE_COMMON_PARALLEL_REMOTEINDICES_HH

@@ -2,8 +2,8 @@
 // vi: set et ts=4 sw=2 sts=2:
 // SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
-#ifndef DUNE_MPITRAITS_HH
-#define DUNE_MPITRAITS_HH
+#ifndef DUNE_COMMON_PARALLEL_MPITRAITS_HH
+#define DUNE_COMMON_PARALLEL_MPITRAITS_HH
 
 /** @addtogroup ParallelCommunication
  *
@@ -17,11 +17,11 @@
 
 #if HAVE_MPI
 
+#include <complex>
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
-#include <complex>
 
 #include <mpi.h>
 
@@ -204,4 +204,4 @@ namespace Dune
 
 /** @} group ParallelCommunication */
 
-#endif
+#endif // DUNE_COMMON_PARALLEL_MPITRAITS_HH

@@ -2,17 +2,13 @@
 // vi: set et ts=4 sw=2 sts=2:
 // SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
-
-#include <config.h>
-
 #include <iostream>
 #include <array>
 #include <vector>
 
-
+#include <dune/common/exceptions.hh>
 #include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/parallel/mpicommunication.hh>
-#include <dune/common/exceptions.hh>
 
 using namespace Dune;
 

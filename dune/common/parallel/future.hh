@@ -6,6 +6,8 @@
 #define DUNE_COMMON_PARALLEL_FUTURE_HH
 
 #include <memory>
+#include <type_traits>
+
 #include <dune/common/exceptions.hh>
 
 namespace Dune{
@@ -186,4 +188,4 @@ namespace Dune{
   };
 }
 
-#endif
+#endif // DUNE_COMMON_PARALLEL_FUTURE_HH

@@ -2,15 +2,13 @@
 // vi: set et ts=4 sw=2 sts=2:
 // SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
-#include "config.h"
-
 #include <iostream>
 
 #include <dune/common/enumset.hh>
+#include <dune/common/timer.hh>
 #include <dune/common/parallel/indexset.hh>
 #include <dune/common/parallel/plocalindex.hh>
 #include <dune/common/parallel/selection.hh>
-#include <dune/common/timer.hh>
 
 enum GridFlags {
   owner, overlap, border

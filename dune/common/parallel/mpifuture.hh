@@ -5,13 +5,21 @@
 #ifndef DUNE_COMMON_PARALLEL_MPIFUTURE_HH
 #define DUNE_COMMON_PARALLEL_MPIFUTURE_HH
 
-#include <optional>
+#if HAVE_MPI
 
+#include <functional>
+#include <memory>
+#include <optional>
+#include <type_traits>
+#include <utility>
+
+#include <mpi.h>
+
+#include <dune/common/exceptions.hh>
 #include <dune/common/parallel/communication.hh>
 #include <dune/common/parallel/future.hh>
 #include <dune/common/parallel/mpidata.hh>
 
-#if HAVE_MPI
 namespace Dune{
 
   namespace impl{
@@ -172,5 +180,5 @@ namespace Dune{
   };
 
 }
-#endif
-#endif
+#endif // HAVE_MPI
+#endif // DUNE_COMMON_PARALLEL_MPIFUTURE_HH

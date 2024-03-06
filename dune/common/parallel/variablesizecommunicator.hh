@@ -2,7 +2,7 @@
 // vi: set et ts=4 sw=2 sts=2:
 // SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
-#ifndef DUNE_COMMON_PARALLEL_VARIABLESIZECOMMUNICATOR_HH // Still fits the line!
+#ifndef DUNE_COMMON_PARALLEL_VARIABLESIZECOMMUNICATOR_HH
 #define DUNE_COMMON_PARALLEL_VARIABLESIZECOMMUNICATOR_HH
 
 #if HAVE_MPI
@@ -15,7 +15,6 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include <algorithm>
 
 #include <mpi.h>
 
@@ -1239,5 +1238,4 @@ void VariableSizeCommunicator<Allocator>::communicate(DataHandle& handle)
 } // end namespace Dune
 
 #endif // HAVE_MPI
-
-#endif
+#endif // DUNE_COMMON_PARALLEL_VARIABLESIZECOMMUNICATOR_HH

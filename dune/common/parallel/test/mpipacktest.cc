@@ -3,19 +3,16 @@
 // SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-#if HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-constexpr int TAG = 42;
-
 #include <iostream>
 #include <map>
+#include <vector>
 
 #include <dune/common/classname.hh>
 #include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/parallel/mpipack.hh>
 #include <dune/common/test/testsuite.hh>
+
+constexpr int TAG = 42;
 
 template<typename Comm>
 auto testSync(Comm comm)
