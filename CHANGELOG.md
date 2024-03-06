@@ -48,6 +48,8 @@ In order to build the DUNE core modules you need at least the following software
   between two integral constants result in an integral constant, whereas operations with at least
   one non integral constant argument is performed on the underlying value type.
 
+- Make `filledArray` compatible with non-default-constructble types.
+
 - Add utility `CopyableOptional` that allows to wrap types that are copy constructible but not
   copy assignable and provide assignment operations based on the constructors.
 

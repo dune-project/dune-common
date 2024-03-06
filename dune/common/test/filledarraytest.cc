@@ -13,6 +13,13 @@
 
 #include <dune/common/filledarray.hh>
 
+struct A {
+  A(int i) : value(i) {}
+  int value;
+  bool operator==(A const& a) const { return value == a.value; }
+  bool operator!=(A const& a) const { return value != a.value; }
+};
+
 int main() {
 
   int status = 0;
@@ -37,5 +44,16 @@ int main() {
             << "(__cpp_lib_array_constexpr is not defined)." << std::endl;
 #endif // !__cpp_lib_array_constexpr
 
+
+  static_assert(not std::is_default_constructible_v<A>);
+  auto test3 = Dune::filledArray<2>(A(7));
+  static_assert(std::is_same<decltype(test3), std::array<A, 2> >::value,
+                "Wrong result type for Dune::filledArray()");
+
+  if(test3[0] != A(7) || test3[1] != A(7))
+  {
+    std::cerr << "Dune::filledArray() produces wrong value" << std::endl;
+    status = 1;
+  }
   return status;
 }
