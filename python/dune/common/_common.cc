@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include <dune/common/tupleutility.hh>
 #include <dune/python/common/dynmatrix.hh>
 #include <dune/python/common/dynvector.hh>
 #include <dune/python/common/fmatrix.hh>
@@ -34,8 +33,10 @@ PYBIND11_MODULE( _common, module )
   Dune::Python::registerCommunication(module);
 
 #ifdef DUNE_ENABLE_PYTHONMODULE_PRECOMPILE
-  // register pre-compiled FieldVector objects
-  Dune::Hybrid::forEach(std::make_index_sequence<4>{},
-      [&module](auto s){ registerFieldVectorToModule<s>(module); } );
+  registerFieldVectorToModule<0>(module);
+  registerFieldVectorToModule<1>(module);
+  registerFieldVectorToModule<2>(module);
+  registerFieldVectorToModule<3>(module);
+  registerFieldVectorToModule<4>(module);
 #endif
 }

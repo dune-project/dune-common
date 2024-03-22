@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include <dune/common/tupleutility.hh>
 #include <dune/python/common/fmatrix.hh>
 #include <dune/python/common/fvector.hh>
 
@@ -18,9 +17,9 @@ void registerFieldVectorToModule( pybind11::module module )
 #ifdef INCLUDE_PRECOMP_INLINE
 {
   static const int a = s*3;
-  // pre-compile FieldVector from s*3 + 0,...,2
-  Dune::Hybrid::forEach(std::integer_sequence<unsigned int, a+0, a+1, a+2>{},
-        [&module](auto dim){ Dune::Python::registerFieldVector<double, dim>(module); } );
+  Dune::Python::registerFieldVector<double, a>(module);
+  Dune::Python::registerFieldVector<double, a+1>(module);
+  Dune::Python::registerFieldVector<double, a+2>(module);
 }
 #else
 ;

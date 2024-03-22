@@ -5,4 +5,7 @@
 #include <config.h>
 #define INCLUDE_PRECOMP_INLINE
 #include "registerfvector.hh"
-template void registerFieldVectorToModule< 2 >(pybind11::module module);
+#ifndef FV_NUM
+#error "FV_NUM needs to be defined!"
+#endif
+template void registerFieldVectorToModule< FV_NUM >(pybind11::module module);
