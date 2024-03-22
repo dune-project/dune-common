@@ -32,7 +32,7 @@ namespace Dune
   namespace Imp
   {
 
-    template< class B, class A >
+    template< class B, class ST >
     class block_vector_unmanaged;
 
     template< class B, class A >
@@ -69,7 +69,7 @@ namespace Dune
     {};
 
     template< class T >
-    struct IsBlockVector< T, std::enable_if_t< std::is_base_of< Imp::block_vector_unmanaged< typename T::block_type, typename T::allocator_type >, T >::value > >
+    struct IsBlockVector< T, std::enable_if_t< std::is_base_of< Imp::block_vector_unmanaged< typename T::block_type, typename T::size_type >, T >::value > >
       : public std::true_type
     {};
 
