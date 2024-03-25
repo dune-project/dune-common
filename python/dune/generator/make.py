@@ -6,7 +6,7 @@ try:
 except ImportError:
     MPI = None
 
-import glob, os, sys
+import glob, os
 from concurrent.futures import ThreadPoolExecutor
 import logging
 import dune.common.module

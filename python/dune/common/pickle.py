@@ -4,7 +4,7 @@
 import json as _json
 import pickle as _pickle
 import pickletools
-import importlib, sys, os
+import importlib, os
 def dump(objects, f, protocol=None, includeJITSources=True):
     if not (isinstance(objects,list) or isinstance(objects,tuple)):
         raise TypeError("only pass in tuples/lists to pickle")
