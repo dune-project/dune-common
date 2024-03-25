@@ -9,9 +9,12 @@ import subprocess
 import dune.common.module
 
 from dune.common.utility import buffer_to_str
-from dune.generator import ConfigurationError
+from dune.generator import ConfigurationError, builder
 
 logger = logging.getLogger(__name__)
+
+# make sure dune-py is initialized before configuration is checked
+builder.initialize()
 
 def assertHave(identifier):
     '''check if an identifier is defined equal to 1 in the dune-py config.h file.

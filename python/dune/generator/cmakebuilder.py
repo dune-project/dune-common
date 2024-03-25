@@ -208,9 +208,6 @@ class Builder:
         self.generated_dir = os.path.join(self.dune_py_dir, 'python', 'dune', 'generated')
         self.initialized = False
         self.externalPythonModules = copy.deepcopy(getExternalPythonModules())
-        # initialize builder already to create dune-py directory to avoid errors
-        # when checking configuration features before dune-py was created
-        self.initialize()
 
     def cacheExternalModules(self):
         """Store external modules in dune-py"""
