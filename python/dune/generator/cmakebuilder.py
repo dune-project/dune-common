@@ -8,7 +8,6 @@ import os
 import sys
 import shlex
 import jinja2
-import signal
 import json
 import copy
 
@@ -16,7 +15,7 @@ import dune
 
 from dune.packagemetadata import (
     getDunePyDir, Description,
-    getBuildMetaData, getCMakeFlags, envCMakeFlags, defaultCMakeFlags,
+    getBuildMetaData, getCMakeFlags, defaultCMakeFlags,
     getExternalPythonModules
 )
 

@@ -9,9 +9,16 @@ import subprocess
 import dune.common.module
 
 from dune.common.utility import buffer_to_str
-from dune.generator import ConfigurationError
+from dune.generator import ConfigurationError, initializeDunePy
 
 logger = logging.getLogger(__name__)
+
+def _checkAndGetDunePyDir():
+    # make sure dune-py is initialized before configuration is checked
+    # in rare cases one might check the configuration before creating and configuring
+    # the module. Checking the configuration can only be done after dune-py has been generated.
+    initializeDunePy() # this will only do something if dune-py does not exist
+    return dune.common.module.getDunePyDir()
 
 def assertHave(identifier):
     '''check if an identifier is defined equal to 1 in the dune-py config.h file.
@@ -26,7 +33,7 @@ def assertHave(identifier):
     # We simply return for now
     raise RuntimeError("DEPRECATED USE OF assertHave")
     return
-    config = os.path.join(dune.common.module.getDunePyDir(), "config.h")
+    config = os.path.join(_checkAndGetDunePyDir(), "config.h")
     if not os.path.isfile(config):
         raise ConfigurationError("dune-py not configured yet")
 
@@ -47,7 +54,7 @@ def assertCMakeHave(identifier):
        configured so should be used with caution, e.g., avoid usage in any
        code executed during import of a dune module
     '''
-    config = os.path.join(dune.common.module.getDunePyDir(), "config.h")
+    config = os.path.join(_checkAndGetDunePyDir(), "config.h")
     if not os.path.isfile(config):
         raise ConfigurationError("dune-py not configured yet")
 
@@ -62,7 +69,7 @@ def assertCMakeHave(identifier):
 def assertCMakeVariable(identifier,value,defaultFails):
     '''check if a variable in CMakeCache.txt in dune-py is defined and equal to 'value'
     '''
-    cache = os.path.join(dune.common.module.getDunePyDir(), "CMakeCache.txt")
+    cache = os.path.join(_checkAndGetDunePyDir(), "CMakeCache.txt")
 
     identifier = identifier.lower().strip()
     matches = [line.lower() for line in open(cache) if re.match(r'^[ ]*'+identifier+':+', line.lower()) is not None]

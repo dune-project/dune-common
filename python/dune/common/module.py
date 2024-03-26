@@ -22,7 +22,7 @@ if __name__ == "dune.common.module":
 # this can also be used as a stand-alone script
 else:
     from utility import buffer_to_str
-    import project, deprecate
+    import project
     from packagemetadata import (
         Version, Description,
         defaultCMakeFlags, cmakeArguments,
