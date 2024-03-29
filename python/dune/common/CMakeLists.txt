@@ -18,11 +18,9 @@ dune_add_pybind11_module(NAME _common SOURCES _common.cc)
 if( DUNE_ENABLE_PYTHONMODULE_PRECOMPILE )
   set(FV_NUMS 0 1 2 3 4)
   foreach( FV_NUM ${FV_NUMS} )
-    add_library(registerfvector_${FV_NUM} OBJECT registerfvector.cc)
-    target_compile_definitions(registerfvector_${FV_NUM} PRIVATE FV_NUM=${FV_NUM})
-    # minimal c++ standard required
-    target_compile_features(registerfvector_${FV_NUM} PUBLIC cxx_std_17)
-    target_link_libraries(_common PUBLIC registerfvector_${FV_NUM})
+    dune_add_pybind11_submodule(NAME registerfvector_${FV_NUM}
+                                MODULE _common SOURCES registerfvector.cc
+                                COMPILE_DEFINITIONS FV_NUM=${FV_NUM})
   endforeach()
 endif()
 set_property(TARGET _common PROPERTY LINK_LIBRARIES dunecommon APPEND)

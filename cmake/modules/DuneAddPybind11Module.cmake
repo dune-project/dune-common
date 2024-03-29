@@ -93,3 +93,48 @@ function(dune_add_pybind11_module)
     set_property(TARGET ${PYBIND11_MODULE_NAME} PROPERTY EXCLUDE_FROM_ALL 1)
   endif()
 endfunction()
+
+
+## add a submodule for a pybind11 module
+function(dune_add_pybind11_submodule)
+  cmake_parse_arguments(PYBIND11_SUBMODULE "EXCLUDE_FROM_ALL" "MODULE;NAME" "SOURCES;COMPILE_DEFINITIONS;CMAKE_GUARD" ${ARGN})
+  if(PYBIND11_SUBMODULE_UNPARSED_ARGUMENTS)
+    message(WARNING "dune_add_pybind11_submodule: extra arguments provided (typos in named arguments?)")
+  endif()
+
+  if(NOT PYBIND11_SUBMODULE_NAME)
+    message(FATAL_ERROR "dune_add_pybind11_submodule: module name not specified")
+  endif()
+
+  if(NOT PYBIND11_SUBMODULE_MODULE)
+    message(FATAL_ERROR "dune_add_pybind11_submodule: parent module not specified")
+  endif()
+
+  if(NOT PYBIND11_SUBMODULE_SOURCES)
+    message(FATAL_ERROR "dune_add_pybind11_submodule: sources not specified")
+  endif()
+
+  foreach(condition ${PYBIND11_SUBMODULE_CMAKE_GUARD})
+    separate_arguments(condition)
+    if(NOT (${condition}))
+      message(STATUS "not building ${PYBIND11_SUBMODULE_NAME}, because condition ${condition} failed.")
+      return()
+    endif()
+  endforeach()
+
+  add_library(${PYBIND11_SUBMODULE_NAME} OBJECT ${PYBIND11_SUBMODULE_SOURCES})
+  # set compile definitions
+  target_compile_definitions(${PYBIND11_SUBMODULE_NAME} PRIVATE ${PYBIND11_SUBMODULE_COMPILE_DEFINITIONS})
+  # add all package flags
+  dune_target_enable_all_packages(${PYBIND11_SUBMODULE_NAME})
+
+  # minimal c++ standard required
+  target_compile_features(${PYBIND11_SUBMODULE_NAME} PUBLIC cxx_std_17)
+
+  # link object file to parent module
+  target_link_libraries(${PYBIND11_SUBMODULE_MODULE} PUBLIC ${PYBIND11_SUBMODULE_NAME})
+
+  if(PYBIND11_MODULE_EXCLUDE_FROM_ALL)
+    set_property(TARGET ${PYBIND11_SUBMODULE_NAME} PROPERTY EXCLUDE_FROM_ALL 1)
+  endif()
+endfunction()
