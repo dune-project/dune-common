@@ -86,9 +86,16 @@ def FieldVector(values):
     try:
         return globals()[fv](values)
     except KeyError:
-        typeName = "Dune::FieldVector< double ," + str(len(values)) + " >"
-        includes = []
-        cls = _loadVec(includes, typeName).FieldVector
+        try:
+            # try to import pre-compiled version from _common
+            from importlib import import_module
+            cls = getattr(import_module('dune.common'), 'FieldVector_double_'+str(len(values)))
+        except (ImportError,AttributeError):
+            # otherwise create module
+            typeName = "Dune::FieldVector< double ," + str(len(values)) + " >"
+            includes = []
+            cls = _loadVec(includes, typeName).FieldVector
+
         setattr(cls, "_getitem", cls.__getitem__)
         setattr(cls, "__getitem__", _fieldVectorGetItem)
         globals().update({fv: cls})

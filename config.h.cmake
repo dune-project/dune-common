@@ -78,6 +78,9 @@
 /* Used to call lapack functions */
 #cmakedefine LAPACK_NEEDS_UNDERLINE
 
+/* If enabled certain Python modules will be precompiled */
+#cmakedefine DUNE_ENABLE_PYTHONMODULE_PRECOMPILE
+
 /* end dune-common
    Everything below here will be overwritten
 */
