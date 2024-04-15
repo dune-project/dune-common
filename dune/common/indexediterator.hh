@@ -21,35 +21,43 @@ namespace Dune
    * or decremented. Especially the dereference and comparison operators are not
    * modified by this mixin class.
    *
-   * \tparam Iter  An iterator type the `IndexedIterator` will inherit from.
+   * \tparam Iter  An iterator type from which the `IndexedIterator` will be derived.
    */
-  template<class Iter>
+  template <class Iter>
   class IndexedIterator
       : public Iter
   {
     using Traits = std::iterator_traits<Iter>;
+    static_assert(std::is_copy_constructible_v<Iter>);
     static_assert(std::is_base_of_v<std::forward_iterator_tag, typename Traits::iterator_category>);
 
   public:
+    //! Type used for storing the traversal index
     using size_type = typename Traits::difference_type;
 
     //! Default constructor default-constructs the `Iter` base type and the index by 0.
-    IndexedIterator () = default;
+    template <class I = Iter,
+      std::enable_if_t<std::is_default_constructible_v<I>, bool> = true>
+    constexpr IndexedIterator ()
+          noexcept(std::is_nothrow_default_constructible_v<Iter>)
+    {}
 
     //! Construct the `Iter` base type by `it` and the index by the given starting index.
-    IndexedIterator (Iter it, size_type index = 0)
+    //! Note that this constructor allows implicit conversion from `Iter` type.
+    constexpr IndexedIterator (Iter it, size_type index = 0)
+          noexcept(std::is_nothrow_copy_constructible_v<Iter>)
       : Iter(it)
       , index_(index)
     {}
 
     //! Return the enumeration index.
-    size_type index () const
+    [[nodiscard]] constexpr size_type index () const noexcept
     {
       return index_;
     }
 
     //! Increment the iterator and the index.
-    IndexedIterator& operator++ ()
+    constexpr IndexedIterator& operator++ ()
     {
       Iter::operator++();
       ++index_;
@@ -57,7 +65,7 @@ namespace Dune
     }
 
     //! Increment the iterator and the index.
-    IndexedIterator operator++ (int)
+    constexpr IndexedIterator operator++ (int)
     {
       IndexedIterator tmp(*this);
       this->operator++();
@@ -67,7 +75,7 @@ namespace Dune
     //! Decrement the iterator and the index.
     template <class I = Iter,
       decltype(--std::declval<I&>(), bool{}) = true>
-    IndexedIterator& operator-- ()
+    constexpr IndexedIterator& operator-- ()
     {
       Iter::operator--();
       --index_;
@@ -77,7 +85,7 @@ namespace Dune
     //! Decrement the iterator and the index.
     template <class I = Iter,
       decltype(std::declval<I&>()--, bool{}) = true>
-    IndexedIterator operator-- (int)
+    constexpr IndexedIterator operator-- (int)
     {
       IndexedIterator tmp(*this);
       this->operator--();
@@ -87,7 +95,7 @@ namespace Dune
     //! Increment the iterator and the index.
     template <class I = Iter,
       decltype(std::declval<I&>()+=1, bool{}) = true>
-    IndexedIterator& operator+= (typename Iter::difference_type n)
+    constexpr IndexedIterator& operator+= (typename Iter::difference_type n)
     {
       Iter::operator+=(n);
       index_ += n;
@@ -97,7 +105,7 @@ namespace Dune
     //! Decrement the iterator and the index.
     template <class I = Iter,
       decltype(std::declval<I&>()-=1, bool{}) = true>
-    IndexedIterator& operator-= (typename Iter::difference_type n)
+    constexpr IndexedIterator& operator-= (typename Iter::difference_type n)
     {
       Iter::operator-=(n);
       index_ -= n;
