@@ -98,4 +98,26 @@ constexpr auto makeTupleVector(T&&... t)
 
 }  // namespace Dune
 
+namespace std
+{
+  /** \brief Make std::tuple_element work for TupleVector
+   *
+   * It derives from std::tuple after all.
+   */
+  template <size_t i, typename... Args>
+  struct tuple_element<i,Dune::TupleVector<Args...> >
+  {
+    using type = typename std::tuple_element<i, std::tuple<Args...> >::type;
+  };
+
+  /** \brief Make std::tuple_size work for TupleVector
+   *
+   * It derives from std::tuple after all.
+   */
+  template <typename... Args>
+  struct tuple_size<Dune::TupleVector<Args...> >
+    : std::integral_constant<std::size_t, sizeof...(Args)>
+  {};
+}
+
 #endif // DUNE_COMMON_TUPLEVECTOR_HH
