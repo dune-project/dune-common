@@ -4,6 +4,11 @@
 cmake_minimum_required(VERSION 3.16)
 project(dune-common LANGUAGES C CXX)
 
+# CMake 3.29.1 is incompatible as it removed PACKAGE_PREFIX_DIR
+if (CMAKE_VERSION VERSION_EQUAL 3.29.1)
+  message(FATAL_ERROR "CMake 3.29.1 is not compatible with Dune. Use a different CMake version.")
+endif()
+
 # make sure our own modules are found
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
