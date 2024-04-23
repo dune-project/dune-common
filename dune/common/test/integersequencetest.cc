@@ -6,9 +6,14 @@
 #include "config.h"
 #endif
 
+#include <type_traits>
+#include <utility>
+
 #include <dune/common/indices.hh>
 #include <dune/common/integersequence.hh>
 
+template <int I>
+using IsEven = std::bool_constant<(I % 2 == 0)>;
 
 int main()
 {
@@ -55,6 +60,10 @@ int main()
   static_assert(equal(push_back<14>(std::integer_sequence<int,get<0>(seq3),get<1>(seq3)>{}), seq3));
   static_assert(empty(difference(seq3,seq3a)));
   static_assert(empty(difference(seq3a,seq3)));
+
+  auto seq3even = std::integer_sequence<int, 2,14>{};
+  static_assert(equal(filter<IsEven>(seq3), seq3even));
+  static_assert(equal(filter([](auto i) { return i % 2 == 0; }, seq3), seq3even));
 
   return 0;
 }

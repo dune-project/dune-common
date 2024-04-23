@@ -176,6 +176,35 @@ constexpr std::bool_constant<false>
 equal (std::integer_sequence<S,II...>, std::integer_sequence<T,JJ...>) { return {}; }
 
 
+template <template <auto> class Filter, class T>
+constexpr auto filter (std::integer_sequence<T> jSeq) { return jSeq; }
+
+//! Return the elements from the sequence [JJ...) which are accepted by the Filter,
+//! i.e., for which `Filter<JJ>::value == true`
+template <template <auto> class Filter, class T, T J0, T... JJ>
+constexpr auto filter (std::integer_sequence<T,J0,JJ...> jSeq)
+{
+  if constexpr(Filter<J0>::value)
+    return push_front(filter<Filter>(tail(jSeq)), head(jSeq));
+  else
+    return filter<Filter>(tail(jSeq));
+}
+
+template <class Filter, class T>
+constexpr auto filter (Filter, std::integer_sequence<T> jSeq) { return jSeq; }
+
+//! Return the elements from the sequence [JJ...) which are accepted by the Filter,
+//! i.e., for which `f(integral_constant<JJ>) == true`
+template <class Filter, class T, T J0, T... JJ>
+constexpr auto filter (Filter f, std::integer_sequence<T,J0,JJ...> jSeq)
+{
+  constexpr auto jHead = head(jSeq);
+  if constexpr(f(jHead))
+    return push_front(filter(f, tail(jSeq)), jHead);
+  else
+    return filter(f, tail(jSeq));
+}
+
 } // end namespace Dune
 
 #endif // DUNE_COMMON_INTEGERSEQUENCE_HH
