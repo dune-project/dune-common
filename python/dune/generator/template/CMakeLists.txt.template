@@ -28,7 +28,8 @@ set({{ mod }}_DIR {{ dir }})
 {%- endfor %}
 
 {% for flag, value in cmake_flags.items() -%}
-{% if flag != "" %}
+# ENABLE_HEADERCHECK cannot be set in dune-py since this will simply not work
+{% if flag != "" and flag != "ENABLE_HEADERCHECK" %}
 # boolean flags need to be forced to be written to the cache
 # otherwise they will be overwritten by the default from dune-common
 {% if value == True %}
