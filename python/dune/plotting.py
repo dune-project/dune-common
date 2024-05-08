@@ -66,9 +66,17 @@ try:
                       data = data[:,component]
                     minData = amin(data)
                     maxData = amax(data)
+
+                    # avoid some weird 'white' patches when value hits min/max
+                    # also if min and max are close together or equal the call
+                    # of tricontourf will raise an Exception
+                    epsData  = (maxData - minData)*1e-8
+                    minData -= epsData
+                    maxData += epsData
+
                     if clim == None:
-                        epsData = abs(maxData - minData)*1e-8
-                        clim = [minData-epsData, maxData+epsData]
+                        clim = [minData, maxData]
+
                     if clim[0] > minData and clim[1] < maxData:
                         extend = 'both'
                     elif clim[0] > minData:
