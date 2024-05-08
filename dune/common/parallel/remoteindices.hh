@@ -1287,7 +1287,7 @@ namespace Dune {
       // wait for completion of pending requests
       MPI_Status* statuses = new MPI_Status[neighbourIds.size()];
 
-      if(MPI_ERR_IN_STATUS==MPI_Waitall(neighbourIds.size(), requests, statuses)) {
+      if(int(MPI_ERR_IN_STATUS)==MPI_Waitall(neighbourIds.size(), requests, statuses)) {
         for(size_type i=0; i < neighbourIds.size(); ++i)
           if(statuses[i].MPI_ERROR!=MPI_SUCCESS) {
             std::cerr<<rank<<": MPI_Error occurred while receiving message."<<std::endl;
