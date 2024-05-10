@@ -18,7 +18,7 @@ def cppType(arg):
             t, i = "long", []
         elif isinstance(arg,numpy.intp):
             t, i = "std::size_t", []
-        elif isinstance(arg, float) or isinstance(arg,numpy.float_):
+        elif isinstance(arg, float) or isinstance(arg,numpy.float64):
             t, i = "double", []
         elif isinstance(arg, numpy.ndarray):
             dtype = None
@@ -28,7 +28,7 @@ def cppType(arg):
                 dtype="long"
             elif arg.dtype.type == numpy.intp:
                 dtype="std::size_t"
-            elif arg.dtype.type == numpy.float_:
+            elif arg.dtype.type == numpy.float64:
                 dtype="double"
             if dtype is None:
                 t, i = "pybind11::array", ["dune/python/pybind11/numpy.h"]
