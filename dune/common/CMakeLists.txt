@@ -62,6 +62,7 @@ install(FILES
         hash.hh
         hybridutilities.hh
         indent.hh
+        indexediterator.hh
         indices.hh
         integersequence.hh
         interfaces.hh

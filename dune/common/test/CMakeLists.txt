@@ -208,6 +208,9 @@ dune_add_test(SOURCES hybridutilitiestest.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
+dune_add_test(SOURCES indexediteratortest.cc
+              LABELS quick)
+
 dune_add_test(SOURCES indicestest.cc
               LABELS quick)
 

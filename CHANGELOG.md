@@ -69,6 +69,9 @@ In order to build the DUNE core modules you need at least the following software
 - Move special MPI-related compile flags, like `MPI_NO_CPPBIND`, from `config.h` into
   the cmake utiltiy `add_dune_mpi_flags` and the related global package registration.
 
+- Add new utility type `IndexedIterator` that extends a given iterator by an `index()`
+  method returning a traversal index.
+
 ## Build System
 
 - Documentation files in `doc/buildsystem/${ModuleName}.rst` are now only copied.
