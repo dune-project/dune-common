@@ -72,7 +72,17 @@ namespace Dune
           return "Dune::FieldMatrix<"+to_string(m)+","+to_string(n)+">(...)";
           } );
 
-      cls.def_buffer( [] ( FM &self ) -> pybind11::buffer_info {
+      auto stride1 = [](FM &self)
+           { return (m == 1)? 0:
+             static_cast< std::size_t >( reinterpret_cast< char * >( &self[ 1 ][ 0 ] )
+                                       - reinterpret_cast< char * >( &self[ 0 ][ 0 ] ) );
+           };
+      auto stride2 = [](FM &self)
+           { return (n == 1)? 0:
+             static_cast< std::size_t >( reinterpret_cast< char * >( &self[ 0 ][ 1 ] )
+                                       - reinterpret_cast< char * >( &self[ 0 ][ 0 ] ) );
+           };
+      cls.def_buffer( [stride1,stride2] ( FM &self ) -> pybind11::buffer_info {
           return pybind11::buffer_info(
               &self[ 0 ][ 0 ],                          /* Pointer to buffer */
               sizeof( K ),                              /* Size of one scalar */
@@ -80,10 +90,7 @@ namespace Dune
               2,                                        /* Number of dimensions */
               { m, n },                                 /* Buffer dimensions */
               /* Strides (in bytes) for each index */
-              {
-                static_cast< std::size_t >( reinterpret_cast< char * >( &self[ 1 ][ 0 ] ) - reinterpret_cast< char * >( &self[ 0 ][ 0 ] ) ),
-                static_cast< std::size_t >( reinterpret_cast< char * >( &self[ 0 ][ 1 ] ) - reinterpret_cast< char * >( &self[ 0 ][ 0 ] ) )
-              }
+              { stride1(self), stride2(self) }
             );
         } );
 
