@@ -932,7 +932,7 @@ namespace Dune {
   template<typename T1, typename T2>
   inline bool RemoteIndex<T1,T2>::operator==(const RemoteIndex& ri) const
   {
-    return localIndex_==ri.localIndex_ && attribute_==ri.attribute;
+    return localIndex_==ri.localIndex_ && attribute_==ri.attribute_;
   }
 
   template<typename T1, typename T2>
