@@ -5,7 +5,7 @@
 #ifndef DUNE_VERSION_HH
 #define DUNE_VERSION_HH
 
-#include <dune-common-config.hh>
+#include <dune-common-config.hh> // DUNE_[MODULE]_VERSION_[TYPE]
 
 /** \file
  * \brief Various macros to work with %Dune module version numbers

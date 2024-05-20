@@ -15,7 +15,7 @@
 #ifndef DUNE_COMMON_STDSTREAMS_HH
 #define DUNE_COMMON_STDSTREAMS_HH
 
-#include <dune-common-config.hh>
+#include <dune-common-config.hh> // DUNE_MINIMAL_DEBUG_LEVEL
 #include "debugstream.hh"
 
 namespace Dune {
