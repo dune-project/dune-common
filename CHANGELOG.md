@@ -77,6 +77,11 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Build System
 
+- Dune package dependencies are now transitively resolved at `find_package(<dune-module>)` calls instead of waiting
+  until the call to `dune_project()`. For example, a CMake call to `find_package(dune-grid)` will transitively
+  find the dune packages `dune-common`, `dune-geometry` and (if available) `dune-uggrid`. Note that the targets
+  provided by those found modules are still being set up at the `dune_project()` call.
+
 - Documentation files in `doc/buildsystem/${ModuleName}.rst` are now only copied.
   Previously, they were configured through the CMake function `configure_file()`
   as a cmake template file.
