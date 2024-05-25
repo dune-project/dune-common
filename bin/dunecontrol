@@ -205,7 +205,7 @@ load_opts() {
       if test -z "$BUILDDIR"; then
         # no builddir set yet, use build dir from opts file if set
         # Note: if --use-buiddir is used BUILDDIR will be set already
-        OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . $DUNE_OPTS_FILE; eval echo \$BUILDDIR)"
+        OPTS_FILE_BUILDDIR="$(eval BUILDDIR=""; . "$DUNE_OPTS_FILE"; eval echo \$BUILDDIR)"
         if test -n "$OPTS_FILE_BUILDDIR"; then
           BUILDDIR="$OPTS_FILE_BUILDDIR"
         fi
@@ -213,7 +213,7 @@ load_opts() {
       if test "$system_default_cmake" = "yes"; then
         # We use cmake for building, but CMAKE is not yet set.
         # Check the opts file for it
-        OPTS_FILE_CMAKE="$(eval CMAKE=""; . $DUNE_OPTS_FILE; eval echo \$CMAKE)"
+        OPTS_FILE_CMAKE="$(eval CMAKE=""; . "$DUNE_OPTS_FILE"; eval echo \$CMAKE)"
         if test -n "$OPTS_FILE_CMAKE"; then
           CMAKE="$OPTS_FILE_CMAKE"
         fi
@@ -222,11 +222,11 @@ load_opts() {
   fi
   if test "x$DUNE_OPTS_FILE" != "x"; then
     if test "$command" = "configure"; then
-      CMAKE_FLAGS="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_FLAGS)"
-      CMAKE_FLAGS="$CMAKE_FLAGS -DDUNE_OPTS_FILE=$DUNE_OPTS_FILE"
-      CMAKE_MODULE_PATH="$(. $DUNE_OPTS_FILE; eval echo \$CMAKE_MODULE_PATH)"
+      CMAKE_FLAGS="$(. "${DUNE_OPTS_FILE}"; eval echo \$CMAKE_FLAGS)"
+      CMAKE_FLAGS="$CMAKE_FLAGS -DDUNE_OPTS_FILE=\"$DUNE_OPTS_FILE\""
+      CMAKE_MODULE_PATH="$(. "$DUNE_OPTS_FILE"; eval echo \$CMAKE_MODULE_PATH)"
     fi
-    CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . $DUNE_OPTS_FILE; eval echo \$${COMMAND}_FLAGS)"
+    CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . "$DUNE_OPTS_FILE"; eval echo \$${COMMAND}_FLAGS)"
   fi
   if test -n "$CMD_FLAGS_FROM_FILE"; then
     echo "----- using default flags \$${COMMAND}_FLAGS from $DUNE_OPTS_FILE -----"
@@ -783,7 +783,7 @@ usage () {
 create_module_list() {
   # try to get the resume file name from the options
   if test -z "$RESUME_FILE" && test -n "$DUNE_OPTS_FILE"; then
-    export RESUME_FILE="$(eval . $DUNE_OPTS_FILE; eval echo \$RESUME_FILE)"
+    export RESUME_FILE="$(eval . \"$DUNE_OPTS_FILE\"; eval echo \$RESUME_FILE)"
   fi
 
   if test "$RESUME_FLAG" = "yes" ; then

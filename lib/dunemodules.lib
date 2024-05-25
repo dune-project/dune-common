@@ -242,7 +242,7 @@ setup_control_path() {
   fi
   # try to read DUNE_CONTROL_PATH from OPTS file
   if test -n "$DUNE_OPTS_FILE"; then
-    DUNE_CONTROL_PATH="$(. $DUNE_OPTS_FILE; eval echo $DUNE_CONTROL_PATH)"
+    DUNE_CONTROL_PATH="$(. "$DUNE_OPTS_FILE"; eval echo $DUNE_CONTROL_PATH)"
   fi
   # canonicalize path
   local TMP=""
