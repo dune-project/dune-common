@@ -36,6 +36,16 @@ Utility functions used by multiple files.
 
   Example: ``dune-grid-howto -> DuneGridHowto``
 
+.. cmake:command:: dune_deprecate_variable
+
+  Writes a deprecation message on a variable read access. This is intended to be
+  called by ``variable_watch(....)``.
+
+  .. code-block:: cmake
+
+    variable_watch(<deprecared-variable> dune_deprecate_variable)
+
+
 #]=======================================================================]
 include_guard(GLOBAL)
 
@@ -73,3 +83,9 @@ macro(dune_module_to_macro _macro_name _dune_module)
   string(TOUPPER "${_first_letter}" _first_letter)
   set(${_macro_name} "${${_macro_name}}${_first_letter}${_rest}")
 endmacro(dune_module_to_macro _macro_name _dune_module)
+
+function(dune_deprecate_variable _variable _access)
+  if(_access STREQUAL "READ_ACCESS")
+    message(DEPRECATION "Variable ${_variable} is deprecated")
+  endif()
+endfunction()

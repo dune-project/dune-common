@@ -143,7 +143,7 @@ if(DUNE_PYTHON_USE_VENV)
   # for a build directory that already contains a virtual environment.
   # if we haven't found it yet, check in the current build directory - this might be a reconfigure
   if(NOT DUNE_PYTHON_VIRTUALENV_PATH)
-    foreach(mod ${ALL_DEPENDENCIES} CMAKE_BINARY)
+    foreach(mod ${DUNE_FOUND_DEPENDENCIES} CMAKE_BINARY)
       if(IS_DIRECTORY ${${mod}_DIR}/dune-env)
         set(DUNE_PYTHON_VIRTUALENV_PATH ${${mod}_DIR}/dune-env)
         break()
@@ -328,7 +328,7 @@ else()
   if(UNIX)
 
     # create list with python module paths
-    foreach( mod ${ALL_DEPENDENCIES} )
+    foreach( mod ${DUNE_FOUND_DEPENDENCIES} )
       if( NOT "_${${mod}_PYTHON_WHEELHOUSE}_" STREQUAL "__")
         set(MODULE_DEP_PYTHON_PATH "${MODULE_DEP_PYTHON_PATH}\n ${${mod}_PYTHON_WHEELHOUSE}")
       endif()

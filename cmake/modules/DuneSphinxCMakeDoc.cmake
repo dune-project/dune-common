@@ -109,7 +109,7 @@ function(dune_cmake_sphinx_doc)
   # Check whether we need to look through all dependencies
   set(DOC_CMAKE_MODULES)
   if(NOT SPHINX_CMAKE_MODULE_ONLY)
-    set(DOC_CMAKE_MODULES ${ALL_DEPENDENCIES})
+    set(DOC_CMAKE_MODULES ${DUNE_FOUND_DEPENDENCIES})
   endif()
 
   # Now treat the module dependent rst sources.
