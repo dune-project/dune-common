@@ -104,7 +104,7 @@ macro(dune_project)
   # find weak requirements
   foreach(_mod IN LISTS ${ProjectName}_SUGGESTS)
     split_module_version(${_mod} _mod_name _mod_ver)
-    find_dune_package(${_mod_name} VERSION ${_mod_ver})
+    find_dune_package(${_mod_name} VERSION ${_mod_ver} QUIET)
   endforeach()
 
   # find hard requirements
