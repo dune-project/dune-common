@@ -732,7 +732,7 @@ class MakefileBuilder(Builder):
                 # first just check if the makefile does not contain any error
                 # An issue could be that a file in the dependency list has
                 # moved (e.g. from installed to source build)
-                with subprocess.Popen([MakefileBuilder.makeCmd, "-q", "-f",makeFileName, moduleName+'.so'],
+                with subprocess.Popen([MakefileBuilder.makeCmd, "-q", "-f", makeFileName, moduleName+'.so'],
                                       cwd=self.generated_dir,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE) as make:
@@ -742,7 +742,7 @@ class MakefileBuilder(Builder):
                 # this means that there was a problem
                 # with the makefile so we remove the dependencies and the
                 # generated module so that it will be regenerated
-                if exit_code == 2:
+                if exit_code == 2 or noDepCheck:
                     with open(makeFileName, "w") as makeFile:
                         makeFile.write('.SUFFIXES:\n')
                         makeFile.write(os.path.join("CMakeFiles",moduleName+'.dir',moduleName+'.cc.o')+':\n')
@@ -752,11 +752,11 @@ class MakefileBuilder(Builder):
                     # make sure directory entries are properly written to avoid raceconditions on network storage.
                     Builder.sync_dir(self.generated_dir)
 
-                if exit_code > 0:
+                if exit_code > 0 or noDepCheck:
                     # make sure directory entries are properly written to avoid raceconditions on network storage.
                     # Builder.sync_dir(self.generated_dir)
                     # call make to build shared library
-                    self.makeModule( moduleName, makeFileName, compilationMessage )
+                    self.makeModule( moduleName, makeFileName, compilationMessage, force=noDepCheck )
 
     def _makeFileName( self, moduleName ):
         return os.path.join(self.generated_dir,"CMakeFiles",moduleName+'.dir',moduleName+'.make')
@@ -768,8 +768,13 @@ class MakefileBuilder(Builder):
         makeArgs = [MakefileBuilder.makeCmd]
         if force:
             makeArgs += ["-B"]
+        makeEnv = os.environ.copy()
+        if cxxFlags is not None:
+            makeEnv['CXXFLAGS'] = cxxFlags
+
         with subprocess.Popen(makeArgs + ["-f",makeFileName, moduleName+'.so'],
                               cwd=self.generated_dir,
+                              env=makeEnv,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE) as make:
             try:

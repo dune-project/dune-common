@@ -60,9 +60,9 @@ def removeGenerated(modules = [], fileName=None, date=False):
                 pattern = os.path.join(generated_dir, m+'*'+ext)
                 files += glob.glob(pattern)
             if len(files) == 0:
-              bases.add(m)
+                bases.add(m)
             else:
-              bases.update( [os.path.splitext(os.path.basename(f))[0] for f in files] )
+                bases.update( [os.path.splitext(os.path.basename(f))[0] for f in files] )
     else:
         if not len(modules) == 1:
             raise ValueError("when removing modules by date only provide the date as argument and not a list of modules")
