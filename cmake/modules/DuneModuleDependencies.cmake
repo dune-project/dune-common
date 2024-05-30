@@ -12,7 +12,7 @@ Macros to extract dependencies between Dune modules by inspecting the
 
   .. code-block:: cmake
 
-    dune_check_module_version(<dune-module> VERSION <version-requirement>)
+    dune_check_module_version(<dune-module> [REQUIRED] [QUIET] VERSION <version-requirement>)
 
   Check that the version of a dune module `<dune-module>` is compatible with
   `<version-requirement>`. Notice that the `dune_module_information` macro is
@@ -67,7 +67,22 @@ include(DunePkgConfig)
 # checks that a module version is compatible with the found version of a module
 # notice that this has the side effect of populating the ${module}_VERSION information
 macro(dune_check_module_version module)
-  cmake_parse_arguments(DUNE_VCHECK "" "VERSION" "" ${ARGN})
+  cmake_parse_arguments(DUNE_VCHECK "REQUIRED;QUIET" "VERSION" "" ${ARGN})
+  if(DUNE_VCHECK_QUIET)
+    set(quiet QUIET)
+  else()
+    unset(quiet)
+  endif()
+  if(DUNE_VCHECK_REQUIRED)
+    set(warning_level "FATAL_ERROR")
+  else()
+    if(DUNE_VCHECK_QUIET)
+      set(warning_level "DEBUG")
+    else()
+      set(warning_level "WARNING")
+    endif()
+  endif()
+
   if(DUNE_VCHECK_VERSION MATCHES "(>=|=|<=).*")
     string(REGEX REPLACE "(>=|=|<=)(.*)" "\\1" DUNE_VCHECK_VERSION_OP ${DUNE_VCHECK_VERSION})
     string(REGEX REPLACE "(>=|=|<=)(.*)" "\\2" DUNE_VCHECK_VERSION_NUMBER ${DUNE_VCHECK_VERSION})
@@ -85,7 +100,7 @@ macro(dune_check_module_version module)
       ${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module)
     if(EXISTS ${_dune_module_file})
       get_filename_component(_dune_module_file_path ${_dune_module_file} PATH)
-      dune_module_information(${_dune_module_file_path})# QUIET)
+      dune_module_information(${_dune_module_file_path} ${quiet})
       set(${module}_dune_module 1)
       set(DUNE_VCHECK_MOD_VERSION_STRING "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")
       # check whether dependency matches version requirement
@@ -107,13 +122,13 @@ macro(dune_check_module_version module)
     endif()
   endforeach()
   if(NOT ${module}_dune_module)
-    message(${_warning_level} "Could not find dune.module file for module ${module} "
+    message(${warning_level} "Could not find dune.module file for module ${module} "
       "in ${${module}_PREFIX},  ${${module}_PREFIX}/lib/dunecontrol/${module}/, "
       "${${module}_PREFIX}/lib64/dunecontrol/${module}/dune.module")
     set(${module}_FOUND OFF)
   endif()
   if(module_version_wrong)
-    message(${_warning_level} "Could not find requested version of module ${module}. "
+    message(${warning_level} "Could not find requested version of module ${module}. "
       "Requested version was ${DUNE_FIND_VERSION}, found version is ${DUNE_FIND_MOD_VERSION_STRING}")
     set(${module}_FOUND OFF)
   endif()
@@ -222,14 +237,17 @@ macro(dune_cmake_path_setup project_list)
 endmacro(dune_cmake_path_setup)
 
 macro(find_dune_package module)
-  cmake_parse_arguments(DUNE_FIND "REQUIRED" "VERSION" "" ${ARGN})
+  cmake_parse_arguments(DUNE_FIND "REQUIRED;QUIET" "VERSION" "" ${ARGN})
+  if(DUNE_FIND_QUIET)
+    set(quiet QUIET)
+  else()
+    unset(quiet)
+  endif()
   if(DUNE_FIND_REQUIRED)
     set(required REQUIRED)
     set_package_properties(${module} PROPERTIES TYPE REQUIRED)
-    set(_warning_level "FATAL_ERROR")
   else()
     unset(required)
-    set(_warning_level "WARNING")
     set_package_properties(${module} PROPERTIES TYPE OPTIONAL)
   endif()
   if(NOT ${module}_FOUND)
@@ -238,7 +256,7 @@ macro(find_dune_package module)
       string(REPLACE  ${ProjectName} ${module} ${module}_DIR
         ${PROJECT_BINARY_DIR})
     endif()
-    find_package(${module})
+    find_package(${module} ${quiet})
   endif()
   if(NOT ${module}_FOUND AND NOT CMAKE_DISABLE_FIND_PACKAGE_${module})
     message(STATUS "No full CMake package configuration support available."
@@ -290,7 +308,7 @@ macro(find_dune_package module)
   endif()
   if(${module}_FOUND)
     # parse other module's dune.module file to generate variables for config.h
-    dune_check_module_version(${module} VERSION ${DUNE_FIND_VERSION})
+    dune_check_module_version(${module} ${quiet} ${required} VERSION ${DUNE_FIND_VERSION})
   else(${module}_FOUND)
     if(required)
       message(FATAL_ERROR "Could not find required module ${module}.")
@@ -321,7 +339,7 @@ macro(dune_process_dependency_leafs modules versions is_required next_level_deps
       list(GET mmodules ${i} _mod)
       list(GET mversions ${i} _ver)
       if(NOT ${_mod}_FOUND)
-        find_dune_package(${_mod} ${is_required} VERSION "${_ver}")
+        find_dune_package(${_mod} ${is_required} QUIET VERSION "${_ver}")
       endif()
       set(${_mod}_SEARCHED ON)
       if(NOT "${is_required}" STREQUAL "")

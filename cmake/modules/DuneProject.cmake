@@ -104,7 +104,7 @@ macro(dune_project)
   # find weak requirements
   foreach(_mod IN LISTS ${ProjectName}_SUGGESTS)
     split_module_version(${_mod} _mod_name _mod_ver)
-    find_dune_package(${_mod_name} VERSION ${_mod_ver})
+    find_dune_package(${_mod_name} VERSION ${_mod_ver} QUIET)
   endforeach()
 
   # find hard requirements
@@ -259,7 +259,7 @@ endif()
   include(DuneModuleDependencies)
   list(POP_FRONT CMAKE_MODULE_PATH)
   if(dune-common_VERSION VERSION_GREATER_EQUAL \"2.10\")
-    dune_check_module_version(\${module} VERSION \"\${version}\")
+    dune_check_module_version(\${module} QUIET REQUIRED VERSION \"\${version}\")
   endif()
 endmacro()
 ")
@@ -557,7 +557,7 @@ endif()")
   configure_file(${CMAKE_CURRENT_BINARY_DIR}/config_collected.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
   if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
-    feature_summary(WHAT ALL)
+    feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES)
   endif()
 
 endmacro(finalize_dune_project)
