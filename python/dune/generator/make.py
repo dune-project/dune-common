@@ -45,7 +45,7 @@ def makeGenerated(modules, fileName=None, threads=4, force=False):
     bases = set()
     if 'all' in modules:
         modules = ['']
-    if fileName is not None:
+    if fileName is not None and not fileName == '':
         try:
             with open(fileName,'r') as f:
                 for line in f:
@@ -60,7 +60,7 @@ def makeGenerated(modules, fileName=None, threads=4, force=False):
         if len(files) == 0:
             bases.add(m)
         else:
-             bases.update( [os.path.splitext(os.path.basename(f))[0] for f in files] )
+            bases.update( [os.path.splitext(os.path.basename(f))[0] for f in files] )
 
     with ThreadPoolExecutor(max_workers=threads) as executor:
         for i, base in enumerate(bases):
