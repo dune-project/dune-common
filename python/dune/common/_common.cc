@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 #include <utility>
 
+#include <dune-common-config.hh>
+
 #include <dune/python/common/dynmatrix.hh>
 #include <dune/python/common/dynvector.hh>
 #include <dune/python/common/fmatrix.hh>
