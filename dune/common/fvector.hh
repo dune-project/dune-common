@@ -368,12 +368,12 @@ namespace Dune {
     //===== forward methods to container
     static constexpr size_type size () noexcept { return 1; }
 
-    constexpr K& operator[] ([[maybe_unused]] size_type i)
+    constexpr reference operator[] ([[maybe_unused]] size_type i)
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
-    constexpr const K& operator[] ([[maybe_unused]] size_type i) const
+    constexpr const_reference operator[] ([[maybe_unused]] size_type i) const
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
@@ -394,10 +394,10 @@ namespace Dune {
     //===== conversion operator
 
     /** \brief Conversion operator */
-    constexpr operator K& () noexcept { return _data; }
+    constexpr operator reference () noexcept { return _data; }
 
     /** \brief Const conversion operator */
-    constexpr operator const K& () const noexcept { return _data; }
+    constexpr operator const_reference () const noexcept { return _data; }
   };
 
   /* ----- FV / FV ----- */
