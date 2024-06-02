@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <complex>
 #include <cstring>
+#include <type_traits>
 #include <utility>
 #include <initializer_list>
 #include <algorithm>
@@ -324,6 +325,7 @@ namespace Dune {
 
     //! Constructor from other dense vector
     template<class T,
+      std::enable_if_t<IsFieldVectorSizeCorrect<T,1>::value, int> = 0,
       decltype(std::declval<K&>() = std::declval<const T&>()[0], bool{}) = true>
     FieldVector (const DenseVector<T>& x)
     {
@@ -348,6 +350,7 @@ namespace Dune {
 
     //! assignment from other dense vector
     template<class T,
+      std::enable_if_t<IsFieldVectorSizeCorrect<T,1>::value, int> = 0,
       decltype(std::declval<K&>() = std::declval<const T&>()[0], bool{}) = true>
     FieldVector& operator= (const DenseVector<T>& other)
     {
