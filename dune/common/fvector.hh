@@ -302,22 +302,31 @@ namespace Dune {
     {}
 
     /** \brief Constructor with a given scalar */
-    template<typename T,
-             typename EnableIf = typename std::enable_if<
-               std::is_convertible<T, K>::value &&
-               ! std::is_base_of<DenseVector<typename FieldTraits<T>::field_type>, K
-                                 >::value
-               >::type
-             >
-    FieldVector (const T& k) : _data(k) {}
+    template<class T,
+      std::enable_if_t<std::is_constructible_v<K,T>, int> = 0>
+    FieldVector (const T& k)
+      : _data(k)
+    {}
+
+    /** \brief Construct from a std::initializer_list */
+    FieldVector (std::initializer_list<K> const &l)
+    {
+      assert(l.size() == 1);
+      _data = *l.begin();
+    }
 
     //! Constructor from static vector of different type
-    template<class C,
-             std::enable_if_t<
-               std::is_assignable<K&, typename DenseVector<C>::value_type>::value, int> = 0>
-    FieldVector (const DenseVector<C> & x)
+    template<class T,
+      std::enable_if_t<std::is_constructible_v<K,T>, int> = 0>
+    FieldVector (const FieldVector<T,1>& x)
+      : _data(x[0])
+    {}
+
+    //! Constructor from other dense vector
+    template<class T,
+      decltype(std::declval<K&>() = std::declval<const T&>()[0], bool{}) = true>
+    FieldVector (const DenseVector<T>& x)
     {
-      static_assert(((bool)IsFieldVectorSizeCorrect<C,1>::value), "FieldVectors do not match in dimension!");
       assert(x.size() == 1);
       _data = x[0];
     }
@@ -328,31 +337,28 @@ namespace Dune {
     //! copy assignment operator
     FieldVector& operator=(const FieldVector&) = default;
 
-    template <typename T>
+    //! assignment from static vector of different type
+    template<class T,
+      decltype(std::declval<K&>() = std::declval<const T&>(), bool{}) = true>
     FieldVector& operator= (const FieldVector<T, 1>& other)
     {
       _data = other[0];
       return *this;
     }
 
-    template<typename T, int N>
-    FieldVector& operator=(const FieldVector<T, N>&) = delete;
-
-    /** \brief Construct from a std::initializer_list */
-    FieldVector (std::initializer_list<K> const &l)
+    //! assignment from other dense vector
+    template<class T,
+      decltype(std::declval<K&>() = std::declval<const T&>()[0], bool{}) = true>
+    FieldVector& operator= (const DenseVector<T>& other)
     {
-      assert(l.size() == 1);
-      _data = *l.begin();
+      assert(other.size() == 1);
+      _data = other[0];
+      return *this;
     }
 
     //! Assignment operator for scalar
-    template<typename T,
-             typename EnableIf = typename std::enable_if<
-               std::is_assignable<K&, T>::value &&
-               ! std::is_base_of<DenseVector<typename FieldTraits<T>::field_type>, K
-                                 >::value
-               >::type
-             >
+    template<class T,
+      decltype(std::declval<K&>() = std::declval<const T&>(), bool{}) = true>
     inline FieldVector& operator= (const T& k)
     {
       _data = k;
