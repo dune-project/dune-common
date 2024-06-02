@@ -309,7 +309,7 @@ namespace Dune {
     {}
 
     /** \brief Construct from a std::initializer_list */
-    constexpr FieldVector (std::initializer_list<K> const &l)
+    constexpr FieldVector (const std::initializer_list<K>& l)
     {
       assert(l.size() == 1);
       _data = *l.begin();
@@ -332,15 +332,15 @@ namespace Dune {
     }
 
     //! copy constructor
-    constexpr FieldVector(const FieldVector&) = default;
+    constexpr FieldVector (const FieldVector&) = default;
 
     //! copy assignment operator
-    constexpr FieldVector& operator=(const FieldVector&) = default;
+    constexpr FieldVector& operator= (const FieldVector&) = default;
 
     //! assignment from static vector of different type
     template<class T,
       decltype(std::declval<K&>() = std::declval<const T&>(), bool{}) = true>
-    constexpr FieldVector& operator= (const FieldVector<T, 1>& other) noexcept
+    constexpr FieldVector& operator= (const FieldVector<T,1>& other) noexcept
     {
       _data = other[0];
       return *this;
@@ -368,25 +368,25 @@ namespace Dune {
     //===== forward methods to container
     static constexpr size_type size () noexcept { return 1; }
 
-    constexpr K & operator[]([[maybe_unused]] size_type i)
+    constexpr K& operator[] ([[maybe_unused]] size_type i)
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
-    constexpr const K & operator[]([[maybe_unused]] size_type i) const
+    constexpr const K& operator[] ([[maybe_unused]] size_type i) const
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
     //! return pointer to underlying array
-    constexpr K* data() noexcept
+    constexpr K* data () noexcept
     {
       return &_data;
     }
 
     //! return pointer to underlying array
-    constexpr const K* data() const noexcept
+    constexpr const K* data () const noexcept
     {
       return &_data;
     }
