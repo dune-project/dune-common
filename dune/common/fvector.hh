@@ -371,12 +371,12 @@ namespace Dune {
     //===== forward methods to container
     static constexpr size_type size () noexcept { return 1; }
 
-    constexpr reference operator[] ([[maybe_unused]] size_type i)
+    reference operator[] ([[maybe_unused]] size_type i)
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
-    constexpr const_reference operator[] ([[maybe_unused]] size_type i) const
+    const_reference operator[] ([[maybe_unused]] size_type i) const
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
