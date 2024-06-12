@@ -344,7 +344,7 @@ namespace Dune
       PointerProxy(ProxyType&& p) : p_(p)
       {}
 
-      ProxyType* operator->()
+      std::add_pointer_t<ProxyType> operator->()
       {
         return &p_;
       }
@@ -375,7 +375,7 @@ namespace Dune
       using iterator_category = std::forward_iterator_tag;
       using reference = decltype(transform(std::declval<F>(), std::declval<I>()));
       using value_type = std::decay_t<reference>;
-      using pointer = PointerProxy<value_type>;
+      using pointer = PointerProxy<reference>;
 
       // If we later want to allow standalone TransformedRangeIterators,
       // we could customize the FunctionPointer to be a default-constructible,
