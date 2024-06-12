@@ -363,7 +363,8 @@ namespace Dune
     {
     protected:
 
-      static decltype(auto) transform(const F& f, const I& it) {
+      template<class FF>
+      static decltype(auto) transform(FF&& f, const I& it) {
         if constexpr (std::is_same_v<TransformationType,IteratorTransformationTag>)
           return f(it);
         else
@@ -668,10 +669,10 @@ namespace Dune
     /**
      * \brief Construct from range and function
      */
-    template<class RR>
-    constexpr TransformedRangeView(RR&& rawRange, const F& f) noexcept :
+    template<class RR, class FF>
+    constexpr TransformedRangeView(RR&& rawRange, FF&& f) noexcept :
       rawRange_(std::forward<RR>(rawRange)),
-      f_(f)
+      f_(std::forward<FF>(f))
     {
       static_assert(std::is_same_v<T, ValueTransformationTag> or std::is_same_v<T, IteratorTransformationTag>,
           "The TransformationType passed to TransformedRangeView has to be either ValueTransformationTag or IteratorTransformationTag.");
@@ -804,9 +805,9 @@ namespace Dune
    * if range is an l-value, then the TransformedRangeView stores it by reference.
    **/
   template <class R, class F>
-  auto transformedRangeView(R&& range, const F& f)
+  auto transformedRangeView(R&& range, F&& f)
   {
-    return TransformedRangeView<R, F, ValueTransformationTag>(std::forward<R>(range), f);
+    return TransformedRangeView<R, std::decay_t<F>, ValueTransformationTag>(std::forward<R>(range), std::forward<F>(f));
   }
 
   /**
@@ -837,9 +838,9 @@ namespace Dune
    * if range is an l-value, then the TransformedRangeView stores it by reference.
    **/
   template <class R, class F>
-  auto iteratorTransformedRangeView(R&& range, const F& f)
+  auto iteratorTransformedRangeView(R&& range, F&& f)
   {
-    return TransformedRangeView<R, F, IteratorTransformationTag>(std::forward<R>(range), f);
+    return TransformedRangeView<R, std::decay_t<F>, IteratorTransformationTag>(std::forward<R>(range), std::forward<F>(f));
   }
 
 
