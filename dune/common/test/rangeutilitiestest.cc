@@ -126,6 +126,9 @@ auto testTransformedRangeView()
       (*r.begin()) = 0;
       suite.check(a[0] == 0)
         << "modifying range by reference returning transformation failed";
+      *(r.begin().operator->().operator->()) = 42;
+      suite.check(a[0] == 42)
+        << "modifying range by reference returning transformation failed using operator-> failed";
       a = a_backup;
     }
     // Check if returning real references in the transformation works
@@ -136,6 +139,19 @@ auto testTransformedRangeView()
         << "iterator with const-reference returning transformation does not return const references";
       suite.check(&(*(r.begin())) == &(a[0]))
         << "reference points to wrong location";
+    }
+    // Check if returning copies leaves original range untouched
+    {
+      auto r = Dune::transformedRangeView(a, [](auto x) { return x;});
+      suite.check(not std::is_lvalue_reference_v<decltype(*r.begin())>)
+        << "dereferenced iterator returned reference instead of copy";
+      suite.check(not std::is_lvalue_reference_v<decltype(r[0])>)
+        << "operator[] returned reference instead of copy";
+      auto a0 = a[0];
+      *(r.begin().operator->().operator->()) = a0+3;
+      suite.check(a[0] == a0)
+        << "iterator::operator-> for non-reference transformation modifies the original range";
+      a = a_backup;
     }
     // Check iterator based transformation
     {
