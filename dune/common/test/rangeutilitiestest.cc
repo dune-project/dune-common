@@ -16,7 +16,88 @@
 #include <dune/common/diagonalmatrix.hh>
 #include <dune/common/test/testsuite.hh>
 #include <dune/common/test/iteratortest.hh>
+#include <dune/common/tupleutility.hh>
+#include <dune/common/integersequence.hh>
 
+
+
+// This utility helps to avoid an inconvenience of lambda functions:
+// If a lambda is mutable and contains by value captures, the generated
+// class only contains a mutable "...operator()(...)"
+// but const version "...operator()(...) const" passing "this" as const.
+//
+// auto v = std::vector{0,2,3};
+// auto f = [v=std::move(v)](auto i) mutable ->decltype(auto) {return v[i];};
+// f(0);      //OK, non-const operator()
+// f(0) = 42; //OK, modifies captured vector
+//
+// const auto& fc = f;
+// fc(0);  //Compile error, there's no, const operator()
+//
+// This class will store copies of a collection of values and a callback.
+// It provides const and a non-const "...operator()(...)", which is forwarded
+// the callback passing the stored values as leading argument followed by
+// any additional argument passed to "operator()". Hence for
+//
+// auto v = std::vector{0,2,3};
+// auto f = Capture(std::move(v), [](auto&& v, auto i) ->decltype(auto) {return v[i];});
+// f(0);      //OK, calls non-const operator()
+// f(0) = 42; //OK, modifies captured vector
+//
+// const auto& fc = f;
+// fc(0);      //OK, calls const operator()
+// fc(0) = 42; //Compile error, for const capture this returns a const ref
+template<class... T>
+class Capture
+{
+
+  template<class Tuple, class... Args>
+  static decltype(auto) invoke(Tuple&& capture, Args&&...args)
+  {
+    constexpr auto N = sizeof...(T)-1;
+    constexpr auto indices = Dune::push_front(std::make_index_sequence<N>(), Dune::index_constant<N>());
+    return Dune::applyPartial([&](auto&... t) -> decltype(auto) {
+      return std::invoke(t..., std::forward<Args>(args)...);
+    }, capture, indices);
+  }
+
+public:
+  Capture(T&&... t) :
+    t_(std::move(t)...)
+  {}
+
+  template<class... Args>
+  decltype(auto) operator()(Args&&... args)
+  {
+    return invoke(t_, std::forward<Args>(args)...);
+  }
+
+  template<class... Args>
+  decltype(auto) operator()(Args&&... args) const
+  {
+    return invoke(t_, std::forward<Args>(args)...);
+  }
+
+private:
+  std::tuple<T...> t_;
+};
+
+
+
+template<class R1, class R2>
+auto checkSameRange(R1&& r1, R2&& r2)
+{
+  auto it1 = r1.begin();
+  auto end1 = r1.end();
+  auto it2 = r2.begin();
+  auto end2 = r2.end();
+  for(; (it1 < end1) and (it2 < end2); ++it1, ++it2)
+    if (*it1 != *it2)
+      return false;
+  if ((it1 != end1) or (it2 != end2))
+    return false;
+  return true;
+}
 
 template<class R>
 auto checkRangeIterators(R&& r)
@@ -195,6 +276,18 @@ auto testTransformedRangeView()
     std::sort(r3.begin(), r3.end());
     suite.check(m == std::map<int, int>{{1,2},{-1,3}, {2,5},{0,4}})
       << "sorting reference returning transformedRangeView failed";
+  }
+  // Check if using a mutable callback allows to use const and non-const calls
+  {
+    auto a = std::vector<int>{4,3,2,1,0};
+    auto r = Dune::transformedRangeView(Dune::range(1,4), Capture(std::move(a), [](auto&& a, auto i) -> decltype(auto) {return a[i];}));
+    suite.check(checkSameRange(r, std::vector{3, 2, 1}));
+    std::sort(r.begin(), r.end());
+    suite.check(checkSameRange(r, std::vector{1, 2, 3}))
+      << "sorting mutable captured range failed";
+    const auto& rc = r;
+    suite.check(checkSameRange(rc, std::vector{1, 2, 3}))
+      << "accessing mutable range via const reference failed";
   }
   return suite;
 }
