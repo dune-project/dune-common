@@ -6,9 +6,10 @@ add_subdirectory(eigen)
 add_subdirectory(stl)
 
 SET(HEADERS
-attr.h         common.h   eval.h        iostream.h   pybind11.h
-buffer_info.h  complex.h  extensions.h  numpy.h      pytypes.h
-cast.h         eigen.h    functional.h  operators.h  stl_bind.h
-chrono.h       embed.h    gil.h         options.h    stl.h)
+attr.h         common.h   eval.h        gil_safe_call_once.h  options.h   stl.h
+buffer_info.h  complex.h  extensions.h  iostream.h            pybind11.h  type_caster_pyobject_ptr.h
+cast.h         eigen.h    functional.h  numpy.h               pytypes.h   typing.h
+chrono.h       embed.h    gil.h         operators.h           stl_bind.h)
+
 
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/python/pybind11)
