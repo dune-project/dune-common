@@ -373,15 +373,13 @@ namespace Dune
 
     public:
       using iterator_category = std::forward_iterator_tag;
-      using reference = decltype(transform(std::declval<F>(), std::declval<I>()));
+      using reference = decltype(transform(*std::declval<F>(), std::declval<I>()));
       using value_type = std::decay_t<reference>;
       using pointer = PointerProxy<reference>;
 
-      // If we later want to allow standalone TransformedRangeIterators,
-      // we could customize the FunctionPointer to be a default-constructible,
-      // copy-assignable type storing a function but acting like a pointer
-      // to function.
-      using FunctionPointer = const F*;
+      // The template parameter F should be pointer like since it
+      // will always be accessed using unary operator*.
+      using FunctionPointer = F;
 
       constexpr TransformedRangeIterator(const I& it, FunctionPointer f) noexcept :
         it_(it),
@@ -648,7 +646,7 @@ namespace Dune
      * This inherits the iterator_category of the iterators
      * of the underlying range.
      */
-    using const_iterator = Impl::TransformedRangeIterator<RawConstIterator, F, T>;
+    using const_iterator = Impl::TransformedRangeIterator<RawConstIterator, const F*, T>;
 
     /**
      * \brief Iterator type
@@ -656,7 +654,7 @@ namespace Dune
      * This inherits the iterator_category of the iterators
      * of the underlying range.
      */
-    using iterator = Impl::TransformedRangeIterator<RawIterator, F, T>;
+    using iterator = Impl::TransformedRangeIterator<RawIterator, F*, T>;
 
     /**
      * \brief Export type of the wrapped untransformed range.
