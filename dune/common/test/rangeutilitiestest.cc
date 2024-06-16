@@ -8,6 +8,7 @@
 #include <vector>
 #include <numeric>
 #include <type_traits>
+#include <optional>
 
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/iteratorrange.hh>
@@ -84,19 +85,23 @@ private:
 
 
 
-template<class R1, class R2>
-auto checkSameRange(R1&& r1, R2&& r2)
+template<class R1, class BeginIt2, class EndIt2>
+auto checkSameRange(R1&& r1, BeginIt2&& it2, EndIt2&& end2)
 {
   auto it1 = r1.begin();
   auto end1 = r1.end();
-  auto it2 = r2.begin();
-  auto end2 = r2.end();
   for(; (it1 < end1) and (it2 < end2); ++it1, ++it2)
     if (*it1 != *it2)
       return false;
   if ((it1 != end1) or (it2 != end2))
     return false;
   return true;
+}
+
+template<class R1, class R2>
+auto checkSameRange(R1&& r1, R2&& r2)
+{
+  return checkSameRange(r1, r2.begin(), r2.end());
 }
 
 template<class R>
@@ -207,7 +212,7 @@ auto testTransformedRangeView()
       (*r.begin()) = 0;
       suite.check(a[0] == 0)
         << "modifying range by reference returning transformation failed";
-      *(r.begin().operator->().operator->()) = 42;
+      *(r.begin().operator->()) = 42;
       suite.check(a[0] == 42)
         << "modifying range by reference returning transformation failed using operator-> failed";
       a = a_backup;
@@ -288,6 +293,32 @@ auto testTransformedRangeView()
     const auto& rc = r;
     suite.check(checkSameRange(rc, std::vector{1, 2, 3}))
       << "accessing mutable range via const reference failed";
+  }
+  // Check creation of free iterators storing raw lambdas of different type
+  {
+    auto transformedIterator = [](auto&& it, auto&& f) {
+      using It = std::decay_t<decltype(it)>;
+      using F = std::decay_t<decltype(f)>;
+      using TIt = Dune::Impl::TransformedRangeIterator<It, F, Dune::ValueTransformationTag>;
+      return TIt(std::forward<decltype(it)>(it), std::forward<decltype(f)>(f));
+    };
+    auto it = transformedIterator(Dune::range(0,5).begin(), [](auto x) { return 2*x; });
+    auto end = transformedIterator(Dune::range(0,4).end(), [](auto x) {return 0;});
+    suite.check(checkSameRange(std::vector{0, 2, 4, 6}, it, end))
+      << "free TransformedRangeIterator's with raw lambdas yield wrong result";
+  }
+  // Check creation of free iterators storing std::optional lambdas of different type
+  {
+    auto transformedIterator = [](auto&& it, auto&& f) {
+      using It = std::decay_t<decltype(it)>;
+      using F = std::decay_t<decltype(f)>;
+      using TIt = Dune::Impl::TransformedRangeIterator<It, std::optional<F>, Dune::ValueTransformationTag>;
+      return TIt(std::forward<decltype(it)>(it), std::forward<decltype(f)>(f));
+    };
+    auto it = transformedIterator(Dune::range(0,5).begin(), [](auto x) { return 2*x; });
+    auto end = transformedIterator(Dune::range(0,4).end(), [](auto x) {return 0;});
+    suite.check(checkSameRange(std::vector{0, 2, 4, 6}, it, end))
+      << "free TransformedRangeIterator's with lambdas in std::optional yield wrong result";
   }
   return suite;
 }
