@@ -89,6 +89,8 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Build System
 
+- Remove the search of (currently broken) `pkg-config` files for dune packages.
+
 - Dune package dependencies are now transitively resolved at `find_package(<dune-module>)` calls instead of waiting
   until the call to `dune_project()`. For example, a CMake call to `find_package(dune-grid)` will transitively
   find the dune packages `dune-common`, `dune-geometry` and (if available) `dune-uggrid`. Note that the targets
