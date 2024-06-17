@@ -105,12 +105,24 @@ auto checkSameRange(R1&& r1, R2&& r2)
 }
 
 template<class R>
-auto checkRangeIterators(R&& r)
+auto checkRangeConstIterators(R&& r)
 {
   auto it = r.begin();
   auto end = r.end();
   auto op = [](const auto& x){};
   return (testConstIterator(it, end, op)==0);
+}
+
+template<class R, class Category>
+auto checkRangeIterators(R&& r, Category category)
+{
+  bool result = true;
+  auto it = r.begin();
+  auto end = r.end();
+  auto op = [](const auto& x){};
+  result &= (testConstIterator(it, end, op)==0);
+  result &= (testIterator(it, end, op, category)==0);
+  return result;
 }
 
 template<class R>
@@ -168,7 +180,7 @@ auto testTransformedRangeView()
       a[0] = 2;
       suite.check(checkRandomAccessNumberRangeSums(r, 14, 4, 6))
         << "incorrect values in transformedRangeView of l-value";
-      suite.check(checkRangeIterators(r))
+      suite.check(checkRangeIterators(r, std::random_access_iterator_tag()))
         << "iterator test fails for transformedRangeView of l-value";
       suite.check(checkRangeSize(r))
         << "checking size fails for transformedRangeView of l-value";
@@ -182,7 +194,7 @@ auto testTransformedRangeView()
       a[0] = 2;
       suite.check(checkRandomAccessNumberRangeSums(r, 14, 4, 6))
         << "incorrect values in transformedRangeView of const l-value";
-      suite.check(checkRangeIterators(r))
+      suite.check(checkRangeIterators(r, std::random_access_iterator_tag()))
         << "iterator test fails for transformedRangeView of const l-value";
       suite.check(checkRangeSize(r))
         << "checking size fails for transformedRangeView of const l-value";
@@ -197,7 +209,7 @@ auto testTransformedRangeView()
       a = a_backup;
       suite.check(checkRandomAccessNumberRangeSums(r, 14, 4, 6))
         << "incorrect values in transformedRangeView of r-value";
-      suite.check(checkRangeIterators(r))
+      suite.check(checkRangeIterators(r, std::random_access_iterator_tag()))
         << "iterator test fails for transformedRangeView of r-value";
       suite.check(checkRangeSize(r))
         << "checking size fails for transformedRangeView of r-value";
@@ -244,7 +256,7 @@ auto testTransformedRangeView()
       auto r = Dune::iteratorTransformedRangeView(a, [&](auto&& it) { return (*it)+(it-a.begin());});
       suite.check(checkRandomAccessNumberRangeSums(r, 9, 1, 5))
         << "incorrect values in transformedRangeView of l-value";
-      suite.check(checkRangeIterators(r))
+      suite.check(checkRangeIterators(r, std::random_access_iterator_tag()))
         << "iterator test fails for transformedRangeView of l-value";
       suite.check(checkRangeSize(r))
         << "checking size fails for transformedRangeView of l-value";
@@ -256,7 +268,7 @@ auto testTransformedRangeView()
     auto r = Dune::transformedRangeView(Dune::range(10), [](auto&& x) { return 2*x;});
     suite.check(checkRandomAccessNumberRangeSums(r, 90, 0, 18))
       << "transformation of on-the-fly range gives incorrect results";
-    suite.check(checkRangeIterators(r))
+    suite.check(checkRangeIterators(r, std::random_access_iterator_tag()))
       << "iterator test fails for transformedRangeView";
     suite.check(checkRangeSize(r))
       << "checking size fails for transformedRangeView of on-the-fly range";
