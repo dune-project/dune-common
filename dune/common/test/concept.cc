@@ -72,6 +72,14 @@ struct HasFooAndBar5
   using BaseConceptList = Dune::TypeList<HasFoo, HasBar>;
 };
 
+struct AllHaveFoo
+{
+  template<class T>
+  auto require(const T& t) -> decltype(
+    Dune::Concept::requireConceptForTupleEntries<HasFoo, T>()
+  );
+};
+
 
 
 
@@ -186,7 +194,11 @@ try
   test.check(models<HasFooAndBar5, FooBar<int>>())
       << "models<HasFooAndBar5, FooBar<int>>() gives wrong result";
 
+  test.check(models<AllHaveFoo, std::tuple<Foo<double>, Foo<int>, FooBar<int>>>())
+      << "models<AllHaveFoo, std::tuple<Foo<double>, FooBar<int>>>() gives wrong result";
 
+  test.check(not models<AllHaveFoo, std::tuple<Bar<double>, Foo<int>, FooBar<int>>>())
+      << "models<AllHaveFoo, std::tuple<Bar<double>, FooBar<int>>>() gives wrong result";
 
   return test.exit();
 }
