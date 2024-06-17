@@ -11,7 +11,7 @@
 
 #include <dune/common/typeutilities.hh>
 #include <dune/common/typelist.hh>
-#include <dune/common/tupleutility.hh>
+#include <dune/common/indices.hh>
 #include <dune/common/std/type_traits.hh>
 
 /**
@@ -190,31 +190,6 @@ constexpr auto models()
 
 namespace Concept {
 
-#ifndef DOXYGEN
-
-namespace Impl {
-
-  // #############################################################################
-  // # All functions following here are implementation details for the
-  // # for the tupleEntriesModel() function below.
-  // #############################################################################
-
-  template<class C, class Tuple>
-  struct TupleEntriesModelHelper
-  {
-    template<class Accumulated, class T>
-    struct AccumulateFunctor
-    {
-      using type = typename std::integral_constant<bool, Accumulated::value and models<C, T>()>;
-    };
-    using Result = typename ReduceTuple<AccumulateFunctor, Tuple, std::true_type>::type;
-  };
-
-} // namespace Dune::Concept::Impl
-
-#endif // DOXYGEN
-
-
 // #############################################################################
 // # The method tupleEntriesModel() does the actual check if the types in a tuple
 // # model a concept using the implementation details above.
@@ -222,9 +197,10 @@ namespace Impl {
 
 template<class C, class Tuple>
 constexpr auto tupleEntriesModel()
-  -> typename Impl::TupleEntriesModelHelper<C, Tuple>::Result
 {
-  return {};
+  return Dune::unpackIntegerSequence([&](auto... i) {
+    return std::conjunction<decltype(Dune::models<C, std::tuple_element_t<decltype(i)::value, Tuple>>())...>();
+  }, std::make_index_sequence<std::tuple_size_v<Tuple>>());
 }
 
 // #############################################################################
