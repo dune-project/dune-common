@@ -107,7 +107,7 @@ namespace Impl {
       using Field = typename PromotionTraits<FieldA, FieldB>::PromotedType;
 
       // We exploit that the rows of AB^T are the columns of (AB^T)^T = BA^T.
-      // Hence we get the row-vectors of AB^T by mutiplying B to the row-vectors
+      // Hence we get the row-vectors of AB^T by multiplying B to the row-vectors
       // of A.
       if constexpr(IsStaticSizeMatrix_v<MatrixA> and IsStaticSizeMatrix_v<WrappedMatrix>)
       {

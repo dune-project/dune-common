@@ -381,7 +381,7 @@ namespace Dune {
     inline const_iterator end() const;
 
     /**
-     * @brief Get an iterator for colletively iterating over the remote indices of all remote processes.
+     * @brief Get an iterator for collectively iterating over the remote indices of all remote processes.
      */
     template<bool send>
     inline CollectiveIteratorT iterator() const;

@@ -33,7 +33,7 @@ int main()
   // first set of tests
   {
     // First example:
-    // Call a C++ function that generats a FV,
+    // Call a C++ function that generates a FV,
     // call that in Python and compute squared 2-norm
     auto local = pybind11::dict();
     local["call_test"] = pybind11::cpp_function([&]() -> auto
