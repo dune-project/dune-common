@@ -635,7 +635,7 @@ class MakefileBuilder(Builder):
                     compilerCmd = compilerCmd[0] + " " + compilerCmd[1]
                     # add launcher before compiler
                     buildScript.write(launcher + " " + compilerCmd+"\n")
-                    # this needs fixing: Issue is that at the linker line beginns with ': && '
+                    # this needs fixing: Issue is that at the linker line begins with ': && '
                     linkerCmd = out[1].replace('extractCompiler','$1').\
                                        replace(' python/dune/generated/',' ') # better to move the script to the root of dune-py then this can be kept
                     linkerCmd = linkerCmd.split(' ',3)

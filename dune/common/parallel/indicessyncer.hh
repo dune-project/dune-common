@@ -216,7 +216,7 @@ namespace Dune
     /** @brief The type of the remote index list. */
     typedef typename RemoteIndices::RemoteIndexList RemoteIndexList;
 
-    /** @brief The tyoe of the modifying iterator of the remote index list. */
+    /** @brief The type of the modifying iterator of the remote index list. */
     typedef typename RemoteIndexList::ModifyIterator RemoteIndexModifier;
 
     /** @brief The type of the remote inde. */
@@ -261,7 +261,7 @@ namespace Dune
       Iterators();
 
       /**
-       * @brief Increment all iteraors.
+       * @brief Increment all iterators.
        */
       Iterators& operator++();
 

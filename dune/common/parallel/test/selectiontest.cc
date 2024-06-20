@@ -15,14 +15,14 @@ enum GridFlags {
 };
 
 template<class T>
-int meassure(const T& selection)
+int measure(const T& selection)
 {
   /*
-     return meassure<1>(selection);
+     return measure<1>(selection);
      }
 
      template<int LOOPS, class T>
-     int meassure(const T& selection)
+     int measure(const T& selection)
      {*/
   typedef typename T::const_iterator iterator;
 
@@ -79,13 +79,13 @@ void test()
   int count=0;
 
   std::cout<<" Owner selection uncached:";
-  count+=meassure(ownerUncached);
+  count+=measure(ownerUncached);
   std::cout<<" Owner selection cached:";
-  count+=meassure(ownerCached);
+  count+=measure(ownerCached);
   std::cout<<" Overlap selection uncached:";
-  count+=meassure(overlapUncached);
+  count+=measure(overlapUncached);
   std::cout<<" Overlap selection cached:";
-  count+=meassure(overlapCached);
+  count+=measure(overlapCached);
   std::cout<<count<<std::endl;
 }
 

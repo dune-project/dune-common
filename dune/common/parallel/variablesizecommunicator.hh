@@ -279,7 +279,7 @@ public:
 private:
   /** @brief The process rank that this communication interface is with. */
   int rank_;
-  /** @brief The other rank that this interface communcates with. */
+  /** @brief The other rank that this interface communicates with. */
   std::size_t index_;
   /** @brief The list of local indices of this interface. */
   InterfaceInformation interface_;
@@ -558,7 +558,7 @@ private:
 namespace
 {
 /**
- *  @brief A data handle for comunicating the sizes of variable sized data.
+ *  @brief A data handle for communicating the sizes of variable sized data.
  */
 template<class DataHandle>
 class SizeDataHandle

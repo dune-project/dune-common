@@ -279,14 +279,14 @@ namespace Dune
 
 
     /**
-     * @brief Comares two iterators.
+     * @brief Compares two iterators.
      * @return True if the iterators are for the same list and
      * at the position.
      */
     inline bool equals(const ArrayListIterator<MemberType,N,A>& other) const;
 
     /**
-     * @brief Comares two iterators.
+     * @brief Compares two iterators.
      * @return True if the iterators are for the same list and
      * at the position.
      */
@@ -392,7 +392,7 @@ namespace Dune
     constexpr static int chunkSize_ = (N > 0) ? N : 1;
 
     /**
-     * @brief Comares to iterators.
+     * @brief Compares to iterators.
      * @return true if the iterators are for the same list and
      * at the position.
      */

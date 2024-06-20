@@ -14,7 +14,7 @@ to handle simd-vector-like types where (until now) it could only handle scalar
 types.  It is expected that those parts of the core library that want to
 support vector-like types will need some adaptation to account for corner
 cases that appear only when vectorizing.  However, it should usually be
-uneccessary to maintain a scalar version of the code -- the vectorized version
+unnecessary to maintain a scalar version of the code -- the vectorized version
 should be able to handle both vectorized and scalar data types.
 
 What this abstraction layer does not provide (at least initially) is a way to

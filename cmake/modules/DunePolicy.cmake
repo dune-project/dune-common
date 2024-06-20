@@ -39,10 +39,10 @@ Global options
   The default value of an unset policy. Either `OLD` (default) or `NEW`.
 
 ``DUNE_POLICY_DISABLE_WARNING`` (default=FALSE)
-  If set to `TRUE`, warnings about unset dune polcies are deactivated.
+  If set to `TRUE`, warnings about unset dune policies are deactivated.
 
 ``DUNE_POLICY_IGNORE_UNDEFINED`` (default=FALSE)
-  Ignore undefined dune polcies in GET and SET operations.
+  Ignore undefined dune policies in GET and SET operations.
   This option is useful if you want to set a policy in a module that
   should be compatible with a range of upstream dune modules where
   possibly not all policies are already defined. If this option is set to
@@ -54,7 +54,7 @@ include_guard(GLOBAL)
 
 set(DUNE_POLICY_DEFAULT "OLD" CACHE STRING "Default value for an unset dune policy.")
 set_property(CACHE DUNE_POLICY_DEFAULT PROPERTY STRINGS "OLD" "NEW")
-option(DUNE_POLICY_DISABLE_WARNING "Do not show warnings about unset dune polcies." FALSE)
+option(DUNE_POLICY_DISABLE_WARNING "Do not show warnings about unset dune policies." FALSE)
 option(DUNE_POLICY_IGNORE_UNDEFINED "Ignore undefined dune policies in GET and SET operations." FALSE)
 
 # print a help message with the signature of the dune_policy function

@@ -228,7 +228,7 @@ int main()
   test.check(getTypeInfos(typeList) == expectedTypeInfoList)
     << "Iterating over TypeList yields unexpected type information";
 
-  // This test also ensures that the type passed to the lamda in the
+  // This test also ensures that the type passed to the lambda in the
   // `forEach()` is indeed an instance of `MetaType`
   auto metaTypeList =
     Dune::TypeList<void, NonConstructible, std::tuple<void> >{};
