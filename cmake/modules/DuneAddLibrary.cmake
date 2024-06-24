@@ -181,6 +181,9 @@ function(dune_add_library_normal _name)
   # Link with specified libraries from parameter ADD_LIBS
   target_link_libraries(${_name} PUBLIC "${ARG_LINK_LIBRARIES}")
 
+  # Activate warnings from all imported targets we link against
+  set_target_properties(${_name} PROPERTIES NO_SYSTEM_FROM_IMPORTED TRUE)
+
   # Set target options from COMPILE_FLAGS
   target_compile_options(${_name} PUBLIC "${ARG_COMPILE_OPTIONS}")
 
@@ -249,6 +252,9 @@ function(dune_add_library_interface _name)
 
   # Link with specified libraries from parameter LINK_LIBRARIES
   target_link_libraries(${_name} INTERFACE "${ARG_LINK_LIBRARIES}")
+
+  # Activate warnings from all imported targets we link against
+  set_target_properties(${_name} PROPERTIES NO_SYSTEM_FROM_IMPORTED TRUE)
 
   # Set target options from COMPILE_FLAGS
   target_compile_options(${_name} INTERFACE "${ARG_COMPILE_OPTIONS}")
