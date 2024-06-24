@@ -8,10 +8,6 @@
 #define DUNE_MODTEST_VERSION_MINOR 2
 #define DUNE_MODTEST_VERSION_REVISION 1
 
-#if HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <iostream>
 #include <dune/common/version.hh>
 

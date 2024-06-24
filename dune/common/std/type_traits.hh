@@ -6,6 +6,7 @@
 #define DUNE_COMMON_STD_TYPE_TRAITS_HH
 
 #include <type_traits>
+#include <dune-common-config.hh> // DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
 #include <dune/common/typetraits.hh>
 #include <dune/common/typeutilities.hh>
 

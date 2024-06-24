@@ -9,10 +9,6 @@
    linked with this program and if they work
 
  */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include <fstream>
 
 #include <dune/common/stdstreams.hh>

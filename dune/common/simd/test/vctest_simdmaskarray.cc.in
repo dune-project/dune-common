@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 // @GENERATED_SOURCE@
 
-#include <config.h>
-
 #include <dune/common/simd/test/vcarraytest.hh>
 
 namespace Dune {

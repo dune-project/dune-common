@@ -96,7 +96,7 @@ def preprocessorAssert(tests):
        so the first argument of each test has to make this piece of code
        valid C++ code assuming config.h is included.
     '''
-    source = "#include <config.h>\nint main() {\n"
+    source = "int main() {\n"
     i = 0
     for t in tests:
         source = source + t[0]+"\n#else\nreturn "+str(i+1)+";\n#endif\n"

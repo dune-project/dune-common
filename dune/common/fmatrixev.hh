@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cassert>
 
+#include <dune-common-config.hh>  // HAVE_LAPACK
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>

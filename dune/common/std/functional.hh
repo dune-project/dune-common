@@ -7,6 +7,8 @@
 
 #include <functional>
 
+#include <dune-common-config.hh> // DUNE_HAVE_CXX_STD_IDENTITY
+
 namespace Dune
 {
 
