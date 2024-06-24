@@ -946,6 +946,101 @@ namespace Dune
    * method. Thus the derived class must provide both versions if it wants
    * to implement const and non-const operation in terms of `it.baseIterator().
    *
+   * For example a forward iterator for values of type `V` could be implemented
+   * by providing the core operations manually (option 1 above):
+   *
+   * @code
+   * class FooIterator
+   *   : public Dune::IteratorFacade<FooIterator, std::forward_iterator_tag, V>
+   * {
+   *   using Facade = Dune::IteratorFacade<FooIterator, std::forward_iterator_tag, V>;
+   *
+   * public:
+   *
+   *   using reference = Facade::reference;
+   *
+   *   reference operator*() const
+   *   { return [implement dereferencing here]; }
+   *
+   *   FooIterator& operator++() const
+   *   { [implement incrementing here]; return *this; }
+   *
+   *   friend bool operator==(const FooIterator& it1, const FooIterator& it2)
+   *   { return [implement comparison here]; }
+   * };
+   * @endcode
+   *
+   * Alternatively the iterator can delegate arithmetic operations and
+   * comparisons to an underlying iterator/pointer/number (option 2 above).
+   * E.g. a random access iterator where the iterator position
+   * is identified by a consecutive number can be implemented
+   * as:
+   *
+   * @code
+   * class BarIterator
+   *   : public Dune::IteratorFacade<BarIterator, std::random_access_iterator_tag, V>
+   * {
+   *   using Facade = Dune::IteratorFacade<BarIterator, std::random_access_iterator_tag, V>;
+   *
+   * public:
+   *
+   *   using reference = Facade::reference;
+   *   using difference_type = Facade::difference_type;
+   *
+   *   // Only implement dereferencing manually
+   *   reference operator*() const
+   *   { return [implement dereferencing at current position p_ here]; }
+   *
+   * private:
+   *
+   *   // Delegate arithmetic operations and comparisons to p_ by exporting
+   *   // it in const and mutable form using baseIterator().
+   *   difference_type& baseIterator() { return p_; }
+   *   const difference_type& baseIterator() const { return p_; }
+   *
+   *   // Grant access to the private baseIterator() by a friend declaration.
+   *   friend class Dune::IteratorFacadeAccess;
+   *
+   *   difference_type p_;
+   * };
+   * @endcode
+   *
+   * When providing `baseIterator()` individual method can still be overloaded
+   * by implementing them manually.
+   * E.g. a random access iterator
+   * for values of type `V` that returns reference-like proxy objects of type
+   * `R` instead of plain `V&` references and relies on an underlying iterator
+   * except for equality comparison can be implemented as:
+   *
+   * @code
+   * class ProxyIterator
+   *   : public Dune::IteratorFacade<ProxyIterator, std::random_access_iterator_tag, V, R, Dune::ProxyArrowResult<R>>
+   * {
+   *   using Facade = Dune::IteratorFacade<ProxyIterator, std::random_access_iterator_tag, V, R, Dune::ProxyArrowResult<R>>;
+   *
+   * public:
+   *
+   *   using reference = Facade::reference;
+   *
+   *   // Dereferencing yields copies of type R=reference
+   *   reference operator*() const
+   *   { return [implement dereferencing at current position it_ here]; }
+   *
+   *   // Override comparison manually here
+   *   friend bool operator==(const ProxyIterator& it1, const ProxyIterator& it2)
+   *   { return [implement custom comparison here]; }
+   *
+   * private:
+   *
+   *   // Delegate arithmetic operations to underlying base iterator.
+   *   BaseIterator& baseIterator() { return it_; }
+   *   const BaseIterator& baseIterator() const { return it_; }
+   *   friend class Dune::IteratorFacadeAccess;
+   *
+   *   BaseIterator it_;
+   * };
+   * @endcode
+   *
    * \tparam It The derived iterator class
    * \tparam C Tag class of iterator category
    * \tparam V The value type
