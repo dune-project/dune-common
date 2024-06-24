@@ -810,16 +810,6 @@ namespace Dune
     using namespace Dune::Concept;
 
     template<class R>
-    struct IterDereference
-    {
-      template<class It>
-      auto require(const It& it) -> decltype(
-        it.dereference(),
-        requireConvertible<decltype(it.dereference()), R>()
-      );
-    };
-
-    template<class R>
     struct BaseIterDereferenceOp
     {
       template<class It>
@@ -837,28 +827,11 @@ namespace Dune
       );
     };
 
-    struct IterEquals
-    {
-      template<class It1, class It2>
-      auto require(const It1& it1, const It2& it2) -> decltype(
-        requireConvertible<It2, It1>(),
-        requireConvertible<bool>(it1.equals(it2))
-      );
-    };
-
     struct BaseIterEqualsOp
     {
       template<class It1, class It2>
       auto require(const It1& it1, const It2& it2) -> decltype(
         Dune::Concept::requireConvertible<bool>(IteratorFacadeAccess::baseIterator(it1) == IteratorFacadeAccess::baseIterator(it2))
-      );
-    };
-
-    struct IterIncrement
-    {
-      template<class It>
-      auto require(It it) -> decltype(
-        it.increment()
       );
     };
 
@@ -870,28 +843,11 @@ namespace Dune
       );
     };
 
-    struct IterDecrement
-    {
-      template<class It>
-      auto require(It it) -> decltype(
-        it.decrement()
-      );
-    };
-
     struct BaseIterDecrementOp
     {
       template<class It>
       auto require(It it) -> decltype(
         --(IteratorFacadeAccess::baseIterator(it))
-      );
-    };
-
-    template<class D>
-    struct IterAdvance
-    {
-      template<class It>
-      auto require(It it) -> decltype(
-        it.advance(std::declval<D>())
       );
     };
 
@@ -919,16 +875,6 @@ namespace Dune
       template<class It1, class It2>
       auto require(const It1& it1, const It2& it2) -> decltype(
         Dune::Concept::requireConvertible<D>(it1 - it2)
-      );
-    };
-
-    template<class D>
-    struct IterDistance
-    {
-      template<class It1, class It2>
-      auto require(const It1& it1, const It2& it2) -> decltype(
-        Dune::Concept::requireConvertible<It2, It1>(),
-        Dune::Concept::requireConvertible<D>(it1.distanceTo(it2))
       );
     };
 
@@ -968,38 +914,32 @@ namespace Dune
    *
    * * Dereferencing a const iterator using any of the following approaches:
    *   1. implement `*it`
-   *   2. implement `it.dereference()`
-   *   3. implement `*(it.baseIterator())`
+   *   2. implement `*(it.baseIterator())`
    * * Incrementing a non-const iterator using any of the following approaches:
    *   1. implement `++it`
-   *   2. implement `it.increment()`
-   *   3. implement `++(it.baseIterator())`
-   *   4. implement `it+=1`
+   *   2. implement `++(it.baseIterator())`
+   *   3. implement `it+=1`
    * * Equality comparison of two const iterators using any of the following approaches:
    *   1. implement `it1==it2`
-   *   2. implement `it1.equals(it2)`
-   *   3. implement `it1.baseIterator()==it2.baseIterator()`
+   *   2. implement `it1.baseIterator()==it2.baseIterator()`
    *
    * For a bidirectional iterator it must additionally provide:
    *
    * * Decrementing a non-const iterator using any of the following approaches:
    *   1. implement `--it`
-   *   2. implement `it.decrement()`
-   *   3. implement `--(it.baseIterator())`
-   *   4. implement `it-=1`
+   *   2. implement `--(it.baseIterator())`
+   *   3. implement `it-=1`
    *
    * For a random access iterator it must additionally provide:
    *
    * * Advacing a non-const iterator by an offset using any of the following approaches:
    *   1. implement `it+=n`
-   *   2. implement `it.advance(n)`
-   *   3. implement `it.baseIterator()+=n`
+   *   2. implement `it.baseIterator()+=n`
    * * Computing the distance between two const iterators using any of the following approaches:
    *   1. implement `it1-it2`
-   *   2. implement `it2.distanceTo(it1)`
-   *   3. implement `it1.baseIterator()-it2.baseIterator()`
+   *   2. implement `it1.baseIterator()-it2.baseIterator()`
    *
-   * When relying on option 3 for any of those features, the `it.baseIterator()`
+   * When relying on option 2 for any of those features, the `it.baseIterator()`
    * method can be made private to hide it from the user. Then the derived
    * class must declare IteratorFacadeAccess as friend. Notice that depending
    * on the feature it is used for, `it.baseIterator()` must be a const or non-const
@@ -1065,9 +1005,7 @@ namespace Dune
     /** @brief Dereferencing operator. */
     constexpr reference operator*() const
     {
-      if constexpr (Dune::models<Impl::Concepts::IterDereference<reference>, DerivedIterator>())
-        return derived().dereference();
-      else if constexpr (Dune::models<Impl::Concepts::BaseIterDereferenceOp<reference>, DerivedIterator>())
+      if constexpr (Dune::models<Impl::Concepts::BaseIterDereferenceOp<reference>, DerivedIterator>())
         return *(IteratorFacadeAccess::baseIterator(derived()));
       else
         static_assert(AlwaysFalse<It>::value, "Class derived from IteratorFacade does not implement any method to dereference.");
@@ -1085,9 +1023,7 @@ namespace Dune
     /** @brief Preincrement operator. */
     constexpr DerivedIterator& operator++()
     {
-      if constexpr (Dune::models<Impl::Concepts::IterIncrement, DerivedIterator>())
-        derived().increment();
-      else if constexpr (Dune::models<Impl::Concepts::BaseIterIncrementOp, DerivedIterator>())
+      if constexpr (Dune::models<Impl::Concepts::BaseIterIncrementOp, DerivedIterator>())
         ++(IteratorFacadeAccess::baseIterator(derived()));
       else if constexpr (Dune::models<Impl::Concepts::IterAdvanceOp<difference_type>, DerivedIterator>())
         derived() += 1;
@@ -1112,9 +1048,7 @@ namespace Dune
     template<bool dummy=true, std::enable_if_t<isBidirectional and dummy, int> =0>
     constexpr DerivedIterator& operator--()
     {
-      if constexpr (Dune::models<Impl::Concepts::IterDecrement, DerivedIterator>())
-        derived().decrement();
-      else if constexpr (Dune::models<Impl::Concepts::BaseIterDecrementOp, DerivedIterator>())
+      if constexpr (Dune::models<Impl::Concepts::BaseIterDecrementOp, DerivedIterator>())
         --(IteratorFacadeAccess::baseIterator(derived()));
       else if constexpr (Dune::models<Impl::Concepts::IterAdvanceOp<difference_type>, DerivedIterator>())
         derived() -= 1;
@@ -1157,9 +1091,7 @@ namespace Dune
     template<bool dummy=true, std::enable_if_t<isRandomAccess and dummy, int> =0>
     constexpr DerivedIterator& operator+=(difference_type n)
     {
-      if constexpr (Dune::models<Impl::Concepts::IterAdvance<difference_type>, DerivedIterator>())
-        derived().advance(n);
-      else if constexpr (Dune::models<Impl::Concepts::BaseIterAdvanceOp<difference_type>, DerivedIterator>())
+      if constexpr (Dune::models<Impl::Concepts::BaseIterAdvanceOp<difference_type>, DerivedIterator>())
         IteratorFacadeAccess::baseIterator(derived()) += n;
       else
         static_assert(AlwaysFalse<It>::value, "Class derived from IteratorFacade does not implement any method to advance by offset.");
@@ -1219,21 +1151,12 @@ namespace Dune
    * for two const iterators.
    */
   template<class T1, class T2, class C, class V1, class V2, class R1, class R2, class P1, class P2, class D1, class D2,
-    std::enable_if_t<
-      Dune::models<Impl::Concepts::IterEquals ,T1, T2>() or
-      Dune::models<Impl::Concepts::IterEquals ,T2, T1>() or
-      Dune::models<Impl::Concepts::BaseIterEqualsOp,T1, T2>()
-      , int> =0>
+    std::enable_if_t< Dune::models<Impl::Concepts::BaseIterEqualsOp,T1, T2>() , int> =0>
   constexpr bool operator==(const IteratorFacade<T1,C,V1,R1,P1,D1>& it1, const IteratorFacade<T2,C,V2,R2,P2,D2>& it2)
   {
     const T1& derivedIt1 = IteratorFacadeAccess::derived(it1);
     const T2& derivedIt2 = IteratorFacadeAccess::derived(it2);
-    if constexpr (Dune::models<Impl::Concepts::IterEquals, T1, T2>())
-      return derivedIt1.equals(derivedIt2);
-    else if constexpr (Dune::models<Impl::Concepts::IterEquals, T2, T1>())
-      return derivedIt2.equals(derivedIt1);
-    else if constexpr (Dune::models<Impl::Concepts::BaseIterEqualsOp, T1, T2>())
-      return IteratorFacadeAccess::baseIterator(derivedIt1) == IteratorFacadeAccess::baseIterator(derivedIt2);
+    return IteratorFacadeAccess::baseIterator(derivedIt1) == IteratorFacadeAccess::baseIterator(derivedIt2);
   }
 
   /**
@@ -1263,21 +1186,12 @@ namespace Dune
    * for two const iterators.
    */
   template<class T1, class T2, class C, class V1, class V2, class R1, class R2, class P1, class P2, class D,
-    std::enable_if_t<
-      Dune::models<Impl::Concepts::IterDistance<D>,T1, T2>() or
-      Dune::models<Impl::Concepts::IterDistance<D>,T2, T1>() or
-      Dune::models<Impl::Concepts::BaseIterDistanceOp<D>,T1, T2>()
-      , int> =0>
+    std::enable_if_t< Dune::models<Impl::Concepts::BaseIterDistanceOp<D>,T1, T2>() , int> =0>
   constexpr D operator-(const IteratorFacade<T1,C,V1,R1,P1,D>& it1, const IteratorFacade<T2,C,V2,R2,P2,D>& it2)
   {
     const T1& derivedIt1 = IteratorFacadeAccess::derived(it1);
     const T2& derivedIt2 = IteratorFacadeAccess::derived(it2);
-    if constexpr (Dune::models<Impl::Concepts::IterDistance<D>,T1, T2>())
-      return -derivedIt1.distanceTo(derivedIt2);
-    else if constexpr (Dune::models<Impl::Concepts::IterDistance<D>,T2, T1>())
-      return derivedIt2.distanceTo(derivedIt1);
-    else if constexpr (Dune::models<Impl::Concepts::BaseIterDistanceOp<D>,T1, T2>())
-      return (IteratorFacadeAccess::baseIterator(derivedIt1) - IteratorFacadeAccess::baseIterator(derivedIt2));
+    return (IteratorFacadeAccess::baseIterator(derivedIt1) - IteratorFacadeAccess::baseIterator(derivedIt2));
   }
 
   /**
