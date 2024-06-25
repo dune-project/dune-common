@@ -5,11 +5,13 @@
 #ifndef DUNE_COMMON_RANGE_UTILITIES_HH
 #define DUNE_COMMON_RANGE_UTILITIES_HH
 
-#include <dune/common/typetraits.hh>
 #include <algorithm>
 #include <utility>
 #include <type_traits>
 #include <bitset>
+
+#include <dune/common/typetraits.hh>
+#include <dune/common/iteratorfacades.hh>
 
 /**
  * \file
@@ -333,57 +335,84 @@ namespace Dune
   namespace Impl
   {
 
-    // Helper class to mimic a pointer for proxy objects.
-    // This is needed to implement operator-> on an iterator
-    // using proxy-values. It stores the proxy value but
-    // provides operator-> like a pointer.
-    template<class ProxyType>
-    class PointerProxy
-    {
-    public:
-      PointerProxy(ProxyType&& p) : p_(p)
-      {}
 
-      std::add_pointer_t<ProxyType> operator->()
-      {
-        return &p_;
-      }
-
-      ProxyType p_;
-    };
 
     // An iterator transforming a wrapped iterator using
     // an unary function. It inherits the iterator-category
     // of the underlying iterator.
-    template <class I, class F, class TransformationType, class C = typename std::iterator_traits<I>::iterator_category>
+    //
+    // \tparam I Type of the underlying iterator
+    // \tparam F Type of transformation function that can either be applied directly or after dereferencing
+    // \tparam TT Type of transformation (ValueTransformationTag or IteratorTransformationTag)
+    // \tparam C An iterator category tag, defaults to the one of I
+    template <class I, class F, class TT, class C = typename std::iterator_traits<I>::iterator_category>
     class TransformedRangeIterator;
 
-    template <class I, class F, class TransformationType>
-    class TransformedRangeIterator<I,F,TransformationType,std::forward_iterator_tag>
+    template<class I, class F, class TT, class C>
+    struct TransformationRangeIteratorTraits
     {
-    protected:
-
       template<class FF>
       static decltype(auto) transform(FF&& f, const I& it) {
-        if constexpr (std::is_same_v<TransformationType,IteratorTransformationTag>)
-          return f(it);
+        if constexpr (std::is_same_v<TT,IteratorTransformationTag>)
+        {
+          if constexpr (Dune::IsCallable<FF(const I&)>::value)
+            return f(it);
+          else
+            return (*f)(it);
+        }
         else
-          return f(*it);
+        {
+          if constexpr (Dune::IsCallable<FF(decltype(*it))>::value)
+            return f(*it);
+          else
+            return (*f)(*it);
+        }
       }
 
+      using reference = decltype(transform(std::declval<F>(), std::declval<I>()));
+      using value_type = Dune::AutonomousValue<reference>;
+      using pointer = std::conditional_t<std::is_lvalue_reference_v<reference>, value_type*, ProxyArrowResult<reference>>;
+      using difference_type = typename std::iterator_traits<I>::difference_type;
+      using Facade = Dune::IteratorFacade<TransformedRangeIterator<I,F,TT,C>, C, value_type, reference, pointer, difference_type>;
+    };
+
+
+    template <class I, class F, class TT, class C>
+    class TransformedRangeIterator :
+      public TransformationRangeIteratorTraits<I,F, TT, C>::Facade
+    {
+      using Traits = TransformationRangeIteratorTraits<I,F, TT, C>;
+      using Facade = typename Traits::Facade;
+
+      static constexpr bool isBidirectional = std::is_convertible_v<C, std::bidirectional_iterator_tag>;
+      static constexpr bool isRandomAccess = std::is_convertible_v<C, std::random_access_iterator_tag>;
+
     public:
-      using iterator_category = std::forward_iterator_tag;
-      using reference = decltype(transform(*std::declval<F>(), std::declval<I>()));
-      using value_type = std::decay_t<reference>;
-      using pointer = PointerProxy<reference>;
 
-      // The template parameter F should be pointer like since it
-      // will always be accessed using unary operator*.
-      using FunctionPointer = F;
+      using Function = F;
+      using reference = typename Facade::reference;
+      using difference_type = typename Facade::difference_type;
 
-      constexpr TransformedRangeIterator(const I& it, FunctionPointer f) noexcept :
-        it_(it),
-        f_(f)
+      template<class II, class FF>
+      constexpr TransformedRangeIterator(II&& it, FF&& f) noexcept :
+        it_(std::forward<II>(it)),
+        f_(std::forward<FF>(f))
+      {}
+
+      template<class II,
+        disableCopyMove<TransformedRangeIterator,II> =0,
+        std::enable_if_t<std::is_convertible_v<II, I> and std::is_default_constructible_v<F>, int> =0>
+      constexpr TransformedRangeIterator(II&& it) noexcept :
+        it_(std::forward<II>(it)),
+        f_()
+      {}
+
+      template<class FF,
+        disableCopyMove<TransformedRangeIterator,FF> =0,
+        std::enable_if_t<std::is_convertible_v<FF, F> and std::is_default_constructible_v<I>, int> =0>
+      constexpr TransformedRangeIterator(FF&& f) noexcept :
+        it_(),
+        f_(std::forward<FF>(f))
       {}
 
       // Explicitly initialize members. Using a plain
@@ -405,192 +434,27 @@ namespace Dune
 
       // Dereferencing returns a value created by the function
       constexpr reference operator*() const noexcept {
-        return transform(*f_, it_);
-      }
-
-      // Dereferencing returns a value created by the function
-      pointer operator->() const noexcept {
-        return transform(*f_, it_);
-      }
-
-      constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
-
-      constexpr bool operator==(const TransformedRangeIterator& other) const noexcept {
-        return (it_ == other.it_);
-      }
-
-      constexpr bool operator!=(const TransformedRangeIterator& other) const noexcept {
-        return (it_ != other.it_);
-      }
-
-      TransformedRangeIterator& operator++() noexcept {
-        ++it_;
-        return *this;
-      }
-
-      TransformedRangeIterator operator++(int) noexcept {
-        TransformedRangeIterator copy(*this);
-        ++(*this);
-        return copy;
+        return Traits::transform(f_, it_);
       }
 
     protected:
+
+      friend class Dune::IteratorFacadeAccess;
+
+      // Export base iterator, such that equalilty comparison,
+      // differences, and inequality comparisons are automatically
+      // forwarded to the base iterator by the facade.
+      const I& baseIterator() const noexcept {
+        return it_;
+      }
+
+      I& baseIterator() noexcept {
+        return it_;
+      }
+
       I it_;
-      FunctionPointer f_;
+      Function f_;
     };
-
-
-
-    template <class I, class F, class T>
-    class TransformedRangeIterator<I,F,T,std::bidirectional_iterator_tag> :
-      public TransformedRangeIterator<I,F,T,std::forward_iterator_tag>
-    {
-    protected:
-      using Base = TransformedRangeIterator<I,F,T,std::forward_iterator_tag>;
-      using Base::it_;
-      using Base::f_;
-    public:
-      using iterator_category = std::bidirectional_iterator_tag;
-      using reference = typename Base::reference;
-      using value_type = typename Base::value_type;
-      using pointer = typename Base::pointer;
-
-      using FunctionPointer = typename Base::FunctionPointer;
-
-      using Base::Base;
-
-      // Member functions of the forward_iterator that need
-      // to be redefined because the base class methods return a
-      // forward_iterator.
-      constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
-
-      TransformedRangeIterator& operator++() noexcept {
-        ++it_;
-        return *this;
-      }
-
-      TransformedRangeIterator operator++(int) noexcept {
-        TransformedRangeIterator copy(*this);
-        ++(*this);
-        return copy;
-      }
-
-      // Additional member functions of bidirectional_iterator
-      TransformedRangeIterator& operator--() noexcept {
-        --(this->it_);
-        return *this;
-      }
-
-      TransformedRangeIterator operator--(int) noexcept {
-        TransformedRangeIterator copy(*this);
-        --(*this);
-        return copy;
-      }
-    };
-
-
-
-    template <class I, class F, class T>
-    class TransformedRangeIterator<I,F,T,std::random_access_iterator_tag> :
-      public TransformedRangeIterator<I,F,T,std::bidirectional_iterator_tag>
-    {
-    protected:
-      using Base = TransformedRangeIterator<I,F,T,std::bidirectional_iterator_tag>;
-      using Base::it_;
-      using Base::f_;
-    public:
-      using iterator_category = std::random_access_iterator_tag;
-      using reference = typename Base::reference;
-      using value_type = typename Base::value_type;
-      using pointer = typename Base::pointer;
-      using difference_type = typename std::iterator_traits<I>::difference_type;
-
-      using FunctionPointer = typename Base::FunctionPointer;
-
-      using Base::Base;
-
-      // Member functions of the forward_iterator that need
-      // to be redefined because the base class methods return a
-      // forward_iterator.
-      constexpr TransformedRangeIterator& operator=(const TransformedRangeIterator& other) = default;
-
-      TransformedRangeIterator& operator++() noexcept {
-        ++it_;
-        return *this;
-      }
-
-      TransformedRangeIterator operator++(int) noexcept {
-        TransformedRangeIterator copy(*this);
-        ++(*this);
-        return copy;
-      }
-
-      // Member functions of the bidirectional_iterator that need
-      // to be redefined because the base class methods return a
-      // bidirectional_iterator.
-      TransformedRangeIterator& operator--() noexcept {
-        --(this->it_);
-        return *this;
-      }
-
-      TransformedRangeIterator operator--(int) noexcept {
-        TransformedRangeIterator copy(*this);
-        --(*this);
-        return copy;
-      }
-
-      // Additional member functions of random_access_iterator
-      TransformedRangeIterator& operator+=(difference_type n) noexcept {
-        it_ += n;
-        return *this;
-      }
-
-      TransformedRangeIterator& operator-=(difference_type n) noexcept {
-        it_ -= n;
-        return *this;
-      }
-
-      bool operator<(const TransformedRangeIterator& other) const noexcept {
-        return it_<other.it_;
-      }
-
-      bool operator<=(const TransformedRangeIterator& other) const noexcept {
-        return it_<=other.it_;
-      }
-
-      bool operator>(const TransformedRangeIterator& other) const noexcept {
-        return it_>other.it_;
-      }
-
-      bool operator>=(const TransformedRangeIterator& other) const noexcept {
-        return it_>=other.it_;
-      }
-
-      reference operator[](difference_type n) noexcept {
-        return Base::transform(*f_, it_+n);
-      }
-
-      friend
-      TransformedRangeIterator operator+(const TransformedRangeIterator& it, difference_type n) noexcept {
-        return TransformedRangeIterator(it.it_+n, it.f_);
-      }
-
-      friend
-      TransformedRangeIterator operator+(difference_type n, const TransformedRangeIterator& it) noexcept {
-        return TransformedRangeIterator(n+it.it_, it.f_);
-      }
-
-      friend
-      TransformedRangeIterator operator-(const TransformedRangeIterator& it, difference_type n) noexcept {
-        return TransformedRangeIterator(it.it_-n, it.f_);
-      }
-
-      friend
-      difference_type operator-(const TransformedRangeIterator& first, const TransformedRangeIterator& second) noexcept {
-        return first.it_-second.it_;
-      }
-    };
-
 
   } // namespace Impl
 

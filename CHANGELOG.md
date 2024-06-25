@@ -15,6 +15,12 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Changelog
 
+- There is a new base class `IteratorFacade` that unifies `ForwardIteratorFacade`,
+  `BidirectionalIteratorFacade`, `RandomAccessIteratorFacade` by making the iterator
+  category a template. Furthermore the new `IteratorFacade`  class allows to specify
+  a `pointer` type other than `value_type*` to support proxy-iterators.
+  The old facade classes remain unchanged for backward compatibility reasons.
+
 - Add utilities `Std::span`, `Std::mdspan`, `Std::mdarray` and all its related classes into the `Dune::Std` namespace
   for working with multidimensional arrays. See core/dune-common!1334 for further details.
 
