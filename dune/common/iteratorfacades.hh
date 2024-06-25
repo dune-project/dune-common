@@ -1094,16 +1094,35 @@ namespace Dune
     // Only defined to do static assertions.
     IteratorFacade()
     {
-      static_assert(std::is_signed_v<difference_type>, "Type used as difference_type must be signed");
+      static_assert(std::is_signed_v<difference_type>,
+        "Type used as difference_type must be signed");
+      const DerivedIterator& constDerived = derived();
+      static_assert(std::is_convertible_v<decltype(*constDerived), reference>,
+        "Derived class does not implement `*it` or `*(it.baseIterator())` for const `it` required by IteratorFacade<..., std::forward_iterator_tag, ...>.");
+      static_assert(std::is_convertible_v<decltype(++derived()), DerivedIterator&>,
+        "Derived class does not implement `++it`, `++(it.baseIterator())`, or `it+=1` for mutable `it` required by IteratorFacade<..., std::forward_iterator_tag, ...>.");
+      static_assert(std::is_convertible_v<decltype(constDerived==constDerived), bool>,
+        "Derived class does not implement `it1==it2` or `it1.baseIterator()==it2.baseIterator()` for const `it1` and `it2` required by IteratorFacade<..., std::forward_iterator_tag, ...>.");
+      if constexpr (isBidirectional)
+        static_assert(std::is_convertible_v<decltype(--derived()), DerivedIterator&>,
+          "Derived class does not implement `--it`, `--(it.baseIterator())`, or `it-=1` for mutable `it` required by IteratorFacade<..., std::bidirectional_iterator_tag, ...>.");
+      if constexpr (isRandomAccess)
+      {
+        static_assert(std::is_convertible_v<decltype(derived()+=std::declval<difference_type>()), DerivedIterator&>,
+          "Derived class does not implement `it+=` or `it.baseIterator()+=` for mutable `it` required by IteratorFacade<..., std::random_access_iterator_tag, ...>.");
+        static_assert(std::is_convertible_v<decltype(constDerived-constDerived), difference_type>,
+          "Derived class does not implement `it1-it2` or `it1.baseIterator()-it2.baseIterator()` for const `it1` and `it2` required by IteratorFacade<..., std::random_access_iterator_tag, ...>.");
+      }
     }
 
     /** @brief Dereferencing operator. */
-    constexpr reference operator*() const
+    constexpr decltype(auto) operator*() const
     {
       if constexpr (Dune::models<Impl::Concepts::BaseIterDereferenceOp<reference>, DerivedIterator>())
         return *(IteratorFacadeAccess::baseIterator(derived()));
       else
-        static_assert(AlwaysFalse<It>::value, "Class derived from IteratorFacade does not implement any method to dereference.");
+        static_assert(AlwaysFalse<It>::value,
+          "Derived class does not implement `*it` or `*(it.baseIterator())` for const `it` required by IteratorFacade<..., std::forward_iterator_tag, ...>.");
     }
 
     /** @brief Arrow access to members of referenced value. */
@@ -1116,15 +1135,21 @@ namespace Dune
     }
 
     /** @brief Preincrement operator. */
-    constexpr DerivedIterator& operator++()
+    constexpr decltype(auto) operator++()
     {
       if constexpr (Dune::models<Impl::Concepts::BaseIterIncrementOp, DerivedIterator>())
+      {
         ++(IteratorFacadeAccess::baseIterator(derived()));
+        return derived();
+      }
       else if constexpr (Dune::models<Impl::Concepts::IterAdvanceOp<difference_type>, DerivedIterator>())
+      {
         derived() += 1;
+        return derived();
+      }
       else
-        static_assert(AlwaysFalse<It>::value, "Class derived from IteratorFacade does not implement any method to increment.");
-      return derived();
+        static_assert(AlwaysFalse<It>::value,
+          "Derived class does not implement `++it`, `++(it.baseIterator())`, or `it+=1` for mutable `it` required by IteratorFacade<..., std::forward_iterator_tag, ...>.");
     }
 
     /** @brief Postincrement operator. */
@@ -1141,15 +1166,21 @@ namespace Dune
      * Only enabled for bidirectional and random-access iterators.
      */
     template<bool dummy=true, std::enable_if_t<isBidirectional and dummy, int> =0>
-    constexpr DerivedIterator& operator--()
+    constexpr decltype(auto) operator--()
     {
       if constexpr (Dune::models<Impl::Concepts::BaseIterDecrementOp, DerivedIterator>())
+      {
         --(IteratorFacadeAccess::baseIterator(derived()));
+        return derived();
+      }
       else if constexpr (Dune::models<Impl::Concepts::IterAdvanceOp<difference_type>, DerivedIterator>())
+      {
         derived() -= 1;
+        return derived();
+      }
       else
-        static_assert(AlwaysFalse<It>::value, "Class derived from IteratorFacade does not implement any method to decrement.");
-      return derived();
+        static_assert(AlwaysFalse<It>::value,
+          "Derived class does not implement `--it`, `--(it.baseIterator())`, or `it-=1` for mutable `it` required by IteratorFacade<..., std::bidirectional_iterator_tag, ...>.");
     }
 
     /**
@@ -1184,13 +1215,16 @@ namespace Dune
      * Only enabled for random-access iterators.
      */
     template<bool dummy=true, std::enable_if_t<isRandomAccess and dummy, int> =0>
-    constexpr DerivedIterator& operator+=(difference_type n)
+    constexpr decltype(auto) operator+=(difference_type n)
     {
       if constexpr (Dune::models<Impl::Concepts::BaseIterAdvanceOp<difference_type>, DerivedIterator>())
+      {
         IteratorFacadeAccess::baseIterator(derived()) += n;
+        return derived();
+      }
       else
-        static_assert(AlwaysFalse<It>::value, "Class derived from IteratorFacade does not implement any method to advance by offset.");
-      return derived();
+        static_assert(AlwaysFalse<It>::value,
+          "Derived class does not implement `it+=` or `it.baseIterator()+=` for mutable `it` required by IteratorFacade<..., std::random_access_iterator_tag, ...>.");
     }
 
     /**
@@ -1245,13 +1279,16 @@ namespace Dune
    * may provide `it1.baseIterator() == it2.baseIterator()`
    * for two const iterators.
    */
-  template<class T1, class T2, class C, class V1, class V2, class R1, class R2, class P1, class P2, class D1, class D2,
-    std::enable_if_t< Dune::models<Impl::Concepts::BaseIterEqualsOp,T1, T2>() , int> =0>
-  constexpr bool operator==(const IteratorFacade<T1,C,V1,R1,P1,D1>& it1, const IteratorFacade<T2,C,V2,R2,P2,D2>& it2)
+  template<class T1, class T2, class C, class V1, class V2, class R1, class R2, class P1, class P2, class D1, class D2>
+  constexpr auto operator==(const IteratorFacade<T1,C,V1,R1,P1,D1>& it1, const IteratorFacade<T2,C,V2,R2,P2,D2>& it2)
   {
     const T1& derivedIt1 = IteratorFacadeAccess::derived(it1);
     const T2& derivedIt2 = IteratorFacadeAccess::derived(it2);
-    return IteratorFacadeAccess::baseIterator(derivedIt1) == IteratorFacadeAccess::baseIterator(derivedIt2);
+    if constexpr (Dune::models<Impl::Concepts::BaseIterEqualsOp, T1, T2>())
+      return IteratorFacadeAccess::baseIterator(derivedIt1) == IteratorFacadeAccess::baseIterator(derivedIt2);
+    else
+      static_assert(AlwaysFalse<T1>::value,
+        "Derived class does not implement `it1==it2` or `it1.baseIterator()==it2.baseIterator()` for const `it1` and `it2` required by IteratorFacade<..., std::forward_iterator_tag, ...>.");
   }
 
   /**
@@ -1280,13 +1317,16 @@ namespace Dune
    * may provide `it1.baseIterator() - it2.baseIterator()`
    * for two const iterators.
    */
-  template<class T1, class T2, class C, class V1, class V2, class R1, class R2, class P1, class P2, class D,
-    std::enable_if_t< Dune::models<Impl::Concepts::BaseIterDistanceOp<D>,T1, T2>() , int> =0>
-  constexpr D operator-(const IteratorFacade<T1,C,V1,R1,P1,D>& it1, const IteratorFacade<T2,C,V2,R2,P2,D>& it2)
+  template<class T1, class T2, class C, class V1, class V2, class R1, class R2, class P1, class P2, class D>
+  constexpr auto operator-(const IteratorFacade<T1,C,V1,R1,P1,D>& it1, const IteratorFacade<T2,C,V2,R2,P2,D>& it2)
   {
     const T1& derivedIt1 = IteratorFacadeAccess::derived(it1);
     const T2& derivedIt2 = IteratorFacadeAccess::derived(it2);
-    return (IteratorFacadeAccess::baseIterator(derivedIt1) - IteratorFacadeAccess::baseIterator(derivedIt2));
+    if constexpr (Dune::models<Impl::Concepts::BaseIterDistanceOp<D>,T1, T2>())
+      return D(IteratorFacadeAccess::baseIterator(derivedIt1) - IteratorFacadeAccess::baseIterator(derivedIt2));
+    else
+      static_assert(AlwaysFalse<T1>::value,
+        "Derived class does not implement `it1-it2` or `it1.baseIterator()-it2.baseIterator()` for const `it1` and `it2` required by IteratorFacade<..., std::random_access_iterator_tag, ...>.");
   }
 
   /**
