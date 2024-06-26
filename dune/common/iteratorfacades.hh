@@ -999,7 +999,7 @@ namespace Dune
    *   const difference_type& baseIterator() const { return p_; }
    *
    *   // Grant access to the private baseIterator() by a friend declaration.
-   *   friend class Dune::IteratorFacadeAccess;
+   *   friend Dune::IteratorFacadeAccess;
    *
    *   difference_type p_;
    * };
@@ -1035,7 +1035,7 @@ namespace Dune
    *   // Delegate arithmetic operations to underlying base iterator.
    *   BaseIterator& baseIterator() { return it_; }
    *   const BaseIterator& baseIterator() const { return it_; }
-   *   friend class Dune::IteratorFacadeAccess;
+   *   friend Dune::IteratorFacadeAccess;
    *
    *   BaseIterator it_;
    * };

@@ -439,7 +439,7 @@ namespace Dune
 
     protected:
 
-      friend class Dune::IteratorFacadeAccess;
+      friend Dune::IteratorFacadeAccess;
 
       // Export base iterator, such that equalilty comparison,
       // differences, and inequality comparisons are automatically
