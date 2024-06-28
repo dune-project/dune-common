@@ -83,7 +83,7 @@ public:
 
 private:
 
-  friend class Dune::IteratorFacadeAccess;
+  friend Dune::IteratorFacadeAccess;
 
   const BaseIterator& baseIterator() const {
     return baseIt_;
