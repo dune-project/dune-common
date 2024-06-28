@@ -45,8 +45,8 @@
 # .. cmake_variable:: DUNE_PYTHON_VIRTUALENV_PATH
 #
 #    When the Dune build system has setup a virtualenv, this variable will contain its location.
-#    You can also set this variable to a fixed path when CMake, and the virtualenv will be placed
-#    at that location.
+#    You can also set this variable to a fixed path when calling CMake, and the virtualenv will
+#    be placed at that location.
 #
 # .. cmake_variable:: DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR
 #
