@@ -1057,7 +1057,7 @@ namespace Dune
     // We make IteratorFacadeAccess a friend to allow forwarding of the derived()
     // methods to the free operators instead of havin to do raw casts there.
     // This allows to encapsulate all casts within IteratorFacade itself.
-    friend class IteratorFacadeAccess;
+    friend IteratorFacadeAccess;
 
   protected:
 
