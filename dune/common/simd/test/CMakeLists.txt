@@ -35,7 +35,6 @@ dune_add_test(NAME looptest
   SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
 )
-target_include_directories(looptest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 # no need to install looptest.hh, used by looptest*.cc only
 
 
@@ -62,7 +61,6 @@ dune_add_test(NAME standardtest
   LINK_LIBRARIES dunecommon
 )
 
-target_include_directories(standardtest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 # no need to install standardtest.hh, used by standardtest*.cc only
 
 
@@ -90,7 +88,6 @@ dune_add_test(NAME vcarraytest
   LINK_LIBRARIES dunecommon
   CMAKE_GUARD Vc_FOUND
 )
-target_include_directories(vcarraytest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 add_dune_vc_flags(vcarraytest)
 # no need to install vcarraytest.hh, used by vctest*.cc only
 
@@ -114,6 +111,5 @@ dune_add_test(NAME vcvectortest
   LINK_LIBRARIES dunecommon
   CMAKE_GUARD Vc_FOUND
 )
-target_include_directories(vcvectortest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 add_dune_vc_flags(vcvectortest)
 # no need to install vcvectortest.hh, used by vctest*.cc only

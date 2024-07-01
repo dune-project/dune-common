@@ -114,7 +114,6 @@ dune_add_test(NAME debugalignsimdtest
               SOURCES ${DUNE_INSTANCE_GENERATED}
               LINK_LIBRARIES dunecommon
               LABELS quick)
-target_include_directories(debugalignsimdtest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 dune_add_test(SOURCES densematrixassignmenttest.cc
               LINK_LIBRARIES dunecommon
