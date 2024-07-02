@@ -60,7 +60,6 @@ dune_add_test(NAME standardtest
   SOURCES ${DUNE_INSTANCE_GENERATED}
   LINK_LIBRARIES dunecommon
 )
-
 # no need to install standardtest.hh, used by standardtest*.cc only
 
 

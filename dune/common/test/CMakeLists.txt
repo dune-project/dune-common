@@ -82,7 +82,7 @@ dune_add_test(SOURCES concept.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
-dune_add_test(SOURCES conceptstest.cc
+dune_add_test(SOURCES concepts.cc
               LINK_LIBRARIES dunecommon
               LABELS quick)
 
