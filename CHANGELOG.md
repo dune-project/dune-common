@@ -15,6 +15,12 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Changelog
 
+- Python: Add `TupleVector` Python bindings
+
+- Python: The function `cppType` now support Python tuples, which are converted to the C++ type `std::tuple` 
+
+- `TupleVector` now implements the standard protocol for tuple-like types.
+
 - There is a new base class `IteratorFacade` that unifies `ForwardIteratorFacade`,
   `BidirectionalIteratorFacade`, `RandomAccessIteratorFacade` by making the iterator
   category a template. Furthermore the new `IteratorFacade`  class allows to specify

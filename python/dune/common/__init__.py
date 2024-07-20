@@ -105,3 +105,63 @@ def FieldVector(values):
 # def FieldMatrix(values):
 #     fm = "FieldMatrix_" + str(len(values)) + "_" + str(len(values[0]))
 #     return globals()[fm](values)
+
+
+def _cppTypesFromTuple(tup,tupleNameWrapper,allowByReference):
+    from dune.generator.algorithm import cppType
+    """
+    Converts Python types into C++ types for TupleVector.
+
+    Args:
+        tup (tuple): A tuple representing the Python types.
+        allowByReference (bool): Indicates whether the deduced type of C++ objects should be a (mutable) reference.
+
+    Returns:
+        str: The C++ type string representing the TupleVector.
+        list: A list of includes needed for the C++ types.
+    """
+    typeName= tupleNameWrapper+"<"
+    includes=[]
+    for arg in tup:
+        ti,i = cppType(arg)
+        includes+= i
+        if not allowByReference:
+             ti=ti.rstrip("&")  #  remove trailing reference from c++ type
+        typeName+= ti+ ","
+    typeName = typeName.rstrip(",") + " >"
+    return typeName,includes
+
+
+def TupleVector(*args, allowByReference=False):
+    from dune.common.hashit import hashIt
+    """
+    Creates a TupleVector object.
+
+    This function creates a TupleVector object based on the provided arguments.
+
+    Args:
+        *args: Variable-length argument list representing the types of TupleVector.
+            You can pass several objects or pass in a single tuple of objects.
+        allowByReference (bool, optional): Indicates whether to allow storing reference to C++ objects inside the TupleVector.
+
+    Returns:
+        TupleVector: A TupleVector object.
+    """
+    includes = []
+    typeName= ""
+
+    if len(args)==1 and isinstance(args,tuple):
+        typeName,includes=  _cppTypesFromTuple(*args,"Dune::TupleVector",allowByReference)
+        stdTupleType,_=  _cppTypesFromTuple(*args,"std::tuple",allowByReference)
+    else:
+        typeName,includes=  _cppTypesFromTuple(args,"Dune::TupleVector",allowByReference)
+        stdTupleType,_=  _cppTypesFromTuple(args,"std::tuple",allowByReference)
+
+    includes+= ["dune/python/common/tuplevector.hh"]
+    typeHash = "tuplevector_" + hashIt(typeName)
+    from dune.generator.generator import SimpleGenerator
+    generatorMTBV =SimpleGenerator("TupleVector","Dune::Python")
+    if len(args)==1 and isinstance(args,tuple):
+        return generatorMTBV.load(includes ,typeName ,typeHash, baseClasses=[stdTupleType] ).TupleVector(*args)
+    else:
+        return generatorMTBV.load(includes ,typeName ,typeHash, baseClasses=[stdTupleType] ).TupleVector(args)

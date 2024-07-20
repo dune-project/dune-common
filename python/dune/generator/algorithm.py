@@ -7,6 +7,27 @@ from dune.common.hashit import hashIt
 from dune.common.utility import isString
 
 def cppType(arg):
+    """
+    Determine the C++ type and header includes corresponding to a Python object.
+
+    Args:
+        arg: The Python object for which the C++ type needs to be determined.
+
+    Returns:
+        tuple: A tuple containing the determined C++ type and the necessary C++ include files as a list.
+
+    Raises:
+        Exception: If the C++ type for the given argument cannot be deduced.
+
+    Notes:
+        This function determines the corresponding C++ type for a given Python object.
+
+        For numpy.ndarray objects, the function determines the corresponding C++ type based on the data type of the array elements.
+        If the array contains elements of dtype other than int, long, std::size_t, or double, it's treated as a generic pybind11::array_t.
+
+        For tuples/lists, if all elements have the same type, they are converted to a std::vector of that type. If the elements have different types, they are converted to a std::tuple.
+
+    """
     try:
         t, i = arg.cppTypeName + " &", arg.cppIncludes
     except AttributeError:
@@ -40,6 +61,15 @@ def cppType(arg):
             t, i = "pybind11::function", ["dune/python/pybind11/pybind11.h"]
         elif isinstance(arg,tuple) or isinstance(arg,list):
             t, i = cppType(arg[0])
+            if len(arg) > 1 and cppType(arg[1])[0]!=t: # check if the second element has the same type, if not we create an std::tuple
+                t = "std::tuple<" + t
+                for a in arg[1:]:
+                    tt, ii = cppType(a)
+                    t += ", " + tt
+                    i += ii
+                i+=["tuple"]
+                t += ">"
+                return t, i
             t = "std::vector<"+t+">"
             i += ["vector"]
         else:
