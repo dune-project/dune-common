@@ -89,6 +89,11 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Build System
 
+- Add a `REQUIRED` parameter to `dune_python_configure_bindings`. If set to
+  `TRUE` the functions throws an error instead of a warning if the package
+  setup fails. The default behavior (or setting `REQUIRE` to `FALSE`) is to
+  show the warning during configuration and to continue.
+
 - Remove the search of (currently broken) `pkg-config` files for dune packages.
 
 - Dune package dependencies are now transitively resolved at `find_package(<dune-module>)` calls instead of waiting
