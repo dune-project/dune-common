@@ -137,6 +137,12 @@
 #       an entry of the form "flagname:=value" is added. These flags are
 #       then set in the CMakeLists.txt file of a generated dune-py module.
 #
+#    .. cmake_param:: REQUIRED
+#       :option:
+#
+#       If set, the function will error out if the package could not be installed.
+#       Default behavior is to only show a warning.
+#
 #    This is a convenience function that performs the tasks of
 #    :dune_python_configure_dependencies:, :dune_link_dune_py:, and :dune_python_configure_package:.
 #    Additionally, it makes sure that a 'setup.py' is available with the following procedure:
@@ -574,7 +580,7 @@ endfunction()
 
 function(dune_python_configure_bindings)
   # Parse Arguments
-  set(SINGLE PATH PACKAGENAME)
+  set(SINGLE PATH PACKAGENAME REQUIRED)
   set(MULTI ADDITIONAL_PIP_PARAMS CMAKE_METADATA_FLAGS)
   cmake_parse_arguments(PYCONFBIND "${OPTION}" "${SINGLE}" "${MULTI}" ${ARGN})
   if(PYCONFBIND_UNPARSED_ARGUMENTS)
@@ -646,7 +652,11 @@ function(dune_python_configure_bindings)
       CMAKE_METADATA_FLAGS ${PYCONFBIND_CMAKE_METADATA_FLAGS}
     )
   else()
-    message(WARNING "python binding configuration failed - no linking done")
+    if(PYCONFBIND_REQUIRED)
+      message(FATAL_ERROR "python binding configuration failed.")
+    else()
+      message(WARNING "python binding configuration failed - no python package provided")
+    endif()
   endif()
 
 endfunction()
