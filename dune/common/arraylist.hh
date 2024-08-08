@@ -380,7 +380,7 @@ namespace Dune
 
     typedef typename A::size_type size_type;
 
-    using reference = typename A::value_type &;
+    using reference = typename A::value_type const&;
 
     using const_reference = typename A::value_type const&;
 
@@ -418,13 +418,13 @@ namespace Dune
      * @brief Get the value of the list at an arbitrary position.
      * @return The value at that position.
      */
-    inline const_reference elementAt(size_type i) const;
+    inline reference elementAt(size_type i) const;
 
     /**
      * @brief Access the element at the current position.
      * @return The element at the current position.
      */
-    inline const_reference dereference() const;
+    inline reference dereference() const;
 
     inline ConstArrayListIterator() : position_(0), list_(nullptr)
     {}
@@ -624,7 +624,7 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  typename ConstArrayListIterator<T,N,A>::const_reference ConstArrayListIterator<T,N,A>::elementAt(size_type i) const
+  typename ConstArrayListIterator<T,N,A>::reference ConstArrayListIterator<T,N,A>::elementAt(size_type i) const
   {
     return list_->elementAt(i+position_);
   }
@@ -636,7 +636,7 @@ namespace Dune
   }
 
   template<class T, int N, class A>
-  typename ConstArrayListIterator<T,N,A>::const_reference ConstArrayListIterator<T,N,A>::dereference() const
+  typename ConstArrayListIterator<T,N,A>::reference ConstArrayListIterator<T,N,A>::dereference() const
   {
     return list_->elementAt(position_);
   }
