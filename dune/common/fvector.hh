@@ -127,8 +127,8 @@ namespace Dune {
     constexpr FieldVector (std::initializer_list<K> const &l)
       : _data{}
     {
-      assert(l.size() == dimension);// Actually, this is not needed any more!
-      for(std::size_t i=0; i<std::min(static_cast<std::size_t>(dimension), l.size()); ++i)
+      assert(l.size() == dimension);
+      for(int i=0; i!=dimension; ++i)
         _data[i] = std::data(l)[i];
     }
 
