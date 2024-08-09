@@ -127,7 +127,7 @@ namespace Dune {
       : _data{}
     {
       assert(l.size() == dimension);
-      for(std::size_t i=0; i<std::min(static_cast<std::size_t>(dimension), l.size()); ++i)
+      for(int i=0; i!=dimension; ++i)
         _data[i] = std::data(l)[i];
     }
 
