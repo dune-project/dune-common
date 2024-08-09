@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <complex>
 #include <cstring>
+#include <type_traits>
 #include <utility>
 #include <initializer_list>
 #include <algorithm>
@@ -297,90 +298,98 @@ namespace Dune {
     //===== construction
 
     /** \brief Default constructor */
-    constexpr FieldVector ()
+    constexpr FieldVector () noexcept
       : _data()
     {}
 
     /** \brief Constructor with a given scalar */
-    template<typename T,
-             typename EnableIf = typename std::enable_if<
-               std::is_convertible<T, K>::value &&
-               ! std::is_base_of<DenseVector<typename FieldTraits<T>::field_type>, K
-                                 >::value
-               >::type
-             >
-    FieldVector (const T& k) : _data(k) {}
-
-    //! Constructor from static vector of different type
-    template<class C,
-             std::enable_if_t<
-               std::is_assignable<K&, typename DenseVector<C>::value_type>::value, int> = 0>
-    FieldVector (const DenseVector<C> & x)
-    {
-      static_assert(((bool)IsFieldVectorSizeCorrect<C,1>::value), "FieldVectors do not match in dimension!");
-      assert(x.size() == 1);
-      _data = x[0];
-    }
-
-    //! copy constructor
-    FieldVector(const FieldVector&) = default;
-
-    //! copy assignment operator
-    FieldVector& operator=(const FieldVector&) = default;
-
-    template <typename T>
-    FieldVector& operator= (const FieldVector<T, 1>& other)
-    {
-      _data = other[0];
-      return *this;
-    }
-
-    template<typename T, int N>
-    FieldVector& operator=(const FieldVector<T, N>&) = delete;
+    template<class T,
+      std::enable_if_t<std::is_constructible_v<K,T>, int> = 0>
+    constexpr FieldVector (const T& k) noexcept
+      : _data(k)
+    {}
 
     /** \brief Construct from a std::initializer_list */
-    FieldVector (std::initializer_list<K> const &l)
+    constexpr FieldVector (const std::initializer_list<K>& l)
     {
       assert(l.size() == 1);
       _data = *l.begin();
     }
 
+    //! Constructor from static vector of different type
+    template<class T,
+      std::enable_if_t<std::is_constructible_v<K,T>, int> = 0>
+    constexpr FieldVector (const FieldVector<T,1>& x) noexcept
+      : _data(x[0])
+    {}
+
+    //! Constructor from other dense vector
+    template<class T,
+      std::enable_if_t<IsFieldVectorSizeCorrect<T,1>::value, int> = 0,
+      decltype(std::declval<K&>() = std::declval<const T&>()[0], bool{}) = true>
+    FieldVector (const DenseVector<T>& x)
+    {
+      assert(x.size() == 1);
+      _data = x[0];
+    }
+
+    //! copy constructor
+    constexpr FieldVector (const FieldVector&) = default;
+
+    //! copy assignment operator
+    constexpr FieldVector& operator= (const FieldVector&) = default;
+
+    //! assignment from static vector of different type
+    template<class T,
+      decltype(std::declval<K&>() = std::declval<const T&>(), bool{}) = true>
+    constexpr FieldVector& operator= (const FieldVector<T,1>& other) noexcept
+    {
+      _data = other[0];
+      return *this;
+    }
+
+    //! assignment from other dense vector
+    template<class T,
+      std::enable_if_t<IsFieldVectorSizeCorrect<T,1>::value, int> = 0,
+      decltype(std::declval<K&>() = std::declval<const T&>()[0], bool{}) = true>
+    FieldVector& operator= (const DenseVector<T>& other)
+    {
+      assert(other.size() == 1);
+      _data = other[0];
+      return *this;
+    }
+
     //! Assignment operator for scalar
-    template<typename T,
-             typename EnableIf = typename std::enable_if<
-               std::is_assignable<K&, T>::value &&
-               ! std::is_base_of<DenseVector<typename FieldTraits<T>::field_type>, K
-                                 >::value
-               >::type
-             >
-    inline FieldVector& operator= (const T& k)
+    template<class T,
+      decltype(std::declval<K&>() = std::declval<const T&>(), bool{}) = true>
+    constexpr FieldVector& operator= (const T& k) noexcept
     {
       _data = k;
       return *this;
     }
 
     //===== forward methods to container
-    static constexpr size_type size () { return 1; }
+    static constexpr size_type size () noexcept { return 1; }
 
-    K & operator[]([[maybe_unused]] size_type i)
+    reference operator[] ([[maybe_unused]] size_type i)
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
-    const K & operator[]([[maybe_unused]] size_type i) const
+    const_reference operator[] ([[maybe_unused]] size_type i) const
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
     //! return pointer to underlying array
-    K* data() noexcept
+    constexpr K* data () noexcept
     {
       return &_data;
     }
 
     //! return pointer to underlying array
-    const K* data() const noexcept
+    constexpr const K* data () const noexcept
     {
       return &_data;
     }
@@ -388,10 +397,10 @@ namespace Dune {
     //===== conversion operator
 
     /** \brief Conversion operator */
-    operator K& () { return _data; }
+    constexpr operator reference () noexcept { return _data; }
 
     /** \brief Const conversion operator */
-    operator const K& () const { return _data; }
+    constexpr operator const_reference () const noexcept { return _data; }
   };
 
   /* ----- FV / FV ----- */
@@ -399,28 +408,28 @@ namespace Dune {
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator> (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  constexpr bool operator> (const FieldVector<K,1>& a, const FieldVector<K,1>& b) noexcept
   {
     return a[0]>b[0];
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator>= (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  constexpr bool operator>= (const FieldVector<K,1>& a, const FieldVector<K,1>& b) noexcept
   {
     return a[0]>=b[0];
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator< (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  constexpr bool operator< (const FieldVector<K,1>& a, const FieldVector<K,1>& b) noexcept
   {
     return a[0]<b[0];
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator<= (const FieldVector<K,1>& a, const FieldVector<K,1>& b)
+  constexpr bool operator<= (const FieldVector<K,1>& a, const FieldVector<K,1>& b) noexcept
   {
     return a[0]<=b[0];
   }
@@ -429,70 +438,70 @@ namespace Dune {
 
   //! Binary addition, when using FieldVector<K,1> like K
   template<class K>
-  inline FieldVector<K,1> operator+ (const FieldVector<K,1>& a, const K b)
+  constexpr FieldVector<K,1> operator+ (const FieldVector<K,1>& a, const K b) noexcept
   {
     return a[0]+b;
   }
 
   //! Binary subtraction, when using FieldVector<K,1> like K
   template<class K>
-  inline FieldVector<K,1> operator- (const FieldVector<K,1>& a, const K b)
+  constexpr FieldVector<K,1> operator- (const FieldVector<K,1>& a, const K b) noexcept
   {
     return a[0]-b;
   }
 
   //! Binary multiplication, when using FieldVector<K,1> like K
   template<class K>
-  inline FieldVector<K,1> operator* (const FieldVector<K,1>& a, const K b)
+  constexpr FieldVector<K,1> operator* (const FieldVector<K,1>& a, const K b) noexcept
   {
     return a[0]*b;
   }
 
   //! Binary division, when using FieldVector<K,1> like K
   template<class K>
-  inline FieldVector<K,1> operator/ (const FieldVector<K,1>& a, const K b)
+  constexpr FieldVector<K,1> operator/ (const FieldVector<K,1>& a, const K b) noexcept
   {
     return a[0]/b;
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator> (const FieldVector<K,1>& a, const K b)
+  constexpr bool operator> (const FieldVector<K,1>& a, const K b) noexcept
   {
     return a[0]>b;
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator>= (const FieldVector<K,1>& a, const K b)
+  constexpr bool operator>= (const FieldVector<K,1>& a, const K b) noexcept
   {
     return a[0]>=b;
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator< (const FieldVector<K,1>& a, const K b)
+  constexpr bool operator< (const FieldVector<K,1>& a, const K b) noexcept
   {
     return a[0]<b;
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator<= (const FieldVector<K,1>& a, const K b)
+  constexpr bool operator<= (const FieldVector<K,1>& a, const K b) noexcept
   {
     return a[0]<=b;
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator== (const FieldVector<K,1>& a, const K b)
+  constexpr bool operator== (const FieldVector<K,1>& a, const K b) noexcept
   {
     return a[0]==b;
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator!= (const FieldVector<K,1>& a, const K b)
+  constexpr bool operator!= (const FieldVector<K,1>& a, const K b) noexcept
   {
     return a[0]!=b;
   }
@@ -501,70 +510,70 @@ namespace Dune {
 
   //! Binary addition, when using FieldVector<K,1> like K
   template<class K>
-  inline FieldVector<K,1> operator+ (const K a, const FieldVector<K,1>& b)
+  constexpr FieldVector<K,1> operator+ (const K a, const FieldVector<K,1>& b) noexcept
   {
     return a+b[0];
   }
 
   //! Binary subtraction, when using FieldVector<K,1> like K
   template<class K>
-  inline FieldVector<K,1> operator- (const K a, const FieldVector<K,1>& b)
+  constexpr FieldVector<K,1> operator- (const K a, const FieldVector<K,1>& b) noexcept
   {
     return a-b[0];
   }
 
   //! Binary multiplication, when using FieldVector<K,1> like K
   template<class K>
-  inline FieldVector<K,1> operator* (const K a, const FieldVector<K,1>& b)
+  constexpr FieldVector<K,1> operator* (const K a, const FieldVector<K,1>& b) noexcept
   {
     return a*b[0];
   }
 
   //! Binary division, when using FieldVector<K,1> like K
   template<class K>
-  inline FieldVector<K,1> operator/ (const K a, const FieldVector<K,1>& b)
+  constexpr FieldVector<K,1> operator/ (const K a, const FieldVector<K,1>& b) noexcept
   {
     return a/b[0];
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator> (const K a, const FieldVector<K,1>& b)
+  constexpr bool operator> (const K a, const FieldVector<K,1>& b) noexcept
   {
     return a>b[0];
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator>= (const K a, const FieldVector<K,1>& b)
+  constexpr bool operator>= (const K a, const FieldVector<K,1>& b) noexcept
   {
     return a>=b[0];
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator< (const K a, const FieldVector<K,1>& b)
+  constexpr bool operator< (const K a, const FieldVector<K,1>& b) noexcept
   {
     return a<b[0];
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator<= (const K a, const FieldVector<K,1>& b)
+  constexpr bool operator<= (const K a, const FieldVector<K,1>& b) noexcept
   {
     return a<=b[0];
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator== (const K a, const FieldVector<K,1>& b)
+  constexpr bool operator== (const K a, const FieldVector<K,1>& b) noexcept
   {
     return a==b[0];
   }
 
   //! Binary compare, when using FieldVector<K,1> like K
   template<class K>
-  inline bool operator!= (const K a, const FieldVector<K,1>& b)
+  constexpr bool operator!= (const K a, const FieldVector<K,1>& b) noexcept
   {
     return a!=b[0];
   }
