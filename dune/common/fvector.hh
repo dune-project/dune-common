@@ -150,7 +150,7 @@ namespace Dune {
     //! Converting constructor with FieldVector of different size (deleted)
     template<class K1, int SIZE1,
       std::enable_if_t<(SIZE1 != SIZE), int> = 0>
-    FieldVector (const FieldVector<K1, SIZE1>&) = delete;
+    explicit FieldVector (const FieldVector<K1, SIZE1>&) = delete;
 
     //! Copy constructor with default behavior
     FieldVector (const FieldVector&) = default;
