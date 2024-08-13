@@ -104,7 +104,7 @@ namespace Dune {
     /** \brief The type used for const references to the vector entry */
     typedef const value_type& const_reference;
 
-    //! Constructor making default-initialized vector
+    //! Default constructor, making value-initialized vector with all components set to zero
     constexpr FieldVector () noexcept
       : _data{}
     {}
