@@ -114,8 +114,7 @@ namespace Dune {
      */
     DiagonalMatrix (std::initializer_list<K> const &l)
     {
-      std::copy_n(l.begin(), std::min(static_cast<std::size_t>(rows),
-                                      l.size()),
+      std::copy_n(l.begin(), std::min<std::size_t>(rows, l.size()),
                  diag_.begin());
     }
 

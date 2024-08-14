@@ -790,7 +790,7 @@ namespace Dune
 
     for(std::size_t i=0; i<noOldNeighbours; ++i) {
       sendBuffers_[i] = new char[sendBufferSizes_[i]];
-      receiveBufferSize_ = std::max(receiveBufferSize_, static_cast<int>(sendBufferSizes_[i]));
+      receiveBufferSize_ = std::max<int>(receiveBufferSize_, sendBufferSizes_[i]);
     }
 
     receiveBuffer_=new char[receiveBufferSize_];

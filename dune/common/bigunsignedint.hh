@@ -215,8 +215,7 @@ namespace Dune
   template<int k>
   void bigunsignedint<k>::assign(std::uintmax_t x)
   {
-    static const int no=std::min(static_cast<int>(n),
-                                 static_cast<int>(std::numeric_limits<std::uintmax_t>::digits/bits));
+    static const int no=std::min<int>(n, std::numeric_limits<std::uintmax_t>::digits/bits);
 
     for(int i=0; i<no; ++i) {
       digit[i] = (x&bitmask);
