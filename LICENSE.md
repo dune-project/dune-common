@@ -4,18 +4,18 @@ Copyright holders:
 2015--2017    Marco Agnese
 2015          Martin Alkämper
 2003--2019    Peter Bastian
-2004--2022    Markus Blatt
+2004--2024    Markus Blatt
 2013          Andreas Buhr
-2020--2022    Samuel Burbulla
-2011--2022    Ansgar Burchardt
+2020--2023    Samuel Burbulla
+2011--2023    Ansgar Burchardt
 2004--2005    Adrian Burri
 2014          Benjamin Bykowski (may appear in the logs as "Convex Function")
 2014          Marco Cecchetti
 2018          Matthew Collins
-2006--2022    Andreas Dedner
+2006--2024    Andreas Dedner
 2018--2021    Nils-Arne Dreier
 2003          Marc Droske
-2003--2022    Christian Engwer
+2003--2024    Christian Engwer
 2004--2020    Jorrit Fahlke
 2016          Thomas Fetzer
 2008--2017    Bernd Flemisch
@@ -23,8 +23,8 @@ Copyright holders:
 2017--2020    Janick Gerstenberger
 2015          Stefan Girke
 2015--2017    Felix Gruber
-2005--2022    Carsten Gräser
-2010--2022    Christoph Grüninger
+2005--2024    Carsten Gräser
+2010--2024    Christoph Grüninger
 2006          Bernard Haasdonk
 2015--2020    René Heß
 2015--2018    Claus-Justus Heine
@@ -33,12 +33,12 @@ Copyright holders:
 2012--2013    Olaf Ippisch
 2020--2022    Patrick Jaap
 2020          Liam Keegan
-2013--2021    Dominic Kempf
+2013--2022    Dominic Kempf
 2009          Leonard Kern
 2017--2018    Daniel Kienle
 2013          Torbjörn Klatt
-2003--2022    Robert Klöfkorn
-2017--2022    Timo Koch
+2003--2024    Robert Klöfkorn
+2017--2024    Timo Koch
 2005--2007    Sreejith Pulloor Kuttanikkad
 2012--2016    Arne Morten Kvarving
 2010--2014    Andreas Lauser
@@ -47,9 +47,10 @@ Copyright holders:
 2012--2017    Tobias Malkmus
 2007--2011    Sven Marnach
 2010--2017    René Milk
+2022--2024    Alexander Müller
 2019--2020    Felix Müller
 2011--2019    Steffen Müthing
-2018          Lisa Julia Nebel
+2018--2024    Lisa Julia Nebel
 2003--2006    Thimo Neubauer
 2011          Rebecca Neumann
 2008--2018    Martin Nolte
@@ -59,18 +60,19 @@ Copyright holders:
 2008--2017    Elias Pipping
 2021          Joscha Podlesny
 2011          Dan Popovic
-2017--2022    Simon Praetorius
+2017--2024    Simon Praetorius
 2009          Atgeirr Rasmussen
 2017--2020    Lukas Renelt
-2019--2022    Santiago Ospina De Los Ríos
+2019--2024    Santiago Ospina De Los Ríos
 2006--2014    Uli Sack
-2003--2022    Oliver Sander
+2003--2024    Oliver Sander
 2006          Klaus Schneider
 2004          Roland Schulz
 2015          Nicolas Schwenck
 2016          Linus Seelinger
 2009--2014    Bård Skaflestad
 2019          Henrik Stolzmann
+2024          Andreas Thune
 2012          Matthias Wohlmuth
 2011--2016    Jonathan Youett
 
