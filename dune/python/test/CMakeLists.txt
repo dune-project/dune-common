@@ -14,18 +14,20 @@ dune_python_add_test(NAME tuplevectortest
                      LABELS quick
 )
 
-dune_add_test(SOURCES test_embed1.cc
-              LINK_LIBRARIES ${DUNE_LIBS} ${Python3_LIBRARIES}
-              LABELS quick
-              COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env
-              CMD_ARGS $<TARGET_FILE:test_embed1>
-)
-target_compile_definitions(test_embed1 PRIVATE PYTHON_INTERPRETER=L"${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}")
+if(TARGET Python3::Python)
+    dune_add_test(SOURCES test_embed1.cc
+                LINK_LIBRARIES ${DUNE_LIBS} Python3::Python
+                LABELS quick
+                COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env
+                CMD_ARGS $<TARGET_FILE:test_embed1>
+    )
+    target_compile_definitions(test_embed1 PRIVATE PYTHON_INTERPRETER=L"${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}")
 
-dune_add_test(SOURCES test_embed2.cc
-              LINK_LIBRARIES ${DUNE_LIBS} ${Python3_LIBRARIES}
-              LABELS quick
-              COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env
-              CMD_ARGS $<TARGET_FILE:test_embed2>
-)
-target_compile_definitions(test_embed2 PRIVATE PYTHON_INTERPRETER=L"${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}")
+    dune_add_test(SOURCES test_embed2.cc
+                LINK_LIBRARIES ${DUNE_LIBS} Python3::Python
+                LABELS quick
+                COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env
+                CMD_ARGS $<TARGET_FILE:test_embed2>
+    )
+    target_compile_definitions(test_embed2 PRIVATE PYTHON_INTERPRETER=L"${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}")
+endif()
