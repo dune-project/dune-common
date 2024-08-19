@@ -20,6 +20,9 @@ using namespace Dune;
 ParameterTree::ParameterTree()
 {}
 
+// Since this (internal) tree is static and constant, its prefix cannot be changed even
+// though we report it as the sub-tree of another one (in `.sub(prefix) const`).
+// Thus, we set the prefix as "<unknown>" to inform users that we could not construct the real prefix.
 ParameterTree::ParameterTree(ParameterTree::EmptyTag)
 : prefix_{"<unknown>"}
 {}

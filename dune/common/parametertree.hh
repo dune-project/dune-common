@@ -40,6 +40,9 @@ namespace Dune {
     template<typename T>
     struct Parser;
 
+    struct EmptyTag {};
+    ParameterTree(EmptyTag);
+
   public:
 
     /** \brief storage for key lists
@@ -206,9 +209,6 @@ namespace Dune {
     const KeyVector& getSubKeys() const;
 
   protected:
-
-    struct EmptyTag {};
-    ParameterTree(EmptyTag);
 
     static const ParameterTree empty_;
 
