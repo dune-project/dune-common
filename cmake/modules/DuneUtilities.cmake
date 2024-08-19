@@ -89,3 +89,20 @@ function(dune_deprecate_variable _variable _access)
     message(DEPRECATION "Variable ${_variable} is deprecated")
   endif()
 endfunction()
+
+
+### Internal handling of ALL_DEPENDENCIES deprecation. Remove after Dune 2.12
+
+define_property(GLOBAL PROPERTY DUNE_DISABLE_ALL_DEPENDENCIES_DEPRECATION_WARNING
+  BRIEF_DOCS "Internal DUNE warning handler of ALL_DEPENDENCIES. DO NOT EDIT!"
+  FULL_DOCS "Internal DUNE warning handler of ALL_DEPENDENCIES. DO NOT EDIT!")
+set_property(GLOBAL PROPERTY DUNE_DISABLE_ALL_DEPENDENCIES_DEPRECATION_WARNING OFF)
+
+function(dune_deprecate_ALL_DEPENDENCIES _variable _access)
+  get_property(_prop GLOBAL PROPERTY DUNE_DISABLE_ALL_DEPENDENCIES_DEPRECATION_WARNING)
+  if(NOT _prop)
+    dune_deprecate_variable(${_variable} ${_access})
+  endif()
+endfunction()
+
+variable_watch(ALL_DEPENDENCIES dune_deprecate_ALL_DEPENDENCIES)

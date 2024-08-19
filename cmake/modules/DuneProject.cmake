@@ -118,6 +118,7 @@ macro(dune_project)
     # this is only needed if config files of upstream modules were generated with dune-common < 2.10
     # this behavior will be unsupported when dune-common == 2.12
 
+    set_property(GLOBAL PROPERTY DUNE_DISABLE_ALL_DEPENDENCIES_DEPRECATION_WARNING ON)
     # creates dependency tree, finds all the modules and creates ALL_DEPENDENCIES variable
     dune_create_dependency_tree(SKIP_CMAKE_PATH_SETUP)
 
@@ -141,7 +142,7 @@ macro(dune_project)
         endif()
       endforeach()
     endif()
-    variable_watch(ALL_DEPENDENCIES dune_deprecate_variable)
+    set_property(GLOBAL PROPERTY DUNE_DISABLE_ALL_DEPENDENCIES_DEPRECATION_WARNING OFF)
   else()
     message(AUTHOR_WARNING "This needs to be removed!")
   endif()
@@ -340,7 +341,7 @@ endif()")
   # DUNE_INSTALL_LIBDIR is deprecated and used here to generate a proper deprecation warnings.
   # After Dune 2.10 CMAKE_INSTALL_LIBDIR has to be used, DUNE_INSTALL_LIBDIR will be removed.
   if(DEFINED DUNE_INSTALL_LIBDIR)
-    message(DEPRECATED "DUNE_INSTALL_LIBDIR is deprecated, use CMAKE_INSTALL_LIBDIR instead")
+    message(DEPRECATION "DUNE_INSTALL_LIBDIR is deprecated, use CMAKE_INSTALL_LIBDIR instead")
   else()
     set(DUNE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
   endif()
