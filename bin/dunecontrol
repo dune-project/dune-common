@@ -221,11 +221,20 @@ load_opts() {
     fi
   fi
   if test "x$DUNE_OPTS_FILE" != "x"; then
-    if test "$command" = "configure"; then
-      CMAKE_FLAGS="$(. "${DUNE_OPTS_FILE}"; eval echo \$CMAKE_FLAGS)"
-      CMAKE_MODULE_PATH="$(. "$DUNE_OPTS_FILE"; eval echo \$CMAKE_MODULE_PATH)"
-    fi
     CMD_FLAGS_FROM_FILE="$(eval ${COMMAND}_FLAGS=""; . "$DUNE_OPTS_FILE"; eval echo \$${COMMAND}_FLAGS)"
+    # special handling of cmake and configure
+    if test "$command" = "configure" -o "$command" = "cmake"; then
+      # load a couple of variables from opts file
+      CMAKE_MODULE_PATH="$(. "$DUNE_OPTS_FILE"; eval echo \$CMAKE_MODULE_PATH)"
+      CMAKE_FLAGS="$(. "$DUNE_OPTS_FILE"; eval echo \$CMAKE_FLAGS)"
+      CONFIGURE_FLAGS="$(. "$DUNE_OPTS_FILE"; eval echo \$CONFIGURE_FLAGS)"
+      if test "x$CONFIGURE_FLAGS" != "x" -a  "x$CMAKE_FLAGS" != "x"; then
+        echo "ERROR: using both CONFIGURE_FLAGS and CMAKE_FLAGS in the options file $DUNE_OPTS_FILE" >&2
+        exit 1
+      fi
+      # we load the same flags, regardless of the actual command
+      CMD_FLAGS_FROM_FILE="$(. "$DUNE_OPTS_FILE"; eval echo \$CMAKE_FLAGS \$CONFIGURE_FLAGS)"
+    fi
   fi
   if test -n "$CMD_FLAGS_FROM_FILE"; then
     echo "----- using default flags \$${COMMAND}_FLAGS from $DUNE_OPTS_FILE -----"
@@ -642,9 +651,6 @@ run_default_cmake () {
       CMAKE_PARAMS="$CMAKE_PARAMS -DDUNE_BUILD_DIRECTORY_ROOT_PATH='${BUILDDIR}'"
   fi
 
-  # add arguments given as configure-opts to CMAKE_params
-  CMAKE_PARAMS="$CMAKE_PARAMS $CMD_FLAGS"
-
   # if we have an opts file, we pass this information to cmake
   if test "x$DUNE_OPTS_FILE" != "x"; then
       CMAKE_PARAMS="$CMAKE_PARAMS -DDUNE_OPTS_FILE=\"$DUNE_OPTS_FILE\""
@@ -683,8 +689,8 @@ run_default_cmake () {
       if test -n "$CMAKE_MODULE_PATH"; then
           _MODULE_PATH="-DCMAKE_MODULE_PATH=\"$CMAKE_MODULE_PATH\""
       fi
-      echo "$CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\""
-      eval $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMAKE_FLAGS \"$SRCDIR\"" || exit 1
+      echo "$CMAKE $_MODULE_PATH $CMAKE_PARAMS $CMD_FLAGS \"$SRCDIR\""
+      eval $CMAKE "$_MODULE_PATH $CMAKE_PARAMS $CMD_FLAGS \"$SRCDIR\"" || exit 1
 }
 
 run_default_configure () {
