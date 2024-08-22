@@ -647,7 +647,7 @@ run_default_cmake () {
 
   # if we have an opts file, we pass this information to cmake
   if test "x$DUNE_OPTS_FILE" != "x"; then
-      CMAKE_FLAGS="$CMAKE_FLAGS -DDUNE_OPTS_FILE=\"$DUNE_OPTS_FILE\""
+      CMAKE_PARAMS="$CMAKE_PARAMS -DDUNE_OPTS_FILE=\"$DUNE_OPTS_FILE\""
   fi
 
   # get dependencies & suggestions
