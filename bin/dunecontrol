@@ -234,6 +234,25 @@ load_opts() {
       fi
       # we load the same flags, regardless of the actual command
       CMD_FLAGS_FROM_FILE="$(. "$DUNE_OPTS_FILE"; eval echo \$CMAKE_FLAGS \$CONFIGURE_FLAGS)"
+      # warn if we use CONFIGURE_FLAGS with cmake or vice-versa
+      if test "$command" = "cmake" -a  "x$CONFIGURE_FLAGS" != "x"; then
+        echo "WARNING: inconsistent use!" >&2
+        echo "         you called 'cmake', but defined CONFIGURE_FLAGS in the options file $DUNE_OPTS_FILE" >&2
+        if test "x$CONFIGURE_CMAKE_INCONSISTENCY" = "x"; then
+          echo "press ENTER to continue or CTRL-C to abort"
+          read
+          export CONFIGURE_CMAKE_INCONSISTENCY=WARNING
+        fi
+      fi
+      if test "$command" = "configure" -a  "x$CMAKE_FLAGS" != "x"; then
+        echo "WARNING: inconsistent use!" >&2
+        echo "         you called 'configure', but defined CMAKE_FLAGS in the options file $DUNE_OPTS_FILE" >&2
+        if test "x$CONFIGURE_CMAKE_INCONSISTENCY" = "x"; then
+          echo "press ENTER to continue or CTRL-C to abort"
+          read
+          export CONFIGURE_CMAKE_INCONSISTENCY=WARNING
+        fi
+      fi
     fi
   fi
   if test -n "$CMD_FLAGS_FROM_FILE"; then
