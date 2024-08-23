@@ -54,7 +54,7 @@ namespace Dune
     // friend declaration needed for MPITraits
     friend struct MPITraits<ParallelLocalIndex<T> >;
 #endif
-    friend std::ostream& operator<<<>(std::ostream& os, const ParallelLocalIndex<T>& index);
+    friend std::ostream& operator<< <>(std::ostream& os, const ParallelLocalIndex<T>& index);
 
   public:
     /**
