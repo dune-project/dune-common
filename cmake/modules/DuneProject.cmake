@@ -459,11 +459,12 @@ include(\"\${_dir}/${_target_file}\")")
   endforeach()
 
   # add deprecated unaliased targets and warnings (remove after dune 2.12)
-  set(${ProjectName}_POLICY_UNSCOPED_EXPORTED_TARGET_VISIBILITY TRUE CACHE INTERNAL
+  set(${ProjectName}_POLICY_UNSCOPED_EXPORTED_TARGET_VISIBILITY TRUE CACHE BOOL
     "If this policy is set to FALSE, unscoped export names will not be visible in downstream projects.
     This was the default behavior previous to DUNE 2.10.
     Set this variable to FALSE only if you do not want compatibility with Dune 2.9 or earlier.
     The old behavior will be completely removed after Dune 2.12")
+  mark_as_advanced({ProjectName}_POLICY_UNSCOPED_EXPORTED_TARGET_VISIBILITY)
   if(${ProjectVersionString} VERSION_LESS_EQUAL 2.12)
     foreach(_interface_name ${${ProjectName}_LIBRARIES})
       # alias with original target name (e.g. dunecommon)
