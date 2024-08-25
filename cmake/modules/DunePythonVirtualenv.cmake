@@ -242,7 +242,8 @@ if(DUNE_PYTHON_USE_VENV)
   endif()
 
   # Also store the virtual env interpreter directly
-  set(DUNE_PYTHON_VIRTUALENV_EXECUTABLE ${DUNE_PYTHON_VIRTUALENV_PATH}/bin/python)
+  set(DUNE_PYTHON_VIRTUALENV_EXECUTABLE ${DUNE_PYTHON_VIRTUALENV_PATH}/bin/python
+    CACHE INTERNAL "Python virtual environment executable used by Dune")
 
   # Write a symlink for activation of the environment into all the
   # build directories of the Dune stack
@@ -312,7 +313,7 @@ if(DUNE_PYTHON_USE_VENV)
   endif()
 
   # if pip was not found before then we can set it here since it was now found
-  set(DUNE_PYTHON_pip_FOUND ON)
+  set(DUNE_PYTHON_pip_FOUND ON CACHE INTERNAL "Whether dune has found python pip")
 
   # install setuptools into the venv (needed to find dependencies later on)
   dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install

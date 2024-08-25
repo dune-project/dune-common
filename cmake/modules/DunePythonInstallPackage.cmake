@@ -516,7 +516,8 @@ function(dune_python_configure_package)
 
     # Add a custom target that globally installs this package if requested
     if (NOT PYPKGCONF_INSTALL_TARGET)
-      string(REPLACE "/" "_" PYPKGCONF_INSTALL_TARGET "install_python_${CMAKE_CURRENT_SOURCE_DIR}_${PYPKGCONF_PATH}")
+      string(MD5 path_hash "${PYCONFBIND_FULLPATH}")
+      set(PYPKGCONF_INSTALL_TARGET "install_python_${path_hash}")
     endif()
 
     # TODO this creates an egg-info folder in the source directory
@@ -631,11 +632,12 @@ function(dune_python_configure_bindings)
     message(FATAL_ERROR "dune_python_configure_bindings: ${PYCONFBIND_FULLPATH} does not exists")
   endif()
 
+  string(MD5 path_hash "${PYCONFBIND_FULLPATH}")
   dune_python_configure_package(
     PATH ${PYCONFBIND_FULLPATH}
     ADDITIONAL_PIP_PARAMS ${PYCONFBIND_ADDITIONAL_PIP_PARAMS}
     RESULT PYTHON_PACKAGE_FAILED
-    INSTALL_TARGET install_python_package_${PYCONFBIND_PACKAGENAME}
+    INSTALL_TARGET install_python_package_${path_hash}
   )
 
   # we could actually add metadata even if the configuration of the venv
@@ -648,7 +650,7 @@ function(dune_python_configure_bindings)
     dune_link_dune_py(
       PATH ${CMAKE_CURRENT_BINARY_DIR}/${PYCONFBIND_PATH}
       PACKAGENAME ${PYCONFBIND_PACKAGENAME}
-      INSTALL_TARGET install_python_package_${PYCONFBIND_PACKAGENAME}
+      INSTALL_TARGET install_python_package_${path_hash}
       CMAKE_METADATA_FLAGS ${PYCONFBIND_CMAKE_METADATA_FLAGS}
     )
   else()

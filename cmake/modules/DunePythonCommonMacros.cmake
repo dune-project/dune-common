@@ -105,7 +105,7 @@ if(Python3_Interpreter_FOUND)
   ##### Python bindings specific part begin ################
   # first we test if all requirements are satisfied, if not, Python bindings are
   # disabled and the user gets an informative message explaining why
-  if((DUNE_ENABLE_PYTHONBINDINGS) AND (NOT Python3_INCLUDE_DIRS))
+  if((DUNE_ENABLE_PYTHONBINDINGS) AND (NOT ${Python3_Development.Module_FOUND}))
     message(STATUS "Python bindings disabled")
     message(NOTICE
       "   ----------------------------------------------------------------------------------------\n"
