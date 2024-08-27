@@ -187,10 +187,10 @@ function(dune_add_library_normal _name)
   # Set target options from COMPILE_FLAGS
   target_compile_options(${_name} PUBLIC "${ARG_COMPILE_OPTIONS}")
 
-  # Build library in ${PROJECT_BINARY_DIR}/lib
+  # Build library in ${CMAKE_BINARY_DIR}/lib
   set_target_properties(${_name} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
-    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
   # Set an output name for the created library file
   if(ARG_OUTPUT_NAME)
