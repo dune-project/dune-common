@@ -522,7 +522,7 @@ function(dune_python_configure_package)
 
     # TODO this creates an egg-info folder in the source directory
     add_custom_target(${PYPKGCONF_INSTALL_TARGET}
-                      COMMAND ${Python3_EXECUTABLE} -m pip install
+                      COMMAND Python3::Interpreter -m pip install
                         "${USER_INSTALL_OPTION}"
                        "${DUNE_PIP_INDEX}"
                         # --use-feature=in-tree-build

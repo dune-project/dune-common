@@ -39,8 +39,8 @@
 #       :single:
 #
 #       The python interpreter, whose paths are searched for the package.
-#       Defaults to :code:`${Python3_EXECUTABLE}`, might differ when dealing with
-#       the configure-time virtualenv set up with :ref:`DUNE_PYTHON_VIRTUALENV_SETUP`.
+#       Defaults to the location of :code:`Python3::Interpreter`, which might differ when
+#       dealing with the configure-time virtualenv set up with :ref:`DUNE_PYTHON_VIRTUALENV_SETUP`.
 #
 #    Find a given python package on the system.
 #
@@ -60,14 +60,24 @@ function(dune_python_find_package)
     set(PYPACKAGE_RESULT DUNE_PYTHON_${PYPACKAGE_PACKAGE}_FOUND)
   endif()
   if(NOT PYPACKAGE_INTERPRETER)
-    set(PYPACKAGE_INTERPRETER "${Python3_EXECUTABLE}")
+    set(PYPACKAGE_INTERPRETER Python3::Interpreter)
   endif()
   if(PYPACKAGE_EXACT AND NOT PYPACKAGE_VERSION)
     message(FATAL_ERROR "dune_python_find_package: EXACT given, but no VERSION specified.")
   endif()
 
+  # Find interpreter path location
+  set(PYPACKAGE_LOCATION ${PYPACKAGE_INTERPRETER})
+  if(TARGET ${PYPACKAGE_INTERPRETER})
+    get_target_property(PYPACKAGE_LOCATION ${PYPACKAGE_INTERPRETER} LOCATION)
+  endif()
+  # sanity check on the interpreter
+  if(NOT IS_EXECUTABLE ${PYPACKAGE_LOCATION})
+    message(FATAL_ERROR "The location of the python interpreter '${PYPACKAGE_LOCATION}' is not executable")
+  endif()
+
   # Do the actual check
-  execute_process(COMMAND "${PYPACKAGE_INTERPRETER}" -c "import ${PYPACKAGE_PACKAGE}"
+  execute_process(COMMAND "${PYPACKAGE_LOCATION}" -c "import ${PYPACKAGE_PACKAGE}"
                   RESULT_VARIABLE PYPACKAGE_RETURN
                   ERROR_QUIET)
 
@@ -82,7 +92,7 @@ function(dune_python_find_package)
     # We cannot use find_package_handle_standard_args for that, as it is too
     # closely tied to using find_package(), which we cannot use for variable package
     # name...
-    execute_process(COMMAND "${PYPACKAGE_INTERPRETER}" "${scriptdir}/pyversion.py" "${PYPACKAGE_PACKAGE}"
+    execute_process(COMMAND "${PYPACKAGE_LOCATION}" "${scriptdir}/pyversion.py" "${PYPACKAGE_PACKAGE}"
                     RESULT_VARIABLE retcode
                     OUTPUT_VARIABLE VERSION_STRING
                     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -103,14 +113,14 @@ function(dune_python_find_package)
   else()
     set(${PYPACKAGE_RESULT} FALSE)
     if(PYPACKAGE_REQUIRED)
-      message(FATAL_ERROR "The python package ${PYPACKAGE_PACKAGE} could not be found! (for interpreter ${PYPACKAGE_INTERPRETER})")
+      message(FATAL_ERROR "The python package ${PYPACKAGE_PACKAGE} could not be found! (for interpreter in ${PYPACKAGE_LOCATION})")
     endif()
   endif()
 
   # Set the result variable and print the result
   include(FindPackageHandleStandardArgs)
   find_package_handle_standard_args(${PYPACKAGE_PACKAGE}_${PYPACKAGE_INTERPRETER}
-                                    "Failed to find the python package ${PYPACKAGE_PACKAGE} with interpreter ${PYPACKAGE_INTERPRETER}."
+                                    "Failed to find the python package ${PYPACKAGE_PACKAGE} with interpreter in ${PYPACKAGE_LOCATION}."
                                     ${PYPACKAGE_RESULT}
                                     )
   set(${PYPACKAGE_RESULT} ${${PYPACKAGE_RESULT}} PARENT_SCOPE)
