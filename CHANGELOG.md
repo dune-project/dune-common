@@ -134,7 +134,7 @@ In order to build the DUNE core modules you need at least the following software
 
 - Do not overwrite the `add_test` cmake function with an error message.
 
-- The Python bindings require at least Python 3.6 or higher. This is now enforced
+- The Python bindings require at least Python 3.7 or higher. This is now enforced
   through CMake. The bindings are disabled prompting the user with a message containing
   the reason, if no suitable Python version is found.
 
