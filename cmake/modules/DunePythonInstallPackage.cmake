@@ -567,8 +567,8 @@ function(dune_python_configure_package)
     install(CODE "set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
                   set(DUNE_PYTHON_WHEELHOUSE ${DUNE_PYTHON_WHEELHOUSE})
                   include(DuneExecuteProcess)
-                  message(\"Installing python package\")
-                  dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build .  --target install_python --config $<CONFIG>
+                  message(\"Installing python package $<$<BOOL:$<CONFIG>>:($<CONFIG>)>\")
+                  dune_execute_process(COMMAND \"${CMAKE_COMMAND}\" --build .  --target install_python $<$<BOOL:$<CONFIG>>:--config $<CONFIG>>
                                        WARNING_MESSAGE \"python package installation failed - ignored\")
                   message(\"Installing wheel for python package at ${PYPKGCONF_PATH} into ${DUNE_PYTHON_WHEELHOUSE}...\")
                   dune_execute_process(COMMAND ${WHEEL_COMMAND}
