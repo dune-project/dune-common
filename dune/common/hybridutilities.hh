@@ -562,14 +562,30 @@ inline constexpr auto minus = hybridFunctor(std::minus<>{});
  * \code{.cpp}
  *  using namespace Dune::Indices;
  *  { // hybrid transformation!
- *    auto j = Dune::Hybrid::equals( 2,  1); // -> false
- *    auto j = Dune::Hybrid::equals( 2, _1); // -> false
- *    auto k = Dune::Hybrid::equals(_2, _1); // -> std::false_type
+ *    auto j = Dune::Hybrid::equal_to( 2,  1); // -> false
+ *    auto j = Dune::Hybrid::equal_to( 2, _1); // -> false
+ *    auto k = Dune::Hybrid::equal_to(_2, _1); // -> std::false_type
  *    // independent of the context, `k` encodes its value in the type system
  *  }
  * \endcode
  */
-inline constexpr auto equals = hybridFunctor(std::equal_to<>{});
+inline constexpr auto equal_to = hybridFunctor(std::equal_to<>{});
+
+
+/**
+ * \brief Equality comparison
+ *
+ * \ingroup HybridUtilities
+ *
+ * If both types have a static member value, the result of comparing
+ * these is returned as std::integral_constant<bool, *>. Otherwise
+ * the result of a runtime comparison of t1 and t2 is directly returned.
+ */
+template<class T1, class T2>
+constexpr auto equals(T1&& t1,  T2&& t2){
+  return equal_to(std::forward<T1>(t1), std::forward<T2>(t2));
+}
+
 
 namespace Impl {
 
