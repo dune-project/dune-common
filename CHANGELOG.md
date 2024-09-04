@@ -3,6 +3,8 @@ SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE
 SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 -->
 
+# Master (will become release 2.11)
+
 # Release 2.10
 
 ## Dependencies
