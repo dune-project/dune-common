@@ -20,7 +20,14 @@ using namespace Dune;
 ParameterTree::ParameterTree()
 {}
 
-const Dune::ParameterTree Dune::ParameterTree::empty_;
+// Since this (internal) tree is static and constant, its prefix cannot be changed even
+// though we report it as the sub-tree of another one (in `.sub(prefix) const`).
+// Thus, we set the prefix as "<unknown>" to inform users that we could not construct the real prefix.
+ParameterTree::ParameterTree(ParameterTree::EmptyTag)
+: prefix_{"<unknown>"}
+{}
+
+const ParameterTree ParameterTree::empty_ = ParameterTree{ParameterTree::EmptyTag()};
 
 void ParameterTree::report(std::ostream& stream, const std::string& prefix) const
 {

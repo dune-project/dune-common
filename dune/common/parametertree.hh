@@ -40,6 +40,9 @@ namespace Dune {
     template<typename T>
     struct Parser;
 
+    struct EmptyTag {};
+    ParameterTree(EmptyTag);
+
   public:
 
     /** \brief storage for key lists
