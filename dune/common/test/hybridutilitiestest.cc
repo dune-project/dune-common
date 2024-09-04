@@ -36,7 +36,7 @@ auto incAndAppendToFirst(C&& c)
   forEach(integralRange(Dune::Hybrid::size(c)), [&](auto&& i) {
     using namespace Dune::Hybrid;
     using namespace Dune::Indices;
-    ifElse(equals(i, _0), [&](auto id) {
+    ifElse(equal_to(i, _0), [&](auto id) {
       id(c[i]).append("+1");
     }, [&](auto id) {
       ++id(c[i]);
@@ -174,26 +174,26 @@ int main()
   Dune::TestSuite test;
 
   using namespace Dune::Indices;
-  static_assert(Dune::Hybrid::equals(_1, _1));
-  static_assert(not Dune::Hybrid::equals(_1, _2));
+  static_assert(Dune::Hybrid::equal_to(_1, _1));
+  static_assert(not Dune::Hybrid::equal_to(_1, _2));
 
-  static_assert(Dune::Hybrid::equals(1, _1));
-  test.check(Dune::Hybrid::equals(one, one)) << "Runtime Hybrid::equals failed.";
+  static_assert(Dune::Hybrid::equal_to(1, _1));
+  test.check(Dune::Hybrid::equal_to(one, one)) << "Runtime Hybrid::equal_to failed.";
 
-  static_assert(Dune::Hybrid::equals(_3, Dune::Hybrid::max(_1,_2,_3)));
-  test.check(Dune::Hybrid::equals(3, Dune::Hybrid::max(one,_2,_3)))
+  static_assert(Dune::Hybrid::equal_to(_3, Dune::Hybrid::max(_1,_2,_3)));
+  test.check(Dune::Hybrid::equal_to(3, Dune::Hybrid::max(one,_2,_3)))
     << "Runtime Hybrid::max failed.";
 
-  static_assert(Dune::Hybrid::equals(_1, Dune::Hybrid::min(_1,_2,_3)));
-  test.check(Dune::Hybrid::equals(one, Dune::Hybrid::min(one,_2,_3)))
+  static_assert(Dune::Hybrid::equal_to(_1, Dune::Hybrid::min(_1,_2,_3)));
+  test.check(Dune::Hybrid::equal_to(one, Dune::Hybrid::min(one,_2,_3)))
     << "Runtime Hybrid::min failed.";
 
-  static_assert(Dune::Hybrid::equals(_4, Dune::Hybrid::plus(_1,_3)));
-  test.check(Dune::Hybrid::equals(4, Dune::Hybrid::plus(one,_3)))
+  static_assert(Dune::Hybrid::equal_to(_4, Dune::Hybrid::plus(_1,_3)));
+  test.check(Dune::Hybrid::equal_to(4, Dune::Hybrid::plus(one,_3)))
     << "Runtime Hybrid::plus failed.";
 
-  static_assert(Dune::Hybrid::equals(_2, Dune::Hybrid::minus(_3,_1)));
-  test.check(Dune::Hybrid::equals(2, Dune::Hybrid::minus(_3,one)))
+  static_assert(Dune::Hybrid::equal_to(_2, Dune::Hybrid::minus(_3,_1)));
+  test.check(Dune::Hybrid::equal_to(2, Dune::Hybrid::minus(_3,one)))
     << "Runtime Hybrid::minus failed.";
 
   incrementAll(vector);

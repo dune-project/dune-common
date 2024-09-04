@@ -17,7 +17,7 @@ In order to build the DUNE core modules you need at least the following software
 
 - Python: Add `TupleVector` Python bindings
 
-- Python: The function `cppType` now support Python tuples, which are converted to the C++ type `std::tuple` 
+- Python: The function `cppType` now support Python tuples, which are converted to the C++ type `std::tuple`
 
 - `TupleVector` now implements the standard protocol for tuple-like types.
 
@@ -59,7 +59,7 @@ In order to build the DUNE core modules you need at least the following software
 - Add user-defined literals `_ic`, `_uc` and `_sc` to represent integral constants.
 
 - Add "hybrid" functors for basic math operations with integral constant arguments, i.e.,
-  `Hybrid::max`, `Hybrid::min`, `Hybrid::plus`, `Hybrid::minus`, and `Hybrid::equals`. Operations
+  `Hybrid::max`, `Hybrid::min`, `Hybrid::plus`, `Hybrid::minus`, and `Hybrid::equal_to`. Operations
   between two integral constants result in an integral constant, whereas operations with at least
   one non integral constant argument is performed on the underlying value type.
 
