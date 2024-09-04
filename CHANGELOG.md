@@ -111,6 +111,7 @@ In order to build the DUNE core modules you need at least the following software
 - Remove in `dune/python/common/dimrange.hh` the `DimRange` specializations for
   dune-typetree and dune-functions types. Those are moved to dune-functions.
 
+- Deprecated `Hybrid::equals`. Use `Hybrid::equal_to` instead.
 
 ## Python: Changelog
 

@@ -580,9 +580,11 @@ inline constexpr auto equal_to = hybridFunctor(std::equal_to<>{});
  * If both types have a static member value, the result of comparing
  * these is returned as std::integral_constant<bool, *>. Otherwise
  * the result of a runtime comparison of t1 and t2 is directly returned.
+ *
+ * \deprecated
  */
 template<class T1, class T2>
-constexpr auto equals(T1&& t1,  T2&& t2){
+[[deprecated("Use Hybrid::equal_to instead!")]] constexpr auto equals(T1&& t1,  T2&& t2){
   return equal_to(std::forward<T1>(t1), std::forward<T2>(t2));
 }
 
