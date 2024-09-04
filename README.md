@@ -37,6 +37,7 @@ The following software is recommended but optional:
 
 - pkg-config
 - MPI (either OpenMPI, lam, or mpich suffice)
+- Python >= 3.7 (interpreter and development kit for building the python bindings)
 
 For a full explanation of the DUNE installation process please read
 the [installation notes][installation]. The following introduction is meant for

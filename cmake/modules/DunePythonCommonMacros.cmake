@@ -119,7 +119,7 @@ if(Python3_Interpreter_FOUND)
   endif()
 
   # the Python bindings currently require the following minimum Python version
-  set(DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION 3.6)
+  set(DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION 3.7)
   if((DUNE_ENABLE_PYTHONBINDINGS) AND (Python3_VERSION VERSION_LESS ${DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION}))
     message(STATUS "Python bindings disabled")
     message(NOTICE
