@@ -3,7 +3,9 @@ SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE
 SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 -->
 
-# Master (will become release 2.10)
+# Master (will become release 2.11)
+
+# Release 2.10
 
 ## Dependencies
 In order to build the DUNE core modules you need at least the following software:
@@ -17,7 +19,7 @@ In order to build the DUNE core modules you need at least the following software
 
 - Python: Add `TupleVector` Python bindings
 
-- Python: The function `cppType` now support Python tuples, which are converted to the C++ type `std::tuple` 
+- Python: The function `cppType` now support Python tuples, which are converted to the C++ type `std::tuple`
 
 - `TupleVector` now implements the standard protocol for tuple-like types.
 
