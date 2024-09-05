@@ -5,10 +5,10 @@
 include:
   - project: 'core/ci-config'
     ref: master
-    file: 'config/common/master.yml'
+    file: 'config/common/releases/2.10.yml'
   - project: 'core/ci-config'
     ref: master
-    file: 'jobs/common/master.yml'
+    file: 'jobs/common/releases/2.10.yml'
 
 before_script:
   - . /duneci/bin/duneci-init-job
