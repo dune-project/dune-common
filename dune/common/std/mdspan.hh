@@ -16,6 +16,7 @@
 #include <dune/common/std/default_accessor.hh>
 #include <dune/common/std/extents.hh>
 #include <dune/common/std/layout_right.hh>
+#include <dune/common/std/no_unique_address.hh>
 #include <dune/common/std/span.hh>
 
 namespace Dune::Std {
@@ -328,8 +329,8 @@ public:
 
 private:
   data_handle_type data_handle_;
-  [[no_unique_address]] mapping_type mapping_;
-  [[no_unique_address]] accessor_type accessor_;
+  DUNE_NO_UNIQUE_ADDRESS mapping_type mapping_;
+  DUNE_NO_UNIQUE_ADDRESS accessor_type accessor_;
 };
 
 // deduction guides
