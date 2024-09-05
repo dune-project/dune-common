@@ -11,13 +11,12 @@ In order to build the DUNE core modules you need at least the following software
 - C++ compilers LLVM Clang >= 10 or GCC g++ >= 9
 - CMake >= 3.16
 - Optional: pkg-config to find other optional dependencies
-- Optional: Python >= 3.7 for Python bindings
+- The Python bindings require at least Python 3.7 or higher. This is now enforced
+  through CMake. The bindings are disabled prompting the user with a message containing
+  the reason if no suitable Python version is found.
 
-## Changelog
 
-- Python: Add `TupleVector` Python bindings
-
-- Python: The function `cppType` now support Python tuples, which are converted to the C++ type `std::tuple`
+## C++: Changelog
 
 - `TupleVector` now implements the standard protocol for tuple-like types.
 
@@ -32,19 +31,6 @@ In order to build the DUNE core modules you need at least the following software
 
 - The construction of `FiedlMatrix` and `FieldVector` from `std::initializer_list`
   is now `constexpr`.
-
-- Python: Add a dump/load functions to dune.common.pickle which add support
-  for storing and recreating the JIT generated modules required for the
-  pickling of dune objects to work. In addition a class for writing time
-  series of pickled data is provided.
-
-- Python: Add a new argument class to the generator to add pickling support.
-  The approach is similar to adding extra constructors or methods.
-
-- Python: Add a new command to `dune.__main__` to compile existing modules
-  in parallel, e.g., python -m dune make -j8 hierarchicalgrid
-  Add the option to both 'remove' and 'make' commands to read
-  module list from a file.
 
 - Add concepts directory `dune/common/concepts/` and some fundamental concept definitions using
   c++20-concepts. Those concepts are still experimental and are marked with the new `doxygen`
@@ -87,14 +73,70 @@ In order to build the DUNE core modules you need at least the following software
 - Add new utility type `IndexedIterator` that extends a given iterator by an `index()`
   method returning a traversal index.
 
-## Build System
+## C++: Deprecations and removals
+
+- Remove deprecated macros `DUNE_VERSION_NEWER` and `DUNE_VERSION_NEWER_REV`, use `DUNE_VERSION_GTE`
+  and `DUNE_VERSION_GTE_REV` instead. There was no deprecation compiler warning.
+
+- The deprecated header `dune/common/function.hh` has been removed. Use C++ function
+  objects and `std::function` stuff instead!
+
+- The deprecated header `dune/common/std/utility.hh` has been removed. Use `<utility>`
+  instead.
+
+- The deprecated header `dune/common/std/variant.hh` has been removed. Use `<variant>`
+  instead.
+
+- The deprecated header `dune/common/to_unique_ptr.hh` has been removed. Use
+  `std::unique_ptr` or `std::shared_ptr` instead.
+
+- Deprecated `conjunction`, `disjunction`, and `negation` have been removed. Instead,
+  use the structs from `<type_traits>` introduced with C++17.
+
+- Remove deprecated `dune/common/std/apply.hh`, use `std::apply` instead.
+
+- Deprecated the file `dune/common/assertandreturn.hh` and the contained utility
+  `DUNE_ASSERT_AND_RETURN`. Use `assert()` macro directly in `constexpr` functions.
+
+- Remove deprecated header `power.hh`. Use `Dune::power` from `math.hh` instead.
+
+- Deprecate class `SizeOf`. Use `sizeof...` instead.
+
+- Deprecate header `dune/common/keywords.hh` and the provided macros
+  `DUNE_GENERALIZED_CONSTEXPR` and `DUNE_INLINE_VARIABLE`. Use the key words directly.
+
+- Remove deprecated header `dune/python/common/numpycommdatahandle.hh`. Use
+  `dune/python/grid/numpycommdatahandle.hh` instead.
+
+- Remove in `dune/python/common/dimrange.hh` the `DimRange` specializations for
+  dune-typetree and dune-functions types. Those are moved to dune-functions.
+
+
+## Python: Changelog
+
+- Python: Add `TupleVector` Python bindings
+
+- Python: The function `cppType` now support Python tuples, which are converted to the C++ type `std::tuple`
+
+- Python: Add a dump/load functions to dune.common.pickle which add support
+  for storing and recreating the JIT generated modules required for the
+  pickling of dune objects to work. In addition a class for writing time
+  series of pickled data is provided.
+
+- Python: Add a new argument class to the generator to add pickling support.
+  The approach is similar to adding extra constructors or methods.
+
+- Python: Add a new command to `dune.__main__` to compile existing modules
+  in parallel, e.g., python -m dune make -j8 hierarchicalgrid
+  Add the option to both 'remove' and 'make' commands to read
+  module list from a file.
+
+## Build system: Changelog
 
 - Add a `REQUIRED` parameter to `dune_python_configure_bindings`. If set to
   `TRUE` the functions throws an error instead of a warning if the package
   setup fails. The default behavior (or setting `REQUIRE` to `FALSE`) is to
   show the warning during configuration and to continue.
-
-- Remove the search of (currently broken) `pkg-config` files for dune packages.
 
 - Dune package dependencies are now transitively resolved at `find_package(<dune-module>)` calls instead of waiting
   until the call to `dune_project()`. For example, a CMake call to `find_package(dune-grid)` will transitively
@@ -123,6 +165,29 @@ In order to build the DUNE core modules you need at least the following software
 - The CMake macro `finalize_dune_project` no longer has an optional argument, a config file is
   always created.
 
+- Do not overwrite the `add_test` cmake function with an error message.
+
+- Setting the minimal c++ standard in cmake is now done by a cmake feature-requirement
+  `cxx_std_17` on the `dunecommon` library target. This requirement is propagated to all
+  other modules by linking against `dunecommon`.
+
+- We have changed the way optional dependencies are activated in the build-system internally.
+  The cmake macros `add_dune_xy_flags` do not set the compiler flag `-DENABLE_XY=1` anymore, but instead
+  set directly the flag `-DHAVE_XY=1`. Neither `ENABLE_XY` nor `HAVE_XY` should be modified manually
+  by the user. Since the `HAVE_XY` flag is now set as a compiler flag, it is not included in the
+  `config.h` files anymore.
+
+- Add a policy system to smoothly change behavior in the build-system. This follows the cmake policy
+  system but uses own IDs and is connected to dune module version instead of cmake versions.
+
+- Rename `<module>_INTERFACE_LIBRARIES` into `<module>_LIBRARIES` (representing all module-libraries)
+  and introduce `<module>_EXPORTED_LIBRARIES` as a list of all libraries exported by the module.
+
+
+## Build system: Deprecations and removals
+
+- Remove the search of (currently broken) `pkg-config` files for dune packages.
+
 - Remove the `ALLOW_CXXFLAGS_OVERWRITE` configure option. The `CXXFLAGS`
   overload is still turned on for the JIT compiled Python modules. See the
   description of the MR
@@ -131,16 +196,6 @@ In order to build the DUNE core modules you need at least the following software
   some new feature.
 
 - Remove deprecated `add_directory_test_target` function.
-
-- Do not overwrite the `add_test` cmake function with an error message.
-
-- The Python bindings require at least Python 3.7 or higher. This is now enforced
-  through CMake. The bindings are disabled prompting the user with a message containing
-  the reason, if no suitable Python version is found.
-
-- Setting the minimal c++ standard in cmake is now done by a cmake feature-requirement
-  `cxx_std_17` on the `dunecommon` library target. This requirement is propagated to all
-  other modules by linking against `dunecommon`.
 
 - The cmake options `CXX_MAX_STANDARD`, `CXX_MAX_SUPPORTED_STANDARD` and `DISABLE_CXX_VERSION_CHECK`
   are removed. The cmake function `dune_require_cxx_standard()` is now deprecated.
@@ -164,44 +219,6 @@ In order to build the DUNE core modules you need at least the following software
   `dune_python_configure_bindings` or `dune_python_configure_package`
   according to the needed behavior.
 
-- We have changed the way optional dependencies are activated in the build-system internally.
-  The cmake macros `add_dune_xy_flags` do not set the compiler flag `-DENABLE_XY=1` anymore, but instead
-  set directly the flag `-DHAVE_XY=1`. Neither `ENABLE_XY` nor `HAVE_XY` should be modified manually
-  by the user. Since the `HAVE_XY` flag is now set as a compiler flag, it is not included in the
-  `config.h` files anymore.
-
-- Add a policy system to smoothly change behavior in the build-system. This follows the cmake policy
-  system but uses own IDs and is connected to dune module version instead of cmake versions.
-
-- Remove deprecated macros `DUNE_VERSION_NEWER` and `DUNE_VERSION_NEWER_REV`, use `DUNE_VERSION_GTE`
-  and `DUNE_VERSION_GTE_REV` instead. There was no deprecation compiler warning.
-
-- Rename `<module>_INTERFACE_LIBRARIES` into `<module>_LIBRARIES` (representing all module-libraries)
-  and introduce `<module>_EXPORTED_LIBRARIES` as a list of all libraries exported by the module.
-
-## Deprecations and removals
-
-- The deprecated header `dune/common/function.hh` has been removed. Use C++ function
-  objects and `std::function` stuff instead!
-- The deprecated header `dune/common/std/utility.hh` has been removed. Use `<utility>`
-  instead.
-- The deprecated header `dune/common/std/variant.hh` has been removed. Use `<variant>`
-  instead.
-- The deprecated header `dune/common/to_unique_ptr.hh` has been removed. Use
-  `std::unique_ptr` or `std::shared_ptr` instead.
-- Deprecated `conjunction`, `disjunction`, and `negation` have been removed. Instead,
-  use the structs from `<type_traits>` introduced with C++17.
-- Remove deprecated `dune/common/std/apply.hh`, use `std::apply` instead.
-- Deprecated the file `dune/common/assertandreturn.hh` and the contained utility
-  `DUNE_ASSERT_AND_RETURN`. Use `assert()` macro directly in `constexpr` functions.
-- Remove deprecated header `power.hh`. Use `Dune::power` from `math.hh` instead.
-- Deprecate class `SizeOf`. Use `sizeof...` instead.
-- Deprecate header `dune/common/keywords.hh` and the provided macros
-  `DUNE_GENERALIZED_CONSTEXPR` and `DUNE_INLINE_VARIABLE`. Use the key words directly.
-- Remove deprecated header `dune/python/common/numpycommdatahandle.hh`. Use
-  `dune/python/grid/numpycommdatahandle.hh` instead.
-- Remove in `dune/python/common/dimrange.hh` the `DimRange` specializations for
-  dune-typetree and dune-functions types. Those are moved to dune-functions.
 
 # Release 2.9
 
