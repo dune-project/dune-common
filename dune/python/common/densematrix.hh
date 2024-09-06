@@ -39,7 +39,7 @@ namespace Dune
           if( i < self.mat_rows() )
           {
             row_type v = l.cast< row_type >();
-            std::size_t size = std::min( self.mat_cols(), v.size() );
+            std::size_t size = std::min<std::size_t>( self.mat_cols(), v.size() );
 
             for( std::size_t j = 0; j < size; ++j )
               self[ i ][ j ] = v[ j ];

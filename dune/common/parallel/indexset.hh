@@ -1073,7 +1073,7 @@ namespace Dune
   {
     const_iterator end_ = indexSet_.end();
     for(const_iterator pair = indexSet_.begin(); pair!=end_; ++pair)
-      size_=std::max(size_,static_cast<std::size_t>(pair->local()));
+      size_=std::max<std::size_t>(size_,pair->local());
 
     indices_.resize(++size_,  0);
 

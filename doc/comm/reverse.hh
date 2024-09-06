@@ -27,7 +27,7 @@ void reverseLocalIndex(Dune::ParallelIndexSet<TG,TL,N>& indexSet)
   for(iterator index = indexSet.begin(); index != end; ++index) {
     // Get the local index
     LocalIndex& local = index->local();
-    maxLocal = std::max(maxLocal, local.local());
+    maxLocal = std::max<size_t>(maxLocal, local.local());
   }
 
   for(iterator index = indexSet.begin(); index != end; ++index) {

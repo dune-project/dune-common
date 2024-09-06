@@ -49,7 +49,7 @@ namespace Dune
       cls.def( pybind11::init( [] ( pybind11::list rows ) {
           FM *self = new FM( K( 0 ) );
 
-          const std::size_t numRows = std::min( static_cast< std::size_t >( m ), rows.size() );
+          const std::size_t numRows = std::min<std::size_t>( m, rows.size() );
           for( std::size_t i = 0; i < numRows; ++i )
             (*self)[ i ] = pybind11::cast< Dune::FieldVector< K, n > >( rows[ i ] );
           return self;

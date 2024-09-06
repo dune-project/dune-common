@@ -65,7 +65,7 @@ namespace Dune
           if( info.ndim != 1 )
             throw pybind11::value_error( "Only one-dimensional buffers can be converted into FieldVector." );
           const ssize_t stride = info.strides[ 0 ] / sizeof( K );
-          const ssize_t sz = std::min( static_cast< ssize_t >( size ), info.shape[ 0 ] );
+          const ssize_t sz = std::min<ssize_t>( size, info.shape[ 0 ] );
 
           FV *self = new FV( K( 0 ) );
           for( ssize_t i = 0; i < sz; ++i )
@@ -75,7 +75,7 @@ namespace Dune
 
       cls.def( pybind11::init( [] ( pybind11::tuple x ) {
           FV *self = new FV( K( 0 ) );
-          const std::size_t sz = std::min( static_cast< std::size_t >( size ), x.size() );
+          const std::size_t sz = std::min<std::size_t>( size, x.size() );
           // should this fail in case the sizes do not match?
           for( std::size_t i = 0; i < sz; ++i )
             (*self)[ i ] = x[ i ].template cast< K >();
@@ -84,7 +84,7 @@ namespace Dune
 
       cls.def( pybind11::init( [] ( pybind11::list x ) {
             FV *self = new FV( K( 0 ) );
-            const std::size_t sz = std::min( static_cast< std::size_t >( size ), x.size() );
+            const std::size_t sz = std::min<std::size_t>( size, x.size() );
             // should this fail in case the sizes do not match?
             for( std::size_t i = 0; i < sz; ++i )
               (*self)[ i ] = x[ i ].template cast< K >();
@@ -93,7 +93,7 @@ namespace Dune
 
       cls.def( pybind11::init( [] ( pybind11::args args ) {
             FV *self = new FV( K( 0 ) );
-            const std::size_t sz = std::min( static_cast< std::size_t >( size ), args.size() );
+            const std::size_t sz = std::min<std::size_t>( size, args.size() );
             // should this fail in case the sizes do not match?
             for( std::size_t i = 0; i < sz; ++i )
               (*self)[ i ] = args[ i ].template cast< K >();
@@ -105,7 +105,7 @@ namespace Dune
 
       cls.def("copy", [](FV& , pybind11::args l) {
             FV v(K(0));
-            const std::size_t sz = std::min(v.size(), l.size());
+            const std::size_t sz = std::min<std::size_t>( v.size(), l.size() );
             // should this fail in case the sizes do not match?
             for (std::size_t i = 0; i < sz; ++i)
               v[i] = l[i].template cast<K>();
