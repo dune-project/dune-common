@@ -9,6 +9,7 @@
 #include <type_traits>
 
 #include <dune/common/indices.hh>
+#include <dune/common/std/no_unique_address.hh>
 #include <dune/common/std/impl/fwd_layouts.hh>
 
 namespace Dune::Std {
@@ -135,7 +136,7 @@ public:
   }
 
 private:
-  [[no_unique_address]] extents_type extents_;
+  DUNE_NO_UNIQUE_ADDRESS extents_type extents_;
 };
 
 } // end namespace Dune::Std

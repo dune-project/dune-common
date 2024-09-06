@@ -75,6 +75,9 @@ In order to build the DUNE core modules you need at least the following software
 - Add new utility type `IndexedIterator` that extends a given iterator by an `index()`
   method returning a traversal index.
 
+- Add a macro `DUNE_NO_UNIQUE_ADDRESS` that expands to the attribute `[[no_unique_address]]`
+  or something similar, if supported by the compiler.
+
 ## C++: Deprecations and removals
 
 - Remove deprecated macros `DUNE_VERSION_NEWER` and `DUNE_VERSION_NEWER_REV`, use `DUNE_VERSION_GTE`

@@ -11,6 +11,7 @@ install(FILES
   mdarray.hh
   mdspan.hh
   memory.hh
+  no_unique_address.hh
   span.hh
   type_traits.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/std)

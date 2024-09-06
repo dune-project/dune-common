@@ -20,6 +20,7 @@
 #include <dune/common/std/default_accessor.hh>
 #include <dune/common/std/mdspan.hh>
 #include <dune/common/std/memory.hh>
+#include <dune/common/std/no_unique_address.hh>
 #include <dune/common/std/span.hh>
 #include <dune/common/std/impl/containerconstructiontraits.hh>
 
@@ -598,7 +599,7 @@ public:
 
 protected:
   container_type container_;
-  [[no_unique_address]] mapping_type mapping_;
+  DUNE_NO_UNIQUE_ADDRESS mapping_type mapping_;
 };
 
 /// \name Deduction guides

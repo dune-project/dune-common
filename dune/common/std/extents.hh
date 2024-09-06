@@ -14,6 +14,7 @@
 #endif
 
 #include <dune/common/indices.hh>
+#include <dune/common/std/no_unique_address.hh>
 #include <dune/common/std/span.hh>
 #include <dune/common/std/impl/fwd_layouts.hh>
 
@@ -225,7 +226,7 @@ private:
 
 private:
   using dynamic_extents_type = typename Impl::DynamicExtentsArray<index_type,rank_dynamic()>::type;
-  [[no_unique_address]] dynamic_extents_type dynamic_extents_;
+  DUNE_NO_UNIQUE_ADDRESS dynamic_extents_type dynamic_extents_;
 
   template <class, std::size_t...> friend class extents;
   friend struct layout_left;
