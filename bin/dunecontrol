@@ -294,11 +294,19 @@ extract_multiarch(){
   if test "x$MULTIARCH_LIBDIR" != "x"; then
     return
   fi
-  load_opts "cmake"
+  # first try to extract compiler info from current command flags
+  my_cxx_compiler=`echo $CMD_FLAGS | $GREP CXX | $SED "s/.*CXX=[\"']\{0,1\}\([^$BLANK'\"]*\)[\"']\{0,1\}.*/\1/"`
+  # if no compiler was found try the CMAKE_FLAGS
+  if test "x$my_cxx_compiler" == "x"; then
+    load_opts "cmake"
+    my_cxx_compiler=`echo $CMD_FLAGS | $GREP CXX | $SED "s/.*CXX=[\"']\{0,1\}\([^$BLANK'\"]*\)[\"']\{0,1\}.*/\1/"`
+  fi
+  # if no compiler was found try the CONFIGURE_FLAGS
   if test "x$my_cxx_compiler" == "x"; then
     load_opts "configure"
+    my_cxx_compiler=`echo $CMD_FLAGS | $GREP CXX | $SED "s/.*CXX=[\"']\{0,1\}\([^$BLANK'\"]*\)[\"']\{0,1\}.*/\1/"`
   fi
-  my_cxx_compiler=`echo $CMD_FLAGS | $GREP CXX | $SED "s/.*CXX=[\"']\{0,1\}\([^$BLANK'\"]*\)[\"']\{0,1\}.*/\1/"`
+  # if no compiler was set a default
   if test "x$my_cxx_compiler" == "x"; then
     $(which cc &>/dev/null)
     if test $? -eq "0"; then
