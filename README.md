@@ -75,9 +75,9 @@ full instructions please see [here][installation].
 Links
 -----
 
-0. https://www.dune-project.org/doc/installation
+0. https://www.dune-project.org/installation/installation-faq/
 1. https://dune-project.org/releases/
-2. https://dune-project.org/buildsystem/
+2. https://dune-project.org/doc/buildsystem/
 3. https://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
 
 [installation]: https://www.dune-project.org/doc/installation
