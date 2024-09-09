@@ -42,7 +42,7 @@ namespace Dune
     // registerFieldVector
     // -------------------
     template< class K, int size, class ...options >
-    void registerFieldVector ( pybind11::handle scope, pybind11::class_<Dune::FieldVector<K,size>, options...> cls )
+    void registerFieldVector ( pybind11::handle, pybind11::class_<Dune::FieldVector<K,size>, options...> cls )
     {
       using pybind11::operator""_a;
 
