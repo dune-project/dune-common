@@ -113,6 +113,8 @@ In order to build the DUNE core modules you need at least the following software
 
 - Deprecated `Hybrid::equals`. Use `Hybrid::equal_to` instead.
 
+- The preprocessor constant `HAVE_UMFPACK` is deprecated. Use `HAVE_SUITESPARSE_UMFPACK` instead.
+
 ## Python: Changelog
 
 - Python: Add `TupleVector` Python bindings
