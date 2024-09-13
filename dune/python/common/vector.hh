@@ -122,7 +122,7 @@ namespace Dune
       }
 
       template< class T, class... options >
-      inline static void registerOneTensorInterface ( pybind11::class_< T, options... >, PriorityTag< 0 > )
+      inline static void registerOneTensorInterface ( pybind11::class_< T, options... > /*cls*/, PriorityTag< 0 > )
       {}
 
       template< class T, class... options >
