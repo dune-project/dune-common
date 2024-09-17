@@ -1241,6 +1241,19 @@ namespace Dune
     }
 
     /**
+     * @brief Create iterator incremented by given value
+     *
+     * Only enabled for random-access iterators.
+     */
+    template<bool dummy=true, std::enable_if_t<isRandomAccess and dummy, int> =0>
+    friend constexpr DerivedIterator operator+(difference_type n, const IteratorFacade& it)
+    {
+      DerivedIterator tmp(it.derived());
+      tmp += n;
+      return tmp;
+    }
+
+    /**
      * @brief Decrement iterator by given value
      *
      * Only enabled for random-access iterators.
