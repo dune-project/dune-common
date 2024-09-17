@@ -1,6 +1,9 @@
 // SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 #include <array>
+#if __has_include(<concepts>)
+  #include <concepts>
+#endif
 #include <map>
 #include <utility>
 #include <vector>
@@ -8,6 +11,7 @@
 #include <type_traits>
 #include <optional>
 
+#include <dune/common/concepts.hh>
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/iteratorrange.hh>
 #include <dune/common/rangeutilities.hh>
@@ -316,6 +320,10 @@ auto testTransformedRangeView()
     auto end = transformedIterator(Dune::range(0,4).end(), [](auto x) {return 0;});
     suite.check(checkSameRange(std::vector{0, 2, 4, 6}, it, end))
       << "free TransformedRangeIterator's with raw lambdas yield wrong result";
+
+#if DUNE_ENABLE_CONCEPTS
+    static_assert(std::random_access_iterator<decltype(it)>);
+#endif
   }
   // Check creation of free iterators storing std::optional lambdas of different type
   {
@@ -329,6 +337,10 @@ auto testTransformedRangeView()
     auto end = transformedIterator(Dune::range(0,4).end(), [](auto x) {return 0;});
     suite.check(checkSameRange(std::vector{0, 2, 4, 6}, it, end))
       << "free TransformedRangeIterator's with lambdas in std::optional yield wrong result";
+
+#if DUNE_ENABLE_CONCEPTS
+    static_assert(std::random_access_iterator<decltype(it)>);
+#endif
   }
   return suite;
 }
