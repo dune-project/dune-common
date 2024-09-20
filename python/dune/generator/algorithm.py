@@ -6,6 +6,11 @@ import numpy
 from dune.common.hashit import hashIt
 from dune.common.utility import isString
 
+class CPPType:
+    def __init__(self,typeName,includes=[]):
+        self.cppTypeName = typeName
+        self.cppIncludes = includes
+
 def cppType(arg):
     """
     Determine the C++ type and header includes corresponding to a Python object.
@@ -90,10 +95,48 @@ def load(functionName, includes, *args, pythonName=None):
     containing the calling script use
     `includes=dune.generator.path(__file__)+"header.hh"`.
 
+    The generated file will be compiled within the `dune-py` module and
+    thus all include search paths and libraries are added to the command
+    line. Currently we do not provide a direct way to add additional
+    external packages not found during the build of the Dune modules. A way
+    around this is to set the `CPATH` and `LIBRARY_PATH` environment
+    variables before calling this function.
+
+    Examples
+    --------
+
+      Assume that you want to use some `Eigen` linear algebra and would like
+      to pass a `numpy` array to a function taking an `Eigen::VectorXd`. By
+      default a `numpy` array will be export to C++ using `pybind11::array`
+      although `pybind11` can also export this as `Eigen::VectorXd`.
+      In addition `Dune` might not have been configured to find `Eigen` if
+      it not in a default position in the system. In this case the
+      following code will work
+      ```
+      code="""
+      #include <dune/python/pybind11/eigen.h>
+      auto test(ColVec_t& x_1) {...}
+      """
+
+      os.environ["CPATH"] = "PathToEigen"
+      testAlgo = dune.generator.algorithm.load('test', io.StringIO(code),
+                      dune.generator.algorithm.CPPType("Eigen::VectorXd") )
+
+      ```
+
     Args:
         functionName:    name of the C++ function to provide bindings for
         includes:        single or list of files to add to the generated module
-        *args:           list of arguments that will be passed to the generated module
+        *args:           list of arguments that will be passed to the generated module.
+                         Entries here can be instances of standard Python types,
+                         other Dune objects, or instances of the special class
+                         `algorithm.CPPType` which is constructed by
+                         providing a string with the required C++ type and
+                         optionally a list of include files to add at the
+                         top of the generated file.
+
+                         Note: the type of the object passed to C++ must be
+                               exportable.
 
     Kwargs:
         pythonName:      A readable name for the generated function that is used in
