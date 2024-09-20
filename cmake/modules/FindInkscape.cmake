@@ -14,6 +14,12 @@
 #       Path to inkscape to generate .png's form .svg's
 #
 
+# text for feature summary
+include(FeatureSummary)
+set_package_properties("Inkscape" PROPERTIES
+  DESCRIPTION "converts SVG images"
+  URL "www.inkscape.org")
+
 find_program(INKSCAPE inkscape DOC "Path to inkscape to generate png files from svg files")
 find_program(CONVERT convert DOC "Path to convert program")
 if(INKSCAPE)
@@ -26,9 +32,3 @@ if(INKSCAPE)
   endif()
 
 endif(INKSCAPE)
-
-# text for feature summary
-set_package_properties("Inkscape" PROPERTIES
-  DESCRIPTION "converts SVG images"
-  URL "www.inkscape.org"
-  PURPOSE "To generate the documentation with LaTeX")

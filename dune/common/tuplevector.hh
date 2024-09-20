@@ -35,13 +35,6 @@ class TupleVector : public std::tuple<T...>
 {
   using Base = std::tuple<T...>;
 
-  template<class... TT>
-  using TupleConstructorDetector = decltype(Base(std::declval<TT&&>()...));
-
-  template<class... TT>
-  using hasTupleConstructor = Dune::Std::is_detected<TupleConstructorDetector, TT...>;
-
-
 public:
 
   /** \brief Construct from a set of arguments
@@ -51,7 +44,7 @@ public:
    * list.
    */
   template<class... TT,
-    std::enable_if_t<hasTupleConstructor<TT...>::value, int> = 0>
+    class = std::void_t<decltype(Base(std::declval<TT&&>()...))>>
   constexpr TupleVector(TT&&... tt) :
     Base(std::forward<TT>(tt)...)
   {}
@@ -86,6 +79,29 @@ public:
   }
 };
 
+/// \name Deduction guides for TupleVector
+/// \relates TupleVector
+/// @{
+
+template<class... T>
+TupleVector(T...) -> TupleVector<T...>;
+
+template<class T1, class T2>
+TupleVector(std::pair<T1, T2>) -> TupleVector<T1, T2>;
+
+template<class... T>
+TupleVector(std::tuple<T...>) -> TupleVector<T...>;
+
+template <class Alloc, class... T>
+TupleVector(std::allocator_arg_t, Alloc, T...) -> TupleVector<T...>;
+
+template<class Alloc, class T1, class T2>
+TupleVector(std::allocator_arg_t, Alloc, std::pair<T1, T2>) -> TupleVector<T1, T2>;
+
+template<class Alloc, class... T>
+TupleVector(std::allocator_arg_t, Alloc, std::tuple<T...>) -> TupleVector<T...>;
+
+/// @}
 
 
 template<class... T>
