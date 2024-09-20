@@ -80,5 +80,5 @@ Links
 2. https://dune-project.org/doc/buildsystem/
 3. https://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
 
-[installation]: https://www.dune-project.org/doc/installation
+[installation]: https://www.dune-project.org/installation/installation-buildsrc
 [license]: https://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
