@@ -243,9 +243,7 @@ struct DExtentsImpl;
 template <class IndexType, std::size_t... I>
 struct DExtentsImpl<IndexType, std::integer_sequence<std::size_t,I...>>
 {
-  template <std::size_t>
-  using dynamic = std::integral_constant<std::size_t,Std::dynamic_extent>;
-  using type = Std::extents<IndexType, dynamic<I>::value...>;
+  using type = Std::extents<IndexType, (void(I), Std::dynamic_extent)...>;
 };
 
 } // end namespace Impl
