@@ -489,6 +489,7 @@ namespace Dune
    *
    */
   template<class T, T... t, std::size_t index>
+  [[deprecated("Use get(std::integer_sequence<...>, index) instead.")]]
   constexpr auto integerSequenceEntry(std::integer_sequence<T, t...> /*seq*/, std::integral_constant<std::size_t, index> i)
   {
     static_assert(index < sizeof...(t), "index used in IntegerSequenceEntry exceed size");
@@ -508,7 +509,7 @@ namespace Dune
 #ifndef DOXYGEN
 
   template<class T, T... t, std::size_t i>
-  struct IntegerSequenceEntry<std::integer_sequence<T, t...>, i>
+  struct [[deprecated("Use get(std::integer_sequence<...>, index) instead.")]]IntegerSequenceEntry<std::integer_sequence<T, t...>, i>
     : public decltype(Impl::IntegerSequenceHelper<T, t...>::get(std::integral_constant<std::size_t, i>()))
   {};
 

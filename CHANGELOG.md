@@ -18,6 +18,11 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 - The CMake function `dune_target_enable_all_packages` can now handle Interface libraries too.
 
+- Add a module-specific CMake target `build_<module>_tests` to compile only tests
+  associated to a specific `<module>`. Additionally, add the `<module>`-name as
+  `LABEL` property to all tests created with `dune_add_tests` in that module. This
+  allows to run these tests with `ctest -L <module>`.
+
 ## C++: Changelog
 
 - `DUNE_THROW` no longer prevents functions from being used in `constexpr` contexts,
@@ -30,16 +35,15 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
   comparison operator.
 
 - Add deduction guides to `TupleVector` analogous to `std::tuple`.
+
 - Add concept definition `Std::indirectly_copyable` to constrain the `DenseMatrixAssigner`.
 
 - Add concept definition `Concept::Number` to represent scalar number types in containers.
 
-## Build system: Changelog
+## C++: Deprecations and removals
 
-- Add a module-specific CMake target `build_<module>_tests` to compile only tests
-  associated to a specific `<module>`. Additionally, add the `<module>`-name as
-  `LABEL` property to all tests created with `dune_add_tests` in that module. This
-  allows to run these tests with `ctest -L <module>`.
+- Deprecate the utility `integerSequenceEntry` in favour of the shorter `get` from `integersequence.hh`.
+
 
 # Release 2.10
 
