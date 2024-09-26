@@ -22,7 +22,7 @@ dune_project()
 dune_add_library(dunecommon EXPORT_NAME Common NAMESPACE Dune::)
 
 # minimal c++ standard required
-target_compile_features(dunecommon PUBLIC cxx_std_17)
+target_compile_features(dunecommon PUBLIC cxx_std_20)
 
 # Set properties to the dunecommon target
 add_dune_blas_lapack_flags(dunecommon)
