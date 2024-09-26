@@ -66,14 +66,30 @@ find_library(GMP_LIB gmp HINTS ${PKG_gmp_LIBDIR})
 find_path(GMPXX_INCLUDE_DIR gmpxx.h HINTS ${PKG_gmpxx_INCLUDEDIR})
 find_library(GMPXX_LIB gmpxx HINTS ${PKG_gmpxx_LIBDIR})
 
+# Check whether gmp and gmpxx can be used
+file(WRITE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src_find_gmp.cxx"
+"#include <gmpxx.h>\n#include <iostream>\nint main() { mpz_class x = 42; std::cout << x; }\n")
+
+try_compile(GMPXX_WORKS ${CMAKE_BINARY_DIR}
+  ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src_find_gmp.cxx
+  CMAKE_FLAGS
+    -DINCLUDE_DIRECTORIES='${GMP_INCLUDE_DIR}\;${GMPXX_INCLUDE_DIR}'
+    -DLINK_LIBRARIES='${GMP_LIB}\;${GMPXX_LIB}'
+  OUTPUT_VARIABLE OUTPUT)
+if(NOT GMPXX_WORKS)
+  file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+    "Performing C++ SOURCE FILE Test GMPXX_WORKS failed with the following output:\n"
+    "${OUTPUT}\n")
+endif()
+
 # Remove these variables from cache inspector
-mark_as_advanced(GMP_INCLUDE_DIR GMP_LIB GMPXX_INCLUDE_DIR GMPXX_LIB)
+mark_as_advanced(GMP_INCLUDE_DIR GMP_LIB GMPXX_INCLUDE_DIR GMPXX_LIB GMPXX_WORKS)
 
 # Report if package was found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GMP
   DEFAULT_MSG
-  GMPXX_LIB GMPXX_INCLUDE_DIR GMP_INCLUDE_DIR GMP_LIB
+  GMPXX_LIB GMPXX_INCLUDE_DIR GMP_INCLUDE_DIR GMP_LIB GMPXX_WORKS
 )
 
 # Set targets
