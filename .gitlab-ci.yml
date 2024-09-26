@@ -21,35 +21,21 @@ variables:
   DUNECI_CMAKE_FLAGS: '-DDUNE_RUNNING_IN_CI=TRUE'
   DUNE_LOG_LEVEL:     DEBUG
 
-ubuntu:20.04 gcc-9-17-expensive:
+debian:11 gcc-10-20-expensive:
   extends: .common
   # This image has Vc
-  image: registry.dune-project.org/docker/ci/ubuntu:20.04
+  image: registry.dune-project.org/docker/ci/debian:11
   # allow expensive tests
   variables:
     DUNECI_CXXFLAGS: -mavx
     DUNECI_TEST_LABELS: ""
-    DUNECI_TOOLCHAIN: gcc-9-17
+    DUNECI_TOOLCHAIN: gcc-10-20
     DUNE_TEST_EXPECTED_VC_IMPLEMENTATION: AVX
   # require AVX to properly test Vc
   tags: [duneci, "iset:avx"]
   # allowed to fail to e.g. do no hold up a merge when a runner supporting avx
   # is unavailable
   allow_failure: true
-
-ubuntu:20.04 gcc-9-17-nopython:
-  extends: .common
-  image: registry.dune-project.org/docker/ci/ubuntu:20.04
-  variables:
-    DUNECI_TOOLCHAIN:  gcc-9-17
-    DUNECI_CMAKE_FLAGS: '-DCMAKE_DISABLE_FIND_PACKAGE_Python3=TRUE'
-
-debian:11 clang-11-20-nobindings:
-  extends: .common
-  image: registry.dune-project.org/docker/ci/debian:11
-  variables:
-    DUNECI_TOOLCHAIN: clang-11-20
-    DUNECI_CMAKE_FLAGS: '-DDUNE_ENABLE_PYTHONBINDINGS=OFF'
 
 core-modules-test:
   stage: downstream

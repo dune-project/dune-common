@@ -67,11 +67,11 @@ by the --opts=<file> option. Specify the options via the variable
 
 An example of an options file is
 
-  # use a special compiler (g++ version 5.0),
+  # use a special compiler (g++ version 14.0),
   # install to a custom directory, default is /usr/local/bin,
   # disable the external library SuperLU,
   # and use Ninja-build instead of make as the build-tool
-  CMAKE_FLAGS="-DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_INSTALL_PREFIX='/tmp/HuHu' -DCMAKE_DISABLE_FIND_PACKAGE_SuperLU=true -GNinja"
+  CMAKE_FLAGS="-DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_INSTALL_PREFIX='/tmp/HuHu' -DCMAKE_DISABLE_FIND_PACKAGE_SuperLU=true -GNinja"
 
 Links
 -----
