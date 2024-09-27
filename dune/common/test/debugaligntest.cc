@@ -48,9 +48,12 @@ void checkAlignmentViolation(Dune::TestSuite &test)
 
   void* misalignedAddr = std::addressof(buffer);
   {
+    // take any address, align it to the correct value...
     std::size_t space = alignof(T)+sizeof(T);
     misalignedAddr = std::align(alignof(T), sizeof(T), misalignedAddr, space);
+    // and move one past its alignmed address to make sure it's misalingned
     misalignedAddr = static_cast<char*>(misalignedAddr) + 1;
+    test.check(not Dune::isAligned(misalignedAddr, alignof(T)), "We could not misalign an address");
   }
 
   auto ptr = new(misalignedAddr) T;
