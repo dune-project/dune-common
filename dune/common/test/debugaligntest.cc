@@ -43,17 +43,14 @@ void checkAlignmentViolation(Dune::TestSuite &test)
   WithViolatedAlignmentHandler
     guard([&](auto&&...){ misalignmentDetected = true; });
 
+  static_assert(alignof(T) <= sizeof(T));
   char buffer[alignof(T)+sizeof(T)];
 
-  void* misalignedAddr;
+  void* misalignedAddr = std::addressof(buffer);
   {
-    // a more portable way to ddo this would be to use std::align(), but that
-    // isn't supported by g++-4.9 yet
-    auto addr = std::uintptr_t( (void*)buffer );
-    addr += alignof(T) - 1;
-    addr &= -std::uintptr_t(alignof(T));
-    addr += 1;
-    misalignedAddr = (void*)addr;
+    std::size_t space = alignof(T)+sizeof(T);
+    misalignedAddr = std::align(alignof(T), sizeof(T), misalignedAddr, space);
+    misalignedAddr = static_cast<char*>(misalignedAddr) + 1;
   }
 
   auto ptr = new(misalignedAddr) T;
