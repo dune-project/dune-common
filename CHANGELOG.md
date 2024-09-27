@@ -5,6 +5,10 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 # Master (will become release 2.11)
 
+## C++: Changelog
+
+- Add deduction guides to `TupleVector` analogous to `std::tuple`.
+
 # Release 2.10
 
 ## Dependencies
