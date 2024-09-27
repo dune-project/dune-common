@@ -102,8 +102,8 @@ int main(int argc, char **argv)
       using T = decltype(val);
       using Aligned = Dune::AlignedNumber<T>;
       test.checkArithmetic<Aligned, T>();
-
-      checkAlignmentViolation<Aligned>(test);
+      if (alignof(T) > 1)
+        checkAlignmentViolation<Aligned>(test);
     });
 
   return test.exit();
