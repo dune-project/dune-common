@@ -17,7 +17,7 @@
 # text for feature summary
 include(FeatureSummary)
 set_package_properties("Inkscape" PROPERTIES
-  DESCRIPTION "converts SVG images"
+  DESCRIPTION "Free and open source vector graphics editor"
   URL "www.inkscape.org")
 
 find_program(INKSCAPE inkscape DOC "Path to inkscape to generate png files from svg files")
