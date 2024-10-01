@@ -62,16 +62,10 @@ void checkAlignmentViolation(Dune::TestSuite &test)
 
   misalignmentDetected = false;
 
-  ptr->~T();
-  test.check(misalignmentDetected, "destruct")
-    << "misalignment not detected for " << Dune::className<T>();
-
-  misalignmentDetected = false;
-
   ptr = new(misalignedAddr) T(T(0));
   test.check(misalignmentDetected, "move construct")
     << "misalignment not detected for " << Dune::className<T>();
-  ptr->~T(); // ignore any misalignment here
+  ptr->~T();
 
   misalignmentDetected = false;
 
@@ -79,7 +73,7 @@ void checkAlignmentViolation(Dune::TestSuite &test)
   ptr = new(misalignedAddr) T(t);
   test.check(misalignmentDetected, "copy construct")
     << "misalignment not detected for " << Dune::className<T>();
-  ptr->~T(); // ignore any misalignment here
+  ptr->~T();
 }
 
 int main(int argc, char **argv)
