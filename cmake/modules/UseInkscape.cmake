@@ -37,6 +37,8 @@
 #
 include_guard(GLOBAL)
 
+set_package_properties("Inkscape" PROPERTIES
+  PURPOSE "Convert SVG images to PNG images for the LaTeX documentation")
 
 function(dune_create_inkscape_image_converter_target)
   set(OPTION ALL)
