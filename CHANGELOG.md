@@ -24,6 +24,8 @@ In order to build the DUNE core modules you need at least the following software
 
 ## C++: Changelog
 
+- Fix bug where `AlignedNumber` could not check if placement `new` alignment is correct.
+
 - `TupleVector` now implements the standard protocol for tuple-like types.
 
 - There is a new base class `IteratorFacade` that unifies `ForwardIteratorFacade`,
