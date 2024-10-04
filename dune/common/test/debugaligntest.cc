@@ -43,17 +43,17 @@ void checkAlignmentViolation(Dune::TestSuite &test)
   WithViolatedAlignmentHandler
     guard([&](auto&&...){ misalignmentDetected = true; });
 
+  static_assert(alignof(T) <= sizeof(T));
   char buffer[alignof(T)+sizeof(T)];
 
-  void* misalignedAddr;
+  void* misalignedAddr = std::addressof(buffer);
   {
-    // a more portable way to ddo this would be to use std::align(), but that
-    // isn't supported by g++-4.9 yet
-    auto addr = std::uintptr_t( (void*)buffer );
-    addr += alignof(T) - 1;
-    addr &= -std::uintptr_t(alignof(T));
-    addr += 1;
-    misalignedAddr = (void*)addr;
+    // take any address, align it to the correct value...
+    std::size_t space = alignof(T)+sizeof(T);
+    misalignedAddr = std::align(alignof(T), sizeof(T), misalignedAddr, space);
+    // and move one past its alignmed address to make sure it's misalingned
+    misalignedAddr = static_cast<char*>(misalignedAddr) + 1;
+    test.check(not Dune::isAligned(misalignedAddr, alignof(T)), "We could not misalign an address");
   }
 
   auto ptr = new(misalignedAddr) T;
@@ -62,16 +62,10 @@ void checkAlignmentViolation(Dune::TestSuite &test)
 
   misalignmentDetected = false;
 
-  ptr->~T();
-  test.check(misalignmentDetected, "destruct")
-    << "misalignment not detected for " << Dune::className<T>();
-
-  misalignmentDetected = false;
-
   ptr = new(misalignedAddr) T(T(0));
   test.check(misalignmentDetected, "move construct")
     << "misalignment not detected for " << Dune::className<T>();
-  ptr->~T(); // ignore any misalignment here
+  ptr->~T();
 
   misalignmentDetected = false;
 
@@ -79,7 +73,7 @@ void checkAlignmentViolation(Dune::TestSuite &test)
   ptr = new(misalignedAddr) T(t);
   test.check(misalignmentDetected, "copy construct")
     << "misalignment not detected for " << Dune::className<T>();
-  ptr->~T(); // ignore any misalignment here
+  ptr->~T();
 }
 
 int main(int argc, char **argv)
@@ -102,8 +96,8 @@ int main(int argc, char **argv)
       using T = decltype(val);
       using Aligned = Dune::AlignedNumber<T>;
       test.checkArithmetic<Aligned, T>();
-
-      checkAlignmentViolation<Aligned>(test);
+      if (alignof(T) > 1)
+        checkAlignmentViolation<Aligned>(test);
     });
 
   return test.exit();

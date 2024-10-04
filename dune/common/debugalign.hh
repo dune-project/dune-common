@@ -55,29 +55,42 @@ namespace Dune {
   //! check whether an address conforms to the given alignment
   inline bool isAligned(const void *p, std::size_t align)
   {
-    // a more portable way to do this would be to abuse std::align(), but that
-    // isn't supported by g++-4.9 yet
-    return std::uintptr_t(p) % align == 0;
+    void* aligned_p = (void*)p;
+    std::size_t space = align*2;
+    return p == std::align(align, align, aligned_p, space);
   }
 
   //! CRTP base mixin class to check alignment
   template<std::size_t align, class Impl>
-  class alignas(align) AlignedBase
+  struct alignas(align) AlignedBase
   {
-    void checkAlignment() const
-    {
-      auto pimpl = static_cast<const Impl*>(this);
-      if(!isAligned(pimpl, align))
-        violatedAlignment(className<Impl>().c_str(), align, pimpl);
+    /**
+     * @brief Overload of placement new
+     * @details Checks if address is misaligned and forwards to global new
+     *
+     * @param count number of elements to allocate
+     * @param ptr address of the placement new
+     * @return void* the address where the object is placed
+     */
+    static void* operator new(std::size_t count, void* ptr) {
+      if(!isAligned(ptr, align))
+        violatedAlignment(className<Impl>().c_str(), align, ptr);
+      return ::operator new(count*sizeof(Impl), ptr);
     }
-  public:
-    AlignedBase()                    { checkAlignment(); }
-    AlignedBase(const AlignedBase &) { checkAlignment(); }
-    AlignedBase(AlignedBase &&)      { checkAlignment(); }
-    ~AlignedBase()                   { checkAlignment(); }
 
-    AlignedBase& operator=(const AlignedBase &) = default;
-    AlignedBase& operator=(AlignedBase &&)      = default;
+    /**
+     * @brief Overload of placement new[]
+     * @details Checks if address is misaligned and forwards to global new
+     *
+     * @param count number of elements to allocate
+     * @param ptr address of the placement new
+     * @return void* the address where the object is placed
+     */
+    static void* operator new[](std::size_t count, void* ptr) {
+      if(!isAligned(ptr, align))
+        violatedAlignment(className<Impl>().c_str(), align, ptr);
+      return ::operator new[](count*sizeof(Impl), ptr);
+    }
   };
 
   //! an alignment large enough to trigger alignment errors
