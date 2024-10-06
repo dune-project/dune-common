@@ -77,7 +77,6 @@ requires(T a, const T ca)
  *
  * \par Refinement of:
  * - \ref Container<T>
- * - \ref std::ranges::random_access_range<T>
  *
  * \par Notation:
  * - `c`: a container of type `T`
