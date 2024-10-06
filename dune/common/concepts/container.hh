@@ -20,10 +20,6 @@
 #include <concepts>
 #include <iterator>
 
-#if __has_include(<ranges>)
-#include <ranges>
-#endif
-
 namespace Dune::Concept {
 
 /**
@@ -58,9 +54,6 @@ template<class T>
 concept Container =
   std::regular<T> &&
   std::swappable<T> &&
-#if __has_include(<ranges>)
-  std::ranges::range<T> &&
-#endif
 requires(T a, const T ca)
 {
   typename T::value_type;
@@ -84,7 +77,6 @@ requires(T a, const T ca)
  *
  * \par Refinement of:
  * - \ref Container<T>
- * - \ref std::ranges::random_access_range<T>
  *
  * \par Notation:
  * - `c`: a container of type `T`
@@ -103,9 +95,6 @@ requires(T a, const T ca)
 template<class T>
 concept RandomAccessContainer =
   Container<T> &&
-#if __has_include(<ranges>)
-  std::ranges::random_access_range<T> &&
-#endif
 requires(T a, const T ca, typename T::size_type i)
 {
   requires std::same_as<typename T::reference, typename T::value_type&>;
