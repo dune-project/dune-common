@@ -12,12 +12,6 @@
     #ifndef DUNE_ENABLE_CONCEPTS
     #define DUNE_ENABLE_CONCEPTS 1
     #endif
-
-    #if __cpp_lib_ranges >= 201911L
-    #ifndef DUNE_ENABLE_RANGES
-    #define DUNE_ENABLE_RANGES
-    #endif
-    #endif
   #endif
 #endif
 
@@ -25,10 +19,6 @@
 
 #include <concepts>
 #include <iterator>
-
-#if __has_include(<ranges>)
-#include <ranges>
-#endif
 
 namespace Dune::Concept {
 
@@ -64,9 +54,6 @@ template<class T>
 concept Container =
   std::regular<T> &&
   std::swappable<T> &&
-#if DUNE_ENABLE_RANGES
-  std::ranges::range<T> &&
-#endif
 requires(T a, const T ca)
 {
   typename T::value_type;
@@ -109,9 +96,6 @@ requires(T a, const T ca)
 template<class T>
 concept RandomAccessContainer =
   Container<T> &&
-#if DUNE_ENABLE_RANGES
-  std::ranges::random_access_range<T> &&
-#endif
 requires(T a, const T ca, typename T::size_type i)
 {
   requires std::same_as<typename T::reference, typename T::value_type&>;
