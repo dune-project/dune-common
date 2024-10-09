@@ -319,7 +319,7 @@ set(HAVE_${_upcase_module} TRUE)
 # Lines that are set by the CMake build system via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
 ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
 
-# If this file is found in a super build that includes ${ProjectName}, the 
+# If this file is found in a super build that includes ${ProjectName}, the
 # `${ProjectName}-targets.cmake`-file has not yet been generated. This variable
 # determines whether the configuration of ${ProjectName} has been completed.
 get_property(${ProjectName}_IN_CONFIG_MODE GLOBAL PROPERTY ${ProjectName}_LIBRARIES DEFINED)

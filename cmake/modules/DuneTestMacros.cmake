@@ -371,6 +371,7 @@ function(dune_add_test)
   endif()
 
   # make sure each label exists and its name is acceptable
+  list(APPEND ADDTEST_LABELS ${PROJECT_NAME})
   dune_declare_test_label(LABELS ${ADDTEST_LABELS})
 
   # Have build_tests and build_${label}_tests depend on the given target in
