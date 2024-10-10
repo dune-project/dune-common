@@ -5,6 +5,10 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 # Master (will become release 2.11)
 
+## Build system: Changelog
+
+- The CMake function `dune_target_enable_all_packages` can now handle Interface libraries too.
+
 ## C++: Changelog
 
 - Add deduction guides to `TupleVector` analogous to `std::tuple`.
