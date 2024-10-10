@@ -86,8 +86,7 @@
 #       A list of targets to add all flags etc. too.
 #
 #    Adds all currently registered package flags (see :ref:`dune_register_package_flags`) to the given targets.
-#    This function is mainly intended to help write DUNE modules that want to use :ref:`dune_enable_all_packages` and
-#    define their own libraries, but need to be compatible with CMake < 3.1
+#    The scope of the added flags is PUBLIC if its a compiled library, or INTERFACE otherwise.
 #
 # .. cmake_function:: dune_register_package_flags
 #
@@ -296,18 +295,24 @@ endfunction(dune_enable_all_packages)
 
 function(dune_target_enable_all_packages)
   foreach(_target ${ARGN})
+    get_target_property(_target_type ${_target} TYPE)
+    if (${_target_type} STREQUAL "INTERFACE_LIBRARY")
+      set(scope INTERFACE)
+    else()
+      set(scope PUBLIC)
+    endif()
 
     get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
-    target_include_directories(${_target} PUBLIC ${all_incs})
+    target_include_directories(${_target} ${scope} ${all_incs})
 
     get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
-    target_compile_definitions(${_target} PUBLIC ${all_defs})
+    target_compile_definitions(${_target} ${scope} ${all_defs})
 
     get_property(all_opts GLOBAL PROPERTY ALL_PKG_OPTS)
-    target_compile_options(${_target} PUBLIC ${all_opts})
+    target_compile_options(${_target} ${scope} ${all_opts})
 
     get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
-    target_link_libraries(${_target} PUBLIC ${DUNE_LIBS} ${all_libs})
+    target_link_libraries(${_target} ${scope} ${DUNE_LIBS} ${all_libs})
 
   endforeach()
 endfunction(dune_target_enable_all_packages)
