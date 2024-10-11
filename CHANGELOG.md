@@ -13,6 +13,13 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 - Add deduction guides to `TupleVector` analogous to `std::tuple`.
 
+## Build system: Changelog
+
+- Add a module-specific CMake target `build_<module>_tests` to compile only tests
+  associated to a specific `<module>`. Additionally, add the `<module>`-name as
+  `LABEL` property to all tests created with `dune_add_tests` in that module. This
+  allows to run these tests with `ctest -L <module>`.
+
 # Release 2.10
 
 ## Dependencies
