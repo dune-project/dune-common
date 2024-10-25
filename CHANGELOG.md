@@ -34,6 +34,10 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
   also supports the syntax `DUNE_THROW(ExceptionType, a << b) << c << d` and
   `DUNE_THROW(ExceptionType) << a << b`.
 
+- Add `constexpr` qualifiers to many member functions of `DenseMatrix`, `FieldMatrix`, `DenseVector`,
+  `FieldVector`, `ForwardIteratorFacade`, `BidirectionalIteratorFacade`, `RandomAccessIteratorFacade`,
+  `TupleVector` and to the function `range`.
+
 - Add concepts `Std::three_way_comparable` and `Std::three_way_comparable_with` as well as an
   algorithm `Std::lexicographical_compare_three_way` to provide library utilities for the `<=>`
   comparison operator.

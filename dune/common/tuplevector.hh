@@ -67,7 +67,7 @@ public:
    */
   template<std::size_t i,
     std::enable_if_t<(i < sizeof...(T)), int> = 0>
-  decltype(auto) operator[](const Dune::index_constant<i>&)
+  constexpr decltype(auto) operator[](const Dune::index_constant<i>&)
   {
     return std::get<i>(*this);
   }

@@ -73,7 +73,7 @@ namespace Dune
     class DenseMatrixAssigner<DenseMatrix, RHS>
     {
     public:
-      static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
+      constexpr static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
       {
         typedef typename DenseMatrix::field_type field_type;
         std::fill( denseMatrix.begin(), denseMatrix.end(), static_cast< field_type >( rhs ) );
@@ -87,7 +87,7 @@ namespace Dune
     class DenseMatrixAssigner<DenseMatrix, RHS>
     {
     public:
-      static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
+      constexpr static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
       {
         DUNE_ASSERT_BOUNDS(rhs.N() == denseMatrix.N());
         DUNE_ASSERT_BOUNDS(rhs.M() == denseMatrix.M());
@@ -191,18 +191,18 @@ namespace Dune
     //===== access to components
 
     //! random access
-    row_reference operator[] ( size_type i )
+    constexpr row_reference operator[] ( size_type i )
     {
       return asImp().mat_access(i);
     }
 
-    const_row_reference operator[] ( size_type i ) const
+    constexpr const_row_reference operator[] ( size_type i ) const
     {
       return asImp().mat_access(i);
     }
 
     //! size method (number of rows)
-    size_type size() const
+    constexpr size_type size() const
     {
       return rows();
     }
@@ -218,27 +218,27 @@ namespace Dune
     typedef typename std::remove_reference<row_reference>::type::Iterator ColIterator;
 
     //! begin iterator
-    Iterator begin ()
+    constexpr Iterator begin ()
     {
       return Iterator(*this,0);
     }
 
     //! end iterator
-    Iterator end ()
+    constexpr Iterator end ()
     {
       return Iterator(*this,rows());
     }
 
     //! @returns an iterator that is positioned before
     //! the end iterator of the vector, i.e. at the last entry.
-    Iterator beforeEnd ()
+    constexpr Iterator beforeEnd ()
     {
       return Iterator(*this,rows()-1);
     }
 
     //! @returns an iterator that is positioned before
     //! the first entry of the vector.
-    Iterator beforeBegin ()
+    constexpr Iterator beforeBegin ()
     {
       return Iterator(*this,-1);
     }
@@ -253,27 +253,27 @@ namespace Dune
     typedef typename std::remove_reference<const_row_reference>::type::ConstIterator ConstColIterator;
 
     //! begin iterator
-    ConstIterator begin () const
+    constexpr ConstIterator begin () const
     {
       return ConstIterator(*this,0);
     }
 
     //! end iterator
-    ConstIterator end () const
+    constexpr ConstIterator end () const
     {
       return ConstIterator(*this,rows());
     }
 
     //! @returns an iterator that is positioned before
     //! the end iterator of the vector. i.e. at the last element
-    ConstIterator beforeEnd () const
+    constexpr ConstIterator beforeEnd () const
     {
       return ConstIterator(*this,rows()-1);
     }
 
     //! @returns an iterator that is positioned before
     //! the first entry of the vector.
-    ConstIterator beforeBegin () const
+    constexpr ConstIterator beforeBegin () const
     {
       return ConstIterator(*this,-1);
     }
@@ -281,7 +281,7 @@ namespace Dune
     //===== assignment
 
     template< class RHS, class = std::enable_if_t< HasDenseMatrixAssigner< MAT, RHS >::value > >
-    derived_type &operator= ( const RHS &rhs )
+    constexpr derived_type &operator= ( const RHS &rhs )
     {
       DenseMatrixAssigner< MAT, RHS >::apply( asImp(), rhs );
       return asImp();
@@ -291,7 +291,7 @@ namespace Dune
 
     //! vector space addition
     template <class Other>
-    derived_type &operator+= (const DenseMatrix<Other>& x)
+    constexpr derived_type &operator+= (const DenseMatrix<Other>& x)
     {
       DUNE_ASSERT_BOUNDS(rows() == x.rows());
       for (size_type i=0; i<rows(); i++)
@@ -300,7 +300,7 @@ namespace Dune
     }
 
     //! Matrix negation
-    derived_type operator- () const
+    constexpr derived_type operator- () const
     {
       MAT result;
       using idx_type = typename decltype(result)::size_type;
@@ -314,7 +314,7 @@ namespace Dune
 
     //! vector space subtraction
     template <class Other>
-    derived_type &operator-= (const DenseMatrix<Other>& x)
+    constexpr derived_type &operator-= (const DenseMatrix<Other>& x)
     {
       DUNE_ASSERT_BOUNDS(rows() == x.rows());
       for (size_type i=0; i<rows(); i++)
@@ -323,7 +323,7 @@ namespace Dune
     }
 
     //! vector space multiplication with scalar
-    derived_type &operator*= (const field_type& k)
+    constexpr derived_type &operator*= (const field_type& k)
     {
       for (size_type i=0; i<rows(); i++)
         (*this)[i] *= k;
@@ -331,7 +331,7 @@ namespace Dune
     }
 
     //! vector space division by scalar
-    derived_type &operator/= (const field_type& k)
+    constexpr derived_type &operator/= (const field_type& k)
     {
       for (size_type i=0; i<rows(); i++)
         (*this)[i] /= k;
@@ -340,7 +340,7 @@ namespace Dune
 
     //! vector space axpy operation (*this += a x)
     template <class Other>
-    derived_type &axpy (const field_type &a, const DenseMatrix<Other> &x )
+    constexpr derived_type &axpy (const field_type &a, const DenseMatrix<Other> &x )
     {
       DUNE_ASSERT_BOUNDS(rows() == x.rows());
       for( size_type i = 0; i < rows(); ++i )
@@ -350,7 +350,7 @@ namespace Dune
 
     //! Binary matrix comparison
     template <class Other>
-    bool operator== (const DenseMatrix<Other>& x) const
+    constexpr bool operator== (const DenseMatrix<Other>& x) const
     {
       DUNE_ASSERT_BOUNDS(rows() == x.rows());
       for (size_type i=0; i<rows(); i++)
@@ -360,7 +360,7 @@ namespace Dune
     }
     //! Binary matrix incomparison
     template <class Other>
-    bool operator!= (const DenseMatrix<Other>& x) const
+    constexpr bool operator!= (const DenseMatrix<Other>& x) const
     {
       return !operator==(x);
     }
@@ -370,7 +370,7 @@ namespace Dune
 
     //! y = A x
     template<class X, class Y>
-    void mv (const X& x, Y& y) const
+    constexpr void mv (const X& x, Y& y) const
     {
       auto&& xx = Impl::asVector(x);
       auto&& yy = Impl::asVector(y);
@@ -389,7 +389,7 @@ namespace Dune
 
     //! y = A^T x
     template< class X, class Y >
-    void mtv ( const X &x, Y &y ) const
+    constexpr void mtv ( const X &x, Y &y ) const
     {
       auto&& xx = Impl::asVector(x);
       auto&& yy = Impl::asVector(y);
@@ -408,7 +408,7 @@ namespace Dune
 
     //! y += A x
     template<class X, class Y>
-    void umv (const X& x, Y& y) const
+    constexpr void umv (const X& x, Y& y) const
     {
       auto&& xx = Impl::asVector(x);
       auto&& yy = Impl::asVector(y);
@@ -421,7 +421,7 @@ namespace Dune
 
     //! y += A^T x
     template<class X, class Y>
-    void umtv (const X& x, Y& y) const
+    constexpr void umtv (const X& x, Y& y) const
     {
       auto&& xx = Impl::asVector(x);
       auto&& yy = Impl::asVector(y);
@@ -434,7 +434,7 @@ namespace Dune
 
     //! y += A^H x
     template<class X, class Y>
-    void umhv (const X& x, Y& y) const
+    constexpr void umhv (const X& x, Y& y) const
     {
       auto&& xx = Impl::asVector(x);
       auto&& yy = Impl::asVector(y);
@@ -447,7 +447,7 @@ namespace Dune
 
     //! y -= A x
     template<class X, class Y>
-    void mmv (const X& x, Y& y) const
+    constexpr void mmv (const X& x, Y& y) const
     {
       auto&& xx = Impl::asVector(x);
       auto&& yy = Impl::asVector(y);
@@ -460,7 +460,7 @@ namespace Dune
 
     //! y -= A^T x
     template<class X, class Y>
-    void mmtv (const X& x, Y& y) const
+    constexpr void mmtv (const X& x, Y& y) const
     {
       auto&& xx = Impl::asVector(x);
       auto&& yy = Impl::asVector(y);
@@ -473,7 +473,7 @@ namespace Dune
 
     //! y -= A^H x
     template<class X, class Y>
-    void mmhv (const X& x, Y& y) const
+    constexpr void mmhv (const X& x, Y& y) const
     {
       auto&& xx = Impl::asVector(x);
       auto&& yy = Impl::asVector(y);
@@ -486,7 +486,7 @@ namespace Dune
 
     //! y += alpha A x
     template<class X, class Y>
-    void usmv (const typename FieldTraits<Y>::field_type & alpha,
+    constexpr void usmv (const typename FieldTraits<Y>::field_type & alpha,
       const X& x, Y& y) const
     {
       auto&& xx = Impl::asVector(x);
@@ -500,7 +500,7 @@ namespace Dune
 
     //! y += alpha A^T x
     template<class X, class Y>
-    void usmtv (const typename FieldTraits<Y>::field_type & alpha,
+    constexpr void usmtv (const typename FieldTraits<Y>::field_type & alpha,
       const X& x, Y& y) const
     {
       auto&& xx = Impl::asVector(x);
@@ -514,7 +514,7 @@ namespace Dune
 
     //! y += alpha A^H x
     template<class X, class Y>
-    void usmhv (const typename FieldTraits<Y>::field_type & alpha,
+    constexpr void usmhv (const typename FieldTraits<Y>::field_type & alpha,
       const X& x, Y& y) const
     {
       auto&& xx = Impl::asVector(x);
@@ -530,7 +530,7 @@ namespace Dune
     //===== norms
 
     //! frobenius norm: sqrt(sum over squared values of entries)
-    typename FieldTraits<value_type>::real_type frobenius_norm () const
+    constexpr typename FieldTraits<value_type>::real_type frobenius_norm () const
     {
       typename FieldTraits<value_type>::real_type sum=(0.0);
       for (size_type i=0; i<rows(); ++i) sum += (*this)[i].two_norm2();
@@ -538,7 +538,7 @@ namespace Dune
     }
 
     //! square of frobenius norm, need for block recursion
-    typename FieldTraits<value_type>::real_type frobenius_norm2 () const
+    constexpr typename FieldTraits<value_type>::real_type frobenius_norm2 () const
     {
       typename FieldTraits<value_type>::real_type sum=(0.0);
       for (size_type i=0; i<rows(); ++i) sum += (*this)[i].two_norm2();
@@ -548,7 +548,7 @@ namespace Dune
     //! infinity norm (row sum norm, how to generalize for blocks?)
     template <typename vt = value_type,
               typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
-    typename FieldTraits<vt>::real_type infinity_norm() const {
+    constexpr typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
 
@@ -563,7 +563,7 @@ namespace Dune
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
               typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
-    typename FieldTraits<vt>::real_type infinity_norm_real() const {
+    constexpr typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
 
@@ -578,7 +578,7 @@ namespace Dune
     //! infinity norm (row sum norm, how to generalize for blocks?)
     template <typename vt = value_type,
               typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
-    typename FieldTraits<vt>::real_type infinity_norm() const {
+    constexpr typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
 
@@ -595,7 +595,7 @@ namespace Dune
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
               typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
-    typename FieldTraits<vt>::real_type infinity_norm_real() const {
+    constexpr typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
 
@@ -725,7 +725,7 @@ namespace Dune
     //===== query
 
     //! return true when (i,j) is in pattern
-    bool exists ([[maybe_unused]] size_type i, [[maybe_unused]] size_type j) const
+    constexpr bool exists ([[maybe_unused]] size_type i, [[maybe_unused]] size_type j) const
     {
       DUNE_ASSERT_BOUNDS(i >= 0 && i < rows());
       DUNE_ASSERT_BOUNDS(j >= 0 && j < cols());

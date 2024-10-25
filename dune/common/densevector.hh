@@ -9,6 +9,7 @@
 #include <limits>
 #include <type_traits>
 
+#include "std/cmath.hh"
 #include "genericiterator.hh"
 #include "ftraits.hh"
 #include "matvectraits.hh"
@@ -44,9 +45,9 @@ namespace Dune {
        \memberof Dune::DenseVector
      */
     template<class K>
-    inline typename FieldTraits<K>::real_type absreal (const K& k)
+    constexpr typename FieldTraits<K>::real_type absreal (const K& k)
     {
-      using std::abs;
+      using Std::abs;
       return abs(k);
     }
 
@@ -55,9 +56,9 @@ namespace Dune {
        \memberof Dune::DenseVector
      */
     template<class K>
-    inline typename FieldTraits<K>::real_type absreal (const std::complex<K>& c)
+    constexpr typename FieldTraits<K>::real_type absreal (const std::complex<K>& c)
     {
-      using std::abs;
+      using Std::abs;
       return abs(c.real()) + abs(c.imag());
     }
 
@@ -66,7 +67,7 @@ namespace Dune {
        \memberof Dune::DenseVector
      */
     template<class K>
-    inline typename FieldTraits<K>::real_type abs2 (const K& k)
+    constexpr typename FieldTraits<K>::real_type abs2 (const K& k)
     {
       return k*k;
     }
@@ -76,7 +77,7 @@ namespace Dune {
        \memberof Dune::DenseVector
      */
     template<class K>
-    inline typename FieldTraits<K>::real_type abs2 (const std::complex<K>& c)
+    constexpr typename FieldTraits<K>::real_type abs2 (const std::complex<K>& c)
     {
       return c.real()*c.real() + c.imag()*c.imag();
     }
@@ -88,9 +89,9 @@ namespace Dune {
     template<class K, bool isInteger = std::numeric_limits<K>::is_integer>
     struct Sqrt
     {
-      static inline typename FieldTraits<K>::real_type sqrt (const K& k)
+      static constexpr typename FieldTraits<K>::real_type sqrt (const K& k)
       {
-        using std::sqrt;
+        using Std::sqrt;
         return sqrt(k);
       }
     };
@@ -102,9 +103,9 @@ namespace Dune {
     template<class K>
     struct Sqrt<K, true>
     {
-      static inline typename FieldTraits<K>::real_type sqrt (const K& k)
+      static constexpr typename FieldTraits<K>::real_type sqrt (const K& k)
       {
-        using std::sqrt;
+        using Std::sqrt;
         return typename FieldTraits<K>::real_type(sqrt(double(k)));
       }
     };
@@ -114,7 +115,7 @@ namespace Dune {
        \memberof Dune::DenseVector
      */
     template<class K>
-    inline typename FieldTraits<K>::real_type sqrt (const K& k)
+    static constexpr typename FieldTraits<K>::real_type sqrt (const K& k)
     {
       return Sqrt<K>::sqrt(k);
     }
@@ -147,70 +148,70 @@ namespace Dune {
     typedef typename C::size_type SizeType;
 
     // Constructors needed by the base iterators.
-    DenseIterator()
+    constexpr DenseIterator()
       : container_(0), position_()
     {}
 
-    DenseIterator(C& cont, SizeType pos)
+    constexpr DenseIterator(C& cont, SizeType pos)
       : container_(&cont), position_(pos)
     {}
 
-    DenseIterator(const MutableIterator & other)
+    constexpr DenseIterator(const MutableIterator & other)
       : container_(other.container_), position_(other.position_)
     {}
 
-    DenseIterator(const ConstIterator & other)
+    constexpr DenseIterator(const ConstIterator & other)
       : container_(other.container_), position_(other.position_)
     {}
 
     // Methods needed by the forward iterator
-    bool equals(const MutableIterator &other) const
+    constexpr bool equals(const MutableIterator &other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
 
 
-    bool equals(const ConstIterator & other) const
+    constexpr bool equals(const ConstIterator & other) const
     {
       return position_ == other.position_ && container_ == other.container_;
     }
 
-    R dereference() const {
+    constexpr R dereference() const {
       return container_->operator[](position_);
     }
 
-    void increment(){
+    constexpr void increment(){
       ++position_;
     }
 
     // Additional function needed by BidirectionalIterator
-    void decrement(){
+    constexpr void decrement(){
       --position_;
     }
 
     // Additional function needed by RandomAccessIterator
-    R elementAt(DifferenceType i) const {
+    constexpr R elementAt(DifferenceType i) const {
       return container_->operator[](position_+i);
     }
 
-    void advance(DifferenceType n){
+    constexpr void advance(DifferenceType n){
       position_=position_+n;
     }
 
-    DifferenceType distanceTo(DenseIterator<const typename std::remove_const<C>::type,const typename std::remove_const<T>::type> other) const
+    constexpr DifferenceType distanceTo(DenseIterator<const typename std::remove_const<C>::type,const typename std::remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
       return static_cast< DifferenceType >( other.position_ ) - static_cast< DifferenceType >( position_ );
     }
 
-    DifferenceType distanceTo(DenseIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type> other) const
+    constexpr DifferenceType distanceTo(DenseIterator<typename std::remove_const<C>::type, typename std::remove_const<T>::type> other) const
     {
       assert(other.container_==container_);
       return static_cast< DifferenceType >( other.position_ ) - static_cast< DifferenceType >( position_ );
     }
 
     //! return index
-    SizeType index () const
+    constexpr SizeType index () const
     {
       return this->position_;
     }
@@ -231,14 +232,14 @@ namespace Dune {
     // typedef typename Traits::value_type K;
 
     // Curiously recurring template pattern
-    V & asImp() { return static_cast<V&>(*this); }
-    const V & asImp() const { return static_cast<const V&>(*this); }
+    constexpr V & asImp() { return static_cast<V&>(*this); }
+    constexpr const V & asImp() const { return static_cast<const V&>(*this); }
 
   protected:
     // construction allowed to derived classes only
     constexpr DenseVector() = default;
     // copying only allowed by derived classes
-    DenseVector(const DenseVector&) = default;
+    constexpr DenseVector(const DenseVector&) = default;
 
   public:
     //===== type definitions and constants
@@ -263,7 +264,7 @@ namespace Dune {
 
     //===== assignment from scalar
     //! Assignment operator for scalar
-    inline derived_type& operator= (const value_type& k)
+    constexpr inline derived_type& operator= (const value_type& k)
     {
       for (size_type i=0; i<size(); i++)
         asImp()[i] = k;
@@ -273,7 +274,7 @@ namespace Dune {
      //===== assignment from other DenseVectors
   protected:
     //! Assignment operator for other DenseVector of same type
-    DenseVector& operator=(const DenseVector&) = default;
+    constexpr DenseVector& operator=(const DenseVector&) = default;
 
   public:
 
@@ -281,7 +282,7 @@ namespace Dune {
     template <typename W,
               std::enable_if_t<
                 std::is_assignable<value_type&, typename DenseVector<W>::value_type>::value, int> = 0>
-    derived_type& operator= (const DenseVector<W>& other)
+    constexpr derived_type& operator= (const DenseVector<W>& other)
     {
       assert(other.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -292,48 +293,48 @@ namespace Dune {
     //===== access to components
 
     //! random access
-    value_type & operator[] (size_type i)
+    constexpr value_type & operator[] (size_type i)
     {
       return asImp()[i];
     }
 
-    const value_type & operator[] (size_type i) const
+    constexpr const value_type & operator[] (size_type i) const
     {
       return asImp()[i];
     }
 
     //! return reference to first element
-    value_type& front()
+    constexpr value_type& front()
     {
       return asImp()[0];
     }
 
     //! return reference to first element
-    const value_type& front() const
+    constexpr const value_type& front() const
     {
       return asImp()[0];
     }
 
     //! return reference to last element
-    value_type& back()
+    constexpr value_type& back()
     {
       return asImp()[size()-1];
     }
 
     //! return reference to last element
-    const value_type& back() const
+    constexpr const value_type& back() const
     {
       return asImp()[size()-1];
     }
 
     //! checks whether the container is empty
-    bool empty() const
+    constexpr bool empty() const
     {
       return size() == 0;
     }
 
     //! size method
-    size_type size() const
+    constexpr size_type size() const
     {
       return asImp().size();
     }
@@ -344,33 +345,33 @@ namespace Dune {
     typedef Iterator iterator;
 
     //! begin iterator
-    Iterator begin ()
+    constexpr Iterator begin ()
     {
       return Iterator(*this,0);
     }
 
     //! end iterator
-    Iterator end ()
+    constexpr Iterator end ()
     {
       return Iterator(*this,size());
     }
 
     //! @returns an iterator that is positioned before
     //! the end iterator of the vector, i.e. at the last entry.
-    Iterator beforeEnd ()
+    constexpr Iterator beforeEnd ()
     {
       return Iterator(*this,size()-1);
     }
 
     //! @returns an iterator that is positioned before
     //! the first entry of the vector.
-    Iterator beforeBegin ()
+    constexpr Iterator beforeBegin ()
     {
       return Iterator(*this,-1);
     }
 
     //! return iterator to given element or end()
-    Iterator find (size_type i)
+    constexpr Iterator find (size_type i)
     {
       return Iterator(*this,std::min(i,size()));
     }
@@ -381,33 +382,33 @@ namespace Dune {
     typedef ConstIterator const_iterator;
 
     //! begin ConstIterator
-    ConstIterator begin () const
+    constexpr ConstIterator begin () const
     {
       return ConstIterator(*this,0);
     }
 
     //! end ConstIterator
-    ConstIterator end () const
+    constexpr ConstIterator end () const
     {
       return ConstIterator(*this,size());
     }
 
     //! @returns an iterator that is positioned before
     //! the end iterator of the vector. i.e. at the last element
-    ConstIterator beforeEnd () const
+    constexpr ConstIterator beforeEnd () const
     {
       return ConstIterator(*this,size()-1);
     }
 
     //! @returns an iterator that is positioned before
     //! the first entry of the vector.
-    ConstIterator beforeBegin () const
+    constexpr ConstIterator beforeBegin () const
     {
       return ConstIterator(*this,-1);
     }
 
     //! return iterator to given element or end()
-    ConstIterator find (size_type i) const
+    constexpr ConstIterator find (size_type i) const
     {
       return ConstIterator(*this,std::min(i,size()));
     }
@@ -416,7 +417,7 @@ namespace Dune {
 
     //! vector space addition
     template <class Other>
-    derived_type& operator+= (const DenseVector<Other>& x)
+    constexpr derived_type& operator+= (const DenseVector<Other>& x)
     {
       DUNE_ASSERT_BOUNDS(x.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -426,7 +427,7 @@ namespace Dune {
 
     //! vector space subtraction
     template <class Other>
-    derived_type& operator-= (const DenseVector<Other>& x)
+    constexpr derived_type& operator-= (const DenseVector<Other>& x)
     {
       DUNE_ASSERT_BOUNDS(x.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -436,7 +437,7 @@ namespace Dune {
 
     //! Binary vector addition
     template <class Other>
-    derived_type operator+ (const DenseVector<Other>& b) const
+    constexpr derived_type operator+ (const DenseVector<Other>& b) const
     {
       derived_type z = asImp();
       return (z+=b);
@@ -444,14 +445,14 @@ namespace Dune {
 
     //! Binary vector subtraction
     template <class Other>
-    derived_type operator- (const DenseVector<Other>& b) const
+    constexpr derived_type operator- (const DenseVector<Other>& b) const
     {
       derived_type z = asImp();
       return (z-=b);
     }
 
     //! Vector negation
-    derived_type operator- () const
+    constexpr derived_type operator- () const
     {
       V result;
       using idx_type = typename decltype(result)::size_type;
@@ -472,7 +473,7 @@ namespace Dune {
        convertible to value_type.
      */
     template <typename ValueType>
-    typename std::enable_if<
+    constexpr typename std::enable_if<
       std::is_convertible<ValueType, value_type>::value,
       derived_type
     >::type&
@@ -494,7 +495,7 @@ namespace Dune {
        convertible to value_type.
      */
     template <typename ValueType>
-    typename std::enable_if<
+    constexpr typename std::enable_if<
       std::is_convertible<ValueType, value_type>::value,
       derived_type
     >::type&
@@ -516,7 +517,7 @@ namespace Dune {
        convertible to field_type.
      */
     template <typename FieldType>
-    typename std::enable_if<
+    constexpr typename std::enable_if<
       std::is_convertible<FieldType, field_type>::value,
       derived_type
     >::type&
@@ -538,7 +539,7 @@ namespace Dune {
        convertible to field_type.
      */
     template <typename FieldType>
-    typename std::enable_if<
+    constexpr typename std::enable_if<
       std::is_convertible<FieldType, field_type>::value,
       derived_type
     >::type&
@@ -552,7 +553,7 @@ namespace Dune {
 
     //! Binary vector comparison
     template <class Other>
-    bool operator== (const DenseVector<Other>& x) const
+    constexpr bool operator== (const DenseVector<Other>& x) const
     {
       DUNE_ASSERT_BOUNDS(x.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -564,7 +565,7 @@ namespace Dune {
 
     //! Binary vector incomparison
     template <class Other>
-    bool operator!= (const DenseVector<Other>& x) const
+    constexpr bool operator!= (const DenseVector<Other>& x) const
     {
       return !operator==(x);
     }
@@ -572,7 +573,7 @@ namespace Dune {
 
     //! vector space axpy operation ( *this += a x )
     template <class Other>
-    derived_type& axpy (const field_type& a, const DenseVector<Other>& x)
+    constexpr derived_type& axpy (const field_type& a, const DenseVector<Other>& x)
     {
       DUNE_ASSERT_BOUNDS(x.size() == size());
       for (size_type i=0; i<size(); i++)
@@ -588,7 +589,7 @@ namespace Dune {
      * @return
      */
     template<class Other>
-    typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType operator* (const DenseVector<Other>& x) const {
+    constexpr typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType operator* (const DenseVector<Other>& x) const {
       typedef typename PromotionTraits<field_type, typename DenseVector<Other>::field_type>::PromotedType PromotedType;
       PromotedType result(0);
       assert(x.size() == size());
@@ -606,7 +607,7 @@ namespace Dune {
      * @return
      */
     template<class Other>
-    typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType dot(const DenseVector<Other>& x) const {
+    constexpr typename PromotionTraits<field_type,typename DenseVector<Other>::field_type>::PromotedType dot(const DenseVector<Other>& x) const {
       typedef typename PromotionTraits<field_type, typename DenseVector<Other>::field_type>::PromotedType PromotedType;
       PromotedType result(0);
       assert(x.size() == size());
@@ -619,7 +620,7 @@ namespace Dune {
     //===== norms
 
     //! one norm (sum over absolute values of entries)
-    typename FieldTraits<value_type>::real_type one_norm() const {
+    constexpr typename FieldTraits<value_type>::real_type one_norm() const {
       using std::abs;
       typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
@@ -629,7 +630,7 @@ namespace Dune {
 
 
     //! simplified one norm (uses Manhattan norm for complex values)
-    typename FieldTraits<value_type>::real_type one_norm_real () const
+    constexpr typename FieldTraits<value_type>::real_type one_norm_real () const
     {
       typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
@@ -638,7 +639,7 @@ namespace Dune {
     }
 
     //! two norm sqrt(sum over squared values of entries)
-    typename FieldTraits<value_type>::real_type two_norm () const
+    constexpr typename FieldTraits<value_type>::real_type two_norm () const
     {
       typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
@@ -647,7 +648,7 @@ namespace Dune {
     }
 
     //! square of two norm (sum over squared values of entries), need for block recursion
-    typename FieldTraits<value_type>::real_type two_norm2 () const
+    constexpr typename FieldTraits<value_type>::real_type two_norm2 () const
     {
       typename FieldTraits<value_type>::real_type result( 0 );
       for (size_type i=0; i<size(); i++)
@@ -658,7 +659,7 @@ namespace Dune {
     //! infinity norm (maximum of absolute values of entries)
     template <typename vt = value_type,
               typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
-    typename FieldTraits<vt>::real_type infinity_norm() const {
+    constexpr typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::abs;
       using std::max;
@@ -674,7 +675,7 @@ namespace Dune {
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
               typename std::enable_if<!HasNaN<vt>::value, int>::type = 0>
-    typename FieldTraits<vt>::real_type infinity_norm_real() const {
+    constexpr typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
 
@@ -689,7 +690,7 @@ namespace Dune {
     //! infinity norm (maximum of absolute values of entries)
     template <typename vt = value_type,
               typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
-    typename FieldTraits<vt>::real_type infinity_norm() const {
+    constexpr typename FieldTraits<vt>::real_type infinity_norm() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::abs;
       using std::max;
@@ -707,7 +708,7 @@ namespace Dune {
     //! simplified infinity norm (uses Manhattan norm for complex values)
     template <typename vt = value_type,
               typename std::enable_if<HasNaN<vt>::value, int>::type = 0>
-    typename FieldTraits<vt>::real_type infinity_norm_real() const {
+    constexpr typename FieldTraits<vt>::real_type infinity_norm_real() const {
       using real_type = typename FieldTraits<vt>::real_type;
       using std::max;
 
@@ -724,13 +725,13 @@ namespace Dune {
     //===== sizes
 
     //! number of blocks in the vector (are of size 1 here)
-    size_type N () const
+    constexpr size_type N () const
     {
       return size();
     }
 
     //! dimension of the vector space
-    size_type dim () const
+    constexpr size_type dim () const
     {
       return size();
     }
