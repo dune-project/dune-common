@@ -58,7 +58,7 @@ include(Headercheck)
 include(OverloadCompilerFlags)
 
 include(DunePolicy)
-dune_define_policy(DP0001 dune-common 3.0
+dune_define_policy(DP0001 dune-common 2.12
   "OLD behavior: Use global include_directories. NEW behavior: Include directories must be set on a module library target and are not set globally anymore.")
 
 # Macro that should be called near the beginning of the top level CMakeLists.txt.
