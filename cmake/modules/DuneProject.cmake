@@ -172,7 +172,6 @@ macro(dune_project)
     include_directories("${PROJECT_BINARY_DIR}")
     include_directories("${PROJECT_BINARY_DIR}/include")
     include_directories("${PROJECT_BINARY_DIR}/include_private")
-    set(CONFIG_INCLUDE_DIRS "set_and_check(${ProjectName}_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")")
   endif()
   unset(_include_policy)
   add_definitions(-DHAVE_CONFIG_H)
@@ -294,7 +293,7 @@ set(${ProjectName}_INSTALLED @MODULE_INSTALLED@)
 
 #report other information
 set_and_check(${ProjectName}_PREFIX \"\${PACKAGE_PREFIX_DIR}\")
-${CONFIG_INCLUDE_DIRS}
+set_and_check(${ProjectName}_INCLUDE_DIRS \"@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@\")
 set(${ProjectName}_CMAKE_CONFIG_VERSION \"${DUNE_COMMON_VERSION}\")
 set(${ProjectName}_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")
 set(${ProjectName}_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG}\")
