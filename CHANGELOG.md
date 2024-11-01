@@ -9,7 +9,7 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 
 - Change the way include directories are set in dune projects. OLD behavior: use `include_directories`
-  in `dune_project` to globally set include dirs for all targets. NEW behavior: Provide a utility
+  in `dune_project` to set include dirs for the current project. NEW behavior: Provide a utility
   `dune_default_include_directories` to set include dirs on targets manually. Which behavior to
   activate can be decided in each module by using the new dune policy `DP_DEFAULT_INCLUDE_DIRS`, which can be set
   to `OLD` or `NEW` correspondingly.
