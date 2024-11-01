@@ -58,7 +58,7 @@ include(Headercheck)
 include(OverloadCompilerFlags)
 
 include(DunePolicy)
-dune_define_policy(DP0001 dune-common 2.12
+dune_define_policy(DP_DEFAULT_INCLUDE_DIRS dune-common 2.12
   "OLD behavior: Use global include_directories. NEW behavior: Include directories must be set on a module library target and are not set globally anymore.")
 
 # Macro that should be called near the beginning of the top level CMakeLists.txt.
@@ -166,7 +166,7 @@ macro(dune_project)
   include(CheckCXXFeatures)
 
   # set include path and link path for the current project.
-  dune_policy(GET DP0001 _include_policy)
+  dune_policy(GET DP_DEFAULT_INCLUDE_DIRS _include_policy)
   if(_include_policy STREQUAL "OLD")
     include_directories("${PROJECT_SOURCE_DIR}")
     include_directories("${PROJECT_BINARY_DIR}")
