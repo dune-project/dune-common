@@ -200,8 +200,6 @@ macro(dune_process_dependency_macros)
         message(AUTHOR_WARNING "This needs to be removed!")
       endif()
 
-      # register dune module
-      dune_register_package_flags(INCLUDE_DIRS "${${_mod}_INCLUDE_DIRS}")
     endif()
   endforeach()
 endmacro(dune_process_dependency_macros)
