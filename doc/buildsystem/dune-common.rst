@@ -208,7 +208,9 @@ not want to see any policy warnings and just stick with the defaults, the global
 Policies Introduced by Dune 2.10
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Here we will list and explain the introduced policies.
+``DP_DEFAULT_INCLUDE_DIRS`` (dune-common, set to NEW by default in version 2.12)
+    *OLD behavior:* Set global ``include_directories`` when creating a new ``dune_project``.
+    *NEW behavior:* Include directories must be set on a module library targets and are not set globally anymore.
 
 
 .. _faq:

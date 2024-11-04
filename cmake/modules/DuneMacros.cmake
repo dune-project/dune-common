@@ -35,6 +35,7 @@ enable_language(C) # Enable C to skip CXX bindings for some tests.
 set(THREADS_PREFER_PTHREAD_FLAG TRUE CACHE BOOL "Prefer -pthread compiler and linker flag")
 
 include(DuneAddLibrary)
+include(DuneDefaultIncludeDirectories)
 include(DuneEnableAllPackages)
 include(DuneExecuteProcess)
 include(DuneModuleDependencies)

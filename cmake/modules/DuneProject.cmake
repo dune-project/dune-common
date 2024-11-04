@@ -57,6 +57,9 @@ include(GNUInstallDirs)
 include(Headercheck)
 include(OverloadCompilerFlags)
 
+include(DunePolicy)
+dune_define_policy(DP_DEFAULT_INCLUDE_DIRS dune-common 2.12
+  "OLD behavior: Use global include_directories. NEW behavior: Include directories must be set on a module library target and are not set globally anymore.")
 
 # Macro that should be called near the beginning of the top level CMakeLists.txt.
 # Namely it sets up the module, defines basic variables and manages
@@ -163,12 +166,14 @@ macro(dune_project)
   include(CheckCXXFeatures)
 
   # set include path and link path for the current project.
-  include_directories("${PROJECT_BINARY_DIR}")
-  include_directories("${PROJECT_SOURCE_DIR}")
-  include_directories("${CMAKE_CURRENT_BINARY_DIR}")
-  include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-  include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
-  include_directories("${CMAKE_CURRENT_BINARY_DIR}/include_private")
+  dune_policy(GET DP_DEFAULT_INCLUDE_DIRS _include_policy)
+  if(_include_policy STREQUAL "OLD")
+    include_directories("${PROJECT_SOURCE_DIR}")
+    include_directories("${PROJECT_BINARY_DIR}")
+    include_directories("${PROJECT_BINARY_DIR}/include")
+    include_directories("${PROJECT_BINARY_DIR}/include_private")
+  endif()
+  unset(_include_policy)
   add_definitions(-DHAVE_CONFIG_H)
 
   # Create custom target for building the documentation

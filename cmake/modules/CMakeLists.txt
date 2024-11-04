@@ -21,6 +21,7 @@ install(FILES
   DuneAddLibrary.cmake
   DuneAddPybind11Module.cmake
   DuneCommonMacros.cmake
+  DuneDefaultIncludeDirectories.cmake
   DuneDoc.cmake
   DuneDoxygen.cmake
   DuneEnableAllPackages.cmake
