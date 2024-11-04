@@ -195,7 +195,7 @@ Set options for \fICOMMAND\fP, e.g. CMAKE_FLAGS, to specify parameters
 passed to the specific command. In case of cmake this might look as
 follows
 
-CMAKE_FLAGS="-DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_CXX_FLAGS='-fPIC -g -O3' -DFOO_PREFIX=/path/to/libfoo"
+CMAKE_FLAGS="-DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_CXX_FLAGS='-fPIC -g -O3' -DFOO_PREFIX=/path/to/libfoo"
 
 In case of make a common use case is to enable concurrency, e.g.
 
@@ -206,7 +206,7 @@ MAKE_FLAGS="-j4"
 .HP
 .B DUNE_CONTROL_PATH
 .IP
-Colon-separated list to specify where 
+Colon-separated list to specify where
 .B dunecontrol
 searches for Dune modules.
 Entries are either directories, which are then used recursively for
