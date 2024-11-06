@@ -250,10 +250,12 @@ macro(finalize_dune_project)
   get_property(${ProjectName}_INTERFACE_LIBRARIES GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES)
 
   if(${ProjectName} STREQUAL "dune-common")
-    set(DUNE_CUSTOM_PKG_CONFIG_SECTION
-"set_and_check(@DUNE_MOD_NAME@_SCRIPT_DIR \"@PACKAGE_SCRIPT_DIR@\")
-set_and_check(DOXYSTYLE_FILE \"@PACKAGE_DOXYSTYLE_DIR@/Doxystyle\")
-set_and_check(DOXYGENMACROS_FILE \"@PACKAGE_DOXYSTYLE_DIR@/doxygen-macros\")")
+  string(JOIN "\n" DUNE_CUSTOM_PKG_CONFIG_SECTION ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
+    [[set_and_check(@DUNE_MOD_NAME@_SCRIPT_DIR "@PACKAGE_SCRIPT_DIR@")]]
+    [[set_and_check(DOXYSTYLE_FILE "@PACKAGE_DOXYSTYLE_DIR@/Doxystyle")]]
+    [[set_and_check(DOXYGENMACROS_FILE "@PACKAGE_DOXYSTYLE_DIR@/doxygen-macros")]]
+  )
+
 endif()
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
