@@ -212,6 +212,14 @@ Policies Introduced by Dune 2.10
     *OLD behavior:* Set global ``include_directories`` when creating a new ``dune_project``.
     *NEW behavior:* Include directories must be set on a module library targets and are not set globally anymore.
 
+    The NEW behavior requires module authors to set include directories on all their targets
+    or to link against another target that contains these include directories already. With
+    CMake you can use the command ``target_include_directories(<target> <scope> <dirs>...)``
+    to set directories ``<dirs>...`` as include directories for the target ``<target>``.
+
+    If the module follows a common directory layout, a default set of include directories
+    can be set on a target at once using the CMake function ``dune_default_include_directories(<target> <scope>)``.
+
 
 .. _faq:
 
