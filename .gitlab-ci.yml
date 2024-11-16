@@ -30,6 +30,7 @@ debian:11 gcc-10-20-expensive:
     DUNECI_CXXFLAGS: -mavx
     DUNECI_TEST_LABELS: ""
     DUNECI_TOOLCHAIN: gcc-10-20
+    DUNECI_CMAKE_FLAGS: '-DDUNE_ENABLE_PYTHONMODULE_PRECOMPILE:BOOL=TRUE'
     DUNE_TEST_EXPECTED_VC_IMPLEMENTATION: AVX
   # require AVX to properly test Vc
   tags: [duneci, "iset:avx"]
