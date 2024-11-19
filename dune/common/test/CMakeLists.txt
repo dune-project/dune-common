@@ -146,6 +146,10 @@ dune_add_test(SOURCES densevectorassignmenttest.cc
 dune_add_test(SOURCES diagonalmatrixtest.cc
               LABELS quick)
 
+dune_add_test(SOURCES dunethrowtest.cc
+              LINK_LIBRARIES dunecommon
+              LABELS quick)
+
 dune_add_test(SOURCES dynmatrixtest.cc
               LABELS quick)
 
