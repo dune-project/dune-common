@@ -516,7 +516,7 @@ function(dune_python_configure_package)
 
     # Add a custom target that globally installs this package if requested
     if (NOT PYPKGCONF_INSTALL_TARGET)
-      string(MD5 path_hash "${PYCONFBIND_FULLPATH}")
+      string(MD5 path_hash "${PYPKGCONF_PATH}")
       set(PYPKGCONF_INSTALL_TARGET "install_python_${path_hash}")
     endif()
 
