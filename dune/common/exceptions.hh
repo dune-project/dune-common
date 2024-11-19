@@ -181,6 +181,102 @@ namespace Dune {
     return stream << e.what();
   }
 
+
+  /**
+   * \brief Class for extending a Dune::Exception with a stream interface
+   *
+   * \tparam E Exception base class, should be derived from Dune::Exception.
+   *
+   * The class ExceptionStream<E> derives from E and extends it
+   * by an operator<<(ExceptionStream<T>,T). The latter is available
+   * whenever a corresponding operator<< for std::ostringstream is
+   * available. All values fed into the stream will be forwarded
+   * to the message stored E.
+   */
+  template<class E>
+  class ExceptionStream
+    : public E
+  {
+  public:
+    using E::E;
+
+    ExceptionStream(const E& other) :
+      E(other)
+    {}
+
+    ExceptionStream(E&& other) :
+      E(std::move(other))
+    {}
+
+    //! Stream operator for l-value ExceptionStream and lvalue-reference
+    template<class T>
+      requires
+        (requires(std::ostringstream& oss, T t) { oss << t; }
+        and not std::is_integral_v<T>)
+    friend ExceptionStream& operator<<(ExceptionStream& es, const T& t)
+    {
+      es.sstream_ << t;
+      es.message(es.sstream_.str());
+      return es;
+    }
+
+    //! Stream operator for r-value ExceptionStream and lvalue-reference
+    template<class T>
+      requires
+        (requires(std::ostringstream& oss, T t) { oss << t; }
+        and not std::is_integral_v<T>)
+    friend ExceptionStream operator<<(ExceptionStream&& es, const T& t)
+    {
+      es << t;
+      return std::move(es);
+    }
+
+    /**
+     * \brief Stream operator for l-value ExceptionStream and integral values
+     *
+     * This is needed to support passing a `static const` members.
+     * The other overload leads to ODR use which requires that there
+     * is a namespace scope definition of the variable (which does often not exist).
+     */
+    template<class T>
+      requires std::is_integral_v<T>
+    friend ExceptionStream& operator<<(ExceptionStream& es, T t)
+    {
+      es.sstream_ << t;
+      es.message(es.sstream_.str());
+      return es;
+    }
+
+    //! Stream operator for r-value ExceptionStream and integral values
+    template<class T>
+      requires std::is_integral_v<T>
+    friend ExceptionStream operator<<(ExceptionStream&& es, T t)
+    {
+      es << t;
+      return std::move(es);
+    }
+
+    //! Stream operator for l-value ExceptionStream and io manipulator
+    friend ExceptionStream& operator<<(ExceptionStream& es, std::ostream& (*t)(std::ostream&))
+    {
+      es.sstream_ << t;
+      es.message(es.sstream_.str());
+      return es;
+    }
+
+    //! Stream operator for r-value ExceptionStream and io manipulator
+    friend ExceptionStream operator<<(ExceptionStream&& es, std::ostream& (*t)(std::ostream&))
+    {
+      es << t;
+      return std::move(es);
+    }
+
+  private:
+    std::ostringstream sstream_;
+  };
+
+
+
 #ifndef DOXYGEN
   // the "format" the exception-type gets printed.  __FILE__ and
   // __LINE__ are standard C-defines, the GNU cpp-infofile claims that
@@ -213,11 +309,7 @@ namespace Dune {
      or to invoke a debugger during parallel debugging. (see Dune::ExceptionHook)
 
    */
-  // this is the magic: use the usual do { ... } while (0) trick, create
-  // the full message via a string stream and throw the created object
-#define DUNE_THROW(E, m) do { E th__ex; std::ostringstream th__out; \
-                              th__out << THROWSPEC(E) << m; th__ex.message(th__out.str()); throw th__ex; \
-} while (0)
+#define DUNE_THROW(E, ...) throw Dune::ExceptionStream(E()) << THROWSPEC(E) __VA_OPT__(<<) __VA_ARGS__
 
   /*! \brief Default exception class for I/O errors
 
