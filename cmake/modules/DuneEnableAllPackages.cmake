@@ -320,18 +320,10 @@ endfunction(dune_target_enable_all_packages)
 
 
 function(dune_library_add_sources lib)
-  if (NOT (DEFINED DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES))
-    message(FATAL_ERROR "You must call dune_enable_all_packages with the MODULE_LIBRARIES option before calling dune_library_add_sources")
-  endif()
-
-  if (NOT lib IN_LIST DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
-    message(FATAL_ERROR
-"Attempt to add sources to library ${lib}, which has not been defined in dune_enable_all_packages.
-List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES}")
-  endif()
+  message(DEPRECATION "The function `dune_library_add_sources(<lib> SOURCES ...)` is
+  deprecated. Use the cmake function `target_sources(<lib> PRIVATE ...)` directly.")
 
   cmake_parse_arguments(DUNE_LIBRARY_ADD_SOURCES "" "" "SOURCES" ${ARGN})
-
   if(DUNE_LIBRARY_ADD_SOURCES_UNPARSED_ARGUMENTS)
     message(WARNING "Unrecognized arguments for dune_library_add_sources!")
   endif()
