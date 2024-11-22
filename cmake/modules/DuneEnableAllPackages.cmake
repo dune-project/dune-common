@@ -260,6 +260,7 @@ function(dune_enable_all_packages)
   # throughout the module.
 
   if(DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
+    message(DEPRECATION "The `MODULE_LIBRARIES <lib>` argument to `dune_enable_all_packages` is deprecated. To achieve the same thing, first create a library with `dune_add_library(<lib>)`, then add all packages to this library with `dune_target_enable_all_packages(<lib>)`, and finally link this library to all other available targets with `link_libraries(<lib>)`.")
 
     # make sure the /lib directory exists - we need it to create the stub source file in there
     file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
