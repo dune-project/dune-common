@@ -24,8 +24,8 @@ namespace Dune
    */
 
   //! Print a std::tuple
-  template<typename Stream, typename... Ts>
-  inline Stream& operator<<(Stream& stream, const std::tuple<Ts...>& t)
+  template<typename... Ts>
+  inline std::ostream& operator<<(std::ostream& stream, const std::tuple<Ts...>& t)
   {
     stream<<"[";
     if(sizeof...(Ts)>0)
@@ -39,8 +39,8 @@ namespace Dune
   }
 
   //! Read a std::tuple
-  template<typename Stream, typename... Ts>
-  inline Stream& operator>>(Stream& stream, std::tuple<Ts...>& t)
+  template<typename... Ts>
+  inline std::istream& operator>>(std::istream& stream, std::tuple<Ts...>& t)
   {
     Hybrid::forEach(std::make_index_sequence<sizeof...(Ts)>{},
       [&](auto i){stream>>std::get<i>(t);});
@@ -48,8 +48,8 @@ namespace Dune
   }
 
   //! Print a std::array
-  template<typename Stream, typename T, std::size_t N>
-  inline Stream& operator<<(Stream& stream, const std::array<T,N>& a)
+  template<typename T, std::size_t N>
+  inline std::ostream& operator<<(std::ostream& stream, const std::array<T,N>& a)
   {
     stream<<"[";
     if(N>0)
