@@ -250,25 +250,25 @@ int main()
     checkTransposeProduct(suite,a,b);
   }
 
-  // {
-  //   auto a = Dune::DiagonalMatrix<double,2>{};
-  //   auto b = Dune::FieldMatrix<double,2,2>{};
-  //   a = {0, 1};
-  //   testFillDense(b);
-  //   checkTranspose(suite,a);
-  //   checkTranspose(suite,b);
+  {
+    auto a = Dune::DiagonalMatrix<double,2>{};
+    auto b = Dune::FieldMatrix<double,2,2>{};
+    a = {0, 1};
+    testFillDense(b);
+    checkTranspose(suite,a);
+    checkTranspose(suite,b);
   //   checkTransposeProduct(suite,a,b);
-  // }
+  }
 
-  // {
-  //   auto a = Dune::DiagonalMatrix<double,4>{};
-  //   auto b = Dune::FieldMatrix<double,7,4>{};
-  //   a = {0, 1, 2, 3};
-  //   testFillDense(b);
-  //   checkTranspose(suite,a);
-  //   checkTranspose(suite,b);
+  {
+    auto a = Dune::DiagonalMatrix<double,4>{};
+    auto b = Dune::FieldMatrix<double,7,4>{};
+    a = {0, 1, 2, 3};
+    testFillDense(b);
+    checkTranspose(suite,a);
+    checkTranspose(suite,b);
   //   checkTransposeProduct(suite,a,b);
-  // }
+  }
 
   {
     auto a = Dune::FieldMatrix<double,3,4>{};
