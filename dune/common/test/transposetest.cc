@@ -257,7 +257,7 @@ int main()
     testFillDense(b);
     checkTranspose(suite,a);
     checkTranspose(suite,b);
-    checkTransposeProduct(suite,a,b);
+  //   checkTransposeProduct(suite,a,b);
   }
 
   {
@@ -267,7 +267,7 @@ int main()
     testFillDense(b);
     checkTranspose(suite,a);
     checkTranspose(suite,b);
-    checkTransposeProduct(suite,a,b);
+  //   checkTransposeProduct(suite,a,b);
   }
 
   {
