@@ -1106,8 +1106,10 @@ namespace Dune {
   struct DenseMatrixAssigner<DenseMatrix, DiagonalMatrix<field, N>> {
     static void apply(DenseMatrix& denseMatrix,
                       DiagonalMatrix<field, N> const& rhs) {
+#ifdef DUNE_CHECK_BOUNDS
       if (denseMatrix.M() != N || denseMatrix.N() != N)
         DUNE_THROW(Dune::RangeError, "Incompatible matrix dimensions in assignment.");
+#endif // DUNE_CHECK_BOUNDS
 
       denseMatrix = field(0);
       for (int i = 0; i < N; ++i)
