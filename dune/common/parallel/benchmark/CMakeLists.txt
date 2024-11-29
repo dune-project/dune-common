@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 add_executable(mpi_collective_benchmark EXCLUDE_FROM_ALL mpi_collective_benchmark.cc)
-dune_target_link_libraries(mpi_collective_benchmark PUBLIC "dunecommon")
+target_link_libraries(mpi_collective_benchmark PRIVATE Dune::Common)
 add_dune_mpi_flags(mpi_collective_benchmark)
 
 configure_file(options.ini options.ini COPYONLY)
