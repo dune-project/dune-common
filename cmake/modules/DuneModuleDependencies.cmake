@@ -213,7 +213,6 @@ endmacro(dune_process_dependency_macros)
 
 macro(dune_cmake_path_setup project_list)
   # clean up module path from previeous modifications (a typical case is dune-common)
-  list(REMOVE_ITEM CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
   foreach(_proj IN LISTS ${project_list})
     if(${_proj}_MODULE_PATH)
       list(REMOVE_ITEM CMAKE_MODULE_PATH "${${_proj}_MODULE_PATH}")
