@@ -5,6 +5,7 @@
 #ifndef DUNE_COMMON_FVECTOR_HH
 #define DUNE_COMMON_FVECTOR_HH
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdlib>
@@ -113,8 +114,7 @@ namespace Dune {
     explicit constexpr FieldVector (const K& k)
         noexcept(std::is_nothrow_copy_assignable_v<K>)
     {
-      for (auto& d : _data)
-        d = k;
+      std::fill(_data.begin(), _data.end(), k);
     }
 
     //! Construct from a std::initializer_list
