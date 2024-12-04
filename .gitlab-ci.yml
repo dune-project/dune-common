@@ -40,6 +40,8 @@ debian:11 gcc-10-20-expensive:
 
 core-modules-test:
   stage: downstream
+  inherit:
+    variables: false # do not inherit global variables
   variables:
     CI_BUILD_REF_NAME: $CI_COMMIT_REF_NAME
     DUNECI_TEST_LABELS: ""
@@ -53,6 +55,8 @@ core-modules-test:
 
 full-system-test:
   stage: downstream
+  inherit:
+    variables: false # do not inherit global variables
   variables:
     CI_BUILD_REF_NAME: $CI_COMMIT_REF_NAME
     DUNECI_TEST_LABELS: ""
