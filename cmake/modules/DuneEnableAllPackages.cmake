@@ -260,6 +260,7 @@ function(dune_enable_all_packages)
   # throughout the module.
 
   if(DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
+    message(DEPRECATION "The `MODULE_LIBRARIES <lib>` argument to `dune_enable_all_packages` is deprecated. To achieve the same thing, first create a library with `dune_add_library(<lib>)`, then add all packages to this library with `dune_target_enable_all_packages(<lib>)`, and finally link this library to all other available targets with `link_libraries(<lib>)`.")
 
     # make sure the /lib directory exists - we need it to create the stub source file in there
     file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
@@ -319,18 +320,10 @@ endfunction(dune_target_enable_all_packages)
 
 
 function(dune_library_add_sources lib)
-  if (NOT (DEFINED DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES))
-    message(FATAL_ERROR "You must call dune_enable_all_packages with the MODULE_LIBRARIES option before calling dune_library_add_sources")
-  endif()
-
-  if (NOT lib IN_LIST DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
-    message(FATAL_ERROR
-"Attempt to add sources to library ${lib}, which has not been defined in dune_enable_all_packages.
-List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES}")
-  endif()
+  message(DEPRECATION "The function `dune_library_add_sources(<lib> SOURCES ...)` is
+  deprecated. Use the cmake function `target_sources(<lib> PRIVATE ...)` directly.")
 
   cmake_parse_arguments(DUNE_LIBRARY_ADD_SOURCES "" "" "SOURCES" ${ARGN})
-
   if(DUNE_LIBRARY_ADD_SOURCES_UNPARSED_ARGUMENTS)
     message(WARNING "Unrecognized arguments for dune_library_add_sources!")
   endif()
