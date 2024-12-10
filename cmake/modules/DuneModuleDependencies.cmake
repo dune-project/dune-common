@@ -150,6 +150,10 @@ macro(dune_create_dependency_tree)
     dune_create_dependency_leafs("${${ProjectName}_DEPENDS_MODULE}" "${${ProjectName}_DEPENDS_VERSION}"
       "${${ProjectName}_SUGGESTS_MODULE}" "${${ProjectName}_SUGGESTS_VERSION}")
   endif()
+  # Bring the list of found dependencies into the right order
+  list(REVERSE ALL_DEPENDENCIES)
+  # Remove possible duplicates
+  list(REMOVE_DUPLICATES ALL_DEPENDENCIES)
   if (NOT ${DUNE_DEPENDENCY_TREE_SKIP_CMAKE_PATH_SETUP})
     dune_cmake_path_setup(ALL_DEPENDENCIES)
   endif()
