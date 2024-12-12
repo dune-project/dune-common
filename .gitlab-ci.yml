@@ -13,8 +13,6 @@ variables:
   DUNECI_TEST_LABELS: quick
   DUNE_TEST_EXPECTED_VC_IMPLEMENTATION: SSE2
   PIP_DEFAULT_TIMEOUT: 0
-  # Note: DUNE_RUNNING_IN_CI only needed unti ci image updating fixed on gitlab
-  DUNECI_CMAKE_FLAGS: '-DDUNE_RUNNING_IN_CI=TRUE'
   DUNE_LOG_LEVEL:     DEBUG
 
 debian:11 gcc-10-20-expensive:
