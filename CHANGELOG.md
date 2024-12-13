@@ -18,6 +18,11 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 ## C++: Changelog
 
+- `DUNE_THROW` no longer prevents functions from being used in `constexpr` contexts,
+  as long the exception is not thrown. As a sideproduct, the macros now
+  also supports the syntax `DUNE_THROW(ExceptionType, a << b) << c << d` and
+  `DUNE_THROW(ExceptionType) << a << b`.
+
 - Add deduction guides to `TupleVector` analogous to `std::tuple`.
 
 ## Build system: Changelog
