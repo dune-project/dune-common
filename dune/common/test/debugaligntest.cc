@@ -11,6 +11,9 @@
 #include <dune/common/test/arithmetictestsuite.hh>
 #include <dune/common/test/testsuite.hh>
 
+//! Exception thrown when an object is allocated with a misaligned address
+class MisalignedAddress : public Dune::RangeError {};
+
 class WithViolatedAlignmentHandler {
   Dune::ViolatedAlignmentHandler oldhandler;
 public:
@@ -39,9 +42,8 @@ public:
 template<class T>
 void checkAlignmentViolation(Dune::TestSuite &test)
 {
-  bool misalignmentDetected = false;
   WithViolatedAlignmentHandler
-    guard([&](auto&&...){ misalignmentDetected = true; });
+    guard([&](auto&&...){ throw MisalignedAddress{}; });
 
   static_assert(alignof(T) <= sizeof(T));
   char buffer[alignof(T)+sizeof(T)];
@@ -56,24 +58,18 @@ void checkAlignmentViolation(Dune::TestSuite &test)
     test.check(not Dune::isAligned(misalignedAddr, alignof(T)), "We could not misalign an address");
   }
 
-  auto ptr = new(misalignedAddr) T;
-  test.check(misalignmentDetected, "default construct")
-    << "misalignment not detected for " << Dune::className<T>();
+  test.checkThrow<MisalignedAddress>([&]{
+    auto ptr = new(misalignedAddr) T;
+  }, "default construct") << "misaligned address was not caught" << Dune::className<T>();
 
-  misalignmentDetected = false;
-
-  ptr = new(misalignedAddr) T(T(0));
-  test.check(misalignmentDetected, "move construct")
-    << "misalignment not detected for " << Dune::className<T>();
-  ptr->~T();
-
-  misalignmentDetected = false;
+  test.checkThrow<MisalignedAddress>([&]{
+    auto ptr = new(misalignedAddr) T(T(0));
+  }, "move construct") << "misaligned address was not caught";
 
   T t(0);
-  ptr = new(misalignedAddr) T(t);
-  test.check(misalignmentDetected, "copy construct")
-    << "misalignment not detected for " << Dune::className<T>();
-  ptr->~T();
+  test.checkThrow<MisalignedAddress>([&]{
+    auto ptr = new(misalignedAddr) T(t);
+  }, "copy construct") << "misaligned address was not caught";
 }
 
 int main(int argc, char **argv)
