@@ -7,6 +7,12 @@ link_libraries(Dune::Common)
 dune_add_test(SOURCES accessorstest.cc
               LABELS quick)
 
+dune_add_test(SOURCES algorithmtest.cc
+              LABELS quick)
+
+dune_add_test(SOURCES comparetest.cc
+              LABELS quick)
+
 dune_add_test(SOURCES extentstest.cc
               LABELS quick)
 
