@@ -143,6 +143,10 @@ namespace Dune
         _data[i] = std::data(l)[i];
     }
 
+    //! copy constructor
+    FieldMatrix(const FieldMatrix&) = default;
+
+    //! copy constructor from assignable type T
     template <class T,
               typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
     FieldMatrix(T const& rhs)
