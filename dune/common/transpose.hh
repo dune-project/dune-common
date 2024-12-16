@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <functional>
 
+#include <dune/common/boundschecking.hh>
 #include <dune/common/std/type_traits.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/promotiontraits.hh>
@@ -71,19 +72,25 @@ struct FieldTraits< Impl::TransposedMatrixWrapper<M> >
 
 namespace Impl {
 
+  // Specialize the traits `IsDenseMatrix` as true only if the wrapped matrix
+  // is a dense matrix.
+  template<class M>
+  struct IsDenseMatrix< TransposedMatrixWrapper<M> > :
+    public IsDenseMatrix<ResolveRef_t<M>> {};
+
   // Wrapper representing the transposed of a matrix.
   // Creating the wrapper does not compute anything
   // but only serves for tagging the wrapped matrix
   // for transposition. This class will store M by value.
   // To support reference-semantic, it supports using
   // M=std::reference_wrapper<OriginalMatrixType>.
-  template<class M>
+  template<class Matrix>
   class TransposedMatrixWrapper :
-    public TransposedMatrixWrapperMixin<ResolveRef_t<M>>
+    public TransposedMatrixWrapperMixin<ResolveRef_t<Matrix>>
   {
-    constexpr static bool hasStaticSize = IsStaticSizeMatrix<ResolveRef_t<M>>::value;
+    constexpr static bool hasStaticSize = IsStaticSizeMatrix<ResolveRef_t<Matrix>>::value;
   public:
-    using WrappedMatrix = ResolveRef_t<M>;
+    using WrappedMatrix = ResolveRef_t<Matrix>;
 
     const WrappedMatrix& wrappedMatrix() const {
       return resolveRef(matrix_);
@@ -92,9 +99,39 @@ namespace Impl {
 
     using value_type = typename WrappedMatrix::value_type;
     using field_type = typename FieldTraits<WrappedMatrix>::field_type;
+    using size_type = typename WrappedMatrix::size_type;
 
-    TransposedMatrixWrapper(M&& matrix) : matrix_(std::move(matrix)) {}
-    TransposedMatrixWrapper(const M& matrix) : matrix_(matrix) {}
+    TransposedMatrixWrapper(Matrix&& matrix) : matrix_(std::move(matrix)) {}
+    TransposedMatrixWrapper(const Matrix& matrix) : matrix_(matrix) {}
+
+  private:
+
+    // helper proxy type to access elements by chained `operator[][]`
+    struct AccessProxy
+    {
+      const WrappedMatrix& wrappedMatrix_;
+      size_type i_;
+
+      decltype(auto) operator[] (size_type j) const
+      {
+        DUNE_ASSERT_BOUNDS(j < wrappedMatrix_.N());
+        return wrappedMatrix_[j][i_];
+      }
+    };
+
+  public:
+
+    /**
+     * \brief Provide access to the `ith` row of the transposed matrix.
+     * This access is only provided if the wrapped matrix is dense. The `ith` row
+     * of the transposed matrix then represents the `ith` column of the wrapped
+     * matrix.
+     **/
+    auto operator[] (size_type i) const requires(Impl::IsDenseMatrix_v<WrappedMatrix>)
+    {
+      DUNE_ASSERT_BOUNDS(i < wrappedMatrix().M());
+      return AccessProxy{wrappedMatrix(),i};
+    }
 
     template<class MatrixA,
       std::enable_if_t<
@@ -123,6 +160,20 @@ namespace Impl {
           matrixB.wrappedMatrix().mv(matrixA[j], result[j]);
         return result;
       }
+    }
+
+    //! Return the number of rows of `transposed(Matrix)`, i.e., the number of
+    //! columns of `Matrix`.
+    constexpr size_type N () const
+    {
+      return wrappedMatrix().M();
+    }
+
+    //! Return the number of columns of `transposed(Matrix)`, i.e., the number
+    //! of rows of `Matrix`.
+    constexpr size_type M () const
+    {
+      return wrappedMatrix().N();
     }
 
     template<class X, class Y>
@@ -157,7 +208,7 @@ namespace Impl {
 
   private:
 
-    M matrix_;
+    Matrix matrix_;
   };
 
   template<class M>

@@ -67,8 +67,23 @@ namespace Dune::Impl {
 
 
 
+  /**
+   * \brief The traits `IsDenseMatrix` is satisfied for all matrices with dense
+   * element access.
+   *
+   * A matrix `m` has dense element access by a chained `m[i][j]` if this is
+   * valid for all indices in its index space `[0,m.N()) x [0,m.M())`. User-defined
+   * types can be registered to this traits by specializing `IsDenseMatrix`.
+   *
+   * \b Examples:
+   * - `FieldMatrix<K, n, m>`
+   * - `DynamicMatrix<K>`
+   */
   template<class T>
   class IsDenseMatrix : public std::false_type {};
+
+  template<class T>
+  class IsDenseMatrix<const T> : public IsDenseMatrix<T> {};
 
   template<class K, int ROWS, int COLS>
   class IsDenseMatrix<Dune::FieldMatrix<K, ROWS, COLS>> : public std::true_type {};
