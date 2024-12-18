@@ -12,6 +12,8 @@ endif()
 # make sure our own modules are found
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
+set(THREADS_PREFER_PTHREAD_FLAG TRUE CACHE BOOL "Prefer -pthread compiler and linker flag")
+
 #include the dune macros
 include(DuneMacros)
 
@@ -34,6 +36,23 @@ target_compile_features(dunecommon PUBLIC cxx_std_20)
 add_dune_blas_lapack_flags(dunecommon)
 add_dune_tbb_flags(dunecommon)
 
+# collect dependencies to be added into the dune-common-config.cmake files
+set(DUNE_COMMON_PACKAGE_DEPENDENCIES
+  [[set(THREADS_PREFER_PTHREAD_FLAG TRUE CACHE BOOL "Prefer -pthread compiler and linker flag")]])
+
+# since dunecommon is exported its linked libs must be provided downstream too
+if (LAPACK_FOUND)
+  list(APPEND DUNE_COMMON_PACKAGE_DEPENDENCIES "find_dependency(LAPACK)")
+elseif (BLAS_FOUND)
+  list(APPEND DUNE_COMMON_PACKAGE_DEPENDENCIES "find_dependency(BLAS)")
+endif()
+if (Threads_FOUND)
+  list(APPEND DUNE_COMMON_PACKAGE_DEPENDENCIES "find_dependency(Threads)")
+endif()
+if (TBB_FOUND)
+  list(APPEND DUNE_COMMON_PACKAGE_DEPENDENCIES "find_dependency(TBB)")
+endif()
+
 # add subdirectories to execute CMakeLists.txt there
 add_subdirectory(bin)
 add_subdirectory(cmake)
@@ -47,5 +66,12 @@ if(DUNE_ENABLE_PYTHONBINDINGS)
   add_subdirectory(python)
 endif()
 
-# finalize the dune project, e.g. generating config.h etc.
+# write contents into DUNE_CUSTOM_PKG_CONFIG_SECTION, which will be injected into dune-common-config.cmake
+string(JOIN "\n" DUNE_CUSTOM_PKG_CONFIG_SECTION
+  # make sure that Find<module>.cmake provided by dune-common can be found by cmake
+  [[list(APPEND CMAKE_MODULE_PATH "${dune-common_MODULE_PATH}")]]
+  ${DUNE_COMMON_PACKAGE_DEPENDENCIES}
+)
+
+# finalize the dune project, e.g. generating config.h, dune-common-config.cmake, etc.
 finalize_dune_project()

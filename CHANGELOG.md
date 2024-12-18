@@ -7,6 +7,8 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 ## Build system: Changelog
 
+- Propagate dependencies of `dune-common` when consumed. This means that a CMake project may find
+  `dune-common` and consume the `Dune::Common` target without the need of the dune build system.
 
 - Change the way include directories are set in dune projects. OLD behavior: use `include_directories`
   in `dune_project` to set include dirs for the current project. NEW behavior: Provide a utility
