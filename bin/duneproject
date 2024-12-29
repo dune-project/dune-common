@@ -522,6 +522,9 @@ add_executable(${MODULE} ${MODULE}.cc)
 # link target against found dune libraries (e.g. dune-common)
 target_link_dune_default_libraries(${MODULE})
 
+# set include directories for the target
+dune_default_include_directories(${MODULE} PRIVATE)
+
 # link target against other dune registered packages (e.g. TBB, METIS, etc.)
 dune_target_enable_all_packages(${MODULE})
 M_DELIM
