@@ -19,6 +19,7 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 ## C++: Changelog
 
 - Add deduction guides to `TupleVector` analogous to `std::tuple`.
+- Add concept definition `Std::indirectly_copyable` to constrain the `DenseMatrixAssigner`.
 
 ## Build system: Changelog
 
