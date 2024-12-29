@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstddef>
 #include <iostream>
+#include <iterator>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -21,6 +22,7 @@
 #include <dune/common/simd/simd.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/scalarvectorview.hh>
+#include <dune/common/std/iterator.hh>
 
 namespace Dune
 {
@@ -62,12 +64,13 @@ namespace Dune
   namespace Impl
   {
 
-    template< class DenseMatrix, class RHS, class = void >
+    template< class DenseMatrix, class RHS >
     class DenseMatrixAssigner
     {};
 
     template< class DenseMatrix, class RHS >
-    class DenseMatrixAssigner< DenseMatrix, RHS, std::enable_if_t< Dune::IsNumber< RHS >::value > >
+      requires (Dune::IsNumber< RHS >::value)
+    class DenseMatrixAssigner<DenseMatrix, RHS>
     {
     public:
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )
@@ -78,8 +81,10 @@ namespace Dune
     };
 
     template< class DenseMatrix, class RHS >
-    class DenseMatrixAssigner< DenseMatrix, RHS, std::enable_if_t< !std::is_same< typename RHS::const_iterator, void >::value
-        && std::is_convertible< typename RHS::const_iterator::value_type, typename DenseMatrix::iterator::value_type >::value > >
+      requires Std::indirectly_copyable<
+          decltype(std::begin(*std::declval<typename RHS::const_iterator>())),
+          decltype(std::begin(*std::declval<typename DenseMatrix::iterator>()))>
+    class DenseMatrixAssigner<DenseMatrix, RHS>
     {
     public:
       static void apply ( DenseMatrix &denseMatrix, const RHS &rhs )

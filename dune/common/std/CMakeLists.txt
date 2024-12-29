@@ -5,6 +5,7 @@ install(FILES
   default_accessor.hh
   extents.hh
   functional.hh
+  iterator.hh
   layout_left.hh
   layout_right.hh
   layout_stride.hh

@@ -10,6 +10,9 @@ dune_add_test(SOURCES accessorstest.cc
 dune_add_test(SOURCES extentstest.cc
               LABELS quick)
 
+dune_add_test(SOURCES iteratortest.cc
+              LABELS quick)
+
 dune_add_test(SOURCES mappingtest.cc
               LABELS quick)
 
