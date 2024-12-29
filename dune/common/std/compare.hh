@@ -8,6 +8,7 @@
 #include <compare>
 #include <concepts>
 #include <type_traits>
+#include <utility>
 
 /**
  * \file This file provides some concepts introduced in the c++ standard library
@@ -110,6 +111,16 @@ concept three_way_comparable_with =
     { t <=> u } -> Impl::comparesAs<Cat>;
     { u <=> t } -> Impl::comparesAs<Cat>;
   };
+
+//! A functor implementing the three-way comparison on the arguments
+struct compare_three_way
+{
+  template <class T, class U>
+  constexpr auto operator() (T&& t, U&& u) const
+  {
+    return std::forward<T>(t) <=> std::forward<U>(u);
+  }
+};
 
 } // end namespace Dune::Std
 

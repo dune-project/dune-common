@@ -14,20 +14,9 @@
 #include <compare>
 #include <type_traits>
 
+#include <dune/common/std/compare.hh>
+
 namespace Dune::Std {
-namespace Impl {
-
-// A functor implementing the three-way comparison on the arguments
-struct CompareThreeWay
-{
-  template <class T, class U>
-  constexpr auto operator() (T&& t, U&& u) const
-  {
-    return std::forward<T>(t) <=> std::forward<U>(u);
-  }
-};
-
-} // end namespace Impl
 
 /**
  * \brief Lexicographically compares two ranges `[first1, last1)` and `[first2, last2)`
@@ -44,7 +33,7 @@ using std::lexicographical_compare_three_way;
 
 #else // __cpp_lib_three_way_comparison
 
-template <class I1, class I2, class Cmp = Impl::CompareThreeWay>
+template <class I1, class I2, class Cmp = Std::compare_three_way>
 constexpr auto lexicographical_compare_three_way(I1 f1, I1 l1, I2 f2, I2 l2, Cmp comp = {})
     -> decltype(comp(*f1, *f2))
 {
