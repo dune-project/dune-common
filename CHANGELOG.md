@@ -28,6 +28,8 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 - Add deduction guides to `TupleVector` analogous to `std::tuple`.
 - Add concept definition `Std::indirectly_copyable` to constrain the `DenseMatrixAssigner`.
 
+- Add concept definition `Concept::Number` to represent scalar number types in containers.
+
 ## Build system: Changelog
 
 - Add a module-specific CMake target `build_<module>_tests` to compile only tests
