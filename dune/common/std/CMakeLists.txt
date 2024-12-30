@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 install(FILES
+  algorithm.hh
+  compare.hh
   default_accessor.hh
   extents.hh
   functional.hh
