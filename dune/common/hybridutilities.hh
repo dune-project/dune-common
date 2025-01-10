@@ -12,6 +12,7 @@
 #include <dune/common/typeutilities.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/indices.hh>
+#include <dune/common/integersequence.hh>
 #include <dune/common/rangeutilities.hh>
 
 
@@ -89,7 +90,7 @@ namespace Impl {
   template<class T, T... t, class Index>
   constexpr decltype(auto) elementAt(std::integer_sequence<T, t...> c, Index, PriorityTag<1>)
   {
-    return Dune::integerSequenceEntry(c, std::integral_constant<std::size_t, Index::value>());
+    return Dune::get<Index::value>(c);
   }
 
   template<class Container, class Index>
