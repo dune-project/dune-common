@@ -12,7 +12,6 @@ except ImportError:
 import sys, os, io, getopt, re, shutil
 import importlib, subprocess
 import email.utils
-import pkg_resources
 from datetime import date
 
 # make sure that 'metadata' is taken from the current `dune-common` folder
@@ -154,9 +153,8 @@ def main(argv):
         subprocess.call(remove)
 
         # check if we have scikit-build
-        import pkg_resources
-        installed = {pkg.key for pkg in pkg_resources.working_set}
-        if not 'scikit-build' in installed:
+        import importlib
+        if importlib.util.find_spec("skbuild") is None:
             print("Please install the pip package 'scikit-build' to build the source distribution.")
             sys.exit(2)
 
@@ -184,9 +182,8 @@ def main(argv):
 
         if not onlysdist:
             # check if we have twine
-            import pkg_resources
-            installed = {pkg.key for pkg in pkg_resources.working_set}
-            if not 'twine' in installed:
+            import importlib
+            if importlib.util.find_spec("twine") is None:
                 print("Please install the pip package 'twine' to upload the source distribution.")
                 sys.exit(2)
 
