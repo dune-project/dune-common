@@ -5,13 +5,7 @@
 #ifndef DUNE_TIMER_HH
 #define DUNE_TIMER_HH
 
-#ifndef TIMER_USE_STD_CLOCK
-// headers for std::chrono
 #include <chrono>
-#else
-// headers for std::clock
-#include <ctime>
-#endif
 
 namespace Dune {
 
@@ -26,18 +20,12 @@ namespace Dune {
 
   /** \brief A simple stop watch
 
-     This class reports the elapsed user-time, i.e. time spent computing,
-     after the last call to Timer::reset(). The results are seconds and
-     fractional seconds. Note that the resolution of the timing depends
-     on your OS kernel which should be somewhere in the millisecond range.
+     This class reports the elapsed real time, i.e. time elapsed
+     after Timer::reset(). It does not measure the time spent computing,
+     i.e. time spend in concurrent threads is not added up while
+     time measurements include the time elapsed while sleeping.
 
-     The class is basically a wrapper for the libc-function getrusage()
-
-     \warning In a multi-threading situation, this class does NOT return wall-time!
-     Instead, the run time for all threads will be added up.
-     For example, if you have four threads running in parallel taking one second each,
-     then the Timer class will return an elapsed time of four seconds.
-
+     The class is basically a wrapper around std::chrono::high_resolution_clock::now().
    */
   class Timer
   {
@@ -117,19 +105,6 @@ namespace Dune {
     double storedLastElapsed_;
 
 
-#ifdef TIMER_USE_STD_CLOCK
-    void rawReset() noexcept
-    {
-      cstart = std::clock();
-    }
-
-    double rawElapsed () const noexcept
-    {
-      return (std::clock()-cstart) / static_cast<double>(CLOCKS_PER_SEC);
-    }
-
-    std::clock_t cstart;
-#else
     void rawReset() noexcept
     {
       cstart = std::chrono::high_resolution_clock::now();
@@ -143,7 +118,6 @@ namespace Dune {
     }
 
     std::chrono::high_resolution_clock::time_point cstart;
-#endif
   }; // end class Timer
 
   /** @} end documentation */
