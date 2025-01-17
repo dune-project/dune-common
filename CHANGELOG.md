@@ -25,6 +25,8 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 ## C++: Changelog
 
+- Add preprocessor macro `DUNE_FORCE_INLINE` as a portable attribute to force inlining of functions (if supported).
+
 - Add `bit_width` and `countl_zero` overloads for `bigunsignedint` objects.
 
 - `DUNE_THROW` no longer prevents functions from being used in `constexpr` contexts,
