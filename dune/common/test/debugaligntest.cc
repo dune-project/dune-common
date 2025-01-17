@@ -59,16 +59,16 @@ void checkAlignmentViolation(Dune::TestSuite &test)
   }
 
   test.checkThrow<MisalignedAddress>([&]{
-    auto ptr = new(misalignedAddr) T;
+    std::ignore = new(misalignedAddr) T;
   }, "default construct") << "misaligned address was not caught" << Dune::className<T>();
 
   test.checkThrow<MisalignedAddress>([&]{
-    auto ptr = new(misalignedAddr) T(T(0));
+    std::ignore = new(misalignedAddr) T(T(0));
   }, "move construct") << "misaligned address was not caught";
 
   T t(0);
   test.checkThrow<MisalignedAddress>([&]{
-    auto ptr = new(misalignedAddr) T(t);
+    std::ignore = new(misalignedAddr) T(t);
   }, "copy construct") << "misaligned address was not caught";
 }
 
