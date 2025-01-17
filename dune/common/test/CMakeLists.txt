@@ -169,6 +169,9 @@ dune_add_test(SOURCES fmatrixtest.cc
               LABELS quick)
 add_dune_vc_flags(fmatrixtest)
 
+dune_add_test(SOURCES forceinlinetest.cc
+              LABELS quick)
+
 dune_add_test(SOURCES fvectortest.cc
               LABELS quick)
 

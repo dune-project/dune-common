@@ -55,6 +55,7 @@ install(FILES
         float_cmp.hh
         fmatrix.hh
         fmatrixev.hh
+        forceinline.hh
         ftraits.hh
         fvector.hh
         genericiterator.hh
