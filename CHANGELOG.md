@@ -48,6 +48,12 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 - Deprecate the utility `integerSequenceEntry` in favour of the shorter `get` from `integersequence.hh`.
 
+## Python: Changelog
+
+- the `sdist` tar ball name should not use `-` (see PEP 625) so use `_` instead
+  `pip install dune-common` will still work as expected but `pip list` will
+  now show `dune_common` so the output of `pip list` is parsed anywhere
+  this is a breaking change.
 
 # Release 2.10
 

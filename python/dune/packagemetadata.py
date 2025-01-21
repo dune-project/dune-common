@@ -430,8 +430,9 @@ def metaData(version=None, dependencyCheck=True):
             long_description = 'No long description available for this package'
             print("Warning: no README[.md] file found so providing a default 'long_description' for this package")
 
+    # sdist name should not use '-' (see PEP 625) so use '_' instead
     setupParams = {
-        "name": data.name,
+        "name": data.name.replace("-","_"),
         "version": data.version,
         "author": data.author,
         "author_email": data.author_email,
