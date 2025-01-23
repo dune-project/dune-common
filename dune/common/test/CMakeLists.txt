@@ -348,6 +348,9 @@ dune_add_test(SOURCES typeutilitytest.cc
 dune_add_test(SOURCES typelisttest.cc
               LABELS quick)
 
+dune_add_test(SOURCES timertest.cc
+              LABELS quick)
+
 dune_add_test(SOURCES utilitytest.cc
               LABELS quick)
 
