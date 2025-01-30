@@ -113,6 +113,7 @@ namespace Dune {
     //! Constructor making vector with identical coordinates
     explicit constexpr FieldVector (const K& k)
         noexcept(std::is_nothrow_copy_assignable_v<K>)
+    : FieldVector()
     {
       std::fill(_data.begin(), _data.end(), k);
     }
@@ -130,7 +131,8 @@ namespace Dune {
     template<class T,
       std::enable_if_t<IsFieldVectorSizeCorrect<T,dimension>::value, int> = 0,
       decltype(std::declval<K&>() = std::declval<const T&>()[0], bool{}) = true>
-    FieldVector (const DenseVector<T>& x)
+    constexpr FieldVector (const DenseVector<T>& x)
+    : FieldVector()
     {
       assert(x.size() == dimension);
       for (int i = 0; i < dimension; ++i)
@@ -142,6 +144,7 @@ namespace Dune {
       std::enable_if_t<std::is_assignable_v<K&, const T&>, int> = 0>
     explicit constexpr FieldVector (const FieldVector<T, SIZE>& x)
         noexcept(std::is_nothrow_assignable_v<K&, const T&>)
+    : FieldVector()
     {
       for (int i = 0; i < dimension; ++i)
         _data[i] = x[i];
@@ -153,14 +156,14 @@ namespace Dune {
     explicit FieldVector (const FieldVector<K1, SIZE1>&) = delete;
 
     //! Copy constructor with default behavior
-    FieldVector (const FieldVector&) = default;
+    constexpr FieldVector (const FieldVector&) = default;
 
 
     //! Assignment from another dense vector
     template<class T,
       std::enable_if_t<IsFieldVectorSizeCorrect<T,dimension>::value, int> = 0,
       decltype(std::declval<K&>() = std::declval<const T&>()[0], bool{}) = true>
-    FieldVector& operator= (const DenseVector<T>& x)
+    constexpr FieldVector& operator= (const DenseVector<T>& x)
     {
       assert(x.size() == dimension);
       for (int i = 0; i < dimension; ++i)
@@ -171,7 +174,7 @@ namespace Dune {
     //! Converting assignment operator from FieldVector with different element type
     template<class T,
       std::enable_if_t<std::is_assignable_v<K&, const T&>, int> = 0>
-    FieldVector& operator= (const FieldVector<T, SIZE>& x)
+    constexpr FieldVector& operator= (const FieldVector<T, SIZE>& x)
         noexcept(std::is_nothrow_assignable_v<K&, const T&>)
     {
       for (int i = 0; i < dimension; ++i)
@@ -182,7 +185,7 @@ namespace Dune {
     //! Converting assignment operator with FieldVector of different size (deleted)
     template<class K1, int SIZE1,
       std::enable_if_t<(SIZE1 != SIZE), int> = 0>
-    FieldVector& operator= (const FieldVector<K1, SIZE1>&) = delete;
+    constexpr FieldVector& operator= (const FieldVector<K1, SIZE1>&) = delete;
 
     //! Copy assignment operator with default behavior
     constexpr FieldVector& operator= (const FieldVector&) = default;
@@ -193,14 +196,14 @@ namespace Dune {
     static constexpr size_type size () noexcept { return dimension; }
 
     //! Return a reference to the `i`th element
-    reference operator[] (size_type i)
+    constexpr reference operator[] (size_type i)
     {
       DUNE_ASSERT_BOUNDS(i < dimension);
       return _data[i];
     }
 
     //! Return a (const) reference to the `i`th element
-    const_reference operator[] (size_type i) const
+    constexpr const_reference operator[] (size_type i) const
     {
       DUNE_ASSERT_BOUNDS(i < dimension);
       return _data[i];
@@ -344,7 +347,7 @@ namespace Dune {
     template<class T,
       std::enable_if_t<IsFieldVectorSizeCorrect<T,1>::value, int> = 0,
       decltype(std::declval<K&>() = std::declval<const T&>()[0], bool{}) = true>
-    FieldVector (const DenseVector<T>& x)
+    constexpr FieldVector (const DenseVector<T>& x)
     {
       assert(x.size() == 1);
       _data = x[0];
@@ -369,7 +372,7 @@ namespace Dune {
     template<class T,
       std::enable_if_t<IsFieldVectorSizeCorrect<T,1>::value, int> = 0,
       decltype(std::declval<K&>() = std::declval<const T&>()[0], bool{}) = true>
-    FieldVector& operator= (const DenseVector<T>& other)
+    constexpr FieldVector& operator= (const DenseVector<T>& other)
     {
       assert(other.size() == 1);
       _data = other[0];
@@ -388,12 +391,12 @@ namespace Dune {
     //===== forward methods to container
     static constexpr size_type size () noexcept { return 1; }
 
-    reference operator[] ([[maybe_unused]] size_type i)
+    constexpr reference operator[] ([[maybe_unused]] size_type i)
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
-    const_reference operator[] ([[maybe_unused]] size_type i) const
+    constexpr const_reference operator[] ([[maybe_unused]] size_type i) const
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;

@@ -149,7 +149,8 @@ namespace Dune
     //! copy constructor from assignable type T
     template <class T,
               typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
-    FieldMatrix(T const& rhs)
+    constexpr FieldMatrix(T const& rhs)
+      : _data{}
     {
       *this = rhs;
     }
@@ -157,11 +158,11 @@ namespace Dune
     using Base::operator=;
 
     //! copy assignment operator
-    FieldMatrix& operator=(const FieldMatrix&) = default;
+    constexpr FieldMatrix& operator=(const FieldMatrix&) = default;
 
     //! copy assignment from FieldMatrix over a different field
     template<typename T>
-    FieldMatrix& operator=(const FieldMatrix<T, ROWS, COLS>& x)
+    constexpr FieldMatrix& operator=(const FieldMatrix<T, ROWS, COLS>& x)
     {
       _data = x._data;
       return *this;
@@ -172,7 +173,7 @@ namespace Dune
     FieldMatrix& operator=(FieldMatrix<T,rows,cols> const&) = delete;
 
     //! Return transposed of the matrix as FieldMatrix
-    FieldMatrix<K, COLS, ROWS> transposed() const
+    constexpr FieldMatrix<K, COLS, ROWS> transposed() const
     {
       Dune::FieldMatrix<K, COLS, ROWS> AT;
       for( int i = 0; i < ROWS; ++i )
@@ -183,7 +184,7 @@ namespace Dune
 
     //! vector space addition -- two-argument version
     template <class OtherScalar>
-    friend auto operator+ ( const FieldMatrix& matrixA,
+    friend constexpr auto operator+ ( const FieldMatrix& matrixA,
                             const FieldMatrix<OtherScalar,ROWS,COLS>& matrixB)
     {
       FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,ROWS,COLS> result;
@@ -197,7 +198,7 @@ namespace Dune
 
     //! vector space subtraction -- two-argument version
     template <class OtherScalar>
-    friend auto operator- ( const FieldMatrix& matrixA,
+    friend constexpr auto operator- ( const FieldMatrix& matrixA,
                             const FieldMatrix<OtherScalar,ROWS,COLS>& matrixB)
     {
       FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,ROWS,COLS> result;
@@ -212,7 +213,7 @@ namespace Dune
     //! vector space multiplication with scalar
     template <class Scalar,
               std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend auto operator* ( const FieldMatrix& matrix, Scalar scalar)
+    friend constexpr auto operator* ( const FieldMatrix& matrix, Scalar scalar)
     {
       FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,ROWS,COLS> result;
 
@@ -226,7 +227,7 @@ namespace Dune
     //! vector space multiplication with scalar
     template <class Scalar,
               std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend auto operator* ( Scalar scalar, const FieldMatrix& matrix)
+    friend constexpr auto operator* ( Scalar scalar, const FieldMatrix& matrix)
     {
       FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,ROWS,COLS> result;
 
@@ -240,7 +241,7 @@ namespace Dune
     //! vector space division by scalar
     template <class Scalar,
               std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend auto operator/ ( const FieldMatrix& matrix, Scalar scalar)
+    friend constexpr auto operator/ ( const FieldMatrix& matrix, Scalar scalar)
     {
       FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,ROWS,COLS> result;
 
@@ -254,7 +255,7 @@ namespace Dune
     /** \brief Matrix-matrix multiplication
      */
     template <class OtherScalar, int otherCols>
-    friend auto operator* ( const FieldMatrix& matrixA,
+    friend constexpr auto operator* ( const FieldMatrix& matrixA,
                             const FieldMatrix<OtherScalar, COLS, otherCols>& matrixB)
     {
       FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,ROWS,otherCols> result;
@@ -280,7 +281,7 @@ namespace Dune
       Impl::IsStaticSizeMatrix_v<OtherMatrix>
       and not Impl::IsFieldMatrix_v<OtherMatrix>
       , int> = 0>
-    friend auto operator* ( const FieldMatrix& matrixA,
+    friend constexpr auto operator* ( const FieldMatrix& matrixA,
                             const OtherMatrix& matrixB)
     {
       using Field = typename PromotionTraits<K, typename OtherMatrix::field_type>::PromotedType;
@@ -300,7 +301,7 @@ namespace Dune
       Impl::IsStaticSizeMatrix_v<OtherMatrix>
       and not Impl::IsFieldMatrix_v<OtherMatrix>
       , int> = 0>
-    friend auto operator* ( const OtherMatrix& matrixA,
+    friend constexpr auto operator* ( const OtherMatrix& matrixA,
                             const FieldMatrix& matrixB)
     {
       using Field = typename PromotionTraits<K, typename OtherMatrix::field_type>::PromotedType;
@@ -316,7 +317,7 @@ namespace Dune
 
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
-    FieldMatrix<K,l,cols> leftmultiplyany (const FieldMatrix<K,l,rows>& M) const
+    constexpr FieldMatrix<K,l,cols> leftmultiplyany (const FieldMatrix<K,l,rows>& M) const
     {
       FieldMatrix<K,l,cols> C;
 
@@ -334,7 +335,7 @@ namespace Dune
 
     //! Multiplies M from the right to this matrix
     template <int r, int c>
-    FieldMatrix& rightmultiply (const FieldMatrix<K,r,c>& M)
+    constexpr FieldMatrix& rightmultiply (const FieldMatrix<K,r,c>& M)
     {
       static_assert(r == c, "Cannot rightmultiply with non-square matrix");
       static_assert(r == cols, "Size mismatch");
@@ -351,7 +352,7 @@ namespace Dune
 
     //! Multiplies M from the right to this matrix, this matrix is not modified
     template<int l>
-    FieldMatrix<K,rows,l> rightmultiplyany (const FieldMatrix<K,cols,l>& M) const
+    constexpr FieldMatrix<K,rows,l> rightmultiplyany (const FieldMatrix<K,cols,l>& M) const
     {
       FieldMatrix<K,rows,l> C;
 
@@ -369,13 +370,13 @@ namespace Dune
     static constexpr size_type mat_rows() { return ROWS; }
     static constexpr size_type mat_cols() { return COLS; }
 
-    row_reference mat_access ( size_type i )
+    constexpr row_reference mat_access ( size_type i )
     {
       DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
 
-    const_row_reference mat_access ( size_type i ) const
+    constexpr const_row_reference mat_access ( size_type i ) const
     {
       DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
@@ -428,7 +429,7 @@ namespace Dune
 
     template <class T,
               typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
-    FieldMatrix(T const& rhs)
+    constexpr FieldMatrix(T const& rhs)
     {
       *this = rhs;
     }
@@ -436,14 +437,14 @@ namespace Dune
     using Base::operator=;
 
     //! Return transposed of the matrix as FieldMatrix
-    FieldMatrix<K, 1, 1> transposed() const
+    constexpr FieldMatrix<K, 1, 1> transposed() const
     {
       return *this;
     }
 
     //! vector space addition -- two-argument version
     template <class OtherScalar>
-    friend auto operator+ ( const FieldMatrix& matrixA,
+    friend constexpr auto operator+ ( const FieldMatrix& matrixA,
                             const FieldMatrix<OtherScalar,1,1>& matrixB)
     {
       return FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,1,1>{matrixA[0][0] + matrixB[0][0]};
@@ -452,7 +453,7 @@ namespace Dune
     //! Binary addition when treating FieldMatrix<K,1,1> like K
     template <class Scalar,
               std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend auto operator+ ( const FieldMatrix& matrix,
+    friend constexpr auto operator+ ( const FieldMatrix& matrix,
                             const Scalar& scalar)
     {
       return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1>{matrix[0][0] + scalar};
@@ -461,7 +462,7 @@ namespace Dune
     //! Binary addition when treating FieldMatrix<K,1,1> like K
     template <class Scalar,
               std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend auto operator+ ( const Scalar& scalar,
+    friend constexpr auto operator+ ( const Scalar& scalar,
                             const FieldMatrix& matrix)
     {
       return FieldMatrix<typename PromotionTraits<Scalar,K>::PromotedType,1,1>{scalar + matrix[0][0]};
@@ -469,7 +470,7 @@ namespace Dune
 
     //! vector space subtraction -- two-argument version
     template <class OtherScalar>
-    friend auto operator- ( const FieldMatrix& matrixA,
+    friend constexpr auto operator- ( const FieldMatrix& matrixA,
                             const FieldMatrix<OtherScalar,1,1>& matrixB)
     {
       return FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,1,1>{matrixA[0][0] - matrixB[0][0]};
@@ -478,7 +479,7 @@ namespace Dune
     //! Binary subtraction when treating FieldMatrix<K,1,1> like K
     template <class Scalar,
               std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend auto operator- ( const FieldMatrix& matrix,
+    friend constexpr auto operator- ( const FieldMatrix& matrix,
                             const Scalar& scalar)
     {
       return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1>{matrix[0][0] - scalar};
@@ -487,7 +488,7 @@ namespace Dune
     //! Binary subtraction when treating FieldMatrix<K,1,1> like K
     template <class Scalar,
               std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend auto operator- ( const Scalar& scalar,
+    friend constexpr auto operator- ( const Scalar& scalar,
                             const FieldMatrix& matrix)
     {
       return FieldMatrix<typename PromotionTraits<Scalar,K>::PromotedType,1,1>{scalar - matrix[0][0]};
@@ -496,7 +497,7 @@ namespace Dune
     //! vector space multiplication with scalar
     template <class Scalar,
               std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend auto operator* ( const FieldMatrix& matrix, Scalar scalar)
+    friend constexpr auto operator* ( const FieldMatrix& matrix, Scalar scalar)
     {
       return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1> {matrix[0][0] * scalar};
     }
@@ -504,7 +505,7 @@ namespace Dune
     //! vector space multiplication with scalar
     template <class Scalar,
               std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend auto operator* ( Scalar scalar, const FieldMatrix& matrix)
+    friend constexpr auto operator* ( Scalar scalar, const FieldMatrix& matrix)
     {
       return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1> {scalar * matrix[0][0]};
     }
@@ -512,7 +513,7 @@ namespace Dune
     //! vector space division by scalar
     template <class Scalar,
               std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend auto operator/ ( const FieldMatrix& matrix, Scalar scalar)
+    friend constexpr auto operator/ ( const FieldMatrix& matrix, Scalar scalar)
     {
       return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1> {matrix[0][0] / scalar};
     }
@@ -522,7 +523,7 @@ namespace Dune
         /** \brief Matrix-matrix multiplication
      */
     template <class OtherScalar, int otherCols>
-    friend auto operator* ( const FieldMatrix& matrixA,
+    friend constexpr auto operator* ( const FieldMatrix& matrixA,
                             const FieldMatrix<OtherScalar, 1, otherCols>& matrixB)
     {
       FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,1,otherCols> result;
@@ -544,7 +545,7 @@ namespace Dune
       and not Impl::IsFieldMatrix_v<OtherMatrix>
       and (OtherMatrix::rows==1)
       , int> = 0>
-    friend auto operator* ( const FieldMatrix& matrixA,
+    friend constexpr auto operator* ( const FieldMatrix& matrixA,
                             const OtherMatrix& matrixB)
     {
       using Field = typename PromotionTraits<K, typename OtherMatrix::field_type>::PromotedType;
@@ -565,7 +566,7 @@ namespace Dune
       and not Impl::IsFieldMatrix_v<OtherMatrix>
       and (OtherMatrix::cols==1)
       , int> = 0>
-    friend auto operator* ( const OtherMatrix& matrixA,
+    friend constexpr auto operator* ( const OtherMatrix& matrixA,
                             const FieldMatrix& matrixB)
     {
       using Field = typename PromotionTraits<K, typename OtherMatrix::field_type>::PromotedType;
@@ -581,7 +582,7 @@ namespace Dune
 
     //! Multiplies M from the left to this matrix, this matrix is not modified
     template<int l>
-    FieldMatrix<K,l,1> leftmultiplyany (const FieldMatrix<K,l,1>& M) const
+    constexpr FieldMatrix<K,l,1> leftmultiplyany (const FieldMatrix<K,l,1>& M) const
     {
       FieldMatrix<K,l,1> C;
       for (size_type j=0; j<l; j++)
@@ -590,7 +591,7 @@ namespace Dune
     }
 
     //! left multiplication
-    FieldMatrix& rightmultiply (const FieldMatrix& M)
+    constexpr FieldMatrix& rightmultiply (const FieldMatrix& M)
     {
       _data[0] *= M[0][0];
       return *this;
@@ -598,7 +599,7 @@ namespace Dune
 
     //! Multiplies M from the right to this matrix, this matrix is not modified
     template<int l>
-    FieldMatrix<K,1,l> rightmultiplyany (const FieldMatrix<K,1,l>& M) const
+    constexpr FieldMatrix<K,1,l> rightmultiplyany (const FieldMatrix<K,1,l>& M) const
     {
       FieldMatrix<K,1,l> C;
 
@@ -611,41 +612,41 @@ namespace Dune
     static constexpr size_type mat_rows() { return 1; }
     static constexpr size_type mat_cols() { return 1; }
 
-    row_reference mat_access ([[maybe_unused]] size_type i)
+    constexpr row_reference mat_access ([[maybe_unused]] size_type i)
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
-    const_row_reference mat_access ([[maybe_unused]] size_type i) const
+    constexpr const_row_reference mat_access ([[maybe_unused]] size_type i) const
     {
       DUNE_ASSERT_BOUNDS(i == 0);
       return _data;
     }
 
     //! add scalar
-    FieldMatrix& operator+= (const K& k)
+    constexpr FieldMatrix& operator+= (const K& k)
     {
       _data[0] += k;
       return (*this);
     }
 
     //! subtract scalar
-    FieldMatrix& operator-= (const K& k)
+    constexpr FieldMatrix& operator-= (const K& k)
     {
       _data[0] -= k;
       return (*this);
     }
 
     //! multiplication with scalar
-    FieldMatrix& operator*= (const K& k)
+    constexpr FieldMatrix& operator*= (const K& k)
     {
       _data[0] *= k;
       return (*this);
     }
 
     //! division by scalar
-    FieldMatrix& operator/= (const K& k)
+    constexpr FieldMatrix& operator/= (const K& k)
     {
       _data[0] /= k;
       return (*this);
@@ -653,7 +654,7 @@ namespace Dune
 
     //===== conversion operator
 
-    operator const K& () const { return _data[0]; }
+    constexpr operator const K& () const { return _data[0]; }
 
   };
 
@@ -671,7 +672,7 @@ namespace Dune
 
     //! invert scalar without changing the original matrix
     template <typename K>
-    static inline K invertMatrix (const FieldMatrix<K,1,1> &matrix, FieldMatrix<K,1,1> &inverse)
+    static constexpr K invertMatrix (const FieldMatrix<K,1,1> &matrix, FieldMatrix<K,1,1> &inverse)
     {
       using real_type = typename FieldTraits<K>::real_type;
       inverse[0][0] = real_type(1.0)/matrix[0][0];
@@ -680,7 +681,7 @@ namespace Dune
 
     //! invert scalar without changing the original matrix
     template <typename K>
-    static inline K invertMatrix_retTransposed (const FieldMatrix<K,1,1> &matrix, FieldMatrix<K,1,1> &inverse)
+    static constexpr K invertMatrix_retTransposed (const FieldMatrix<K,1,1> &matrix, FieldMatrix<K,1,1> &inverse)
     {
       return invertMatrix(matrix,inverse);
     }
@@ -688,7 +689,7 @@ namespace Dune
 
     //! invert 2x2 Matrix without changing the original matrix
     template <typename K>
-    static inline K invertMatrix (const FieldMatrix<K,2,2> &matrix, FieldMatrix<K,2,2> &inverse)
+    static constexpr K invertMatrix (const FieldMatrix<K,2,2> &matrix, FieldMatrix<K,2,2> &inverse)
     {
       using real_type = typename FieldTraits<K>::real_type;
       // code generated by maple
@@ -704,7 +705,7 @@ namespace Dune
     //! invert 2x2 Matrix without changing the original matrix
     //! return transposed matrix
     template <typename K>
-    static inline K invertMatrix_retTransposed (const FieldMatrix<K,2,2> &matrix, FieldMatrix<K,2,2> &inverse)
+    static constexpr K invertMatrix_retTransposed (const FieldMatrix<K,2,2> &matrix, FieldMatrix<K,2,2> &inverse)
     {
       using real_type = typename FieldTraits<K>::real_type;
       // code generated by maple
@@ -719,7 +720,7 @@ namespace Dune
 
     //! invert 3x3 Matrix without changing the original matrix
     template <typename K>
-    static inline K invertMatrix (const FieldMatrix<K,3,3> &matrix, FieldMatrix<K,3,3> &inverse)
+    static constexpr K invertMatrix (const FieldMatrix<K,3,3> &matrix, FieldMatrix<K,3,3> &inverse)
     {
       using real_type = typename FieldTraits<K>::real_type;
       // code generated by maple
@@ -749,7 +750,7 @@ namespace Dune
 
     //! invert 3x3 Matrix without changing the original matrix
     template <typename K>
-    static inline K invertMatrix_retTransposed (const FieldMatrix<K,3,3> &matrix, FieldMatrix<K,3,3> &inverse)
+    static constexpr K invertMatrix_retTransposed (const FieldMatrix<K,3,3> &matrix, FieldMatrix<K,3,3> &inverse)
     {
       using real_type = typename FieldTraits<K>::real_type;
       // code generated by maple
@@ -779,7 +780,7 @@ namespace Dune
 
     //! calculates ret = A * B
     template< class K, int m, int n, int p >
-    static inline void multMatrix ( const FieldMatrix< K, m, n > &A,
+    static constexpr void multMatrix ( const FieldMatrix< K, m, n > &A,
                                     const FieldMatrix< K, n, p > &B,
                                     FieldMatrix< K, m, p > &ret )
     {
@@ -798,7 +799,7 @@ namespace Dune
 
     //! calculates ret= A_t*A
     template <typename K, int rows, int cols>
-    static inline void multTransposedMatrix(const FieldMatrix<K,rows,cols> &matrix, FieldMatrix<K,cols,cols>& ret)
+    static constexpr void multTransposedMatrix(const FieldMatrix<K,rows,cols> &matrix, FieldMatrix<K,cols,cols>& ret)
     {
       typedef typename FieldMatrix<K,rows,cols>::size_type size_type;
 
@@ -815,7 +816,7 @@ namespace Dune
 
     //! calculates ret = matrix^T * x
     template <typename K, int rows, int cols>
-    static inline void multAssignTransposed( const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,rows> & x, FieldVector<K,cols> & ret)
+    static constexpr void multAssignTransposed( const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,rows> & x, FieldVector<K,cols> & ret)
     {
       typedef typename FieldMatrix<K,rows,cols>::size_type size_type;
 
@@ -829,7 +830,7 @@ namespace Dune
 
     //! calculates ret = matrix * x
     template <typename K, int rows, int cols>
-    static inline FieldVector<K,rows> mult(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,cols> & x)
+    static constexpr FieldVector<K,rows> mult(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,cols> & x)
     {
       FieldVector<K,rows> ret;
       multAssign(matrix,x,ret);
@@ -838,7 +839,7 @@ namespace Dune
 
     //! calculates ret = matrix^T * x
     template <typename K, int rows, int cols>
-    static inline FieldVector<K,cols> multTransposed(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,rows> & x)
+    static constexpr FieldVector<K,cols> multTransposed(const FieldMatrix<K,rows,cols> &matrix, const FieldVector<K,rows> & x)
     {
       FieldVector<K,cols> ret;
       multAssignTransposed( matrix, x, ret );

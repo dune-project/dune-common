@@ -196,25 +196,25 @@ namespace Dune
     typedef R Reference;
 
     /** @brief Dereferencing operator. */
-    Reference operator*() const
+    constexpr Reference operator*() const
     {
       return static_cast<DerivedType const*>(this)->dereference();
     }
 
-    Pointer operator->() const
+    constexpr Pointer operator->() const
     {
       return &(static_cast<const DerivedType *>(this)->dereference());
     }
 
     /** @brief Preincrement operator. */
-    DerivedType& operator++()
+    constexpr DerivedType& operator++()
     {
       static_cast<DerivedType *>(this)->increment();
       return *static_cast<DerivedType *>(this);
     }
 
     /** @brief Postincrement operator. */
-    DerivedType operator++(int)
+    constexpr DerivedType operator++(int)
     {
       DerivedType tmp(static_cast<DerivedType const&>(*this));
       this->operator++();
@@ -234,7 +234,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::type
+  constexpr typename EnableIfInterOperable<T1,T2,bool>::type
   operator==(const ForwardIteratorFacade<T1,V1,R1,D>& lhs,
              const ForwardIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -256,7 +256,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::type
+  constexpr typename EnableIfInterOperable<T1,T2,bool>::type
   operator!=(const ForwardIteratorFacade<T1,V1,R1,D>& lhs,
              const ForwardIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -330,25 +330,25 @@ namespace Dune
     typedef R Reference;
 
     /** @brief Dereferencing operator. */
-    Reference operator*() const
+    constexpr Reference operator*() const
     {
       return static_cast<DerivedType const*>(this)->dereference();
     }
 
-    Pointer operator->() const
+    constexpr Pointer operator->() const
     {
       return &(static_cast<const DerivedType *>(this)->dereference());
     }
 
     /** @brief Preincrement operator. */
-    DerivedType& operator++()
+    constexpr DerivedType& operator++()
     {
       static_cast<DerivedType *>(this)->increment();
       return *static_cast<DerivedType *>(this);
     }
 
     /** @brief Postincrement operator. */
-    DerivedType operator++(int)
+    constexpr DerivedType operator++(int)
     {
       DerivedType tmp(static_cast<DerivedType const&>(*this));
       this->operator++();
@@ -357,14 +357,14 @@ namespace Dune
 
 
     /** @brief Preincrement operator. */
-    DerivedType& operator--()
+    constexpr DerivedType& operator--()
     {
       static_cast<DerivedType *>(this)->decrement();
       return *static_cast<DerivedType *>(this);
     }
 
     /** @brief Postincrement operator. */
-    DerivedType operator--(int)
+    constexpr DerivedType operator--(int)
     {
       DerivedType tmp(static_cast<DerivedType const&>(*this));
       this->operator--();
@@ -381,7 +381,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename std::enable_if<std::is_convertible<T2,T1>::value,bool>::type
+  constexpr typename std::enable_if<std::is_convertible<T2,T1>::value,bool>::type
   operator==(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -398,7 +398,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline
+  constexpr
   typename std::enable_if<std::is_convertible<T1,T2>::value && !std::is_convertible<T2,T1>::value,
       bool>::type
   operator==(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
@@ -419,7 +419,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::type
+  constexpr typename EnableIfInterOperable<T1,T2,bool>::type
   operator!=(const BidirectionalIteratorFacade<T1,V1,R1,D>& lhs,
              const BidirectionalIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -498,12 +498,12 @@ namespace Dune
     typedef R Reference;
 
     /** @brief Dereferencing operator. */
-    Reference operator*() const
+    constexpr Reference operator*() const
     {
       return static_cast<DerivedType const*>(this)->dereference();
     }
 
-    Pointer operator->() const
+    constexpr Pointer operator->() const
     {
       return &(static_cast<const DerivedType *>(this)->dereference());
     }
@@ -513,33 +513,33 @@ namespace Dune
      * @param n The distance to the element.
      * @return The element at that distance.
      */
-    Reference operator[](DifferenceType n) const
+    constexpr Reference operator[](DifferenceType n) const
     {
       return static_cast<const DerivedType *>(this)->elementAt(n);
     }
 
     /** @brief Preincrement operator. */
-    DerivedType& operator++()
+    constexpr DerivedType& operator++()
     {
       static_cast<DerivedType *>(this)->increment();
       return *static_cast<DerivedType *>(this);
     }
 
     /** @brief Postincrement operator. */
-    DerivedType operator++(int)
+    constexpr DerivedType operator++(int)
     {
       DerivedType tmp(static_cast<DerivedType const&>(*this));
       this->operator++();
       return tmp;
     }
 
-    DerivedType& operator+=(DifferenceType n)
+    constexpr DerivedType& operator+=(DifferenceType n)
     {
       static_cast<DerivedType *>(this)->advance(n);
       return *static_cast<DerivedType *>(this);
     }
 
-    DerivedType operator+(DifferenceType n) const
+    constexpr DerivedType operator+(DifferenceType n) const
     {
       DerivedType tmp(static_cast<DerivedType const&>(*this));
       tmp.advance(n);
@@ -548,27 +548,27 @@ namespace Dune
 
 
     /** @brief Predecrement operator. */
-    DerivedType& operator--()
+    constexpr DerivedType& operator--()
     {
       static_cast<DerivedType *>(this)->decrement();
       return *static_cast<DerivedType *>(this);
     }
 
     /** @brief Postdecrement operator. */
-    DerivedType operator--(int)
+    constexpr DerivedType operator--(int)
     {
       DerivedType tmp(static_cast<DerivedType const&>(*this));
       this->operator--();
       return tmp;
     }
 
-    DerivedType& operator-=(DifferenceType n)
+    constexpr DerivedType& operator-=(DifferenceType n)
     {
       static_cast<DerivedType *>(this)->advance(-n);
       return *static_cast<DerivedType *>(this);
     }
 
-    DerivedType operator-(DifferenceType n) const
+    constexpr DerivedType operator-(DifferenceType n) const
     {
       DerivedType tmp(static_cast<DerivedType const&>(*this));
       tmp.advance(-n);
@@ -590,7 +590,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::type
+  constexpr typename EnableIfInterOperable<T1,T2,bool>::type
   operator==(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -612,7 +612,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::type
+  constexpr typename EnableIfInterOperable<T1,T2,bool>::type
   operator!=(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -634,7 +634,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::type
+  constexpr typename EnableIfInterOperable<T1,T2,bool>::type
   operator<(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
             const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -657,7 +657,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::type
+  constexpr typename EnableIfInterOperable<T1,T2,bool>::type
   operator<=(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -680,7 +680,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::type
+  constexpr typename EnableIfInterOperable<T1,T2,bool>::type
   operator>(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
             const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -702,7 +702,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,bool>::type
+  constexpr typename EnableIfInterOperable<T1,T2,bool>::type
   operator>=(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
              const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
@@ -724,7 +724,7 @@ namespace Dune
    */
   template<class T1, class V1, class R1, class D,
       class T2, class V2, class R2>
-  inline typename EnableIfInterOperable<T1,T2,D>::type
+  constexpr typename EnableIfInterOperable<T1,T2,D>::type
   operator-(const RandomAccessIteratorFacade<T1,V1,R1,D>& lhs,
             const RandomAccessIteratorFacade<T2,V2,R2,D>& rhs)
   {
