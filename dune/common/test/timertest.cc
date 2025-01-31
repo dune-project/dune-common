@@ -41,7 +41,7 @@ main()
         << (chrono_elapsed / 1.0s) << "s";
     }
 
-    { // let chrono timer run for longer time
+    { // let dune timer run for longer time
       loop_timer.start();
       auto chrono_start = clock::now();
       std::this_thread::sleep_for(10ms);
