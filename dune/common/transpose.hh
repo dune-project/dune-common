@@ -81,9 +81,9 @@ namespace Impl {
   // Wrapper representing the transposed of a matrix.
   // Creating the wrapper does not compute anything
   // but only serves for tagging the wrapped matrix
-  // for transposition. This class will store M by value.
-  // To support reference-semantic, it supports using
-  // M=std::reference_wrapper<OriginalMatrixType>.
+  // for transposition. This class will store the matrix
+  // of type `Matrix` by value. To support reference-semantic,
+  // it supports using Matrix=std::reference_wrapper<OriginalMatrixType>.
   template<class Matrix>
   class TransposedMatrixWrapper :
     public TransposedMatrixWrapperMixin<ResolveRef_t<Matrix>>
