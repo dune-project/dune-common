@@ -48,6 +48,8 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 - Add concept definition `Concept::Number` to represent scalar number types in containers.
 
+- Add the macro `DUNE_ASSUME` for portable compiler assumption.
+
 ## C++: Deprecations and removals
 
 - Deprecate the utility `integerSequenceEntry` in favour of the shorter `get` from `integersequence.hh`.
