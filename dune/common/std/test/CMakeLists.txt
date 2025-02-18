@@ -4,6 +4,9 @@
 # Link all test targets in this directory against Dune::Common
 link_libraries(Dune::Common)
 
+dune_add_test(SOURCES assumetest.cc
+              LABELS quick)
+
 dune_add_test(SOURCES accessorstest.cc
               LABELS quick)
 

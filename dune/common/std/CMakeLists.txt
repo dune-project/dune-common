@@ -3,6 +3,7 @@
 
 install(FILES
   algorithm.hh
+  assume.hh
   cmath.hh
   compare.hh
   default_accessor.hh
