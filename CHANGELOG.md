@@ -23,6 +23,11 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
   `LABEL` property to all tests created with `dune_add_tests` in that module. This
   allows to run these tests with `ctest -L <module>`.
 
+- Change the behavior of `dune_add_test`: Do not add all package flags automatically. This new behavior
+  can be controlled by the new Dune policy `DP_TEST_ADD_ALL_FLAGS`. The `dune_add_test` macro is also
+  extended by the new option `NO_ADD_ALL_FLAGS` to deactivate the `add_dune_all_flags` call when the policy
+  is set to `OLD`.
+
 ## C++: Changelog
 
 - Add preprocessor macro `DUNE_FORCE_INLINE` as a portable attribute to force inlining of functions (if supported).
