@@ -192,17 +192,11 @@
 #       place to make it easy to construct regular expressions from the label
 #       names for :code:`ctest -L ${label_regex}`.
 #
-#    .. cmake_param:: NO_LINK_PROJECT_LIBRARIES
+#    .. cmake_param:: NO_ADD_ALL_FLAGS
 #       :option:
 #
-#       Disable the automatic linking of all <ProjectName>_INTERFACE_LIBRARIES
-#       and instead just link against `Dune::Common`.
-#
-#    .. cmake_param:: NO_ADD_DUNE_ALL_FLAGS
-#       :option:
-#
-#       Disable the call to :ref:`add_dune_all_flags` for the test target. This
-#       call can be globally enabled by the variable `DUNE_ADD_TEST_ADD_DUNE_ALL_FLAGS`
+#       Disable the call to :ref:`add_dune_all_flags` for the test target if
+#       activated globally by the Dune policy `DP_TEST_ADD_ALL_FLAGS=OLD`.
 #
 #    This function defines the Dune way of adding a test to the testing suite.
 #    You may either add the executable yourself through :ref:`add_executable`
@@ -222,11 +216,6 @@
 #    If not in use, you have to build tests through the target :code:`build_tests`. This option
 #    does not apply on non-mutable targets (i.e., aliased and imported targets).
 #
-# .. cmake_variable:: DUNE_ADD_TEST_ADD_DUNE_ALL_FLAGS
-#
-#    Globally enable the call to :ref:`add_dune_all_flags` for all test targets
-#    except for those that are configured with the option `NO_ADD_DUNE_ALL_FLAGS`.
-#
 # .. cmake_variable:: PYTHON_TEST
 #
 #    This flag specifies a python test and is set by the dune_python_add_test command. It disables the check on the existence of the target file.
@@ -236,6 +225,10 @@ include_guard(GLOBAL)
 # enable the testing suite on the CMake side.
 enable_testing()
 include(CTest)
+
+include(DunePolicy)
+dune_define_policy(DP_TEST_ADD_ALL_FLAGS dune-common 2.13
+  "OLD behavior: Automatically call add_dune_all_flags on all test targets. NEW behavior: flags must be set for each test target separately, e.g., using add_dune_pkg_flags, or in directory scope using dune_enable_all_packages.")
 
 # Introduce a target that triggers the building of all tests
 add_custom_target(build_tests)
@@ -274,7 +267,7 @@ if(NOT DUNE_MAX_TEST_CORES)
 endif()
 
 function(dune_add_test)
-  set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY PYTHON_TEST NO_LINK_PROJECT_LIBRARIES NO_ADD_DUNE_ALL_FLAGS)
+  set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY PYTHON_TEST NO_ADD_ALL_FLAGS)
   set(SINGLEARGS NAME TARGET TIMEOUT WORKING_DIRECTORY)
   set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND CMAKE_GUARD LABELS)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
@@ -361,28 +354,24 @@ function(dune_add_test)
   endif()
 
   # add some default libraries to link against
-  if(NOT ADDTEST_NO_LINK_PROJECT_LIBRARIES)
-    get_property(PROJECT_INTERFACE_LIBRARIES GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES)
-    if(${PROJECT_INTERFACE_LIBRARIES})
-      list(APPEND ADDTEST_LINK_LIBRARIES ${PROJECT_INTERFACE_LIBRARIES})
-    else()
-      list(APPEND ADDTEST_LINK_LIBRARIES Dune::Common)
-    endif()
-    list(REMOVE_DUPLICATES ADDTEST_LINK_LIBRARIES)
-  endif()
+  list(APPEND ADDTEST_LINK_LIBRARIES Dune::Common)
+  list(REMOVE_DUPLICATES ADDTEST_LINK_LIBRARIES)
 
   # Add the executable if it is not already present
   if(ADDTEST_SOURCES)
     add_executable(${ADDTEST_NAME} ${ADDTEST_SOURCES})
-    if(DUNE_ADD_TEST_ADD_DUNE_ALL_FLAGS AND NOT NO_ADD_DUNE_ALL_FLAGS)
-      # add all flags to the target!
+
+    # add all flags to the target if corresponding policy is OLD and not explicitly disabled.
+    dune_policy(GET DP_TEST_ADD_ALL_FLAGS _add_all_flags)
+    if(_add_all_flags STREQUAL "OLD" AND NOT NO_ADD_ALL_FLAGS)
       add_dune_all_flags(${ADDTEST_NAME})
     endif()
+    unset(_add_all_flags)
+
     # This is just a placeholder
     target_compile_definitions(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_DEFINITIONS})
     target_compile_options(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_FLAGS})
     target_link_libraries(${ADDTEST_NAME} PUBLIC ${ADDTEST_LINK_LIBRARIES})
-    target_link_libraries(${ADDTEST_NAME} PRIVATE ${DUNE_LIBS})
     set(ADDTEST_TARGET ${ADDTEST_NAME})
   endif()
 

@@ -216,6 +216,12 @@ Policies Introduced by Dune 2.10
     If the module follows a common directory layout, a default set of include directories
     can be set on a target at once using the CMake function ``dune_default_include_directories(<target> <scope>)``.
 
+Policies Introduced by Dune 2.11
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``DP_TEST_ADD_ALL_FLAGS`` (dune-common, set to NEW by default in version 2.13)
+    *OLD behavior:* Automatically call ``add_dune_all_flags`` on all test targets inside of ``dune_add_test``.
+    *NEW behavior:* Flags must be set for each test target separately, e.g., by using ``add_dune_pkg_flags``, or in directory scope using ``dune_enable_all_packages``.
 
 .. _faq:
 
