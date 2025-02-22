@@ -16,7 +16,7 @@ influenced by the global cmake variable ``DUNE_POLICY_DEFAULT``.
   .. code-block:: cmake
 
     dune_policy(GET <policy> <var>)
-    dune_policy(SET <policy> <value>)
+    dune_policy(SET <policy> <value> [QUIET])
     dune_policy(LIST)
 
 .. cmake:command:: dune_define_policy
@@ -62,7 +62,7 @@ function(dune_policy_help _errorlevel _msg)
   message(${_errorlevel} "${_msg}"
     "The function `dune_policy` has the following signatures:"
     "  dune_policy(GET <policy> <var>): extract the value of the given <policy> in the variable <var>."
-    "  dune_policy(SET <policy> <value>): change the given <policy> to <value>."
+    "  dune_policy(SET <policy> <value> [QUIET]): change the given <policy> to <value>."
     "  dune_policy(LIST): list all registered policies with their values."
     "  dune_policy(HELP): show this help message.")
 endfunction(dune_policy_help)
@@ -100,11 +100,15 @@ function(dune_get_policy _policy _var)
   set(${_var} ${_policy_value} PARENT_SCOPE)
 endfunction(dune_get_policy)
 
-# set a given _policy to the _value
+# set a given _policy to the _value. If QUIET is passed as additional argument, ignore undefined policies.
 function(dune_set_policy _policy _value)
+  set(_quiet FALSE)
+  if(ARGC GREATER 2 AND "${ARGV2}" STREQUAL "QUIET")
+    set(_quiet TRUE)
+  endif()
   get_property(_policy_defined GLOBAL PROPERTY DUNE_POLICY_${_policy} DEFINED)
   if(NOT _policy_defined)
-    if(DUNE_POLICY_IGNORE_UNDEFINED)
+    if(_quiet OR DUNE_POLICY_IGNORE_UNDEFINED)
       return()
     else()
       dune_policy_help(FATAL_ERROR "Undefined policy ${_policy}.")
@@ -116,16 +120,16 @@ endfunction(dune_set_policy)
 # generic policy method to get, set, or list policies
 function(dune_policy _method)
   if(_method STREQUAL "GET")
-    if(ARGV2 LESS 3)
+    if(ARGC LESS 3)
       dune_policy_help(FATAL_ERROR "Not enough arguments passed to dune_policy(GET...)")
     endif()
     dune_get_policy(${ARGV1} _var)
     set(${ARGV2} ${_var} PARENT_SCOPE)
   elseif(_method STREQUAL "SET")
-    if(ARGV2 LESS 3)
+    if(ARGC LESS 3)
       dune_policy_help(FATAL_ERROR "Not enough arguments passed to dune_policy(SET...)")
     endif()
-    dune_set_policy(${ARGV1} ${ARGV2})
+    dune_set_policy(${ARGN})
   elseif(_method STREQUAL "LIST")
     get_property(_policies GLOBAL PROPERTY DUNE_POLICIES)
     foreach(_policy ${policies})
