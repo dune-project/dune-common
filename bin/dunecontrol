@@ -656,17 +656,20 @@ run_default_cmake () {
       name=$(eval "echo \$NAME_$m")
       local m_ABS_BUILDDIR=$(abs_builddir $m $BUILDDIR)
 
+      config_dir="$path"
+      for i in $MULTIARCH_LIBDIR lib lib64 lib32; do
+        if test -d "$path/$i/cmake/$name"; then
+          config_dir="$path/$i/cmake/$name"
+          break;
+        fi
+      done
       if test -d "$m_ABS_BUILDDIR"; then
-        CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$m_ABS_BUILDDIR\""
-      else
-        TMP_PARAMS="\"-D""$name""_DIR=$path\""
-        for i in $MULTIARCH_LIBDIR lib lib64 lib32; do
-          if test -d "$path/$i/cmake/$name"; then
-            TMP_PARAMS="\"-D""$name""_DIR=$path/$i/cmake/$name\""
-            break;
-          fi
-        done
-        CMAKE_PARAMS="$CMAKE_PARAMS $TMP_PARAMS"
+        config_dir="$m_ABS_BUILDDIR"
+      fi
+      # Only add directories with CMake config files to -Dmodule_DIR
+      # Then there is at least a chance to find packages in default locations
+      if ls "$config_dir"/*onfig.cmake 1> /dev/null 2>&1; then
+        CMAKE_PARAMS="$CMAKE_PARAMS \"-D""$name""_DIR=$config_dir\""
       fi
     fi
   done
