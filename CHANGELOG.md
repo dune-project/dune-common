@@ -25,6 +25,9 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 ## C++: Changelog
 
+- `Dune::IteratorRange` now supports different types for begin and end iterator
+  to model C++20's sentinel terminated ranges.
+
 - Add preprocessor macro `DUNE_FORCE_INLINE` as a portable attribute to force inlining of functions (if supported).
 
 - Add `bit_width` and `countl_zero` overloads for `bigunsignedint` objects.
