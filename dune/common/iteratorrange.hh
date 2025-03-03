@@ -41,8 +41,8 @@ namespace Dune {
 
     //! Constructs an iterator range on [begin,end).
     IteratorRange(const Iterator& begin, const Sentinel& end)
-      : _begin(begin)
-      , _end(end)
+      : begin_(begin)
+      , end_(end)
     {}
 
     //! Default constructor, relies on iterators being default-constructible.
@@ -52,19 +52,19 @@ namespace Dune {
     //! Returns an iterator pointing to the begin of the range.
     iterator begin() const
     {
-      return _begin;
+      return begin_;
     }
 
     //! Returns an iterator pointing past the end of the range.
     sentinel end() const
     {
-      return _end;
+      return end_;
     }
 
   private:
 
-    Iterator _begin;
-    Sentinel _end;
+    Iterator begin_;
+    Sentinel end_;
 
   };
 
