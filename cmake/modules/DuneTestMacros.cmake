@@ -220,6 +220,10 @@ include_guard(GLOBAL)
 enable_testing()
 include(CTest)
 
+include(DunePolicy)
+dune_define_policy(DP_TEST_ADD_ALL_FLAGS dune-common 2.13
+  "OLD behavior: Automatically call add_dune_all_flags on all test targets. NEW behavior: flags must be set for each test target separately, e.g., using add_dune_pkg_flags, or in directory scope using dune_enable_all_packages.")
+
 # Introduce a target that triggers the building of all tests
 add_custom_target(build_tests)
 
@@ -350,8 +354,14 @@ function(dune_add_test)
   # Add the executable if it is not already present
   if(ADDTEST_SOURCES)
     add_executable(${ADDTEST_NAME} ${ADDTEST_SOURCES})
-    # add all flags to the target!
-    add_dune_all_flags(${ADDTEST_NAME})
+
+    # add all flags to the target if corresponding policy is OLD and not explicitly disabled.
+    dune_policy(GET DP_TEST_ADD_ALL_FLAGS _add_all_flags)
+    if(_add_all_flags STREQUAL "OLD")
+      add_dune_all_flags(${ADDTEST_NAME})
+    endif()
+    unset(_add_all_flags)
+
     # This is just a placeholder
     target_compile_definitions(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_DEFINITIONS})
     target_compile_options(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_FLAGS})
