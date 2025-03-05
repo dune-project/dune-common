@@ -34,6 +34,8 @@ endif()
 # add function to link against the ParMETIS library
 function(add_dune_parmetis_flags _targets)
   if(ParMETIS_FOUND)
+    add_dune_metis_flags(${_targets})
+    add_dune_mpi_flags(${_targets})
     foreach(_target ${_targets})
       target_link_libraries(${_target} PUBLIC ParMETIS::ParMETIS)
       target_compile_definitions(${_target} PUBLIC ${PARMETIS_COMPILE_DEFINITIONS})
