@@ -192,12 +192,6 @@
 #       place to make it easy to construct regular expressions from the label
 #       names for :code:`ctest -L ${label_regex}`.
 #
-#    .. cmake_param:: NO_ADD_ALL_FLAGS
-#       :option:
-#
-#       Disable the call to :ref:`add_dune_all_flags` for the test target if
-#       activated globally by the Dune policy `DP_TEST_ADD_ALL_FLAGS=OLD`.
-#
 #    This function defines the Dune way of adding a test to the testing suite.
 #    You may either add the executable yourself through :ref:`add_executable`
 #    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
@@ -267,7 +261,7 @@ if(NOT DUNE_MAX_TEST_CORES)
 endif()
 
 function(dune_add_test)
-  set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY PYTHON_TEST NO_ADD_ALL_FLAGS)
+  set(OPTIONS EXPECT_COMPILE_FAIL EXPECT_FAIL SKIP_ON_77 COMPILE_ONLY PYTHON_TEST)
   set(SINGLEARGS NAME TARGET TIMEOUT WORKING_DIRECTORY)
   set(MULTIARGS SOURCES COMPILE_DEFINITIONS COMPILE_FLAGS LINK_LIBRARIES CMD_ARGS MPI_RANKS COMMAND CMAKE_GUARD LABELS)
   cmake_parse_arguments(ADDTEST "${OPTIONS}" "${SINGLEARGS}" "${MULTIARGS}" ${ARGN})
@@ -363,7 +357,7 @@ function(dune_add_test)
 
     # add all flags to the target if corresponding policy is OLD and not explicitly disabled.
     dune_policy(GET DP_TEST_ADD_ALL_FLAGS _add_all_flags)
-    if(_add_all_flags STREQUAL "OLD" AND NOT NO_ADD_ALL_FLAGS)
+    if(_add_all_flags STREQUAL "OLD")
       add_dune_all_flags(${ADDTEST_NAME})
     endif()
     unset(_add_all_flags)
