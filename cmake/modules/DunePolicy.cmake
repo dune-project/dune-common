@@ -41,41 +41,28 @@ Global options
 ``DUNE_POLICY_DISABLE_WARNING`` (default=FALSE)
   If set to `TRUE`, warnings about unset dune policies are deactivated.
 
-``DUNE_POLICY_IGNORE_UNDEFINED`` (default=FALSE)
-  Ignore undefined dune policies in GET and SET operations.
-  This option is useful if you want to set a policy in a module that
-  should be compatible with a range of upstream dune modules where
-  possibly not all policies are already defined. If this option is set to
-  `FALSE`, an error message is shown if you try to set or get an undefined
-  policy.
-
 #]=======================================================================]
 include_guard(GLOBAL)
 
 set(DUNE_POLICY_DEFAULT "OLD" CACHE STRING "Default value for an unset dune policy.")
 set_property(CACHE DUNE_POLICY_DEFAULT PROPERTY STRINGS "OLD" "NEW")
 option(DUNE_POLICY_DISABLE_WARNING "Do not show warnings about unset dune policies." FALSE)
-option(DUNE_POLICY_IGNORE_UNDEFINED "Ignore undefined dune policies in GET and SET operations." FALSE)
 
 # print a help message with the signature of the dune_policy function
 function(dune_policy_help _errorlevel _msg)
-  message(${_errorlevel} "${_msg}"
-    "The function `dune_policy` has the following signatures:"
-    "  dune_policy(GET <policy> <var>): extract the value of the given <policy> in the variable <var>."
-    "  dune_policy(SET <policy> <value> [QUIET]): change the given <policy> to <value>."
-    "  dune_policy(LIST): list all registered policies with their values."
-    "  dune_policy(HELP): show this help message.")
+  message(${_errorlevel} "${_msg}\n"
+    "The function `dune_policy` has the following signatures:\n"
+    "  dune_policy(GET <policy> <var>): extract the value of the given <policy> in the variable <var>.\n"
+    "  dune_policy(SET <policy> <value> [QUIET]): change the given <policy> to <value>.\n"
+    "  dune_policy(LIST): list all registered policies with their values.\n"
+    "  dune_policy(HELP): show this help message.\n")
 endfunction(dune_policy_help)
 
 # get the value of a _policy, or the DUNE_POLICY_DEFAULT, or NEW if the policy's dune version is reached
 function(dune_get_policy _policy _var)
   get_property(_policy_defined GLOBAL PROPERTY DUNE_POLICY_${_policy} DEFINED)
   if(NOT _policy_defined)
-    if(DUNE_POLICY_IGNORE_UNDEFINED)
-      return()
-    else()
-      dune_policy_help(FATAL_ERROR "Undefined policy ${_policy}.")
-    endif()
+    dune_policy_help(FATAL_ERROR "Undefined policy ${_policy}.")
   endif()
   get_property(_policy_set GLOBAL PROPERTY DUNE_POLICY_${_policy} SET)
   if(NOT _policy_set)
@@ -108,11 +95,10 @@ function(dune_set_policy _policy _value)
   endif()
   get_property(_policy_defined GLOBAL PROPERTY DUNE_POLICY_${_policy} DEFINED)
   if(NOT _policy_defined)
-    if(_quiet OR DUNE_POLICY_IGNORE_UNDEFINED)
-      return()
-    else()
-      dune_policy_help(FATAL_ERROR "Undefined policy ${_policy}.")
+    if(NOT _quiet)
+      dune_policy_help(AUTHOR_WARNING "Undefined policy ${_policy} (ignored).")
     endif()
+    return()
   endif()
   set_property(GLOBAL PROPERTY DUNE_POLICY_${_policy} ${_value})
 endfunction(dune_set_policy)
