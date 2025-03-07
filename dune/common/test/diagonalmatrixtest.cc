@@ -9,9 +9,11 @@
 #include <iostream>
 #include <algorithm>
 
+#include <dune/common/dynmatrix.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/diagonalmatrix.hh>
+#include <dune/common/transpose.hh>
 
 #include "checkmatrixinterface.hh"
 
@@ -64,6 +66,19 @@ void test_matrix()
   DiagonalMatrix<K,n> AT = A.transposed();
   if (AT != A)
     DUNE_THROW(FMatrixError, "Return value of DiagoalMatrix::transposed() incorrect!");
+
+  // check matrix-matrix multiplication
+  [[maybe_unused]] auto AA = A * A;
+  [[maybe_unused]] auto AF = A * AFM;
+  [[maybe_unused]] auto FA = AFM * A;
+  [[maybe_unused]] auto AFt = A * transposedView(AFM);
+  [[maybe_unused]] auto FtA = transposedView(AFM) * A;
+
+  Dune::DynamicMatrix<K> ADM(n,n);
+  [[maybe_unused]] auto AD = A * ADM;
+  // [[maybe_unused]] auto DA = ADM * A;
+  [[maybe_unused]] auto ADt = A * transposedView(ADM);
+  // [[maybe_unused]] auto DtA = transposedView(ADM) * A;
 }
 
 template<class K, int n>

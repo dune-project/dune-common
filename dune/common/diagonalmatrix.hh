@@ -20,10 +20,13 @@
 
 #include <dune/common/boundschecking.hh>
 #include <dune/common/densematrix.hh>
+#include <dune/common/dynmatrix.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/ftraits.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/genericiterator.hh>
+#include <dune/common/matrixconcepts.hh>
 #include <dune/common/typetraits.hh>
 
 
@@ -473,7 +476,39 @@ namespace Dune {
       return result;
     }
 
+    /**
+     * \brief Multiply a diagonal matrix with a dense matrix.
+     *
+     * The result of this multiplication is either a `FieldMatrix` if the
+     * `matrixB` is a matrix with static size, or a `DynamicMatrix`. This
+     * overload is deactivated for `matrixB` being a `FieldMatrix` since this
+     * is already covered by the corresponding overload of the `operator*` in
+     * the `FieldMatrix` class.
+     */
+    template <class OtherMatrix,
+      std::enable_if_t<(Impl::IsDenseMatrix<OtherMatrix>::value), int> = 0,
+      std::enable_if_t<(not Impl::IsFieldMatrix<OtherMatrix>::value), int> = 0>
+    friend auto operator* ( const DiagonalMatrix& matrixA,
+                            const OtherMatrix& matrixB)
+    {
+      using OtherField = typename FieldTraits<OtherMatrix>::field_type;
+      using F = typename PromotionTraits<field_type, OtherField>::PromotedType;
 
+      auto result = [&]{
+        if constexpr (Impl::IsStaticSizeMatrix_v<OtherMatrix>) {
+          static_assert(n == OtherMatrix::rows);
+          return FieldMatrix<F, n, OtherMatrix::cols>{};
+        } else {
+          assert(n == matrixB.N());
+          return DynamicMatrix<F>{n,matrixB.M()};
+        }
+      }();
+
+      for (int i = 0; i < result.N(); ++i)
+        for (int j = 0; j < result.M(); ++j)
+          result[i][j] = matrixA.diagonal(i) * matrixB[i][j];
+      return result;
+    }
 
     //===== sizes
 
@@ -638,6 +673,31 @@ namespace Dune {
                             const DiagonalMatrix<OtherScalar, 1>& matrixB)
     {
       return DiagonalMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType, 1>{matrixA.diagonal(0)*matrixB.diagonal(0)};
+    }
+
+    template <class OtherMatrix,
+      std::enable_if_t<(Impl::IsDenseMatrix<OtherMatrix>::value), int> = 0,
+      std::enable_if_t<(not Impl::IsFieldMatrix<OtherMatrix>::value), int> = 0>
+    friend auto operator* ( const DiagonalMatrix& matrixA,
+                            const OtherMatrix& matrixB)
+    {
+      using OtherField = typename FieldTraits<OtherMatrix>::field_type;
+      using F = typename PromotionTraits<K, OtherField>::PromotedType;
+
+      auto result = [&]{
+        if constexpr (Impl::IsStaticSizeMatrix_v<OtherMatrix>) {
+          static_assert(1 == OtherMatrix::rows);
+          return FieldMatrix<F, 1, OtherMatrix::cols>{};
+        } else {
+          assert(1 == matrixB.N());
+          return DynamicMatrix<F>{1,matrixB.M()};
+        }
+      }();
+
+      for (int i = 0; i < result.N(); ++i)
+        for (int j = 0; j < result.M(); ++j)
+          result[i][j] = matrixA.diagonal(i) * matrixB[i][j];
+      return result;
     }
 
   };
