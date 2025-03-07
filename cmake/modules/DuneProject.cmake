@@ -532,7 +532,9 @@ endif()")
   endif()
 
   # install pkg-config files
-  create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
+  if(EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}.pc.in)
+    create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
+  endif()
 
   ###########################
   ### HEADER CONFIG FILEs ###
