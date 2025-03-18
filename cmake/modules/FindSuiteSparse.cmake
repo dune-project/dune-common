@@ -131,11 +131,13 @@ foreach(_component ${SUITESPARSE_COMPONENTS})
   find_library(${_component}_LIBRARY "${_componentLower}"
     HINTS ${SUITESPARSE_LIB_DIR}
     PATH_SUFFIXES "${_component}/Lib"
+    NO_DEFAULT_PATH
   )
   # look for header file of the component
   find_path(${_component}_INCLUDE_DIR "${_componentLower}.h"
     HINTS ${SUITESPARSE_INCLUDE_DIR}
     PATH_SUFFIXES "suitesparse" "include" "${_component}/Include"
+    NO_DEFAULT_PATH
   )
 
   mark_as_advanced(${_component}_INCLUDE_DIR ${_component}_LIBRARY)
@@ -145,14 +147,18 @@ endforeach()
 find_path(SPQR_INCLUDE_DIR "SuiteSparseQR.hpp"
   HINTS ${SUITESPARSE_INCLUDE_DIR}
   PATH_SUFFIXES "suitesparse" "include" "SPQR/Include"
+  NO_DEFAULT_PATH
 )
+
 find_path(Mongoose_INCLUDE_DIR "Mongoose.hpp"
   HINTS ${SUITESPARSE_INCLUDE_DIR}
   PATH_SUFFIXES "suitesparse" "include" "Mongoose/Include"
+  NO_DEFAULT_PATH
 )
 find_path(GraphBLAS_INCLUDE_DIR "GraphBLAS.h"
   HINTS ${SUITESPARSE_INCLUDE_DIR}
   PATH_SUFFIXES "suitesparse" "include" "GraphBLAS/Include"
+  NO_DEFAULT_PATH
 )
 
 # check version of SuiteSparse
