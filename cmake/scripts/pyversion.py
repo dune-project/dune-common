@@ -26,14 +26,25 @@ with warnings.catch_warnings():
         sys.stdout.write(module.__version__)
         sys.exit(0)
 
+if sys.version_info.major == 3 and sys.version_info.minor >= 8:
+    import importlib.metadata
+    try:
+        sys.stdout.write(importlib.metadata.version(modstr))
+        sys.exit(0)
+    except importlib.metadata.PackageNotFoundError:
+        pass
+
 # Alternative implementation: through pip (pip itself implement pip.__version__,
 # so we never get here, when checking the version of pip itself), only works if
 # package name and distribution name are the same
-import pkg_resources
-for package in pkg_resources.working_set:
-    if package.project_name == modstr and package.has_version():
-        sys.stdout.write(package.version)
-        sys.exit(0)
+try:
+    import pkg_resources
+    for package in pkg_resources.working_set:
+        if package.project_name == modstr and package.has_version():
+            sys.stdout.write(package.version)
+            sys.exit(0)
+except ImportError:
+    pass
 
-# Give up on this one
+# We ran out of options: give up on this one
 sys.exit(1)
