@@ -167,10 +167,10 @@ public:
 
   /// \brief Converting constructor
   template <class OtherElementType, class OtherExtends, class OtherLayoutPolicy, class OtherAccessor,
-    std::enable_if_t<std::is_constructible_v<mapping_type, const typename OtherElementType::template mapping<OtherExtends>&>, int> = 0,
+    std::enable_if_t<std::is_constructible_v<mapping_type, const typename OtherLayoutPolicy::template mapping<OtherExtends>&>, int> = 0,
     std::enable_if_t<std::is_constructible_v<accessor_type, const OtherAccessor&>, int> = 0>
   #if __cpp_conditional_explicit >= 201806L
-  explicit(!std::is_convertible_v<const typename OtherElementType::template mapping<OtherExtends>&, mapping_type>
+  explicit(!std::is_convertible_v<const typename OtherLayoutPolicy::template mapping<OtherExtends>&, mapping_type>
     || !std::is_convertible_v<const OtherAccessor&, accessor_type>)
   #endif
   constexpr mdspan (const mdspan<OtherElementType,OtherExtends,OtherLayoutPolicy,OtherAccessor>& other) noexcept
