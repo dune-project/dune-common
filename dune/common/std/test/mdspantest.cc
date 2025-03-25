@@ -83,6 +83,11 @@ void test_accessor (Dune::TestSuite& testSuite, std::string name, const M& mappi
   else if constexpr(Span::rank() == 3)
     Span span5{dh, e.extent(0), e.extent(1), e.extent(2)};
 
+  // converting constructor
+  using OtherExtents = Dune::Std::dextents<std::size_t, Span::rank()>;
+  using OtherSpan = Dune::Std::mdspan<typename A::element_type, OtherExtents, typename M::layout_type, A>;
+  OtherSpan otherSpan(span4);
+
   checkAccess(subTestSuite, span2);
   testSuite.subTest(subTestSuite);
 }
