@@ -574,7 +574,7 @@ endif()")
   configure_file(${CMAKE_CURRENT_BINARY_DIR}/config_collected.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
   if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
-    feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES)
+    feature_summary(WHAT ALL)
   endif()
 
 endmacro(finalize_dune_project)
