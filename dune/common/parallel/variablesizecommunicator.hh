@@ -1002,7 +1002,7 @@ std::size_t checkReceiveAndContinueReceiving(DataHandle& handle,
 }
 
 
-bool validRecvRequests(const std::vector<MPI_Request> reqs)
+bool validRecvRequests(const std::vector<MPI_Request>& reqs)
 {
   for(std::vector<MPI_Request>::const_iterator i=reqs.begin(), end=reqs.end();
       i!=end; ++i)
