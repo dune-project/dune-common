@@ -51,12 +51,12 @@ int main(int argc, char** argv){
     std::cout << "Broadcast lvalue-reference" << std::endl;
     answer = 42;
   }
-  Dune::Future<int> f = cc.template ibroadcast(answer, 0);
+  Dune::Future<int> f = cc.ibroadcast(answer, 0);
   f.wait();
   std::cout << "Rank " << mpihelper.rank() << " knows: The answer is " << answer << std::endl;
   if(mpihelper.rank() == 0)
     std::cout << "Broadcast value" << std::endl;
-  Dune::Future<int> f2 = cc.template ibroadcast(int(answer), 0);
+  Dune::Future<int> f2 = cc.ibroadcast(int(answer), 0);
   std::cout << "Rank " << mpihelper.rank() << " knows: The answer is " << f2.get() << std::endl;
 
   Dune::DynamicVector<double> vec(3);
