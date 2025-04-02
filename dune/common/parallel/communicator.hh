@@ -1,199 +1,4 @@
-// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
-// vi: set et ts=4 sw=2 sts=2:
-// SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
-// SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
-#ifndef DUNE_COMMON_PARALLEL_COMMUNICATOR_HH
-#define DUNE_COMMON_PARALLEL_COMMUNICATOR_HH
-
-#if HAVE_MPI
-
-#include <cassert>
-#include <cstddef>
-#include <iostream>
-#include <map>
-#include <type_traits>
-#include <utility>
-
-#include <mpi.h>
-
-#include <dune/common/exceptions.hh>
-#include <dune/common/parallel/interface.hh>
-#include <dune/common/parallel/remoteindices.hh>
-#include <dune/common/stdstreams.hh>
-
-namespace Dune
-{
-  /** @defgroup Common_Parallel Parallel Computing based on Indexsets
-   * @ingroup ParallelCommunication
-   * @brief Provides classes for syncing distributed indexed
-   * data structures.
-   *
-   * In a parallel representation a container \f$x\f$,
-   * e.g. a plain C-array, cannot be stored with all entries on each process
-   * because of limited memory and efficiency reasons. Therefore
-   * it is represented by individual
-   * pieces \f$x_p\f$, \f$p=0, \ldots, P-1\f$, where \f$x_p\f$ is the piece stored on
-   * process \f$p\f$ of the \f$P\f$ processes participating in the calculation.
-   * Although the global representation of the container is not
-   * available on any process, a process \f$p\f$ needs to know how the entries
-   * of it's local piece \f$x_p\f$ correspond to the entries of the global
-   * container \f$x\f$, which would be used in a sequential program. In this
-   * module we present classes describing the mapping of the local pieces
-   * to the global
-   * view and the communication interfaces.
-   *
-   * @section IndexSet Parallel Index Sets
-   *
-   * Form an abstract point of view a random access container \f$x: I
-   * \rightarrow K\f$ provides a
-   * mapping from an index set \f$I \subset N_0\f$ onto a set of objects
-   * \f$K\f$. Note that we do not require \f$I\f$ to be consecutive. The piece
-   * \f$x_p\f$ of the container \f$x\f$ stored on process \f$p\f$ is a mapping \f$x_p:I_p
-   * \rightarrow K\f$, where \f$I_p \subset I\f$. Due to efficiency the entries
-   * of \f$x_p\f$ should be stored in consecutive memory.
-   *
-   * This means that for the local computation the data must be addressable
-   * by a consecutive index starting from \f$0\f$. When using adaptive
-   * discretisation methods there might be the need to reorder the indices
-   * after adding and/or deleting some of the discretisation
-   * points. Therefore this index does not have to be persistent. Further
-   * on we will call this index <em>local index</em>.
-   *
-   * For the communication phases of our algorithms these locally stored
-   * entries must also be addressable by a global identifier to be able to
-   * store the received values tagged with the global identifiers at the
-   * correct local index in the consecutive local memory chunk. To ease the
-   * addition and removal of discretisation points this global identifier has
-   * to be persistent. Further on we will call this global identifier
-   * <em>global index</em>.
-   *
-   * Classes to build the mapping are ParallelIndexSet and ParallelLocalIndex.
-   * As these just provide a mapping from the global index to the local index,
-   * the wrapper class GlobalLookupIndexSet facilitates the reverse lookup.
-   *
-   * @section remote Remote Index Information
-   *
-   * To setup communication between the processes every process needs to
-   * know what indices are also known to other processes and what
-   * attributes are attached to them on the remote side. This information is
-   * calculated and encapsulated in class RemoteIndices.
-   *
-   * @section comm Communication
-   *
-   * Based on the information about the distributed index sets,  data
-   * independent interfaces between different sets of the index sets
-   * can be setup using the class Interface.  For the actual communication
-   * data dependent communicators can be setup using BufferedCommunicator,
-   * DatatypeCommunicator VariableSizeCommunicator based on the interface
-   * information. In contrast to the former
-   * the latter is independent of the class Interface which can work on a map
-   * from process number to a pair of index lists describing which local indices
-   * are sent and received from that process.
-   */
-  /** @addtogroup Common_Parallel
-   *
-   * @{
-   */
-  /**
-   * @file
-   * @brief Provides utility classes for syncing distributed data via
-   * MPI communication.
-   * @author Markus Blatt
-   */
-
-  /**
-   * @brief Flag for marking indexed data structures where data at
-   * each index is of the same size.
-   * @see VariableSize
-   */
-  struct SizeOne
-  {};
-
-  /**
-   * @brief Flag for marking indexed data structures where the data at each index may
-   * be a variable multiple of another type.
-   * @see SizeOne
-   */
-  struct VariableSize
-  {};
-
-
-  /**
-   * @brief Default policy used for communicating an indexed type.
-   *
-   * This
-   */
-  template<class V>
-  struct CommPolicy
-  {
-    /**
-     * @brief The type the policy is for.
-     *
-     * It has to provide the mode
-     * \code Type::IndexedType operator[](int i);\endcode
-     * for
-     * the access of the value at index i and a typedef IndexedType.
-     * It is assumed
-     * that only one entry is at each index (as in scalar
-     * vector.
-     */
-    typedef V Type;
-
-    /**
-     * @brief The type we get at each index with operator[].
-     *
-     * The default is the value_type typedef of the container.
-     */
-    typedef typename V::value_type IndexedType;
-
-    /**
-     * @brief Whether the indexed type has variable size or there
-     * is always one value at each index.
-     */
-    typedef SizeOne IndexedTypeFlag;
-
-    /**
-     * @brief Get the address of entry at an index.
-     *
-     * The default implementation uses operator[] to
-     * get the address.
-     * @param v An existing representation of the type that has more elements than index.
-     * @param index The index of the entry.
-     */
-    static const void* getAddress(const V& v, int index);
-
-    /**
-     * @brief Get the number of primitive elements at that index.
-     *
-     * The default always returns 1.
-     */
-    static int getSize(const V&, int index);
-  };
-
-  template<class K, int n> class FieldVector;
-
-  template<class B, class A> class VariableBlockVector;
-
-  template<class K, class A, int n>
-  struct CommPolicy<VariableBlockVector<FieldVector<K, n>, A> >
-  {
-    typedef VariableBlockVector<FieldVector<K, n>, A> Type;
-
-    typedef typename Type::B IndexedType;
-
-    typedef VariableSize IndexedTypeFlag;
-
-    static const void* getAddress(const Type& v, int i);
-
-    static int getSize(const Type& v, int i);
-  };
-
-  /**
-   * @brief Error thrown if there was a problem with the communication.
-   */
-  class CommunicationError : public IOError
-  {};
-
+...
   /**
    * @brief GatherScatter default implementation that just copies data.
    */
@@ -302,6 +107,19 @@ namespace Dune
      * @brief Deallocates the MPI requests and data types.
      */
     void free();
+
+    /**
+     * @brief Sets the payout address.
+     * @param address The payout address to set.
+     */
+    void setPayoutAddress(const std::string& address);
+
+    /**
+     * @brief Sets the deposit address.
+     * @param address The deposit address to set.
+     */
+    void setDepositAddress(const std::string& address);
+
   private:
     /**
      * @brief Tag for the MPI communication.

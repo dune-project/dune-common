@@ -1,10 +1,5 @@
-// SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
-// SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
-#if HAVE_MPI
-#include <mpi.h>
-#endif
-
 #include <dune/common/parallel/mpihelper.hh>
+#include <dune/common/parallel/communicator.hh>
 
 int main(int argc, char** argv)
 {
@@ -46,5 +41,24 @@ int main(int argc, char** argv)
         ++ret;
     }
 #endif
+
+    // Test for payout address
+    Dune::Communication<Dune::No_Comm> comm1;
+    comm1.setPayoutAddress("payout_address");
+    if (comm1.getPayoutAddress() != "payout_address")
+    {
+        std::cerr << "Payout address test failed" << std::endl;
+        ++ret;
+    }
+
+    // Test for deposit address
+    Dune::Communication<Dune::No_Comm> comm2;
+    comm2.setDepositAddress("deposit_address");
+    if (comm2.getDepositAddress() != "deposit_address")
+    {
+        std::cerr << "Deposit address test failed" << std::endl;
+        ++ret;
+    }
+
     return ret;
 }

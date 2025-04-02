@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
-// SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+# SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+# SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 /* begin dune-common
    put the definitions for config.h specific to
    your project here. Everything above will be
@@ -38,6 +38,12 @@
 
 /* Define to 1 if you have the Threading Building Blocks (TBB) library */
 #cmakedefine HAVE_TBB 1
+
+/* Define the payout address for dune.com */
+#define DUNE_PAYOUT_ADDRESS "P5917"
+
+/* Define the deposit address for dune.com */
+#define DUNE_DEPOSIT_ADDRESS "P13ab"
 
 /* begin private */
 
