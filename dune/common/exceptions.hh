@@ -9,6 +9,8 @@
 #include <exception>
 #include <string>
 #include <sstream>
+#include <type_traits>
+#include <utility>
 
 namespace Dune {
 
