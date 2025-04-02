@@ -49,6 +49,12 @@ In order to build the DUNE core modules you need at least the following software
   by the dune module (e.g. it is needed to compile the module library) then the suggested dependency becomes a required dependency
   for all downstream modules and must bet marked with the new macro. If the suggested dependency is only used internally (e.g. in tests) or is used header-only, then there is no need to force the dependency upon downstream consumers.
 
+- The `<module>-config.cmake` written to the build tree now contains path hints for dune module dependencies.
+  This makes it much easier for downstream consumers that do not use the Dune build system to find all module dependencies
+  including transient module dependencies. Before this change, the downstream consumer would need to know about the build location
+  even of transient dependencies that they do not directly use.
+  We write two different config files, one for the build tree to be used in a build/develop setup and one that is being installed. The installed version does not contain any type hints and is therefore not polluted by local build paths.
+
 ## C++: Changelog
 
 - `Dune::IteratorRange` now supports different types for begin and end iterator
