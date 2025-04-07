@@ -87,7 +87,7 @@ Getting the changes to us
 -------------------------
 
 You should get your changes to us in the following way:
-* Get an account for [our GitLab instance](http://gitlab.dune-project.org).
+* Get an account for [our GitLab instance](https://gitlab.dune-project.org).
 * Fork the core module that you want to contribute to, just
   as you would do on GitHub.
 * Push your changes to your fork on some branch.
