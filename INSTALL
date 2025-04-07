@@ -26,13 +26,13 @@ Run
 
 to commence those tests and build all modules you have
 downloaded. Don't worry about messages telling you that libraries are
-missing: they are only needed for grid-self-checks we need for
-developing.
+not found: they are only needed for optional features and grid-self-checks 
+we need for developing.
 
 You can customize the build to your specific needs by using an options file
 (see below)
 
-  ./dune-common/bin/dunecontrol --opts=/path_to/file.opts
+  ./dune-common/bin/dunecontrol --opts=/path_to/file.opts [command]
 
 If you did not tell dunecontrol to install with an options file you
 need to run
@@ -40,7 +40,7 @@ need to run
   ./dune-common/bin/dunecontrol make install
 
 to install Dune (you may need root-permissions for the install
-part depending on the prefix set)
+part depending on the prefix set in the cmake variable CMAKE_INSTALL_PREFIX)
 
 A more comprehensive introduction to the build system can be found in [0].
 
@@ -50,13 +50,13 @@ Passing options to the build process
 Using the dunecontrol script the following atomic commands can be
 executed:
 
-- configure (runs the CMake configuration tests for each module)
+- cmake (runs the CMake configuration tests for each module)
 - exec (executes a command in each module source directory)
 - bexec (executes a command in each module build directory)
 - make (builds each module)
-- update (updates the Git or Subversion version)
+- update (updates the Git version)
 
-The composite command all simply runs configure and make for
+The composite command _all_ simply runs _cmake_ and _make_ for
 each module.
 
 As it is often not convenient to specify the desired options after
@@ -76,5 +76,5 @@ An example of an options file is
 Links
 -----
 
-0. https://www.dune-project.org/doc/installation
+0. https://www.dune-project.org/installation/installation-buildsrc
 1. https://dune-project.org/releases/
