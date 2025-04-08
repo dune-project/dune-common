@@ -5,6 +5,17 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 # Master (will become release 2.11)
 
+## Dependencies
+In order to build the DUNE core modules you need at least the following software:
+
+- C++ compilers LLVM Clang >= 13 or GCC g++ >= 10, with standard library LLVM
+  libc++ >= 13 or GNU libstdc++ >= 10.
+- CMake >= 3.16
+- pkg-config to find other optional dependencies
+- The Python bindings require at least Python 3.7 or higher and are currently not
+  compatible to libc++.
+
+
 ## Build system: Changelog
 
 - Propagate dependencies of `dune-common` when consumed. This means that a CMake project may find
