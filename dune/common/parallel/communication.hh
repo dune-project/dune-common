@@ -143,7 +143,7 @@ namespace Dune
         @returns Future<T> containing the send buffer, completes when data is send
      */
     template<class T>
-    PseudoFuture<T> isend([[maybe_unused]] const T&& data,
+    PseudoFuture<T> isend([[maybe_unused]] T&& data,
                           [[maybe_unused]] int dest_rank,
                           [[maybe_unused]] int tag) const
     {
