@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 add_subdirectory(FindPkgConfig)
-add_subdirectory(FindPython3)
 
 install(FILES
   AddBLASLapackFlags.cmake
