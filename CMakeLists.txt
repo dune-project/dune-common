@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25)
 project(dune-common LANGUAGES C CXX)
 
 # CMake 3.29.1 is incompatible as it removed PACKAGE_PREFIX_DIR
