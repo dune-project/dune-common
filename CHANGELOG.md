@@ -37,6 +37,18 @@ In order to build the DUNE core modules you need at least the following software
 - Change the behavior of `dune_add_test`: Do not add all package flags automatically. This new behavior
   can be controlled by the new Dune policy `DP_TEST_ADD_ALL_FLAGS`.
 
+- Change the treatment of optional dependency modules listed in dune.module's `Suggests` section.
+  OLD behavior: when a suggsted dependency is found by cmake, it becomes a required dependency for all downstream
+  consumers of the module because the generated `<module>-config.cmake` file contains a line `find_dependency(<suggested dependency>)`.
+  `find_package(module)` fails when `<suggested dependency>` is not found by the downstream consumer.
+  NEW behavior: suggested dependency are not added to `<module>-config.cmake` unless explicitly enforced
+  by calling a new helper macro `dune_mark_module_as_required_dependency(<suggested dependency>)`.
+  The behavior is controlled by setting the Dune policy `DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM` to `OLD` or `NEW`.
+  When set to `NEW` the old behavior is recovered if all suggested dependencies are explicitly marked with `dune_mark_module_as_required_dependency(<suggested dependency>)`.
+  When to mark a suggested dependency in this way? If a suggested dependency, if found, is compiled into targets exported
+  by the dune module (e.g. it is needed to compile the module library) then the suggested dependency becomes a required dependency
+  for all downstream modules and must bet marked with the new macro. If the suggested dependency is only used internally (e.g. in tests) or is used header-only, then there is no need to force the dependency upon downstream consumers.
+
 ## C++: Changelog
 
 - `Dune::IteratorRange` now supports different types for begin and end iterator
