@@ -42,6 +42,27 @@ Initialize and finalize a Dune module.
   configuration files is also created. For more information, see the build
   system documentation.
 
+
+.. cmake_function:: dune_mark_module_as_required_dependency
+
+  .. cmake_brief::
+
+    Mark a module as required in downstream projects
+
+  .. cmake_param:: MODULE
+     :single:
+
+    The name of the module to be marked as a required dependency.
+
+  This function is used to force a module to be required in downstream projects
+  even if it is only "suggested". This is useful for modules that are not required
+  by default but are needed for the module to work once found. The main example is
+  that once a dependency is found, a source file relying on the dependency is compiled
+  into the module library. Then, for consistency, this dependency becomes a requirement
+  for all downstream consumers of the module library.
+  This function should be called after ``dune_project()`` and before
+  ``finalize_dune_project()``.
+
 #]=======================================================================]
 include_guard(GLOBAL)
 
@@ -60,6 +81,47 @@ include(OverloadCompilerFlags)
 include(DunePolicy)
 dune_define_policy(DP_DEFAULT_INCLUDE_DIRS dune-common 2.12
   "OLD behavior: Use global include_directories. NEW behavior: Include directories must be set on a module library target and are not set globally anymore.")
+
+dune_define_policy(DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM dune-common 2.12
+  "OLD behavior: All found dune modules listed in dune.module's 'Depends:' or 'Suggested:' are required in downstream projects. NEW behavior: Only dependencies listed in 'Depends:' and manually marked module dependencies are required.")
+
+
+function(dune_mark_module_as_required_dependency)
+  cmake_parse_arguments(ARG "" "MODULE" "" ${ARGN})
+  # does nothing when choosing the old behavior
+  # to mimic the old behavior with the policy set to NEW, call this macro
+  # for all found modules in the <module_name>_SUGGESTS list
+  dune_policy(GET DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM _require_module_policy)
+  if (_require_module_policy STREQUAL "OLD")
+    return()
+  endif()
+
+  # This shouldn't be called for modules that are not found
+  if(NOT ${ARG_MODULE}_FOUND)
+    message(FATAL_ERROR "Module ${ARG_MODULE} not found. Cannot force it as a required dependency of ${ProjectName}.")
+  endif()
+
+  # Check if the module is already required
+  foreach(_modandver IN LISTS ${ProjectName}_DEPENDS)
+    split_module_version(${_modandver} _mod_name _mod_ver)
+    if(${_mod_name} STREQUAL ${ARG_MODULE})
+      message(AUTHOR_WARNING "Module ${ARG_MODULE} is already a required dependency of ${ProjectName}.")
+      return()
+    endif()
+  endforeach()
+
+  # Check if the module is suggested, and if yes, make it required
+  foreach(_modandver IN LISTS ${ProjectName}_SUGGESTS)
+    split_module_version(${_modandver} _mod_name _mod_ver)
+    if(${_mod_name} STREQUAL ${ARG_MODULE})
+      list(APPEND ${ProjectName}_DEPENDS_FORCED ${_modandver})
+      set(${ProjectName}_DEPENDS_FORCED ${${ProjectName}_DEPENDS_FORCED} PARENT_SCOPE)
+      return()
+    endif()
+  endforeach()
+  message(FATAL_ERROR "Trying to force dependency on module ${ARG_MODULE} which is not a suggested dependency of ${ProjectName}: ${${ProjectName}_SUGGESTS}")
+endfunction()
+
 
 # Macro that should be called near the beginning of the top level CMakeLists.txt.
 # Namely it sets up the module, defines basic variables and manages
@@ -272,14 +334,25 @@ endif()
   endif()
 endmacro()
 ")
-      foreach(_mod IN LISTS ${ProjectName}_SUGGESTS ${ProjectName}_DEPENDS)
-        split_module_version(${_mod} _mod_name _mod_ver)
-        if(${_mod_name}_FOUND)
-          set(DUNE_DEPENDENCY_HEADER
-"${DUNE_DEPENDENCY_HEADER}
-find_and_check_dune_dependency(${_mod_name} \"${_mod_ver}\")")
-        endif()
-      endforeach()
+      dune_policy(GET DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM _require_module_policy)
+      if (_require_module_policy STREQUAL "NEW")
+        foreach(_mod IN LISTS ${ProjectName}_DEPENDS ${ProjectName}_DEPENDS_FORCED)
+          split_module_version(${_mod} _mod_name _mod_ver)
+          if(${_mod_name}_FOUND)
+            string(JOIN "\n" DUNE_DEPENDENCY_HEADER ${DUNE_DEPENDENCY_HEADER}
+              "find_and_check_dune_dependency(${_mod_name} \"${_mod_ver}\")")
+          endif()
+        endforeach()
+      else()
+        # old behavior: all found modules are automatically required downstream
+        foreach(_mod IN LISTS ${ProjectName}_SUGGESTS ${ProjectName}_DEPENDS)
+          split_module_version(${_mod} _mod_name _mod_ver)
+          if(${_mod_name}_FOUND)
+          string(JOIN "\n" DUNE_DEPENDENCY_HEADER ${DUNE_DEPENDENCY_HEADER}
+            "find_and_check_dune_dependency(${_mod_name} \"${_mod_ver}\")")
+          endif()
+        endforeach()
+      endif()
     endif()
     dune_module_to_uppercase(_upcase_module "${ProjectName}")
     # Generate a standard cmake package configuration file
