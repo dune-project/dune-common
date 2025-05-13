@@ -134,7 +134,7 @@ namespace Dune
     template<class T>
     int send([[maybe_unused]] const T& data,
              [[maybe_unused]] int dest_rank,
-             [[maybe_unused]] int tag)
+             [[maybe_unused]] int tag) const
     {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
@@ -143,9 +143,9 @@ namespace Dune
         @returns Future<T> containing the send buffer, completes when data is send
      */
     template<class T>
-    PseudoFuture<T> isend([[maybe_unused]] const T&& data,
+    PseudoFuture<T> isend([[maybe_unused]] T&& data,
                           [[maybe_unused]] int dest_rank,
-                          [[maybe_unused]] int tag)
+                          [[maybe_unused]] int tag) const
     {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
@@ -157,7 +157,7 @@ namespace Dune
     T recv([[maybe_unused]] T&& data,
            [[maybe_unused]] int source_rank,
            [[maybe_unused]] int tag,
-           [[maybe_unused]] void* status = 0)
+           [[maybe_unused]] void* status = 0) const
     {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
@@ -168,7 +168,7 @@ namespace Dune
     template<class T>
     PseudoFuture<T> irecv([[maybe_unused]] T&& data,
                           [[maybe_unused]] int source_rank,
-                          [[maybe_unused]] int tag)
+                          [[maybe_unused]] int tag) const
     {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
