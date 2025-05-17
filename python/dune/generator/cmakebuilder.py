@@ -10,6 +10,7 @@ import shlex
 import jinja2
 import json
 import copy
+from pathlib import Path
 
 import dune
 
@@ -31,6 +32,17 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 cxxFlags = None
 noDepCheck = False
+
+moduleLogFile = None
+def setModuleLog( fileName=None, procs=4 ):
+    global moduleLogFile
+    if not fileName is None:
+        from dune.generator.make import makeGenerated
+        moduleLogFile = fileName
+        if Path(fileName).is_file():
+            makeGenerated([], fileName=fileName, threads=procs, force=False)
+            open(fileName,"w").close() # clear file
+    return moduleLogFile
 
 def deprecationMessage(dune_py_dir):
     print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{dune_py_dir}` and re-run Python script!")
@@ -405,6 +417,9 @@ class Builder:
         # TODO replace if rank with something better and remove barrier further down
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)
+            if setModuleLog():
+                with open( setModuleLog(), 'a' ) as file:
+                    file.write(moduleName + '\n')
             if module is None:
                 self._buildModule( moduleName, source, pythonName, extraCMake )
 
