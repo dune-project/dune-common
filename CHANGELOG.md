@@ -91,14 +91,18 @@ In order to build the DUNE core modules you need at least the following software
 
 ## Python: Changelog
 
-- the `sdist` tar ball name should not use `-` (see PEP 625) so use `_` instead
+- The `sdist` tar ball name should not use `-` (see PEP 625) so use `_` instead
   `pip install dune-common` will still work as expected but `pip list` will
   now show `dune_common` so the output of `pip list` is parsed anywhere
   this is a breaking change.
 - Calling `dune.generator.setModuleLog( __file__ , procs=n)` at the top of a
   script logs the names of all jit modules being loaded while the script is
-  running. If the file exists all modules listed will be rebuild using `make -in`
-  i.e. in parallel.
+  running. If the file exists all modules listed will be rebuild in parallel
+  using `n` threads.
+  Setting the environment variable `DUNE_LOGMODULES` to an integer greater than zero
+  automatically logs the jit modules and rebuilds them in parallel if the file already exists.
+  The value of `DUNE_LOGMODULES` sets the number of threads used during the parallel rebuild.
+  See MR https://gitlab.dune-project.org/core/dune-common/-/merge_requests/1540.
 
 # Release 2.10
 
