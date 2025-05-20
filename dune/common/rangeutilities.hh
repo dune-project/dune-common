@@ -136,9 +136,9 @@ namespace Dune
       constexpr bool operator==(const IntegralRangeIterator & other) const noexcept { return (value_ == other.value_); }
       constexpr bool operator!=(const IntegralRangeIterator & other) const noexcept { return (value_ != other.value_); }
 
-      constexpr bool operator<(const IntegralRangeIterator & other) const noexcept { return (value_ <= other.value_); }
+      constexpr bool operator<(const IntegralRangeIterator & other) const noexcept { return (value_ < other.value_); }
       constexpr bool operator<=(const IntegralRangeIterator & other) const noexcept { return (value_ <= other.value_); }
-      constexpr bool operator>(const IntegralRangeIterator & other) const noexcept { return (value_ >= other.value_); }
+      constexpr bool operator>(const IntegralRangeIterator & other) const noexcept { return (value_ > other.value_); }
       constexpr bool operator>=(const IntegralRangeIterator & other) const noexcept { return (value_ >= other.value_); }
 
       IntegralRangeIterator& operator++() noexcept { ++value_; return *this; }
