@@ -219,7 +219,7 @@ public:
   /// \brief Converting constructor from mdspan
   template <class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class Accessor,
     std::enable_if_t<std::is_constructible_v<value_type,typename Accessor::reference>, int> = 0,
-    std::enable_if_t<std::is_assignable_v<typename Accessor::reference, value_type>, int> = 0,
+    std::enable_if_t<std::is_assignable_v<value_type&, typename Accessor::reference>, int> = 0,
     std::enable_if_t<std::is_constructible_v<mapping_type, const typename OtherLayoutPolicy::template mapping<OtherExtents>&>, int> = 0,
     decltype(construct_container<container_type>(std::declval<std::size_t>()), bool{}) = true>
   #if __cpp_conditional_explicit >= 201806L
