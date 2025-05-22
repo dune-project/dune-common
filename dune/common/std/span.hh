@@ -10,6 +10,9 @@
 #include <exception>
 #include <iterator>
 #include <limits>
+#if __has_include(<span>)
+#include <span>
+#endif
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -23,7 +26,13 @@
 namespace Dune::Std {
 
 /// \brief A constant of type std::size_t that is used to differentiate std::span of static and dynamic extent.
-inline constexpr std::size_t dynamic_extent = std::numeric_limits<std::size_t>::max();
+inline constexpr std::size_t dynamic_extent = std::dynamic_extent;
+
+#if __cpp_lib_span >= 202002L
+
+using std::span;
+
+#else
 
 namespace Impl {
 
@@ -447,6 +456,8 @@ template <class T, size_t N>
 span (const std::array<T, N>&) -> span<const T, N>;
 
 // @}
+
+#endif // __cpp_lib_span
 
 } // end namespace Dune::Std
 

@@ -8,6 +8,7 @@
 #include <array>
 #include <cassert>
 #include <limits>
+#include <span>
 #include <type_traits>
 #if __has_include(<version>)
   #include <version>
@@ -15,7 +16,6 @@
 
 #include <dune/common/indices.hh>
 #include <dune/common/std/no_unique_address.hh>
-#include <dune/common/std/span.hh>
 #include <dune/common/std/impl/fwd_layouts.hh>
 
 namespace Dune::Std {
@@ -47,7 +47,7 @@ struct DynamicExtentsArray<IndexType,0>
  * Each extent might be specified as a template parameter or as a dynamic parameter in the constructor.
  *
  * \tparam IndexType  An integral type other than `bool`
- * \tparam exts...    Each element of exts is either `Std::dynamic_extent` or a representable
+ * \tparam exts...    Each element of exts is either `std::dynamic_extent` or a representable
  *                    value of type `IndexType`.
  **/
 template <class IndexType, std::size_t... exts>
@@ -57,7 +57,7 @@ class extents
 
 private:
   static constexpr std::size_t rank_ = sizeof...(exts);
-  static constexpr std::size_t rank_dynamic_ = ((exts == Std::dynamic_extent) + ... + 0);
+  static constexpr std::size_t rank_dynamic_ = ((exts == std::dynamic_extent) + ... + 0);
 
   // this type is used internally to extract the static extents by index
   using array_type = std::array<std::size_t,rank_>;
@@ -67,7 +67,7 @@ private:
   {
     std::array<std::size_t,rank_+1> di{{}};
     for (std::size_t i = 0; i < rank_; ++i)
-      di[i+1] = di[i] + (array_type{exts...}[i] == Std::dynamic_extent);
+      di[i+1] = di[i] + (array_type{exts...}[i] == std::dynamic_extent);
     return di;
   }
 
@@ -90,7 +90,7 @@ public:
   /// \brief The number of dimensions with dynamic extent
   static constexpr rank_type rank_dynamic () noexcept { return rank_dynamic_; }
 
-  /// \brief Return the static extent of dimension `r` or `Std::dynamic_extent`
+  /// \brief Return the static extent of dimension `r` or `std::dynamic_extent`
   static constexpr std::size_t static_extent (rank_type r) noexcept
   {
     assert(rank() > 0 && r < rank());
@@ -101,7 +101,7 @@ public:
   constexpr index_type extent (rank_type r) const noexcept
   {
     assert(rank() > 0 && r < rank());
-    if (std::size_t e = static_extent(r); e != Std::dynamic_extent)
+    if (std::size_t e = static_extent(r); e != std::dynamic_extent)
       return index_type(e);
     else
       return dynamic_extents_[dynamic_index_[r]];
@@ -113,7 +113,7 @@ public:
   /// \name extents constructors
   /// @{
 
-  /// \brief The default constructor requires that all exts are not `Std::dynamic_extent`.
+  /// \brief The default constructor requires that all exts are not `std::dynamic_extent`.
   constexpr extents () noexcept = default;
 
   /// \brief Set all extents by the given integral sequence
@@ -149,17 +149,17 @@ public:
   #if __cpp_conditional_explicit >= 201806L
   explicit(N != rank_dynamic())
   #endif
-  constexpr extents (Std::span<I,N> e) noexcept
+  constexpr extents (std::span<I,N> e) noexcept
   {
     init_dynamic_extents<N>(e);
   }
 
   template <class I, std::size_t... e,
     std::enable_if_t<(sizeof...(e) == rank()), int> = 0,
-    std::enable_if_t<((e == Std::dynamic_extent || exts == Std::dynamic_extent || e == exts) &&...), int> = 0>
+    std::enable_if_t<((e == std::dynamic_extent || exts == std::dynamic_extent || e == exts) &&...), int> = 0>
   #if __cpp_conditional_explicit >= 201806L
   explicit(
-    (( (exts != Std::dynamic_extent) && (e == Std::dynamic_extent)) || ... ) ||
+    (( (exts != std::dynamic_extent) && (e == std::dynamic_extent)) || ... ) ||
     (std::numeric_limits<index_type>::max() < std::numeric_limits<I>::max()))
   #endif
   constexpr extents (const extents<I,e...>& other) noexcept
@@ -216,7 +216,7 @@ private:
       } else {
         assert(e.size() == rank());
         for (rank_type i = 0, j = 0; i < rank(); ++i) {
-          if (static_extent(i) == Std::dynamic_extent)
+          if (static_extent(i) == std::dynamic_extent)
             dynamic_extents_[j++] = e[i];
         }
       }
@@ -243,7 +243,7 @@ struct DExtentsImpl;
 template <class IndexType, std::size_t... I>
 struct DExtentsImpl<IndexType, std::integer_sequence<std::size_t,I...>>
 {
-  using type = Std::extents<IndexType, (void(I), Std::dynamic_extent)...>;
+  using type = Std::extents<IndexType, (void(I), std::dynamic_extent)...>;
 };
 
 } // end namespace Impl
