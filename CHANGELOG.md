@@ -75,6 +75,8 @@ In order to build the DUNE core modules you need at least the following software
 - Add new utility type `IndexedIterator` that extends a given iterator by an `index()`
   method returning a traversal index.
 
+- Fix bug in `operator<` and `operator>` of the iterators returned by `IntegralRange`.
+
 ## C++: Deprecations and removals
 
 - Remove deprecated macros `DUNE_VERSION_NEWER` and `DUNE_VERSION_NEWER_REV`, use `DUNE_VERSION_GTE`
