@@ -60,7 +60,7 @@ core-modules-test:
     DUNECI_TEST_LABELS: ""
   trigger:
     project: infrastructure/dune-nightly-test
-    branch: core
+    branch: core-2.10
     strategy: depend
   rules:
     - when: manual
@@ -75,7 +75,7 @@ full-system-test:
     DUNECI_TEST_LABELS: ""
   trigger:
     project: infrastructure/dune-nightly-test
-    branch: master
+    branch: releases/2.10
     strategy: depend
   rules:
     - when: manual
