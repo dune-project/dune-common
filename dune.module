@@ -7,5 +7,5 @@ Author: The Dune Core developers
 Maintainer: dune-devel@lists.dune-project.org
 Description: Basis infrastructure for all Dune modules
 URL: https://gitlab.dune-project.org/core/dune-common
-Python-Requires: pip>=21.a portalocker numpy wheel setuptools>=41 jinja2
+Python-Requires: pip>=21.a portalocker numpy wheel setuptools>=41,<80 jinja2
 Whitespace-Hook: Yes
