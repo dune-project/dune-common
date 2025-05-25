@@ -1408,6 +1408,65 @@ namespace Dune
 
 
 
+  /**
+   * @brief Alias for the CRTP-Mixing class IteratorFacade
+   *
+   * In contrast to the IteratorFacade template that requires
+   * to pass all types that characterize the iterator as separate
+   * template parameters, this alias allows to pass them as an
+   * iterator traits class of the form
+   *
+   * @code
+   * struct IteratorTraits {
+   *   using iterator_category = [...];
+   *   using reference = [...];
+   *   using value_type = [...];
+   *   using pointer = [...];
+   *   using difference_type = [...];
+   * };
+   * @endcode
+   *
+   * that mimics `std::iterator_traits<IteratorImpl>`.
+   *
+   * \tparam IteratorImpl The derived iterator class
+   * \tparam IteratorTraits The iterator traits class
+   */
+  template<class IteratorImpl, class IteratorTraits>
+  using IteratorFacadeForTraits = Dune::IteratorFacade<
+        IteratorImpl,
+        typename IteratorTraits::iterator_category,
+        typename IteratorTraits::value_type,
+        typename IteratorTraits::reference,
+        typename IteratorTraits::pointer,
+        typename IteratorTraits::difference_type>;
+
+
+  /**
+   * \brief An iterator_traits class providing sensible defaults
+   *
+   * \tparam IteratorCategory Category of the iterator, e.g. std::forward_iterator_tag
+   * \tparam Reference Reference type returns when dereferencing the iterator
+   *
+   * This provides default types for `value_type`, `pointer`, and `difference_type`
+   * that should work for most iterator implementations including proxy iterators
+   * where the proxy types implement the `Dune::AutonomousValue` mechanism.
+   * The `value_type` is derived as `Dune::AutonomousValue<reference>`.
+   * The pointer type is a plain `value_type*` pointer if the `reference`
+   * is an l-value reference. Otherwise `Dune::ProxyArrowResult<reference>`
+   * is used to provide a suitable return type for `operator->` for proxies.
+   */
+  template<class IteratorCategory, class Reference, class DifferenceType = std::ptrdiff_t>
+  struct DefaultIteratorTraits
+  {
+    using iterator_category = IteratorCategory;
+    using reference = Reference;
+    using value_type = Dune::AutonomousValue<reference>;
+    using pointer = std::conditional_t<std::is_lvalue_reference_v<reference>, value_type*, Dune::ProxyArrowResult<reference>>;
+    using difference_type = DifferenceType;
+  };
+
+
+
   /** @} */
 }
 #endif

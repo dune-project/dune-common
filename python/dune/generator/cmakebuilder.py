@@ -10,6 +10,7 @@ import shlex
 import jinja2
 import json
 import copy
+from pathlib import Path
 
 import dune
 
@@ -31,6 +32,30 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 cxxFlags = None
 noDepCheck = False
+
+moduleLogFile = None
+def setModuleLog( fileName=None, procs=4 ):
+    global moduleLogFile
+    # if this is the first call then `moduleLogFile` is still None and then
+    # test the environment variable
+    #       DUNE_LOGMODULES: if greater zero then log module names using the main script name
+    # if the environment variable is not set (or <=0) then use the fileName if provided
+    if moduleLogFile is None: # check DUNE_LOGMODULES
+        import __main__ as main
+        procs_ = int( os.environ.get('DUNE_LOGMODULES', '-1') )
+        if procs_ > 1 and fileName is None:
+            procs = procs_
+            try:
+                fileName = Path(main.__file__).stem + ".modules"
+            except AttributeError: # this can happen with notebooks
+                fileName = None
+    if not fileName is None: # if fileName is set rebuild all listed if file exists
+        from dune.generator.make import makeGenerated
+        moduleLogFile = fileName
+        if Path(fileName).is_file():
+            makeGenerated([], fileName=fileName, threads=procs, force=False)
+            open(fileName,"w").close() # clear file
+    return moduleLogFile
 
 def deprecationMessage(dune_py_dir):
     print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{dune_py_dir}` and re-run Python script!")
@@ -406,6 +431,9 @@ class Builder:
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)
             if module is None:
+                if setModuleLog():
+                    with open( setModuleLog(), 'a' ) as file:
+                        file.write(moduleName + '\n')
                 self._buildModule( moduleName, source, pythonName, extraCMake )
 
         ## TODO remove barrier here

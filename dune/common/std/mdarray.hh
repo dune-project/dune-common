@@ -9,6 +9,7 @@
 #include <array>
 #include <memory>
 #include <vector>
+#include <span>
 #include <tuple>
 #include <type_traits>
 #if __has_include(<version>)
@@ -19,9 +20,7 @@
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/std/default_accessor.hh>
 #include <dune/common/std/mdspan.hh>
-#include <dune/common/std/memory.hh>
 #include <dune/common/std/no_unique_address.hh>
-#include <dune/common/std/span.hh>
 #include <dune/common/std/impl/containerconstructiontraits.hh>
 
 namespace Dune::Std {
@@ -91,9 +90,9 @@ public:
   using mdspan_type = mdspan<element_type,extents_type,layout_type>;
   using const_mdspan_type = mdspan<const element_type,extents_type,layout_type>;
 
-  using pointer = decltype(Std::to_address(std::declval<container_type>().begin()));
+  using pointer = decltype(std::to_address(std::declval<container_type>().begin()));
   using reference = typename container_type::reference;
-  using const_pointer = decltype(Std::to_address(std::declval<container_type>().cbegin()));
+  using const_pointer = decltype(std::to_address(std::declval<container_type>().cbegin()));
   using const_reference = typename container_type::const_reference;
 
   static_assert(std::is_constructible_v<mapping_type, extents_type>);
@@ -427,7 +426,7 @@ public:
   /// \brief Access element at position [{i0,i1,...}]
   template <class Index,
     std::enable_if_t<std::is_convertible_v<const Index&, index_type>, int> = 0>
-  constexpr reference operator[] (Std::span<Index,extents_type::rank()> indices)
+  constexpr reference operator[] (std::span<Index,extents_type::rank()> indices)
   {
     return unpackIntegerSequence([&](auto... ii) -> reference {
       return container_[mapping_(index_type(indices[ii])...)]; },
@@ -437,7 +436,7 @@ public:
   /// \brief Access element at position [{i0,i1,...}]
   template <class Index,
     std::enable_if_t<std::is_convertible_v<const Index&, index_type>, int> = 0>
-  constexpr const_reference operator[] (Std::span<Index,extents_type::rank()> indices) const
+  constexpr const_reference operator[] (std::span<Index,extents_type::rank()> indices) const
   {
     return unpackIntegerSequence([&](auto... ii) -> const_reference {
       return container_[mapping_(index_type(indices[ii])...)]; },
@@ -532,10 +531,10 @@ public:
   /// @{
 
   /// \brief Direct access to the underlying data in the container
-  constexpr pointer container_data () noexcept { return Std::to_address(container_.begin()); }
+  constexpr pointer container_data () noexcept { return std::to_address(container_.begin()); }
 
   /// \brief Direct access to the underlying const data in the container
-  constexpr const_pointer container_data () const noexcept { return Std::to_address(container_.begin()); }
+  constexpr const_pointer container_data () const noexcept { return std::to_address(container_.begin()); }
 
   /// @}
 
