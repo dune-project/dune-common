@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 dune_py_dir = dune.common.module.getDunePyDir()
 generated_dir = os.path.join(dune_py_dir, 'python', 'dune', 'generated')
 
-def makeGenerated(modules, fileName=None, threads=4, force=False):
+def makeGenerated(modules, fileName=None, threads=4, force=False, verbose=False):
     if MPI is not None:
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
@@ -37,9 +37,12 @@ def makeGenerated(modules, fileName=None, threads=4, force=False):
 
     def makeJit(fileBase):
         try:
+            print(f"building {fileBase}")
             builder.makeModule( fileBase, force=force )
-        except CompileError:
-            print(f"Failed to compile {moduleBase} - ignoring!")
+        except CompileError as e:
+            print(f"Failed to compile {fileBase} - ignoring!",flush=True)
+            if verbose:
+                raise e
         moduleFiles.update( [fileBase] )
 
     bases = set()
@@ -63,6 +66,9 @@ def makeGenerated(modules, fileName=None, threads=4, force=False):
             bases.update( [os.path.splitext(os.path.basename(f))[0] for f in files] )
 
     with ThreadPoolExecutor(max_workers=threads) as executor:
-        for i, base in enumerate(bases):
-            executor.submit(makeJit, base)
+        # using 'map' leads to exceptions being shown (submit does not)
+        # but only if we try to access the results but
+        # we don't need to do anything with the result
+        for result in executor.map(makeJit, bases):
+            pass
     comm.barrier()
