@@ -54,9 +54,9 @@ def rmgenerated(args, fileName, date):
     removeGenerated(args, fileName, date)
     return 0
 
-def makegenerated(args=[], fileName=None, threads=4, force=False):
+def makegenerated(args=[], fileName=None, threads=4, force=False, verbose=False):
     from dune.generator.make import makeGenerated
-    makeGenerated(args, fileName, threads, force)
+    makeGenerated(args, fileName, threads, force, verbose)
     return 0
 
 def fixdunepy(force):
