@@ -18,6 +18,8 @@
 #include <initializer_list>
 
 #include <dune/common/hash.hh>
+#include <dune/common/std/algorithm.hh>
+#include <dune/common/std/compare.hh>
 
 #ifdef CHECK_RESERVEDVECTOR
 #define CHECKSIZE(X) assert(X)
@@ -139,38 +141,10 @@ namespace Dune
       return true;
     }
 
-    //! Compares the values in the vector `this` with `that` for not equality
-    constexpr bool operator!= (const ReservedVector& that) const noexcept
-    {
-      return !(*this == that);
-    }
-
     //! Lexicographically compares the values in the vector `this` with `that`
-    constexpr bool operator< (const ReservedVector& that) const noexcept
+    constexpr auto operator<=> (const ReservedVector& that) const noexcept
     {
-      for (size_type i=0; i<std::min(size(),that.size()); ++i) {
-        if (storage_[i] < that.storage_[i]) return true;
-        if (that.storage_[i] < storage_[i]) return false;
-      }
-      return size() < that.size();
-    }
-
-    //! Lexicographically compares the values in the vector `this` with `that`
-    constexpr bool operator> (const ReservedVector& that) const noexcept
-    {
-      return that < *this;
-    }
-
-    //! Lexicographically compares the values in the vector `this` with `that`
-    constexpr bool operator<= (const ReservedVector& that) const noexcept
-    {
-      return !(*this > that);
-    }
-
-    //! Lexicographically compares the values in the vector `this` with `that`
-    constexpr bool operator>= (const ReservedVector& that) const noexcept
-    {
-      return !(*this < that);
+      return Std::lexicographical_compare_three_way(begin(), end(), that.begin(), that.end());
     }
 
     /** @} */

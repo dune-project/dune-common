@@ -133,13 +133,7 @@ namespace Dune
 
       constexpr reference operator[]( difference_type n ) const noexcept { return (value_ + n); }
 
-      constexpr bool operator==(const IntegralRangeIterator & other) const noexcept { return (value_ == other.value_); }
-      constexpr bool operator!=(const IntegralRangeIterator & other) const noexcept { return (value_ != other.value_); }
-
-      constexpr bool operator<(const IntegralRangeIterator & other) const noexcept { return (value_ < other.value_); }
-      constexpr bool operator<=(const IntegralRangeIterator & other) const noexcept { return (value_ <= other.value_); }
-      constexpr bool operator>(const IntegralRangeIterator & other) const noexcept { return (value_ > other.value_); }
-      constexpr bool operator>=(const IntegralRangeIterator & other) const noexcept { return (value_ >= other.value_); }
+      constexpr auto operator<=>(const IntegralRangeIterator & other) const noexcept = default;
 
       IntegralRangeIterator& operator++() noexcept { ++value_; return *this; }
       IntegralRangeIterator operator++(int) noexcept { IntegralRangeIterator copy( *this ); ++(*this); return copy; }
