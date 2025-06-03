@@ -354,7 +354,7 @@ mdspan (ElementType*, II...)
   -> mdspan<ElementType, Std::dextents<std::size_t, sizeof...(II)>>;
 
 template <class ElementType, class SizeType, std::size_t N>
-mdspan (ElementType*, std::span<SizeType,N>&)
+mdspan (ElementType*, std::span<SizeType,N>)
   -> mdspan<ElementType, Std::dextents<std::size_t, N>>;
 
 template <class ElementType, class SizeType, std::size_t N>
