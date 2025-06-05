@@ -327,9 +327,10 @@ namespace Dune {
 
     //! Vector space multiplication with scalar
     template<Concept::Number S>
-    friend constexpr FieldVector operator* (const FieldVector& a, const S& b) noexcept
+    friend constexpr auto operator* (const FieldVector& a, const S& b) noexcept
     {
-      FieldVector result;
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      FieldVector<ResultValueType,dimension> result;
       for (size_type i = 0; i < size(); ++i)
         result[i] = a[i] * b;
       return result;
@@ -337,9 +338,10 @@ namespace Dune {
 
     //! Vector space multiplication with scalar
     template<Concept::Number S>
-    friend constexpr FieldVector operator* (const S& a, const FieldVector& b) noexcept
+    friend constexpr auto operator* (const S& a, const FieldVector& b) noexcept
     {
-      FieldVector result;
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      FieldVector<ResultValueType,dimension> result;
       for (size_type i = 0; i < size(); ++i)
         result[i] = a * b[i];
       return result;
@@ -347,9 +349,10 @@ namespace Dune {
 
     //! Vector space division by scalar
     template<Concept::Number S>
-    friend constexpr FieldVector operator/ (const FieldVector& a, const S& b) noexcept
+    friend constexpr auto operator/ (const FieldVector& a, const S& b) noexcept
     {
-      FieldVector result;
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      FieldVector<ResultValueType,dimension> result;
       for (size_type i = 0; i < size(); ++i)
         result[i] = a[i] / b;
       return result;
@@ -365,34 +368,38 @@ namespace Dune {
 
     //! Binary addition, when using FieldVector<K,1> like K
     template<Concept::Number S>
-    friend constexpr FieldVector operator+ (const FieldVector& a, const S& b) noexcept
+    friend constexpr auto operator+ (const FieldVector& a, const S& b) noexcept
         requires(SIZE == 1)
     {
-      return FieldVector{a[0] + b};
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      return FieldVector<ResultValueType,dimension>{a[0] + b};
     }
 
     //! Binary addition, when using FieldVector<K,1> like K
     template<Concept::Number S>
-    friend constexpr FieldVector operator+ (const S& a, const FieldVector& b) noexcept
+    friend constexpr auto operator+ (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
-      return FieldVector{a + b[0]};
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      return FieldVector<ResultValueType,dimension>{a + b[0]};
     }
 
     //! Binary subtraction, when using FieldVector<K,1> like K
     template<Concept::Number S>
-    friend constexpr FieldVector operator- (const FieldVector& a, const S& b) noexcept
+    friend constexpr auto operator- (const FieldVector& a, const S& b) noexcept
         requires(SIZE == 1)
     {
-      return FieldVector{a[0] - b};
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      return FieldVector<ResultValueType,dimension>{a[0] - b};
     }
 
     //! Binary subtraction, when using FieldVector<K,1> like K
     template<Concept::Number S>
-    friend constexpr FieldVector operator- (const S& a, const FieldVector& b) noexcept
+    friend constexpr auto operator- (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
-      return FieldVector{a - b[0]};
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      return FieldVector<ResultValueType,dimension>{a - b[0]};
     }
 
     /// @}
