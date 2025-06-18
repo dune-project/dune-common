@@ -430,10 +430,10 @@ class Builder:
         # TODO replace if rank with something better and remove barrier further down
         if comm.rank == 0:
             module = sys.modules.get("dune.generated." + moduleName)
+            if setModuleLog():
+                with open( setModuleLog(), 'a' ) as file:
+                    file.write(moduleName + '\n')
             if module is None:
-                if setModuleLog():
-                    with open( setModuleLog(), 'a' ) as file:
-                        file.write(moduleName + '\n')
                 self._buildModule( moduleName, source, pythonName, extraCMake )
 
         ## TODO remove barrier here
