@@ -37,7 +37,8 @@ def makeGenerated(modules, fileName=None, threads=4, force=False, verbose=False)
 
     def makeJit(fileBase):
         try:
-            print(f"building {fileBase}")
+            if verbose:
+                    print(f"building {fileBase}")
             builder.makeModule( fileBase, force=force )
         except CompileError as e:
             print(f"Failed to compile {fileBase} - ignoring!",flush=True)
