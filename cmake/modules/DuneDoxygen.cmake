@@ -109,7 +109,7 @@ set_property(GLOBAL PROPERTY DUNE_MATHJAX_RELPATH "${mathjax_relpath}")
 # This functions adds the necessary routines for the generation of the
 # Doxyfile[.in] files needed to doxygen.
 macro(prepare_doxyfile)
-  cmake_parse_arguments(DOXYFILE "" "TARGET" "" ${ARGN})
+  cmake_parse_arguments(DOXYFILE "" "TARGET" "TAGFILES" ${ARGN})
 
   # default target name is the module name
   if(NOT DOXYFILE_TARGET)
@@ -125,18 +125,26 @@ macro(prepare_doxyfile)
 
   # check whether module has a Doxylocal file
   find_file(_DOXYLOCAL Doxylocal PATHS ${CMAKE_CURRENT_SOURCE_DIR} NO_DEFAULT_PATH)
-  # convert use_mathjax to YES/NO for Doxygen
-  set(use_mathjax $<IF:$<BOOL:${use_mathjax}>,YES,NO>)
+  set(make_doxyfile_options
+    -D DOT_TRUE=${DOT_TRUE}
+    -D DUNE_MOD_NAME=${PROJECT_NAME}
+    -D DUNE_MOD_VERSION=${ProjectVersion}
+    -D DOXYSTYLE=${DOXYSTYLE_FILE}
+    -D DOXYGENMACROS=${DOXYGENMACROS_FILE}
+    -D abs_top_srcdir=${CMAKE_SOURCE_DIR}
+    -D top_srcdir=${${PROJECT_NAME}_SOURCE_DIR}
+    -D DOXYGEN_TAGFILES=${DOXYFILE_TAGFILES}
+    -D DUNE_USE_MATHJAX=$<IF:$<BOOL:${use_mathjax}>,YES,NO>
+    -D DUNE_MATHJAX_RELPATH="${mathjax_relpath}"
+    -P ${scriptdir}/CreateDoxyFile.cmake)
   if(_DOXYLOCAL)
-    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${ProjectVersion} -D DOXYSTYLE=${DOXYSTYLE_FILE} -D DOXYGENMACROS=${DOXYGENMACROS_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${${PROJECT_NAME}_SOURCE_DIR} -D DUNE_USE_MATHJAX="${use_mathjax}" -D DUNE_MATHJAX_RELPATH="${mathjax_relpath}" -P ${scriptdir}/CreateDoxyFile.cmake)
     add_custom_command(OUTPUT Doxyfile.in Doxyfile
-      COMMAND ${make_doxyfile_command}
+      COMMAND ${CMAKE_COMMAND} ${make_doxyfile_options} -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -P ${scriptdir}/CreateDoxyFile.cmake
       COMMENT "Creating Doxyfile.in"
       DEPENDS ${DOXYSTYLE_FILE} ${DOXYGENMACROS_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal)
   else()
-    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE} -D DOXYGENMACROS=${DOXYGENMACROS_FILE} -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D top_srcdir=${${PROJECT_NAME}_SOURCE_DIR} -D DUNE_USE_MATHJAX="${use_mathjax}" -D DUNE_MATHJAX_RELPATH="${mathjax_relpath}" -P ${scriptdir}/CreateDoxyFile.cmake)
     add_custom_command(OUTPUT Doxyfile.in Doxyfile
-      COMMAND ${make_doxyfile_command}
+      COMMAND ${CMAKE_COMMAND}  ${make_doxyfile_options} -P ${scriptdir}/CreateDoxyFile.cmake
       COMMENT "Creating Doxyfile.in"
       DEPENDS ${DOXYSTYLE_FILE} ${DOXYGENMACROS_FILE})
   endif()
@@ -166,10 +174,14 @@ macro(add_doxygen_target)
   endif()
   message(STATUS "Using scripts from ${scriptdir} for creating doxygen stuff.")
 
+  foreach(module ${DUNE_FOUND_DEPENDENCIES})
+    set(DOXYGEN_TAGFILES "${DOXYGEN_TAGFILES} ${${module}_DOXYGEN_DIR}/${module}.tag=${${module}_DOXYGEN_DIR}/html")
+  endforeach()
+
   if(TARGET Doxygen::doxygen)
-    prepare_doxyfile(TARGET ${DOXYGEN_TARGET})
+    prepare_doxyfile(TARGET ${DOXYGEN_TARGET} TAGFILES ${DOXYGEN_TAGFILES})
     # custom command that executes doxygen
-    add_custom_command(OUTPUT ${DOXYGEN_OUTPUT}
+    add_custom_command(OUTPUT ${DOXYGEN_OUTPUT} ${PROJECT_NAME}.tag
       COMMAND ${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=$<TARGET_FILE:Doxygen::doxygen> -P ${scriptdir}/RunDoxygen.cmake
       COMMENT "Building doxygen documentation. This may take a while"
       DEPENDS Doxyfile.in ${DOXYGEN_DEPENDS})
@@ -178,6 +190,8 @@ macro(add_doxygen_target)
     add_custom_target(doxygen_${DOXYGEN_TARGET}
       DEPENDS ${DOXYGEN_OUTPUT})
     add_dependencies(doxygen doxygen_${DOXYGEN_TARGET})
+
+    set_property(GLOBAL PROPERTY ${PROJECT_NAME}_DOXYGEN_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
     # Use a cmake call to install the doxygen documentation and create a
     # target for it
