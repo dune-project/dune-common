@@ -54,6 +54,7 @@ namespace Dune {
   template<class K, int n>
   class DiagonalMatrix
   {
+    template<class, int> friend class DiagonalMatrix;
     typedef DiagonalMatrixWrapper< DiagonalMatrix<K,n> > WrapperType;
 
   public:
@@ -121,10 +122,24 @@ namespace Dune {
                  diag_.begin());
     }
 
+    //! Converting constructor
+    template <class OtherK>
+    DiagonalMatrix (const DiagonalMatrix<OtherK,n>& other)
+      : diag_(other.diag_)
+    {}
+
     /** \brief Assignment from a scalar */
     DiagonalMatrix& operator= (const K& k)
     {
       diag_ = k;
+      return *this;
+    }
+
+    //! Converting assignment operator
+    template <class OtherK>
+    DiagonalMatrix& operator= (const DiagonalMatrix<OtherK,n>& other)
+    {
+      diag_ = other.diag_;
       return *this;
     }
 

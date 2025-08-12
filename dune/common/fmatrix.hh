@@ -164,7 +164,8 @@ namespace Dune
     template<typename T>
     constexpr FieldMatrix& operator=(const FieldMatrix<T, ROWS, COLS>& x)
     {
-      _data = x._data;
+      for (std::size_t i = 0; i < _data.size(); ++i)
+        _data[i] = x[i];
       return *this;
     }
 
