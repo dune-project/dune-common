@@ -115,6 +115,7 @@ namespace Dune
   template<class K, int ROWS, int COLS>
   class FieldMatrix : public DenseMatrix< FieldMatrix<K,ROWS,COLS> >
   {
+    template<class,int,int> friend class FieldMatrix;
     std::array< FieldVector<K,COLS>, ROWS > _data;
     typedef DenseMatrix< FieldMatrix<K,ROWS,COLS> > Base;
   public:
@@ -165,7 +166,7 @@ namespace Dune
     constexpr FieldMatrix& operator=(const FieldMatrix<T, ROWS, COLS>& x)
     {
       for (std::size_t i = 0; i < _data.size(); ++i)
-        _data[i] = x[i];
+        _data[i] = x._data[i];
       return *this;
     }
 

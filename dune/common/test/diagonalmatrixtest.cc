@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <type_traits>
 
 #include <dune/common/dynmatrix.hh>
 #include <dune/common/exceptions.hh>
@@ -79,6 +80,37 @@ void test_matrix()
   // [[maybe_unused]] auto DA = ADM * A;
   [[maybe_unused]] auto ADt = A * transposedView(ADM);
   // [[maybe_unused]] auto DtA = transposedView(ADM) * A;
+
+
+  // check mixed copy/assignment
+  {
+    using K2 = std::complex<K>;
+    using K3 = std::conditional_t<std::is_same_v<K,float>, double, float>;
+
+    if constexpr (std::is_convertible_v<K,K2>) {
+      A = K(1);
+      DiagonalMatrix<K2,n> A2(A);
+      if (A2.infinity_norm() != K2(1))
+        DUNE_THROW(FMatrixError,"Mixed Copy-construction test failed!");
+
+      A = K(2);
+      A2 = A;
+      if (A2.infinity_norm() != K2(2))
+        DUNE_THROW(FMatrixError,"Mixed Copy-assignment test failed!");
+    }
+
+    if constexpr (std::is_convertible_v<K,K3>) {
+      A = K(1);
+      DiagonalMatrix<K3,n> A3(A);
+      if (A3.infinity_norm() != K3(1))
+        DUNE_THROW(FMatrixError,"Mixed Copy-construction test failed!");
+
+      A = K(2);
+      A3 = A;
+      if (A3.infinity_norm() != K3(2))
+        DUNE_THROW(FMatrixError,"Mixed Copy-assignment test failed!");
+    }
+  }
 }
 
 template<class K, int n>

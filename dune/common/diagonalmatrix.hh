@@ -651,6 +651,12 @@ namespace Dune {
       (*this)[0][0] = scalar;
     }
 
+    //! Converting constructor
+    template <class OtherK>
+    DiagonalMatrix(const DiagonalMatrix<OtherK,1>& other)
+      : Base(FieldMatrix<OtherK,1,1>(other))
+    {}
+
     //! Get const reference to diagonal entry
     const K& diagonal(size_type) const
     {
