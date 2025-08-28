@@ -43,28 +43,6 @@ SPACE="$space$formfeed$newline$cr$tab$vtab"
 BLANK="$space$tab"
 NOBLANK="^$space$tab"
 
-cmake_package_exists() {
-  $CMAKE -DMODULE=$1 -P << EOF 2>/dev/null
-  find_package(${MODULE} REQUIRED QUIET)
-EOF
-}
-
-cmake_package_prefix() {
-  prefix="$CMAKE -DMODULE=$1 -P << EOF 2>/dev/null
-find_package(${MODULE} REQUIRED QUIET)
-message(NOTICE ${${MODULE}_PREFIX})
-EOF"
-  echo "$prefix"
-}
-
-cmake_package_version() {
-  version="$CMAKE -DMODULE=$1 -P << EOF 2>/dev/null
-find_package(${MODULE} REQUIRED QUIET)
-message(NOTICE ${${MODULE}_VERSION})
-EOF"
-  echo "$version"
-}
-
 #
 # read parameters from a $CONTROL file
 #
@@ -103,18 +81,18 @@ parse_control() {
   local vers="$($GREP "^[BLANK]*Version:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
   local main="$($GREP "^[BLANK]*Maintainer:" "$1" | cut -d ':' -f2 | eval $PARSER_TRIM)"
   # check whether the module is installed.
-  # - installed modules can be found via cmake
+  # - installed modules can be found via pkg-config
+  # - pkg-config --var=prefix should be the same as $path
   #
   # the path contains a different sub structure
   # for installed and source modules
   # - installed module: ${path}/lib/dunecontrol/${name}/dune.module
-  #   configuration file: ${path}/lib*/cmake/${name}/${name}-config.cmake
+  #   and there is a file ${path}/lib/pkgconfig/${name}.pc
   # - source module: ${path}/dune.module
-  #   source configuration file ${path}/$CMakeLists.txt
+  #   and there is a file ${path}/${name}.pc.in
   local path="$(canonicalpath "$1")"
-
-  if cmake_package_exists $name; then
-    local prefix="$(cmake_package_prefix $name)"
+  if pkg-config $name; then
+    local prefix="$(pkg-config --variable=prefix $name)"
     local pkgpath=$(canonicalname "$prefix/lib/dunecontrol/$name")
     if test x"$pkgpath" = x"$path"; then
 	  path="$prefix"
@@ -245,8 +223,8 @@ extract_multiarch_pkg_config_path(){
 setup_control_path() {
   if test -z "$DUNE_CONTROL_PATH"; then
     DUNE_CONTROL_PATH=.
-    # try to find dune-common
-    if ! cmake_package_exists dune-common; then
+    # try pkg-config locations
+    if ! pkg-config dune-common; then
       # try usual locations of installed modules
       for i in /usr/local/lib/dunecontrol/ /usr/lib/dunecontrol/; do
         if test -d $i; then
@@ -259,7 +237,7 @@ setup_control_path() {
         fi
       done
     else
-      NEW_DUNE_CONTROL_DIR=$(cmake_package_prefix dune-common)/lib/dunecontrol
+      NEW_DUNE_CONTROL_DIR=$(pkg-config dune-common --variable=prefix)/lib/dunecontrol
       # There might be old version of DUNE lying around, that do not contain
       # lib/dunecontrol, yet. To prevent failur at a later stage of dunecontrol
       # we check that the directory really exists.
@@ -440,12 +418,12 @@ _check_deps()
       _sort_module $dep $depmode
     else
       # perhaps this module is installed,
-      # then it should be handled as a cmake package
-      if ! cmake_package_exists $name; then
+      # then it should be handled via pkg-config
+      if ! pkg-config $name; then
         if test "$requires" == "requires" || test "$DUNE_CONTROL_VERBOSE" == "yes"; then
           echo $'\n'"$report could not find module '$name'," >&2
-          echo "       module is also unknown to CMake." >&2
-          echo "       Maybe you need to adjust CMAKE_PREFIX_PATH!" >&2
+          echo "       module is also unknown to pkg-config." >&2
+          echo "       Maybe you need to adjust PKG_CONFIG_PATH!" >&2
           echo "       '$name' is $required by $modname" >&2
         fi
         if test "x$mode" = "xDEPS"; then
@@ -454,7 +432,7 @@ _check_deps()
           continue
         fi
       else
-        eval ver=$(cmake_package_version $name)
+        eval ver=$(pkg-config $name --modversion)
         if test "$SKIPVERSIONCHECK" != "yes" && ! check_version "$ver" "$depver"; then
           echo $'\n'"$report version mismatch." >&2
           echo "       $modname $requires '$name $depver'," >&2
@@ -467,7 +445,7 @@ _check_deps()
           fi
         fi
         # update module list
-        parse_control $(cmake_package_prefix $name)/lib/dunecontrol/$name/dune.module
+        parse_control $(pkg-config $name --variable=prefix)/lib/dunecontrol/$name/dune.module
         _sort_module $dep $depmode
       fi
     fi
