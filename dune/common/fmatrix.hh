@@ -165,6 +165,8 @@ namespace Dune
     template<typename T>
     constexpr FieldMatrix& operator=(const FieldMatrix<T, ROWS, COLS>& x)
     {
+      // The copy must be done element-by-element since a std::array does not have
+      // a converting assignment operator.
       for (std::size_t i = 0; i < _data.size(); ++i)
         _data[i] = x._data[i];
       return *this;
