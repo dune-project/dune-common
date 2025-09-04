@@ -115,6 +115,7 @@ namespace Dune
   template<class K, int ROWS, int COLS>
   class FieldMatrix : public DenseMatrix< FieldMatrix<K,ROWS,COLS> >
   {
+    template<class,int,int> friend class FieldMatrix;
     std::array< FieldVector<K,COLS>, ROWS > _data;
     typedef DenseMatrix< FieldMatrix<K,ROWS,COLS> > Base;
   public:
@@ -164,7 +165,10 @@ namespace Dune
     template<typename T>
     constexpr FieldMatrix& operator=(const FieldMatrix<T, ROWS, COLS>& x)
     {
-      _data = x._data;
+      // The copy must be done element-by-element since a std::array does not have
+      // a converting assignment operator.
+      for (std::size_t i = 0; i < _data.size(); ++i)
+        _data[i] = x._data[i];
       return *this;
     }
 

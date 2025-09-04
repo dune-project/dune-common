@@ -12,6 +12,7 @@
 #include <cassert>
 #include <complex>
 #include <iostream>
+#include <type_traits>
 #include <vector>
 
 #include <dune-common-config.hh> // HAVE_LAPACK
@@ -563,6 +564,34 @@ void test_matrix()
     CA3 -= CA;
     if (abs(CA3.infinity_norm()) > 1e-10)
       DUNE_THROW(FMatrixError,"Rightmultiplyany test failed!");
+  }
+  // test mixed copy/assignment
+  {
+    FieldMatrix<K,n,n> A(K(1));
+    if constexpr (std::is_convertible_v<K,K2>) {
+      FieldMatrix<K2,n,n> A2(A);
+      if (A2.infinity_norm() != K2(n)) {
+        std::cout << "A2 = " << A2 << std::endl;
+        std::cout << "|A2| = " << A2.infinity_norm() << std::endl;
+        DUNE_THROW(FMatrixError,"Mixed Copy-construction test failed!");
+      }
+      A = K(2);
+      A2 = A;
+      if (A2.infinity_norm() != K2(2*n))
+        DUNE_THROW(FMatrixError,"Mixed Copy-assignment test failed!");
+    }
+
+    if constexpr (std::is_convertible_v<K,K3>) {
+      A = K(1);
+      FieldMatrix<K3,n,n> A3(A);
+      if (A3.infinity_norm() != K3(n))
+        DUNE_THROW(FMatrixError,"Mixed Copy-construction test failed!");
+
+      A = K(2);
+      A3 = A;
+      if (A3.infinity_norm() != K3(2*n))
+        DUNE_THROW(FMatrixError,"Mixed Copy-assignment test failed!");
+    }
   }
 }
 

@@ -87,6 +87,9 @@ In order to build the DUNE core modules you need at least the following software
 
 - Fix bug in `operator<` and `operator>` of the iterators returned by `IntegralRange`.
 
+- Add converting constructor and assignment operator to `FieldMatrix` and `DiagonalMatrix` to
+  allow assignments between `FieldMatrix`es of different field types.
+
 ## C++: Deprecations and removals
 
 - Deprecate the utility `integerSequenceEntry` in favour of the shorter `get` from `integersequence.hh`.
