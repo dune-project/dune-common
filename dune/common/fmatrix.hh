@@ -10,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include <initializer_list>
+#include <type_traits>
 
 #include <dune/common/boundschecking.hh>
 #include <dune/common/exceptions.hh>
@@ -104,6 +105,30 @@ namespace Dune
     typedef typename FieldTraits<K>::real_type real_type;
   };
 
+
+  /**
+   * @brief TMP to check the shape of a DenseMatrix statically, if possible.
+   *
+   * If the implementation type of M is a FieldMatrix, we statically check
+   * whether its shape is ROWSxCOLS.
+   *
+   * @tparam M The implementation of the other DenseMatrix.
+   * @tparam ROWS The number of rows we need assume.
+   * @tparam COLS The number of columns we need assume.
+   */
+  template<class M, int ROWS, int COLS>
+  struct IsFieldMatrixShapeCorrect
+    : std::true_type {};
+
+  template<class K, int ROWS, int COLS>
+  struct IsFieldMatrixShapeCorrect<FieldMatrix<K,ROWS,COLS>,ROWS,COLS>
+    : std::true_type {};
+
+  template<class K, int ROWS, int COLS, int ROWS1, int COLS1>
+  struct IsFieldMatrixShapeCorrect<FieldMatrix<K,ROWS1,COLS1>,ROWS,COLS>
+    : std::false_type {};
+
+
   /**
       @brief A dense n x m matrix.
 
@@ -116,54 +141,105 @@ namespace Dune
   class FieldMatrix : public DenseMatrix< FieldMatrix<K,ROWS,COLS> >
   {
     template<class,int,int> friend class FieldMatrix;
+    using Base = DenseMatrix< FieldMatrix<K,ROWS,COLS> >;
+
+    //! The container storage
     std::array< FieldVector<K,COLS>, ROWS > _data;
-    typedef DenseMatrix< FieldMatrix<K,ROWS,COLS> > Base;
+
   public:
 
     //! The number of rows.
-    constexpr static int rows = ROWS;
+    static constexpr std::integral_constant<int, ROWS> rows = {};
+
     //! The number of columns.
-    constexpr static int cols = COLS;
+    static constexpr std::integral_constant<int, COLS> cols = {};
 
-    typedef typename Base::size_type size_type;
-    typedef typename Base::row_type row_type;
+    //! The type used for the index access and size operation
+    using size_type = typename Base::size_type;
 
-    typedef typename Base::row_reference row_reference;
-    typedef typename Base::const_row_reference const_row_reference;
+    //! The type of the elements stored in the matrix
+    using value_type = typename Base::value_type;
 
-    //===== constructors
-    /** \brief Default constructor
-     */
-    constexpr FieldMatrix() = default;
+    //! The type used for references to the matrix entries
+    using reference = value_type&;
 
-    /** \brief Constructor initializing the matrix from a list of vector
-     */
-    constexpr FieldMatrix(std::initializer_list<Dune::FieldVector<K, cols> > const &l) {
-      assert(l.size() == rows); // Actually, this is not needed any more!
-      for(std::size_t i=0; i<std::min<std::size_t>(ROWS, l.size()); ++i)
+    //! The type used for const references to the matrix entries
+    using const_reference = const value_type&;
+
+    //! The type the rows of the matrix are represented by
+    using row_type = typename Base::row_type;
+
+    //! The type used for references to the rows of the matrix
+    using row_reference = typename Base::row_reference;
+
+    //! The type used for const references to the rows of the matrix
+    using const_row_reference = typename Base::const_row_reference;
+
+  public:
+
+    /// \name Constructors
+    /// @{
+
+    //! Default constructor, making value-initialized matrix with all components set to zero
+    constexpr FieldMatrix ()
+        noexcept(std::is_nothrow_default_constructible_v<K>)
+      : _data{}
+    {}
+
+    //! Constructor with a given value initializing all entries to this value
+    explicit(ROWS*COLS != 1)
+    constexpr FieldMatrix (const value_type& value) noexcept
+      : _data{filledArray<ROWS>(row_type(value))}
+    {}
+
+    //! Constructor with a given scalar initializing all entries to this value
+    template<Concept::Number S>
+      requires (std::constructible_from<K,S>)
+    explicit(ROWS*COLS != 1)
+    constexpr FieldMatrix (const S& scalar)
+        noexcept(std::is_nothrow_constructible_v<K,S>)
+      : _data{filledArray<ROWS>(row_type(scalar))}
+    {}
+
+    //! Constructor initializing the matrix from a nested list of values
+    constexpr FieldMatrix(std::initializer_list<Dune::FieldVector<K, cols> > const &l)
+      : _data{}
+    {
+      assert(l.size() == rows);
+      for (size_type i = 0; i < rows; ++i)
         _data[i] = std::data(l)[i];
     }
 
-    //! copy constructor
-    FieldMatrix(const FieldMatrix&) = default;
-
-    //! copy constructor from assignable type T
-    template <class T,
-              typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
-    constexpr FieldMatrix(T const& rhs)
+    //! copy constructor from assignable type OtherMatrix
+    template <class OtherMatrix>
+      requires (not Concept::Number<OtherMatrix> && HasDenseMatrixAssigner<FieldMatrix, OtherMatrix>::value)
+    constexpr FieldMatrix(const OtherMatrix& rhs)
+        noexcept(std::is_nothrow_assignable_v<FieldMatrix&, const OtherMatrix&>)
       : _data{}
     {
       *this = rhs;
     }
 
-    using Base::operator=;
+    //! copy constructor
+    constexpr FieldMatrix (const FieldMatrix&) = default;
 
-    //! copy assignment operator
-    constexpr FieldMatrix& operator=(const FieldMatrix&) = default;
+    /// @}
+
+    //! Assignment from another dense matrix
+    template<class M>
+      requires (IsFieldMatrixShapeCorrect<M,ROWS,COLS>::value &&
+        std::is_assignable_v<K&, decltype(std::declval<const M&>()[0][0])>)
+    constexpr FieldMatrix& operator= (const DenseMatrix<M>& x)
+    {
+      assert(x.rows() == rows);
+      for (size_type i = 0; i < rows; ++i)
+        _data[i] = x[i];
+      return *this;
+    }
 
     //! copy assignment from FieldMatrix over a different field
-    template<typename T>
-    constexpr FieldMatrix& operator=(const FieldMatrix<T, ROWS, COLS>& x)
+    template <class OtherK>
+    constexpr FieldMatrix& operator= (const FieldMatrix<OtherK, ROWS, COLS>& x)
     {
       // The copy must be done element-by-element since a std::array does not have
       // a converting assignment operator.
@@ -172,9 +248,23 @@ namespace Dune
       return *this;
     }
 
+    //! Assignment operator from scalar
+    template<Concept::Number S>
+      requires std::constructible_from<K,S>
+    constexpr FieldMatrix& operator= (const S& scalar)
+        noexcept(std::is_nothrow_constructible_v<K,S>)
+    {
+      for (std::size_t i = 0; i < _data.size(); ++i)
+        _data[i] = scalar;
+      return *this;
+    }
+
+    //! copy assignment operator
+    constexpr FieldMatrix& operator= (const FieldMatrix&) = default;
+
     //! no copy assignment from FieldMatrix of different size
-    template <typename T, int rows, int cols>
-    FieldMatrix& operator=(FieldMatrix<T,rows,cols> const&) = delete;
+    template <class OtherK, int OtherRows, int OtherCols>
+    FieldMatrix& operator=(FieldMatrix<OtherK,OtherRows,OtherCols> const&) = delete;
 
     //! Return transposed of the matrix as FieldMatrix
     constexpr FieldMatrix<K, COLS, ROWS> transposed() const
@@ -186,83 +276,167 @@ namespace Dune
       return AT;
     }
 
-    //! vector space addition -- two-argument version
-    template <class OtherScalar>
-    friend constexpr auto operator+ ( const FieldMatrix& matrixA,
-                            const FieldMatrix<OtherScalar,ROWS,COLS>& matrixB)
-    {
-      FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,ROWS,COLS> result;
 
+    /// \name Vector space operations
+    /// @{
+
+    //! vector space addition
+    template <class OtherK>
+    friend constexpr auto operator+ (const FieldMatrix& matrixA,
+                                     const FieldMatrix<OtherK,ROWS,COLS>& matrixB)
+    {
+      FieldMatrix<typename PromotionTraits<K,OtherK>::PromotedType,ROWS,COLS> result;
       for (size_type i = 0; i < ROWS; ++i)
         for (size_type j = 0; j < COLS; ++j)
           result[i][j] = matrixA[i][j] + matrixB[i][j];
-
       return result;
     }
 
-    //! vector space subtraction -- two-argument version
-    template <class OtherScalar>
-    friend constexpr auto operator- ( const FieldMatrix& matrixA,
-                            const FieldMatrix<OtherScalar,ROWS,COLS>& matrixB)
+    //! Binary addition, when using FieldVector<K,1,1> like K
+    template <Concept::Number S>
+    friend constexpr auto operator+ (const FieldMatrix& a, const S& b) noexcept
+        requires(ROWS*COLS == 1)
     {
-      FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,ROWS,COLS> result;
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      return FieldMatrix<ResultValueType,1,1>{a[0][0] + b};
+    }
 
+    //! Binary addition, when using FieldMatrix<K,1,1> like K
+    template <Concept::Number S>
+    friend constexpr auto operator+ (const S& a, const FieldMatrix& b) noexcept
+        requires(ROWS*COLS == 1)
+    {
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      return FieldMatrix<ResultValueType,1,1>{a + b[0][0]};
+    }
+
+    //! add scalar
+    template <Concept::Number S>
+    constexpr FieldMatrix& operator+= (const S& scalar)
+      requires(ROWS*COLS == 1)
+    {
+      _data[0][0] += scalar;
+      return *this;
+    }
+
+    using Base::operator+=;
+
+    //! vector space subtraction
+    template <class OtherK>
+    friend constexpr auto operator- (const FieldMatrix& matrixA,
+                                     const FieldMatrix<OtherK,ROWS,COLS>& matrixB)
+    {
+      FieldMatrix<typename PromotionTraits<K,OtherK>::PromotedType,ROWS,COLS> result;
       for (size_type i = 0; i < ROWS; ++i)
         for (size_type j = 0; j < COLS; ++j)
           result[i][j] = matrixA[i][j] - matrixB[i][j];
-
       return result;
     }
 
-    //! vector space multiplication with scalar
-    template <class Scalar,
-              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend constexpr auto operator* ( const FieldMatrix& matrix, Scalar scalar)
+    //! Binary subtraction, when using FieldMatrix<K,1,1> like K
+    template<Concept::Number S>
+    friend constexpr auto operator- (const FieldMatrix& a, const S& b) noexcept
+        requires(ROWS*COLS == 1)
     {
-      FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,ROWS,COLS> result;
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      return FieldMatrix<ResultValueType,1,1>{a[0][0] - b};
+    }
 
+    //! Binary subtraction, when using FieldMatrix<K,1,1> like K
+    template<Concept::Number S>
+    friend constexpr auto operator- (const S& a, const FieldMatrix& b) noexcept
+        requires(ROWS*COLS == 1)
+    {
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      return FieldMatrix<ResultValueType,1,1>{a - b[0][0]};
+    }
+
+    //! subtract scalar
+    template <Concept::Number S>
+    constexpr FieldMatrix& operator-= (const S& scalar)
+      requires(ROWS*COLS == 1)
+    {
+      _data[0][0] -= scalar;
+      return *this;
+    }
+
+    using Base::operator-=;
+
+    //! vector space multiplication with scalar
+    template <Concept::Number S>
+    friend constexpr auto operator* (const FieldMatrix& matrix, const S& scalar)
+    {
+      FieldMatrix<typename PromotionTraits<K,S>::PromotedType,ROWS,COLS> result;
       for (size_type i = 0; i < ROWS; ++i)
         for (size_type j = 0; j < COLS; ++j)
           result[i][j] = matrix[i][j] * scalar;
-
       return result;
     }
 
     //! vector space multiplication with scalar
-    template <class Scalar,
-              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend constexpr auto operator* ( Scalar scalar, const FieldMatrix& matrix)
+    template <Concept::Number S>
+    friend constexpr auto operator* (const S& scalar, const FieldMatrix& matrix)
     {
-      FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,ROWS,COLS> result;
-
+      FieldMatrix<typename PromotionTraits<K,S>::PromotedType,ROWS,COLS> result;
       for (size_type i = 0; i < ROWS; ++i)
         for (size_type j = 0; j < COLS; ++j)
           result[i][j] = scalar * matrix[i][j];
-
       return result;
     }
 
-    //! vector space division by scalar
-    template <class Scalar,
-              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend constexpr auto operator/ ( const FieldMatrix& matrix, Scalar scalar)
+    //! multiplication with scalar
+    template <Concept::Number S>
+    constexpr FieldMatrix& operator*= (const S& scalar)
+      requires(ROWS*COLS == 1)
     {
-      FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,ROWS,COLS> result;
+      _data[0][0] *= scalar;
+      return *this;
+    }
 
+    using Base::operator*=;
+
+    //! vector space division by scalar
+    template <Concept::Number S>
+    friend constexpr auto operator/ (const FieldMatrix& matrix, const S& scalar)
+    {
+      FieldMatrix<typename PromotionTraits<K,S>::PromotedType,ROWS,COLS> result;
       for (size_type i = 0; i < ROWS; ++i)
         for (size_type j = 0; j < COLS; ++j)
           result[i][j] = matrix[i][j] / scalar;
-
       return result;
     }
 
-    /** \brief Matrix-matrix multiplication
-     */
-    template <class OtherScalar, int otherCols>
-    friend constexpr auto operator* ( const FieldMatrix& matrixA,
-                            const FieldMatrix<OtherScalar, COLS, otherCols>& matrixB)
+    //! Binary division, when using FieldMatrix<K,1,1> like K
+    template<Concept::Number S>
+    friend constexpr FieldMatrix operator/ (const S& a, const FieldMatrix& b) noexcept
+        requires(ROWS*COLS == 1)
     {
-      FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,ROWS,otherCols> result;
+      return FieldMatrix{a / b[0][0]};
+    }
+
+    //! division by scalar
+    template <Concept::Number S>
+    constexpr FieldMatrix& operator/= (const S& scalar)
+      requires(ROWS*COLS == 1)
+    {
+      _data[0][0] /= scalar;
+      return *this;
+    }
+
+    using Base::operator/=;
+
+    /// @}
+
+
+    /// \name Matrix-matrix multiplication
+    /// @{
+
+    //! Matrix-matrix multiplication of FieldMatrix types
+    template <class OtherK, int otherCols>
+    friend constexpr auto operator* (const FieldMatrix& matrixA,
+                                     const FieldMatrix<OtherK, COLS, otherCols>& matrixB)
+    {
+      FieldMatrix<typename PromotionTraits<K,OtherK>::PromotedType,ROWS,otherCols> result;
 
       for (size_type i = 0; i < matrixA.mat_rows(); ++i)
         for (size_type j = 0; j < matrixB.mat_cols(); ++j)
@@ -275,22 +449,20 @@ namespace Dune
       return result;
     }
 
-    /** \brief Matrix-matrix multiplication
+    /** \brief Matrix-matrix multiplication of FieldMatrix with other matrix type
      *
      * This implements multiplication of a FieldMatrix with another matrix
      * of type OtherMatrix. The latter has to provide
      * OtherMatrix::field_type, OtherMatrix::cols, and OtherMatrix::mtv(x,y).
      */
-    template <class OtherMatrix, std::enable_if_t<
-      Impl::IsStaticSizeMatrix_v<OtherMatrix>
-      and not Impl::IsFieldMatrix_v<OtherMatrix>
-      , int> = 0>
-    friend constexpr auto operator* ( const FieldMatrix& matrixA,
-                            const OtherMatrix& matrixB)
+    template <class OtherMatrix>
+      requires (Impl::IsStaticSizeMatrix_v<OtherMatrix> and not Impl::IsFieldMatrix_v<OtherMatrix>)
+    friend constexpr auto operator* (const FieldMatrix& matrixA,
+                                     const OtherMatrix& matrixB)
     {
       using Field = typename PromotionTraits<K, typename OtherMatrix::field_type>::PromotedType;
       Dune::FieldMatrix<Field, rows ,OtherMatrix::cols> result;
-      for (std::size_t j=0; j<rows; ++j)
+      for (size_type j = 0; j < rows; ++j)
         matrixB.mtv(matrixA[j], result[j]);
       return result;
     }
@@ -301,16 +473,14 @@ namespace Dune
      * of type OtherMatrix with a FieldMatrix. The former has to provide
      * OtherMatrix::field_type, OtherMatrix::rows, and OtherMatrix::mv(x,y).
      */
-    template <class OtherMatrix, std::enable_if_t<
-      Impl::IsStaticSizeMatrix_v<OtherMatrix>
-      and not Impl::IsFieldMatrix_v<OtherMatrix>
-      , int> = 0>
-    friend constexpr auto operator* ( const OtherMatrix& matrixA,
-                            const FieldMatrix& matrixB)
+    template <class OtherMatrix>
+      requires (Impl::IsStaticSizeMatrix_v<OtherMatrix> and not Impl::IsFieldMatrix_v<OtherMatrix>)
+    friend constexpr auto operator* (const OtherMatrix& matrixA,
+                                     const FieldMatrix& matrixB)
     {
       using Field = typename PromotionTraits<K, typename OtherMatrix::field_type>::PromotedType;
       Dune::FieldMatrix<Field, OtherMatrix::rows, cols> result;
-      for (std::size_t j=0; j<cols; ++j)
+      for (size_type j = 0; j < cols; ++j)
       {
         auto B_j = Impl::ColumnVectorView(matrixB, j);
         auto result_j = Impl::ColumnVectorView(result, j);
@@ -323,16 +493,7 @@ namespace Dune
     template<int l>
     constexpr FieldMatrix<K,l,cols> leftmultiplyany (const FieldMatrix<K,l,rows>& M) const
     {
-      FieldMatrix<K,l,cols> C;
-
-      for (size_type i=0; i<l; i++) {
-        for (size_type j=0; j<cols; j++) {
-          C[i][j] = 0;
-          for (size_type k=0; k<rows; k++)
-            C[i][j] += M[i][k]*(*this)[k][j];
-        }
-      }
-      return C;
+      return M * (*this);
     }
 
     using Base::rightmultiply;
@@ -358,308 +519,106 @@ namespace Dune
     template<int l>
     constexpr FieldMatrix<K,rows,l> rightmultiplyany (const FieldMatrix<K,cols,l>& M) const
     {
-      FieldMatrix<K,rows,l> C;
-
-      for (size_type i=0; i<rows; i++) {
-        for (size_type j=0; j<l; j++) {
-          C[i][j] = 0;
-          for (size_type k=0; k<cols; k++)
-            C[i][j] += (*this)[i][k]*M[k][j];
-        }
-      }
-      return C;
+      return (*this) * M;
     }
 
-    // make this thing a matrix
+    /// @}
+
+
+    /// \name Capacity
+    /// @{
+
+    // internal: return the number of rows
     static constexpr size_type mat_rows() { return ROWS; }
+
+    // internal: return the number of columns
     static constexpr size_type mat_cols() { return COLS; }
 
-    constexpr row_reference mat_access ( size_type i )
+    /// @}
+
+
+    /// \name Element access
+    /// @{
+
+    // internal: return a reference to the ith row
+    constexpr row_reference mat_access (size_type i)
     {
       DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
 
-    constexpr const_row_reference mat_access ( size_type i ) const
+    // internal: return a const reference to the ith row
+    constexpr const_row_reference mat_access (size_type i) const
     {
       DUNE_ASSERT_BOUNDS(i < ROWS);
       return _data[i];
     }
-  };
 
-#ifndef DOXYGEN // hide specialization
-  /** \brief Special type for 1x1 matrices
-   */
-  template<class K>
-  class FieldMatrix<K,1,1> : public DenseMatrix< FieldMatrix<K,1,1> >
-  {
-    FieldVector<K,1> _data;
-    typedef DenseMatrix< FieldMatrix<K,1,1> > Base;
-  public:
-    // standard constructor and everything is sufficient ...
-
-    //===== type definitions and constants
-
-    //! The type used for index access and size operations
-    typedef typename Base::size_type size_type;
-
-    //! The number of block levels we contain.
-    //! This is always one for this type.
-    constexpr static int blocklevel = 1;
-
-    typedef typename Base::row_type row_type;
-
-    typedef typename Base::row_reference row_reference;
-    typedef typename Base::const_row_reference const_row_reference;
-
-    //! \brief The number of rows.
-    //! This is always one for this type.
-    constexpr static int rows = 1;
-    //! \brief The number of columns.
-    //! This is always one for this type.
-    constexpr static int cols = 1;
-
-    //===== constructors
-    /** \brief Default constructor
-     */
-    constexpr FieldMatrix() = default;
-
-    /** \brief Constructor initializing the matrix from a list of vector
-     */
-    FieldMatrix(std::initializer_list<Dune::FieldVector<K, 1>> const &l)
+    //! Conversion operator
+    constexpr operator const_reference () const noexcept
+        requires(ROWS*COLS == 1)
     {
-      std::copy_n(l.begin(), std::min<std::size_t>(1, l.size()), &_data);
+      return _data[0][0];
     }
 
-    template <class T,
-              typename = std::enable_if_t<HasDenseMatrixAssigner<FieldMatrix, T>::value>>
-    constexpr FieldMatrix(T const& rhs)
+    //! Conversion operator
+    constexpr operator reference () noexcept
+        requires(ROWS*COLS == 1)
     {
-      *this = rhs;
+      return _data[0][0];
     }
 
-    using Base::operator=;
+    /// @}
 
-    //! Return transposed of the matrix as FieldMatrix
-    constexpr FieldMatrix<K, 1, 1> transposed() const
+
+    /// \name Comparison operators
+    /// @{
+
+    //! comparing FieldMatrix<1,1> with scalar for equality
+    template<Concept::Number S>
+    friend constexpr bool operator== (const FieldMatrix& a, const S& b) noexcept
+        requires(ROWS*COLS == 1)
     {
-      return *this;
+      return a._data[0] == b;
     }
 
-    //! vector space addition -- two-argument version
-    template <class OtherScalar>
-    friend constexpr auto operator+ ( const FieldMatrix& matrixA,
-                            const FieldMatrix<OtherScalar,1,1>& matrixB)
+    //! comparing FieldMatrix<1,1> with scalar for equality
+    template<Concept::Number S>
+    friend constexpr bool operator== (const S& a, const FieldMatrix& b) noexcept
+        requires(ROWS*COLS == 1)
     {
-      return FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,1,1>{matrixA[0][0] + matrixB[0][0]};
+      return a == b._data[0];
     }
 
-    //! Binary addition when treating FieldMatrix<K,1,1> like K
-    template <class Scalar,
-              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend constexpr auto operator+ ( const FieldMatrix& matrix,
-                            const Scalar& scalar)
+    //! three-way comparison of FieldMatrix
+    template<class OtherK>
+      requires (Std::three_way_comparable_with<K,OtherK>)
+    friend constexpr auto operator<=> (const FieldMatrix& a, const FieldMatrix<OtherK,ROWS,COLS>& b) noexcept
     {
-      return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1>{matrix[0][0] + scalar};
+#if __cpp_lib_three_way_comparison
+      return a._data <=> b._data;
+#else
+      return Std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+#endif
     }
 
-    //! Binary addition when treating FieldMatrix<K,1,1> like K
-    template <class Scalar,
-              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend constexpr auto operator+ ( const Scalar& scalar,
-                            const FieldMatrix& matrix)
+    //! three-way comparison of FieldMatrix<1,1> with scalar
+    template<Concept::Number S>
+    friend constexpr auto operator<=> (const FieldMatrix& a, const S& b) noexcept
+        requires(ROWS*COLS == 1)
     {
-      return FieldMatrix<typename PromotionTraits<Scalar,K>::PromotedType,1,1>{scalar + matrix[0][0]};
+      return a._data[0] <=> b;
     }
 
-    //! vector space subtraction -- two-argument version
-    template <class OtherScalar>
-    friend constexpr auto operator- ( const FieldMatrix& matrixA,
-                            const FieldMatrix<OtherScalar,1,1>& matrixB)
+    //! three-way comparison of FieldMatrix<1,1> with scalar
+    template<Concept::Number S>
+    friend constexpr auto operator<=> (const S& a, const FieldMatrix& b) noexcept
+        requires(ROWS*COLS == 1)
     {
-      return FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,1,1>{matrixA[0][0] - matrixB[0][0]};
+      return a <=> b._data[0];
     }
 
-    //! Binary subtraction when treating FieldMatrix<K,1,1> like K
-    template <class Scalar,
-              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend constexpr auto operator- ( const FieldMatrix& matrix,
-                            const Scalar& scalar)
-    {
-      return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1>{matrix[0][0] - scalar};
-    }
-
-    //! Binary subtraction when treating FieldMatrix<K,1,1> like K
-    template <class Scalar,
-              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend constexpr auto operator- ( const Scalar& scalar,
-                            const FieldMatrix& matrix)
-    {
-      return FieldMatrix<typename PromotionTraits<Scalar,K>::PromotedType,1,1>{scalar - matrix[0][0]};
-    }
-
-    //! vector space multiplication with scalar
-    template <class Scalar,
-              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend constexpr auto operator* ( const FieldMatrix& matrix, Scalar scalar)
-    {
-      return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1> {matrix[0][0] * scalar};
-    }
-
-    //! vector space multiplication with scalar
-    template <class Scalar,
-              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend constexpr auto operator* ( Scalar scalar, const FieldMatrix& matrix)
-    {
-      return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1> {scalar * matrix[0][0]};
-    }
-
-    //! vector space division by scalar
-    template <class Scalar,
-              std::enable_if_t<IsNumber<Scalar>::value, int> = 0>
-    friend constexpr auto operator/ ( const FieldMatrix& matrix, Scalar scalar)
-    {
-      return FieldMatrix<typename PromotionTraits<K,Scalar>::PromotedType,1,1> {matrix[0][0] / scalar};
-    }
-
-    //===== solve
-
-        /** \brief Matrix-matrix multiplication
-     */
-    template <class OtherScalar, int otherCols>
-    friend constexpr auto operator* ( const FieldMatrix& matrixA,
-                            const FieldMatrix<OtherScalar, 1, otherCols>& matrixB)
-    {
-      FieldMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType,1,otherCols> result;
-
-      for (size_type j = 0; j < matrixB.mat_cols(); ++j)
-        result[0][j] = matrixA[0][0] * matrixB[0][j];
-
-      return result;
-    }
-
-    /** \brief Matrix-matrix multiplication
-     *
-     * This implements multiplication of a FieldMatrix with another matrix
-     * of type OtherMatrix. The latter has to provide
-     * OtherMatrix::field_type, OtherMatrix::cols, and OtherMatrix::mtv(x,y).
-     */
-    template <class OtherMatrix, std::enable_if_t<
-      Impl::IsStaticSizeMatrix_v<OtherMatrix>
-      and not Impl::IsFieldMatrix_v<OtherMatrix>
-      and (OtherMatrix::rows==1)
-      , int> = 0>
-    friend constexpr auto operator* ( const FieldMatrix& matrixA,
-                            const OtherMatrix& matrixB)
-    {
-      using Field = typename PromotionTraits<K, typename OtherMatrix::field_type>::PromotedType;
-      Dune::FieldMatrix<Field, rows ,OtherMatrix::cols> result;
-      for (std::size_t j=0; j<rows; ++j)
-        matrixB.mtv(matrixA[j], result[j]);
-      return result;
-    }
-
-    /** \brief Matrix-matrix multiplication
-     *
-     * This implements multiplication of another matrix
-     * of type OtherMatrix with a FieldMatrix. The former has to provide
-     * OtherMatrix::field_type, OtherMatrix::rows, and OtherMatrix::mv(x,y).
-     */
-    template <class OtherMatrix, std::enable_if_t<
-      Impl::IsStaticSizeMatrix_v<OtherMatrix>
-      and not Impl::IsFieldMatrix_v<OtherMatrix>
-      and (OtherMatrix::cols==1)
-      , int> = 0>
-    friend constexpr auto operator* ( const OtherMatrix& matrixA,
-                            const FieldMatrix& matrixB)
-    {
-      using Field = typename PromotionTraits<K, typename OtherMatrix::field_type>::PromotedType;
-      Dune::FieldMatrix<Field, OtherMatrix::rows, cols> result;
-      for (std::size_t j=0; j<cols; ++j)
-      {
-        auto B_j = Impl::ColumnVectorView(matrixB, j);
-        auto result_j = Impl::ColumnVectorView(result, j);
-        matrixA.mv(B_j, result_j);
-      }
-      return result;
-    }
-
-    //! Multiplies M from the left to this matrix, this matrix is not modified
-    template<int l>
-    constexpr FieldMatrix<K,l,1> leftmultiplyany (const FieldMatrix<K,l,1>& M) const
-    {
-      FieldMatrix<K,l,1> C;
-      for (size_type j=0; j<l; j++)
-        C[j][0] = M[j][0]*(*this)[0][0];
-      return C;
-    }
-
-    //! left multiplication
-    constexpr FieldMatrix& rightmultiply (const FieldMatrix& M)
-    {
-      _data[0] *= M[0][0];
-      return *this;
-    }
-
-    //! Multiplies M from the right to this matrix, this matrix is not modified
-    template<int l>
-    constexpr FieldMatrix<K,1,l> rightmultiplyany (const FieldMatrix<K,1,l>& M) const
-    {
-      FieldMatrix<K,1,l> C;
-
-      for (size_type j=0; j<l; j++)
-        C[0][j] = M[0][j]*_data[0];
-      return C;
-    }
-
-    // make this thing a matrix
-    static constexpr size_type mat_rows() { return 1; }
-    static constexpr size_type mat_cols() { return 1; }
-
-    constexpr row_reference mat_access ([[maybe_unused]] size_type i)
-    {
-      DUNE_ASSERT_BOUNDS(i == 0);
-      return _data;
-    }
-
-    constexpr const_row_reference mat_access ([[maybe_unused]] size_type i) const
-    {
-      DUNE_ASSERT_BOUNDS(i == 0);
-      return _data;
-    }
-
-    //! add scalar
-    constexpr FieldMatrix& operator+= (const K& k)
-    {
-      _data[0] += k;
-      return (*this);
-    }
-
-    //! subtract scalar
-    constexpr FieldMatrix& operator-= (const K& k)
-    {
-      _data[0] -= k;
-      return (*this);
-    }
-
-    //! multiplication with scalar
-    constexpr FieldMatrix& operator*= (const K& k)
-    {
-      _data[0] *= k;
-      return (*this);
-    }
-
-    //! division by scalar
-    constexpr FieldMatrix& operator/= (const K& k)
-    {
-      _data[0] /= k;
-      return (*this);
-    }
-
-    //===== conversion operator
-
-    constexpr operator const K& () const { return _data[0]; }
-
+    /// @}
   };
 
   /** \brief Sends the matrix to an output stream */
@@ -669,8 +628,6 @@ namespace Dune
     s << a[0][0];
     return s;
   }
-
-#endif // DOXYGEN
 
   namespace FMatrixHelp {
 
