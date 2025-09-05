@@ -202,7 +202,7 @@ namespace Dune
     {}
 
     //! Constructor initializing the matrix from a nested list of values
-    constexpr FieldMatrix(std::initializer_list<Dune::FieldVector<K, cols> > const &l)
+    constexpr FieldMatrix (std::initializer_list<Dune::FieldVector<K, cols> > const &l)
       : _data{}
     {
       assert(l.size() == rows);
@@ -213,7 +213,7 @@ namespace Dune
     //! copy constructor from assignable type OtherMatrix
     template <class OtherMatrix>
       requires (not Concept::Number<OtherMatrix> && HasDenseMatrixAssigner<FieldMatrix, OtherMatrix>::value)
-    constexpr FieldMatrix(const OtherMatrix& rhs)
+    constexpr FieldMatrix (const OtherMatrix& rhs)
       : _data{}
     {
       *this = rhs;
@@ -260,6 +260,9 @@ namespace Dune
 
     //! copy assignment operator
     constexpr FieldMatrix& operator= (const FieldMatrix&) = default;
+
+    //! Include the other overloads of operator=
+    using Base::operator=;
 
     //! Return transposed of the matrix as FieldMatrix
     constexpr FieldMatrix<K, COLS, ROWS> transposed() const
