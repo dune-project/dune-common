@@ -187,7 +187,7 @@ namespace Dune
     {}
 
     //! Constructor with a given value initializing all entries to this value
-    explicit(ROWS*COLS != 1)
+    // explicit(ROWS*COLS != 1)
     constexpr FieldMatrix (const value_type& value) noexcept
       : _data{filledArray<ROWS>(row_type(value))}
     {}
@@ -195,7 +195,7 @@ namespace Dune
     //! Constructor with a given scalar initializing all entries to this value
     template<Concept::Number S>
       requires (std::constructible_from<K,S>)
-    explicit(ROWS*COLS != 1)
+    // explicit(ROWS*COLS != 1)
     constexpr FieldMatrix (const S& scalar)
         noexcept(std::is_nothrow_constructible_v<K,S>)
       : _data{filledArray<ROWS>(row_type(scalar))}
@@ -214,7 +214,6 @@ namespace Dune
     template <class OtherMatrix>
       requires (not Concept::Number<OtherMatrix> && HasDenseMatrixAssigner<FieldMatrix, OtherMatrix>::value)
     constexpr FieldMatrix(const OtherMatrix& rhs)
-        noexcept(std::is_nothrow_assignable_v<FieldMatrix&, const OtherMatrix&>)
       : _data{}
     {
       *this = rhs;
@@ -261,10 +260,6 @@ namespace Dune
 
     //! copy assignment operator
     constexpr FieldMatrix& operator= (const FieldMatrix&) = default;
-
-    //! no copy assignment from FieldMatrix of different size
-    template <class OtherK, int OtherRows, int OtherCols>
-    FieldMatrix& operator=(FieldMatrix<OtherK,OtherRows,OtherCols> const&) = delete;
 
     //! Return transposed of the matrix as FieldMatrix
     constexpr FieldMatrix<K, COLS, ROWS> transposed() const
