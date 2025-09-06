@@ -247,6 +247,11 @@ namespace Dune
       return *this;
     }
 
+    //! Delete assignment from FieldMatrix of different shape
+    template <class OtherK, int otherRows, int otherCols>
+      requires (otherRows != ROWS || otherCols != COLS)
+    constexpr FieldMatrix& operator= (const FieldMatrix<OtherK, otherRows, otherCols>&) = delete;
+
     //! Assignment operator from scalar
     template<Concept::Number S>
       requires std::constructible_from<K,S>
