@@ -144,7 +144,7 @@ namespace Dune {
     constexpr FieldVector (const std::initializer_list<K>& l)
       : _data{}
     {
-      assert(l.size() == size());
+      DUNE_ASSERT_BOUNDS(l.size() == size());
       for (size_type i = 0; i < size(); ++i)
         _data[i] = std::data(l)[i];
     }
@@ -155,7 +155,7 @@ namespace Dune {
         std::is_assignable_v<K&, decltype(std::declval<const V&>()[0])>)
     constexpr FieldVector (const DenseVector<V>& x)
     {
-      assert(x.size() == size());
+      DUNE_ASSERT_BOUNDS(x.size() == size());
       for (size_type i = 0; i < size(); ++i)
         _data[i] = x[i];
     }
@@ -180,7 +180,7 @@ namespace Dune {
         std::is_assignable_v<K&, decltype(std::declval<const V&>()[0])>)
     constexpr FieldVector& operator= (const DenseVector<V>& x)
     {
-      assert(x.size() == size());
+      DUNE_ASSERT_BOUNDS(x.size() == size());
       for (size_type i = 0; i < size(); ++i)
         _data[i] = x[i];
       return *this;

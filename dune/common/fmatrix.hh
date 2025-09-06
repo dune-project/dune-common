@@ -216,7 +216,7 @@ namespace Dune
     constexpr FieldMatrix (const OtherMatrix& rhs)
       : _data{}
     {
-      *this = rhs;
+      DenseMatrixAssigner< FieldMatrix, OtherMatrix >::apply( *this, rhs );
     }
 
     //! copy constructor
@@ -230,7 +230,8 @@ namespace Dune
         std::is_assignable_v<K&, decltype(std::declval<const M&>()[0][0])>)
     constexpr FieldMatrix& operator= (const DenseMatrix<M>& x)
     {
-      assert(x.rows() == rows);
+      DUNE_ASSERT_BOUNDS(x.rows() == rows);
+      DUNE_ASSERT_BOUNDS(x.cols() == cols);
       for (size_type i = 0; i < rows; ++i)
         _data[i] = x[i];
       return *this;
