@@ -186,21 +186,6 @@ namespace Dune
       : _data{}
     {}
 
-    //! Constructor with a given value initializing all entries to this value
-    // explicit(ROWS*COLS != 1)
-    constexpr FieldMatrix (const value_type& value) noexcept
-      : _data{filledArray<ROWS>(row_type(value))}
-    {}
-
-    //! Constructor with a given scalar initializing all entries to this value
-    template<Concept::Number S>
-      requires (std::constructible_from<K,S>)
-    // explicit(ROWS*COLS != 1)
-    constexpr FieldMatrix (const S& scalar)
-        noexcept(std::is_nothrow_constructible_v<K,S>)
-      : _data{filledArray<ROWS>(row_type(scalar))}
-    {}
-
     //! Constructor initializing the matrix from a nested list of values
     constexpr FieldMatrix (std::initializer_list<Dune::FieldVector<K, cols> > const &l)
       : _data{}
@@ -210,62 +195,26 @@ namespace Dune
         _data[i] = std::data(l)[i];
     }
 
+    //! Delete assignment from FieldMatrix of different shape
+    template <class OtherK, int otherRows, int otherCols>
+      requires (otherRows != ROWS || otherCols != COLS)
+    constexpr FieldMatrix(const FieldMatrix<OtherK, otherRows, otherCols>&) = delete;
+
     //! copy constructor from assignable type OtherMatrix
     template <class OtherMatrix>
-      requires (not Concept::Number<OtherMatrix> && HasDenseMatrixAssigner<FieldMatrix, OtherMatrix>::value)
+      requires (HasDenseMatrixAssigner<FieldMatrix, OtherMatrix>::value)
     constexpr FieldMatrix (const OtherMatrix& rhs)
       : _data{}
     {
       DenseMatrixAssigner< FieldMatrix, OtherMatrix >::apply( *this, rhs );
     }
 
-    //! copy constructor
-    constexpr FieldMatrix (const FieldMatrix&) = default;
-
     /// @}
-
-    //! Assignment from another dense matrix
-    template<class M>
-      requires (IsFieldMatrixShapeCorrect<M,ROWS,COLS>::value &&
-        std::is_assignable_v<K&, decltype(std::declval<const M&>()[0][0])>)
-    constexpr FieldMatrix& operator= (const DenseMatrix<M>& x)
-    {
-      DUNE_ASSERT_BOUNDS(x.rows() == rows);
-      DUNE_ASSERT_BOUNDS(x.cols() == cols);
-      for (size_type i = 0; i < rows; ++i)
-        _data[i] = x[i];
-      return *this;
-    }
-
-    //! copy assignment from FieldMatrix over a different field
-    template <class OtherK>
-    constexpr FieldMatrix& operator= (const FieldMatrix<OtherK, ROWS, COLS>& x)
-    {
-      // The copy must be done element-by-element since a std::array does not have
-      // a converting assignment operator.
-      for (std::size_t i = 0; i < _data.size(); ++i)
-        _data[i] = x._data[i];
-      return *this;
-    }
 
     //! Delete assignment from FieldMatrix of different shape
     template <class OtherK, int otherRows, int otherCols>
       requires (otherRows != ROWS || otherCols != COLS)
     constexpr FieldMatrix& operator= (const FieldMatrix<OtherK, otherRows, otherCols>&) = delete;
-
-    //! Assignment operator from scalar
-    template<Concept::Number S>
-      requires std::constructible_from<K,S>
-    constexpr FieldMatrix& operator= (const S& scalar)
-        noexcept(std::is_nothrow_constructible_v<K,S>)
-    {
-      for (std::size_t i = 0; i < _data.size(); ++i)
-        _data[i] = scalar;
-      return *this;
-    }
-
-    //! copy assignment operator
-    constexpr FieldMatrix& operator= (const FieldMatrix&) = default;
 
     //! Include the other overloads of operator=
     using Base::operator=;
