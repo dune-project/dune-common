@@ -94,6 +94,8 @@ In order to build the DUNE core modules you need at least the following software
 
 - Deprecate the utility `integerSequenceEntry` in favour of the shorter `get` from `integersequence.hh`.
 
+- Remove the deprecated class `Factorial` from `math.hh`. Please use the method `factorial` instead.
+
 ## Python: Changelog
 
 - The `sdist` tar ball name should not use `-` (see PEP 625) so use `_` instead
