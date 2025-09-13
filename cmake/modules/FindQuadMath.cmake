@@ -71,11 +71,4 @@ if(QuadMath_FOUND AND NOT TARGET QuadMath::QuadMath)
   # Compiler supports QuadMath: Add appropriate linker flag
   add_library(QuadMath::QuadMath INTERFACE IMPORTED)
   target_link_libraries(QuadMath::QuadMath INTERFACE quadmath)
-
-  target_compile_definitions(QuadMath::QuadMath INTERFACE
-    _GLIBCXX_USE_FLOAT128
-  )
-  target_compile_options(QuadMath::QuadMath INTERFACE
-    $<$<CXX_COMPILER_ID:GNU>:-fext-numeric-literals>
-  )
 endif()
