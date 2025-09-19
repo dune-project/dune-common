@@ -157,7 +157,7 @@ function(dune_cmake_sphinx_doc)
   foreach(module ${SPHINX_DOC_MODULE_LIST})
     get_filename_component(modname ${module} NAME)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/modules/${modname}
-                       COMMAND ${Python3_EXECUTABLE} ${DUNE_SPHINX_EXT_PATH}/extract_cmake_data.py
+                       COMMAND Python3::Interpreter ${DUNE_SPHINX_EXT_PATH}/extract_cmake_data.py
                          --module=${module}
                          --builddir=${CMAKE_CURRENT_BINARY_DIR}
                        DEPENDS ${module}
