@@ -71,10 +71,6 @@ function(dune_python_find_package)
   if(TARGET ${PYPACKAGE_INTERPRETER})
     get_target_property(PYPACKAGE_LOCATION ${PYPACKAGE_INTERPRETER} LOCATION)
   endif()
-  # sanity check on the interpreter
-  if(NOT EXISTS ${PYPACKAGE_LOCATION})
-    message(FATAL_ERROR "The location of the python interpreter '${PYPACKAGE_LOCATION}' is not executable")
-  endif()
 
   # Do the actual check
   execute_process(COMMAND "${PYPACKAGE_LOCATION}" -c "import ${PYPACKAGE_PACKAGE}"
