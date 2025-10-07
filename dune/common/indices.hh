@@ -121,7 +121,7 @@ namespace Dune
    * \returns Result of calling f with unpacked integers.
    */
   template<class F, class I, I... i>
-  decltype(auto) constexpr unpackIntegerSequence(F&& f, std::integer_sequence<I, i...> sequence)
+  decltype(auto) constexpr unpackIntegerSequence(F&& f, [[maybe_unused]] std::integer_sequence<I, i...> sequence)
   {
     return f(std::integral_constant<I, i>()...);
   }
