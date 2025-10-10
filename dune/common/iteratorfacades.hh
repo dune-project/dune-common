@@ -916,7 +916,7 @@ namespace Dune
    *   1. implement `*it`
    *   2. implement `*(it.baseIterator())`
    * * Incrementing a non-const iterator using any of the following approaches:
-   *   1. implement `++it`
+   *   1. implement `++it` and declare `using IteratorFacade::operator++`
    *   2. implement `++(it.baseIterator())`
    *   3. implement `it+=1`
    * * Equality comparison of two const iterators using any of the following approaches:
@@ -926,7 +926,7 @@ namespace Dune
    * For a bidirectional iterator it must additionally provide:
    *
    * * Decrementing a non-const iterator using any of the following approaches:
-   *   1. implement `--it`
+   *   1. implement `--it` and declare `using IteratorFacade::operator--`
    *   2. implement `--(it.baseIterator())`
    *   3. implement `it-=1`
    *
@@ -1156,7 +1156,7 @@ namespace Dune
     constexpr DerivedIterator operator++(int)
     {
       DerivedIterator tmp(derived());
-      this->operator++();
+      ++derived();
       return tmp;
     }
 
@@ -1192,7 +1192,7 @@ namespace Dune
     constexpr DerivedIterator operator--(int)
     {
       DerivedIterator tmp(derived());
-      this->operator--();
+      --derived();
       return tmp;
     }
 
