@@ -6,14 +6,12 @@ add_subdirectory(benchmark)
 
 #install headers
 install(FILES
-        collectivecommunication.hh
         communication.hh
         communicator.hh
         indexset.hh
         indicessyncer.hh
         interface.hh
         localindex.hh
-        mpicollectivecommunication.hh
         mpicommunication.hh
         mpiguard.hh
         future.hh
