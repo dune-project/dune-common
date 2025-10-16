@@ -33,8 +33,6 @@ namespace Dune {
   /** @brief computes the dot product for fundamental data types according to Petsc's VectDot function: dot(a,b) := std::conj(a)*b
    *
    * @see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecDot.html#VecDot
-   * @param a
-   * @param b
    * @return conj(a)*b
    */
   template<class A, class B>
@@ -49,8 +47,6 @@ namespace Dune {
    *
    * Specialization for real first arguments which replaces conj(a) by a.
    * @see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecTDot.html#VecTDot
-   * @param a
-   * @param b
    * @return a*b (which is the same as conj(a)*b in this case)
    */
   // fundamental type with A being a real type
@@ -66,8 +62,6 @@ namespace Dune {
    *
    * Specialization for real first arguments which replaces conj(a) by a.
    * @see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecTDot.html#VecTDot
-   * @param a
-   * @param b
    * @return dot(a,b)
    */
   template<typename A, typename B>
@@ -80,8 +74,6 @@ namespace Dune {
   /**
    * @brief Computes an indefinite vector dot product for fundamental data types according to Petsc's VectTDot function: dotT(a,b) := a*b
    * @see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecTDot.html#VecTDot
-   * @param a
-   * @param b
    * @return a*b
    */
   template<class A, class B>

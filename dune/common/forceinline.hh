@@ -6,8 +6,11 @@
 #define DUNE_COMMON_FORCEINLINE_HH
 
 /**
- * \file Provide the  macro `DUNE_FORCE_INLINE` that expands to attribute `always_inline`
- * or similar depending on the compiler (version). Some information is extracted from
+ * \file
+ * \brief Provide the  macro `DUNE_FORCE_INLINE` that expands to attribute `always_inline`
+ * or similar depending on the compiler (version).
+ *
+ * Some information is extracted from
  * https://meghprkh.github.io/blog/posts/c++-force-inline.
  *
  * The effect of DUNE_FORCE_INLINE is typically as follows:

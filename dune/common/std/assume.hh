@@ -6,9 +6,12 @@
 #define DUNE_COMMON_STD_ASSUME_HH
 
 /**
- * \file Provide the macro `DUNE_ASSUME(...)` that is a portable assume expression
+ * \file
+ * \brief Provide the macro `DUNE_ASSUME(...)` that is a portable assume expression
  * as a hint for the compiler/optimizer. If no equivalent to the assume attribute
- * is available, it falls back to an `assert()` macro. A detailed explanation of
+ * is available, it falls back to an `assert()` macro.
+ *
+ * A detailed explanation of
  * portable assumptions is provided in the C++ standard proposal https://wg21.link/p1774r8.
  *
  * \b Caution:
