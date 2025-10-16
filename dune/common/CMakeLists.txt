@@ -25,7 +25,6 @@ target_sources(dunecommon PRIVATE
 install(FILES
         alignedallocator.hh
         arraylist.hh
-        assertandreturn.hh
         bartonnackmanifcheck.hh
         bigunsignedint.hh
         binaryfunctions.hh

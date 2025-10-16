@@ -96,6 +96,7 @@ In order to build the DUNE core modules you need at least the following software
 - Remove the deprecated alias `CollectiveCommunication`, use `Communication` instead.
 - Remove deprecated `MPIHelper::getCollectiveCommunication`, use `MPIHelper::getCommunication` instead.
 - Remove the deprecated class `Factorial` from `math.hh`. Please use the method `factorial` instead.
+- Remove the deprecated header `assertandreturn.hh` which contained the macro `DUNE_ASSERT_AND_RETURN`.
 
 ## Python: Changelog
 
