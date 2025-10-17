@@ -91,10 +91,10 @@ constexpr T& resolveRef(std::reference_wrapper<T> gf) noexcept
  *
  * This is an alias for result of resolveRef.
  * Plain types T or const T are forwarded while
- * for T=std::reference_wrapper<S> the wrapped
+ * for T=std::reference_wrapper\<S\> the wrapped
  * type S is returned.
  *
- * \ingroup Utility
+ * \ingroup Utilities
  */
 template<class T>
 using ResolveRef_t = std::remove_reference_t<decltype(Dune::resolveRef(std::declval<T&>()))>;

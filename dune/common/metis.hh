@@ -6,8 +6,10 @@
 #define DUNE_METIS_HH
 
 /**
- * \file This include file is intended to be used instead of the direct include of `metis.h`. It
- * provides the right order of necessary pre-includes, e.g. when scotch-metis is found, and introduces
+ * \file
+ * \brief This include file is intended to be used instead of the direct include of `metis.h`.
+ *
+ * It provides the right order of necessary pre-includes, e.g. when scotch-metis is found, and introduces
  * version-/distribution-independent type definitions for floating-point arguments (`real_t`) and
  * integer arguments (`idx_t`) in the namespace `Dune::Metis`.
  **/
