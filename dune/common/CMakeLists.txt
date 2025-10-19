@@ -69,7 +69,6 @@ install(FILES
         ios_state.hh
         iteratorfacades.hh
         iteratorrange.hh
-        keywords.hh
         lru.hh
         mallocallocator.hh
         math.hh
