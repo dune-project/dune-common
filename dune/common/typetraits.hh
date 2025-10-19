@@ -412,29 +412,6 @@ namespace Dune
 
 
 
-  /**
-   * \brief Compute size of variadic type list
-   *
-   * \tparam T Variadic type list
-   *
-   * \deprecated This class is deprecated and will be removed after Dune 2.10. Use sizeof...(T) instead.
-   *
-   * The ::value member gives the size of the variadic type list T...
-   * This should be equivalent to sizeof...(T). However, with clang
-   * the latter may produce wrong results if used in template aliases
-   * due to clang bug 14858 (https://llvm.org/bugs/show_bug.cgi?id=14858).
-   *
-   * As a workaround one can use SizeOf<T...>::value instead of sizeof...(T)
-   * in template aliases for any code that should work with clang < 3.8.
-   */
-  template<typename... T>
-  struct
-  [[deprecated("This class is deprecated and will be removed after Dune 2.10. Use sizeof...(T) instead.")]]
-  SizeOf
-    : public std::integral_constant<std::size_t,sizeof...(T)>
-  {};
-
-
 #ifndef DOXYGEN
 
   namespace Impl {
