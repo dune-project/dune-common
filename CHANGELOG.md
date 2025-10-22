@@ -93,8 +93,14 @@ In order to build the DUNE core modules you need at least the following software
 ## C++: Deprecations and removals
 
 - Deprecate the utility `integerSequenceEntry` in favour of the shorter `get` from `integersequence.hh`.
-
+- Remove the deprecated alias `CollectiveCommunication`, use `Communication` instead.
+- Remove deprecated `MPIHelper::getCollectiveCommunication`, use `MPIHelper::getCommunication` instead.
 - Remove the deprecated class `Factorial` from `math.hh`. Please use the method `factorial` instead.
+- Remove the deprecated class `SizeOf`. Use `sizeof...` instead.
+- Remove the deprecated header `assertandreturn.hh` which contained the macro `DUNE_ASSERT_AND_RETURN`.
+- Remove the deprecated header `keywords.hh` which contained the macros `DUNE_INLINE_VARIABLE`
+  and `DUNE_GENERALIZED_CONSTEXPR`. Use C++17's `inline` and `constexpr` instead.
+- Remove the deprecated function `Hybrid::equals`, use `Hybrid::equal_to` instead.
 
 ## Python: Changelog
 

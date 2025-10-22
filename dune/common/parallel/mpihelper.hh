@@ -110,18 +110,6 @@ namespace Dune
     }
 
 
-
-    /**
-     * \deprecated getCollectionCommunication is deprecated and will be removed after Dune 2.9.
-     *
-     * Use getCommunication instead.
-     */
-    [[deprecated("getCollectionCommunication is deprecated. Use getCommunication instead.")]]
-    static Communication<MPICommunicator> getCollectiveCommunication()
-    {
-      return Communication<MPICommunicator>(getCommunicator());
-    }
-
     static Communication<MPICommunicator>
     getCommunication()
     {
@@ -211,18 +199,6 @@ namespace Dune
     static MPICommunicator getLocalCommunicator ()
     {
       return MPI_COMM_SELF;
-    }
-
-    /**
-     * \deprecated getCollectionCommunication is deprecated and will be removed after Dune 2.9.
-     *
-     * Use getCommunication instead.
-     */
-    [[deprecated("getCollectionCommunication is deprecated. Use getCommunication instead.")]]
-    static Communication<MPICommunicator>
-    getCollectiveCommunication()
-    {
-      return Communication<MPICommunicator>(getCommunicator());
     }
 
     static Communication<MPICommunicator>

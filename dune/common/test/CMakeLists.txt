@@ -12,18 +12,6 @@ dune_add_test(SOURCES arithmetictestsuitetest.cc
 dune_add_test(SOURCES arraylisttest.cc
               LABELS quick)
 
-dune_add_test(SOURCES assertandreturntest.cc
-              LABELS quick)
-dune_add_test(NAME assertandreturntest_compiletime_fail
-              SOURCES assertandreturntest.cc
-              COMPILE_DEFINITIONS "TEST_COMPILETIME_FAIL"
-              EXPECT_COMPILE_FAIL
-              LABELS quick)
-dune_add_test(NAME assertandreturntest_ndebug
-              SOURCES assertandreturntest.cc
-              COMPILE_DEFINITIONS "TEST_NDEBUG"
-              LABELS quick)
-
 dune_add_test(SOURCES autocopytest.cc
               LABELS quick)
 
