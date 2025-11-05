@@ -128,11 +128,11 @@ namespace Dune
 
   public:
     using reference = typename Facade::reference;
-    using size_type = typename Facade::difference_type;
+    using difference_type = typename Facade::difference_type;
     using iterator_type = T*;
 
     //! Construct an IndexedIterator from a pointer and an index.
-    constexpr explicit IndexedIterator (T* ptr, size_type index = 0)
+    constexpr explicit IndexedIterator (T* ptr, difference_type index = 0)
       : ptr_(ptr)
       , index_(index)
     {}
@@ -148,6 +148,20 @@ namespace Dune
       return *this;
     }
 
+    //! Decrement the iterator and the index.
+    constexpr IndexedIterator& operator-= (typename Facade::difference_type d)
+    {
+      ptr_ -= d;
+      index_ -= d;
+      return *this;
+    }
+
+    //! Decrement the iterator and the index.
+    friend constexpr difference_type operator- (const IndexedIterator& it1, const IndexedIterator& it2)
+    {
+      return it1.ptr_ - it2.ptr_;
+    }
+
     //! Compare two iterators for equality: compares the underlying ptrs.
     friend constexpr bool operator== (const IndexedIterator& it1, const IndexedIterator& it2)
     {
@@ -155,14 +169,14 @@ namespace Dune
     }
 
     //! Return the enumeration index.
-    [[nodiscard]] constexpr size_type index () const noexcept
+    [[nodiscard]] constexpr difference_type index () const noexcept
     {
       return index_;
     }
 
   private:
     T* ptr_ = nullptr;
-    size_type index_ = 0;
+    difference_type index_ = 0;
   };
 
 } // end namespace Dune
