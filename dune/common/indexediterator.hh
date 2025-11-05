@@ -8,6 +8,8 @@
 #include <iterator>
 #include <type_traits>
 
+#include <dune/common/iteratorfacades.hh>
+
 namespace Dune
 {
   /**
@@ -113,6 +115,53 @@ namespace Dune
     }
 
   private:
+    size_type index_ = 0;
+  };
+
+
+  /// \brief Specialization for pointer types
+  template <class T>
+  class IndexedIterator<T*>
+    : public Dune::IteratorFacade<IndexedIterator<T*>, std::random_access_iterator_tag, T>
+  {
+    using Facade = Dune::IteratorFacade<IndexedIterator<T*>, std::random_access_iterator_tag, T>;
+
+  public:
+    using reference = typename Facade::reference;
+    using size_type = typename Facade::difference_type;
+    using iterator_type = T*;
+
+    //! Construct an IndexedIterator from a pointer and an index.
+    constexpr explicit IndexedIterator (T* ptr, size_type index = 0)
+      : ptr_(ptr)
+      , index_(index)
+    {}
+
+    //! Dereference the pointer.
+    constexpr reference operator* () const { return *ptr_; }
+
+    //! Increment the iterator and the index.
+    constexpr IndexedIterator& operator+= (typename Facade::difference_type d)
+    {
+      ptr_ += d;
+      index_ += d;
+      return *this;
+    }
+
+    //! Compare two iterators for equality: compares the underlying ptrs.
+    friend constexpr bool operator== (const IndexedIterator& it1, const IndexedIterator& it2)
+    {
+      return it1.ptr_ == it2.ptr_;
+    }
+
+    //! Return the enumeration index.
+    [[nodiscard]] constexpr size_type index () const noexcept
+    {
+      return index_;
+    }
+
+  private:
+    T* ptr_ = nullptr;
     size_type index_ = 0;
   };
 
