@@ -190,7 +190,7 @@ namespace Dune
     constexpr FieldMatrix (std::initializer_list<Dune::FieldVector<K, cols> > const &l)
       : _data{}
     {
-      assert(l.size() == rows);
+      DUNE_ASSERT_BOUNDS(l.size() == rows);
       for (size_type i = 0; i < rows; ++i)
         _data[i] = std::data(l)[i];
     }
@@ -198,7 +198,7 @@ namespace Dune
     //! Delete assignment from FieldMatrix of different shape
     template <class OtherK, int otherRows, int otherCols>
       requires (otherRows != ROWS || otherCols != COLS)
-    constexpr FieldMatrix(const FieldMatrix<OtherK, otherRows, otherCols>&) = delete;
+    constexpr FieldMatrix (const FieldMatrix<OtherK, otherRows, otherCols>&) = delete;
 
     //! copy constructor from assignable type OtherMatrix
     template <class OtherMatrix>
@@ -220,7 +220,7 @@ namespace Dune
     using Base::operator=;
 
     //! Return transposed of the matrix as FieldMatrix
-    constexpr FieldMatrix<K, COLS, ROWS> transposed() const
+    constexpr FieldMatrix<K, COLS, ROWS> transposed () const
     {
       Dune::FieldMatrix<K, COLS, ROWS> AT;
       for( int i = 0; i < ROWS; ++i )
@@ -266,7 +266,7 @@ namespace Dune
     //! add scalar
     template <Concept::Number S>
     constexpr FieldMatrix& operator+= (const S& scalar)
-      requires(ROWS*COLS == 1)
+        requires(ROWS*COLS == 1)
     {
       _data[0][0] += scalar;
       return *this;
@@ -307,7 +307,7 @@ namespace Dune
     //! subtract scalar
     template <Concept::Number S>
     constexpr FieldMatrix& operator-= (const S& scalar)
-      requires(ROWS*COLS == 1)
+        requires(ROWS*COLS == 1)
     {
       _data[0][0] -= scalar;
       return *this;
@@ -340,7 +340,7 @@ namespace Dune
     //! multiplication with scalar
     template <Concept::Number S>
     constexpr FieldMatrix& operator*= (const S& scalar)
-      requires(ROWS*COLS == 1)
+        requires(ROWS*COLS == 1)
     {
       _data[0][0] *= scalar;
       return *this;
@@ -370,7 +370,7 @@ namespace Dune
     //! division by scalar
     template <Concept::Number S>
     constexpr FieldMatrix& operator/= (const S& scalar)
-      requires(ROWS*COLS == 1)
+        requires(ROWS*COLS == 1)
     {
       _data[0][0] /= scalar;
       return *this;
