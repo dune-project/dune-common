@@ -24,17 +24,6 @@ prefix = package.__name__ + "."
 subpackages = []
 logMsg = "Importing create registries from [ "
 
-from importlib.machinery import PathFinder
-class CustomNamespaceFinder:
-    @staticmethod
-    def find_spec(fullname, path=None, target=None):
-        # Custom logic to find the namespace
-        # Use 'fullname' to locate the specific submodule
-        return PathFinder.find_spec(fullname, path)
-
-# Register the custom finder
-sys.meta_path.insert(0, CustomNamespaceFinder)
-
 # first import all 'dune' subpackages and collect the 'registry' dicts
 dunesubmodules = set()
 for importer, modname, ispkg in pkgutil.iter_modules(package.__path__, prefix):

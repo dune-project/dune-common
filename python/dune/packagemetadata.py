@@ -31,9 +31,9 @@ import logging
 from datetime import date
 from importlib.metadata import Distribution, packages_distributions
 from urllib.parse import urlparse
+from packaging.version import Version as PkgVersion
 
 logger = logging.getLogger(__name__)
-
 
 class Version:
     def __init__(self, s):
@@ -86,6 +86,30 @@ class Version:
 
     def __ge__(self, other):
         return self.as_tuple() >= other.as_tuple()
+
+    @staticmethod
+    def list_versions(package_name):
+        import requests
+        url = f"https://pypi.org/pypi/{package_name}/json"
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+            data = response.json()
+            versions = sorted([PkgVersion(v) for v in data['releases'].keys()], reverse=True)
+            return versions
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching data from PyPI: {e}")
+            return [] # Return empty list
+    @staticmethod
+    def next_version(package_name):
+        versions = Version.list_versions(package_name)
+        if len(versions)>0:
+            v = str(versions[0]).split('.')
+            v[-1] = str(int(v[-1])+1)
+            return '.'.join(x for x in v)
+        else:
+            return None
+
 
 
 class VersionRequirement:
@@ -273,9 +297,10 @@ class Data:
         if self.version.find('git') or version is not None:
             if version is None:
                 major = self.version.split('-')[0]
-                self.version = Version(major).__str__() + '.dev' + date.today().strftime('%Y%m%d')
-
-
+                self.version = Version.next_version(self.name) # add +1 to latest version on pypi if exists
+                if self.version is None:
+                    # devDate appended to base version - no package found on pypi
+                    self.version = Version(major).__str__() + '.dev' + date.today().strftime('%Y%m%d')
             # append self.version to any dune python requirement that has no specified version number
             new_python_requires = []
             for req in self.python_requires:
@@ -547,7 +572,6 @@ def _extractBuildMetaData():
         for metadataPath in dune.data.__path__:
             for metaDataFile in glob.glob(os.path.join(metadataPath, "*.cmake")):
                 package = os.path.splitext(os.path.basename(metaDataFile))[0]
-                print("adding",package,metaDataFile)
                 addPackageMetaData(package, metaDataFile)
         mods = packages_distributions()['dune']
         for m in mods:
@@ -556,11 +580,9 @@ def _extractBuildMetaData():
                 editablePath = json.loads(direct_url).get("url")
                 editablePath = urlparse(editablePath).path
                 dataPath = os.path.join(editablePath,"dune","data")
-                print(editablePath, dataPath)
                 if os.path.isdir(dataPath):
                     for metaDataFile in glob.glob(os.path.join(dataPath, "*.cmake")):
                         package = os.path.splitext(os.path.basename(metaDataFile))[0]
-                        print("adding",package,metaDataFile)
                         addPackageMetaData(package, metaDataFile)
             except:
                 pass
