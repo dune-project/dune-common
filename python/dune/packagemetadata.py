@@ -29,6 +29,8 @@ import email.utils
 import glob
 import logging
 from datetime import date
+from importlib.metadata import Distribution, packages_distributions
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -545,8 +547,26 @@ def _extractBuildMetaData():
         for metadataPath in dune.data.__path__:
             for metaDataFile in glob.glob(os.path.join(metadataPath, "*.cmake")):
                 package = os.path.splitext(os.path.basename(metaDataFile))[0]
+                print("adding",package,metaDataFile)
                 addPackageMetaData(package, metaDataFile)
-    except ImportError:  # no dune module was installed which can happen during packaging
+        mods = packages_distributions()['dune']
+        for m in mods:
+            direct_url = Distribution.from_name(m).read_text("direct_url.json")
+            try:
+                editablePath = json.loads(direct_url).get("url")
+                editablePath = urlparse(editablePath).path
+                dataPath = os.path.join(editablePath,"dune","data")
+                print(editablePath, dataPath)
+                if os.path.isdir(dataPath):
+                    for metaDataFile in glob.glob(os.path.join(dataPath, "*.cmake")):
+                        package = os.path.splitext(os.path.basename(metaDataFile))[0]
+                        print("adding",package,metaDataFile)
+                        addPackageMetaData(package, metaDataFile)
+            except:
+                pass
+
+
+    except (ImportError, KeyError):  # no dune module was installed which can happen during packaging
         pass
 
     # possible add meta data from externally registered modules

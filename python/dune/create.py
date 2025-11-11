@@ -7,6 +7,10 @@ import pkgutil
 import importlib
 import logging
 import inspect
+from importlib.metadata import Distribution, packages_distributions
+from urllib.parse import urlparse
+from pathlib import Path
+import json, os
 
 import dune.common.module
 import dune.common
@@ -20,11 +24,42 @@ prefix = package.__name__ + "."
 subpackages = []
 logMsg = "Importing create registries from [ "
 
-# first import all 'dune' subpackages and collect the 'registry' dicts
-for importer, modname, ispkg in pkgutil.iter_modules(package.__path__, prefix):
-    if not ispkg:
-        continue
+from importlib.machinery import PathFinder
+class CustomNamespaceFinder:
+    @staticmethod
+    def find_spec(fullname, path=None, target=None):
+        # Custom logic to find the namespace
+        # Use 'fullname' to locate the specific submodule
+        return PathFinder.find_spec(fullname, path)
 
+# Register the custom finder
+sys.meta_path.insert(0, CustomNamespaceFinder)
+
+# first import all 'dune' subpackages and collect the 'registry' dicts
+dunesubmodules = set()
+for importer, modname, ispkg in pkgutil.iter_modules(package.__path__, prefix):
+    if ispkg: dunesubmodules.add(modname)
+# add editable packages
+try:
+    mods = packages_distributions()['dune']
+    for m in mods:
+        direct_url = Distribution.from_name(m).read_text("direct_url.json")
+        try:
+            editablePath = json.loads(direct_url).get("url")
+            editablePath = urlparse(editablePath).path
+            modPath = Path(os.path.join(editablePath,"dune"))
+            for item in modPath.iterdir():
+                if item == "data": continue
+                if os.path.isdir(item):
+                    if "__init__.py" in os.listdir(item):
+                        modname = os.path.basename(item)
+                        dunesubmodules.add(f'dune.{modname}')
+        except Exception as e:
+            pass
+except (ImportError, KeyError):  # no dune module was installed which can happen during packaging
+    pass
+
+for modname in dunesubmodules:
     # can just use modname here if registry is part of __init__ file
     try:
         # Note: modname.__init__ is imported so be aware of
@@ -57,7 +92,8 @@ for importer, modname, ispkg in pkgutil.iter_modules(package.__path__, prefix):
 
 # the grids registry also provide view -
 # so we will add them to the 'view' entry
-_create_map.setdefault("view",{}).update(_create_map["grid"])
+# _create_map.setdefault("view",{}).update(_create_map["grid"])
+_create_map.setdefault("view",{}).update(_create_map.get("grid",{}))
 
 logMsg = logMsg + "]"
 logger.debug(logMsg)
