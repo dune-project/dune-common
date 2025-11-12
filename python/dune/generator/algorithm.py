@@ -150,21 +150,23 @@ def load(functionName, includes, *args, pythonName=None):
     # header guard is added further down
     source  = '#include <config.h>\n\n'
     source += '#define USING_DUNE_PYTHON 1\n\n'
+
     if isString(includes):
         with open(includes, "r") as include:
-            source += include.read()
-        source += "\n"
+            cppSource = include.read()
+        cppSource += "\n"
         includes = []
     elif hasattr(includes,"readable"): # for IOString
         with includes as include:
-            source += include.read()
-        source += "\n"
+            cppSource = include.read()
+        cppSource += "\n"
         includes = []
     elif isinstance(includes, list):
+        cppSource = ""
         for includefile in includes:
             with open(includefile, "r") as include:
-                source += include.read()
-        source += "\n"
+                cppSource += include.read()
+        sppSource += "\n"
         includes = []
 
     argTypes = []
@@ -174,7 +176,7 @@ def load(functionName, includes, *args, pythonName=None):
         includes += i
 
     signature = functionName + "( " + ", ".join(argTypes) + " )"
-    moduleName = "algorithm_" + hashIt(signature) + "_" + hashIt(source)
+    moduleName = "algorithm_" + hashIt(signature) + "_" + hashIt(cppSource)
 
     # add unique header guard with moduleName
     source = '#ifndef Guard_'+moduleName+'\n' + \
@@ -186,6 +188,9 @@ def load(functionName, includes, *args, pythonName=None):
     source += "\n"
     source += '#include <dune/python/common/typeregistry.hh>\n'
     source += '#include <dune/python/pybind11/pybind11.h>\n'
+    source += '\n'
+
+    source += cppSource
     source += '\n'
 
     source += "PYBIND11_MODULE( " + moduleName + ", module )\n"
