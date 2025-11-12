@@ -29,7 +29,6 @@ import email.utils
 import glob
 import logging
 from datetime import date
-from importlib.metadata import Distribution, packages_distributions
 from urllib.parse import urlparse
 from packaging.version import Version as PkgVersion
 
@@ -573,6 +572,11 @@ def _extractBuildMetaData():
             for metaDataFile in glob.glob(os.path.join(metadataPath, "*.cmake")):
                 package = os.path.splitext(os.path.basename(metaDataFile))[0]
                 addPackageMetaData(package, metaDataFile)
+    except (ImportError, KeyError):  # no dune module was installed which can happen during packaging
+        pass
+
+    try: # newer Python versions need extra help finding metadata files
+        from importlib.metadata import Distribution, packages_distributions
         mods = packages_distributions()['dune']
         for m in mods:
             direct_url = Distribution.from_name(m).read_text("direct_url.json")
@@ -586,8 +590,6 @@ def _extractBuildMetaData():
                         addPackageMetaData(package, metaDataFile)
             except:
                 pass
-
-
     except (ImportError, KeyError):  # no dune module was installed which can happen during packaging
         pass
 

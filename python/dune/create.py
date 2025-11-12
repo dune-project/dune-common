@@ -7,7 +7,6 @@ import pkgutil
 import importlib
 import logging
 import inspect
-from importlib.metadata import Distribution, packages_distributions
 from urllib.parse import urlparse
 from pathlib import Path
 import json, os
@@ -28,8 +27,9 @@ logMsg = "Importing create registries from [ "
 dunesubmodules = set()
 for importer, modname, ispkg in pkgutil.iter_modules(package.__path__, prefix):
     if ispkg: dunesubmodules.add(modname)
-# add editable packages
+# add editable packages (newer Python versions)
 try:
+    from importlib.metadata import Distribution, packages_distributions
     mods = packages_distributions()['dune']
     for m in mods:
         direct_url = Distribution.from_name(m).read_text("direct_url.json")
