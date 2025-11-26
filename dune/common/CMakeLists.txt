@@ -60,6 +60,7 @@ install(FILES
         genericiterator.hh
         gmpfield.hh
         hash.hh
+        hybridmultiindex.hh
         hybridutilities.hh
         indent.hh
         indexediterator.hh
