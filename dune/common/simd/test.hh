@@ -130,7 +130,7 @@ namespace Dune {
       // used inside static_assert to trick the compiler into printing a list
       // of types:
       //
-      //   static_assert(debugTypes<V>(Std::bool_constant<condition>{}), "msg");
+      //   static_assert(debugTypes<V>(std::bool_constant<condition>{}), "msg");
       //
       // Should include what the type `V` expands to in the error message.
       template<class...>
@@ -356,7 +356,7 @@ namespace Dune {
                       "rebound to bool must be the mask type for that type");
 
         constexpr bool hasBool = Impl::TypeInList<bool, Rebinds>::value;
-        warnMissingMaskRebind<V>(Std::bool_constant<!hasBool>{});
+        warnMissingMaskRebind<V>(std::bool_constant<!hasBool>{});
       }
 
       //////////////////////////////////////////////////////////////////////
@@ -1403,7 +1403,7 @@ namespace Dune {
       template<class V, class Checker>
       void checkBinaryOps(Checker checker)
       {
-        using Std::bool_constant;
+        using std::bool_constant;
 
         constexpr bool isMask = std::is_same<Scalar<V>, bool>::value;
 
