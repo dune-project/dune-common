@@ -30,10 +30,6 @@ namespace Dune
 namespace Std
 {
 
-  /// A helper alias template std::bool_constant imported into the namespace Dune::Std
-  /// \deprecated Use the `std::bool_constant` directly.
-  using std::bool_constant;
-
 #if DUNE_HAVE_CXX_EXPERIMENTAL_IS_DETECTED
 
   using std::experimental::nonesuch;

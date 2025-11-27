@@ -92,6 +92,7 @@ In order to build the DUNE core modules you need at least the following software
 
 ## C++: Deprecations and removals
 
+- Remove deprecated alias `Dune::Std::bool_constant`. Please use `std::bool_constant` directly.
 - Deprecate the utility `integerSequenceEntry` in favour of the shorter `get` from `integersequence.hh`.
 - Remove the deprecated alias `CollectiveCommunication`, use `Communication` instead.
 - Remove deprecated `MPIHelper::getCollectiveCommunication`, use `MPIHelper::getCommunication` instead.
