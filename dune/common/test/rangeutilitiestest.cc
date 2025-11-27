@@ -10,6 +10,7 @@
 #include <numeric>
 #include <type_traits>
 #include <optional>
+#include <functional>
 
 #include <dune/common/concepts.hh>
 #include <dune/common/hybridutilities.hh>
@@ -437,6 +438,21 @@ Dune::TestSuite testIteratorRange()
   return suite;
 }
 
+Dune::TestSuite testNonDefaultConstructibleValueRange()
+{
+  Dune::TestSuite suite("Check IteratorRange with non-default-constructible value type");
+
+  std::vector<int> data;
+  std::vector<std::reference_wrapper<const int>> ref;
+  for (int i = 0; i < 5; ++i)
+    ref.emplace_back(std::cref(data.emplace_back(i*10)));
+  auto range = Dune::IteratorRange(ref.begin(), ref.end());
+  suite.check(checkSameRange(range, ref));
+  auto opt = [](auto&&){};
+  suite.check(testIterator(range, opt) == 0);
+  return suite;
+}
+
 
 
 int main()
@@ -559,6 +575,8 @@ int main()
   suite.subTest(testSparseRange());
 
   suite.subTest(testIteratorRange());
+
+  suite.subTest(testNonDefaultConstructibleValueRange());
 
   return suite.exit();
 
