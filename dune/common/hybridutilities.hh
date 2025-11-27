@@ -394,7 +394,7 @@ namespace Impl {
  * integral constants. That's helpful to maintain the hybrid nature of a variable
  * after a transformation. For example, applying an operator + between two integral
  * constants will promote the result to its underlying type (e.g. std::size_t).
- * That's inconventient since the value of the result is not encoded in the type
+ * That's inconvenient since the value of the result is not encoded in the type
  * anymore, thus, losing its hybrid attribute (maybe still being constexpr).
  *
  * \code{.cpp}
