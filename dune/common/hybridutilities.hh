@@ -18,6 +18,10 @@
 
 
 namespace Dune {
+
+/** \brief Namespace with loops, conditionals and other constructs that can
+ *  handle both compile-time and run-time conditions
+ */
 namespace Hybrid {
 
 namespace Impl {
