@@ -583,13 +583,13 @@ namespace Dune
       using std::max;
 
       real_type norm = 0;
-      real_type isNaN = 1;
+      real_type is_nan = 1;
       for (auto const &x : *this) {
         real_type const a = x.one_norm();
         norm = max(a, norm);
-        isNaN += a;
+        is_nan += a;
       }
-      return norm * (isNaN / isNaN);
+      return norm * (is_nan / is_nan);
     }
 
     //! simplified infinity norm (uses Manhattan norm for complex values)
@@ -600,13 +600,13 @@ namespace Dune
       using std::max;
 
       real_type norm = 0;
-      real_type isNaN = 1;
+      real_type is_nan = 1;
       for (auto const &x : *this) {
         real_type const a = x.one_norm_real();
         norm = max(a, norm);
-        isNaN += a;
+        is_nan += a;
       }
-      return norm * (isNaN / isNaN);
+      return norm * (is_nan / is_nan);
     }
 
     //===== solve
@@ -827,8 +827,8 @@ namespace Dune
   DenseMatrix<MAT>::ElimPivot::ElimPivot(std::vector<simd_index_type> & pivot)
     : pivot_(pivot)
   {
-    typedef typename std::vector<size_type>::size_type size_type;
-    for(size_type i=0; i < pivot_.size(); ++i) pivot_[i]=i;
+    for(typename std::vector<size_type>::size_type i=0; i < pivot_.size(); ++i)
+      pivot_[i]=i;
   }
 
   template<typename MAT>
