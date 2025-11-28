@@ -292,7 +292,7 @@ namespace Dune
         @returns Future<T> containing the distributed data
      */
     template<class T>
-    PseudoFuture<T> ibroadcast(T&& data, int root) const{
+    PseudoFuture<T> ibroadcast(T&& data, int /*root*/) const{
       return {std::forward<T>(data)};
     }
 
@@ -310,7 +310,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int gather (const T* in, T* out, int len, [[maybe_unused]] int root) const     // note out must have same size as in
+    int gather (const T* in, T* out, int len, int /*root*/) const     // note out must have same size as in
     {
       for (int i=0; i<len; i++)
         out[i] = in[i];
@@ -321,7 +321,7 @@ namespace Dune
         @returns Future<TOUT, TIN> containing the gathered data
      */
     template<class TIN, class TOUT = std::vector<TIN>>
-    PseudoFuture<TOUT> igather(TIN&& data_in, TOUT&& data_out, int root){
+    PseudoFuture<TOUT> igather(TIN&& data_in, TOUT&& data_out, int /*root*/){
       *(data_out.begin()) = std::forward<TIN>(data_in);
       return {std::forward<TOUT>(data_out)};
     }
@@ -373,7 +373,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int scatter (const T* sendData, T* recvData, int len, [[maybe_unused]] int root) const // note out must have same size as in
+    int scatter (const T* sendData, T* recvData, int len, int /*root*/) const // note out must have same size as in
     {
       for (int i=0; i<len; i++)
         recvData[i] = sendData[i];
@@ -384,7 +384,7 @@ namespace Dune
      * @returns Future<TOUT, TIN> containing scattered data;
      */
     template<class TIN, class TOUT = TIN>
-    PseudoFuture<TOUT> iscatter(TIN&& data_in, TOUT&& data_out, int root){
+    PseudoFuture<TOUT> iscatter(TIN&& data_in, TOUT&& data_out, int /*root*/){
       data_out = *(std::forward<TIN>(data_in).begin());
       return {std::forward<TOUT>(data_out)};
     }
@@ -442,7 +442,7 @@ namespace Dune
      @returns Future<TOUT, TIN> containing the distributed data
      */
     template<class TIN, class TOUT = TIN>
-    PseudoFuture<TOUT> iallgather(TIN&& data_in, TOUT&& data_out){
+    PseudoFuture<TOUT> iallgather(TIN&& /*data_in*/, TOUT&& data_out){
       return {std::forward<TOUT>(data_out)};
     }
 

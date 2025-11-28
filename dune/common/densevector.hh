@@ -157,12 +157,26 @@ namespace Dune {
     {}
 
     constexpr DenseIterator(const MutableIterator & other)
-      : container_(other.container_), position_(other.position_)
-    {}
+    {
+      (*this) = other;
+    }
 
     constexpr DenseIterator(const ConstIterator & other)
-      : container_(other.container_), position_(other.position_)
-    {}
+    {
+      (*this) = other;
+    }
+
+    constexpr DenseIterator & operator= (const ConstIterator & other) {
+      container_ = other.container_;
+      position_ = other.position_;
+      return *this;
+    }
+
+    constexpr DenseIterator & operator= (const MutableIterator & other) {
+      container_ = other.container_;
+      position_ = other.position_;
+      return *this;
+    }
 
     // Methods needed by the forward iterator
     constexpr bool equals(const MutableIterator &other) const
