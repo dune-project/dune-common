@@ -22,7 +22,7 @@
 
 namespace Dune{
 
-  namespace impl{
+  namespace Impl{
     template<class T>
     struct Buffer{
       Buffer(bool valid){
@@ -93,8 +93,8 @@ namespace Dune{
   class MPIFuture{
     mutable MPI_Request req_;
     mutable MPI_Status status_;
-    impl::Buffer<R> data_;
-    impl::Buffer<S> send_data_;
+    Impl::Buffer<R> data_;
+    Impl::Buffer<S> send_data_;
     friend class Communication<MPI_Comm>;
   public:
     MPIFuture(bool valid = false)

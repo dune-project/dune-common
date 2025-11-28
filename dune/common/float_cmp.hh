@@ -93,10 +93,13 @@
    the user of you class to specify epsilon and compare style.
  */
 
-//! Dune namespace
+//! %Dune namespace
 namespace Dune {
-  //! FloatCmp namespace
-  //! @ingroup FloatCmp
+  /** \brief Various ways to compare floating-point numbers
+   *
+   * See @ref FloatCmp for details!
+   * @ingroup FloatCmp
+   */
   namespace FloatCmp {
     // basic constants
     //! How to compare
