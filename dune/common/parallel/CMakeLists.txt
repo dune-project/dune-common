@@ -22,6 +22,7 @@ install(FILES
         mpipack.hh
         mpihelper.hh
         mpitraits.hh
+        parmetis.hh
         plocalindex.hh
         remoteindices.hh
         selection.hh
