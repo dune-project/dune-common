@@ -149,14 +149,6 @@ namespace Dune
     }
 
     //! Decrement the iterator and the index.
-    constexpr IndexedIterator& operator-= (typename Facade::difference_type d)
-    {
-      ptr_ -= d;
-      index_ -= d;
-      return *this;
-    }
-
-    //! Decrement the iterator and the index.
     friend constexpr difference_type operator- (const IndexedIterator& it1, const IndexedIterator& it2)
     {
       return it1.ptr_ - it2.ptr_;
