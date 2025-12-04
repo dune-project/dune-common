@@ -6,6 +6,7 @@ add_subdirectory("parallel")
 add_subdirectory("simd")
 add_subdirectory("std")
 add_subdirectory("test")
+add_subdirectory("typetree")
 
 # add some sources to the dunecommon library
 target_sources(dunecommon PRIVATE
@@ -60,6 +61,7 @@ install(FILES
         genericiterator.hh
         gmpfield.hh
         hash.hh
+        hybridmultiindex.hh
         hybridutilities.hh
         indent.hh
         indexediterator.hh

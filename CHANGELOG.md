@@ -57,6 +57,20 @@ In order to build the DUNE core modules you need at least the following software
 
 ## C++: Changelog
 
+- A set of interfaces and utilities for multi-type tree structures was added
+  in the subdirectory `dune/common/typetree/` and namespace `Dune::TypeTree::`.
+  This originates in the dune-typetree module but only provides a modernized
+  slim subset of the latter. This subset contains concepts for tree nodes,
+  a class representing paths in a tree, and utilities for accessing children,
+  traversing trees, and creating nested random-access containers matching
+  the tree structure. Downstream modules that only use this subset can drop
+  dune-typetree as a dependency. However, the legacy interfaces and utilities
+  persist in dune-typetree and can still be used together with the functionality
+  added here.
+
+- The `Dune::HybridMultiIndex` class representing multi-indices with mixed
+  compile time and dynamic index entries has been added.
+
 - `Dune::IteratorRange` now supports different types for begin and end iterator
   to model C++20's sentinel terminated ranges.
 
