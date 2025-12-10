@@ -425,18 +425,25 @@ class Builder:
         if pythonName is None:
             pythonName = moduleName
 
-        # check whether module is already compiled and build it if necessary
-        # (only try to build module on rank 0!)
+        # only try to build module on rank 0!, setModuleLog also calls build
+        # which sets some barriers
+        moduleFile = setModuleLog()
+
+        # only build on rank 0
         # TODO replace if rank with something better and remove barrier further down
+        # this will not work if different processes use different dune-py directories
         if comm.rank == 0:
+            # check whether module is already compiled and build it if necessary
             module = sys.modules.get("dune.generated." + moduleName)
-            if setModuleLog():
-                with open( setModuleLog(), 'a' ) as file:
-                    file.write(moduleName + '\n')
+
             if module is None:
+                if moduleFile:
+                    with open( moduleFile, 'a' ) as file:
+                        file.write(moduleName + '\n')
+                # build module if it could not be loaded before
                 self._buildModule( moduleName, source, pythonName, extraCMake )
 
-        ## TODO remove barrier here
+        ## TODO remove barrier here once building is based on file locks
         comm.barrier()
 
         logger.debug("Loading " + moduleName)
