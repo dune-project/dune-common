@@ -3,8 +3,12 @@
 
 ---
 include:
-  - remote: 'https://gitlab.dune-project.org/core/ci-config/raw/master/config/common/master.yml'
-  - remote: 'https://gitlab.dune-project.org/core/ci-config/raw/master/jobs/common/master.yml'
+  - project: 'core/ci-config'
+    ref: master
+    file: 'config/common/releases/2.11.yml'
+  - project: 'core/ci-config'
+    ref: master
+    file: 'jobs/common/releases/2.11.yml'
 
 before_script:
   - . /duneci/bin/duneci-init-job
@@ -41,7 +45,7 @@ core-modules-test:
     DUNECI_TEST_LABELS: ""
   trigger:
     project: infrastructure/dune-nightly-test
-    branch: core
+    branch: core-2.11
     strategy: depend
   rules:
     - when: manual
@@ -56,7 +60,7 @@ full-system-test:
     DUNECI_TEST_LABELS: ""
   trigger:
     project: infrastructure/dune-nightly-test
-    branch: master
+    branch: releases/2.11
     strategy: depend
   rules:
     - when: manual
