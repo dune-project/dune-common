@@ -77,6 +77,7 @@ unset(PARMETIS_HEADER_FILE CACHE)
 # search ParMETIS library
 if(IS_PTSCOTCH_PARMETIS_HEADER)
   find_library(PARMETIS_LIBRARY ptscotchparmetis)
+  find_library(PARMETIS_LIBRARY ptscotchparmetisv3)
 else()
   find_library(PARMETIS_LIBRARY parmetis)
 endif()
