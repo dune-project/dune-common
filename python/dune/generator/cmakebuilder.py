@@ -823,9 +823,17 @@ class MakefileBuilder(Builder):
             exit_code = make.returncode
 
         if self.savedOutput is not None:
-            self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
-            self.savedOutput[0].write(str(stdout.decode()) + "\n")
-            self.savedOutput[1].write(str(stderr.decode()) + "\n")
+            # only print return code if it's not 0
+            if exit_code != 0:
+                self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
+            stdoutput = str(stdout.decode())
+            # only print output if it was not 'Nothing to be done for ...'
+            if not "Nothing to be done" in stdoutput:
+                self.savedOutput[0].write(stdoutput + "\n")
+            stderror = str(stderr.decode())
+            # only print error output if it's not empty
+            if stderror != "":
+                self.savedOutput[1].write(str(stderr.decode()) + "\n")
 
         # check return code
         if exit_code > 0:
