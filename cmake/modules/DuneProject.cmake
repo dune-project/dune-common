@@ -179,39 +179,6 @@ macro(dune_project)
     find_dune_package(${_mod_name} VERSION ${_mod_ver} REQUIRED)
   endforeach()
 
-  if(DUNE_COMMON_VERSION VERSION_LESS 2.12)
-    # this is only needed if config files of upstream modules were generated with dune-common < 2.10
-    # this behavior will be unsupported when dune-common == 2.12
-
-    set_property(GLOBAL PROPERTY DUNE_DISABLE_ALL_DEPENDENCIES_DEPRECATION_WARNING ON)
-    # creates dependency tree, finds all the modules and creates ALL_DEPENDENCIES variable
-    dune_create_dependency_tree(SKIP_CMAKE_PATH_SETUP)
-
-    # check if all the dependencies in the tree were indeed added into DUNE_FOUND_DEPENDENCIES
-    set(_legacy_order OFF)
-    foreach(_mod IN LISTS ALL_DEPENDENCIES)
-      list(FIND DUNE_FOUND_DEPENDENCIES ${_mod} _mod_in_dune_deps)
-      if (${_mod}_FOUND AND (${_mod_in_dune_deps} EQUAL -1))
-        set(_legacy_order ON)
-      endif()
-    endforeach()
-
-    # at least one found upstream module was not included into DUNE_FOUND_DEPENDENCIES (config file pre 2.10)
-    # so we reconstruct it from ALL_DEPENDENCIES
-    if (_legacy_order)
-      set(DUNE_FOUND_DEPENDENCIES ${ALL_DEPENDENCIES})
-      # remove not found modules
-      foreach(_mod IN LISTS ALL_DEPENDENCIES)
-        if (NOT ${_mod}_FOUND)
-          list(REMOVE_ITEM DUNE_FOUND_DEPENDENCIES ${_mod})
-        endif()
-      endforeach()
-    endif()
-    set_property(GLOBAL PROPERTY DUNE_DISABLE_ALL_DEPENDENCIES_DEPRECATION_WARNING OFF)
-  else()
-    message(AUTHOR_WARNING "This needs to be removed!")
-  endif()
-
   # assert the project names matches
   if(NOT (ProjectName STREQUAL PROJECT_NAME))
     message(FATAL_ERROR "Module name from dune.module does not match the name given in CMakeLists.txt.")
