@@ -7,6 +7,14 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 - ...
 
+## Build system: Changelog
+
+- The default value for the `DP_DEFAULT_INCLUDE_DIRS` policy is now `NEW`
+  such that (unless the policy is manually set to `OLD`) the include
+  directory must be set using `dune_default_include_directories`. This
+  in particular also applies to targets that make use of
+  `dune_target_enable_all_packages`.
+
 # Release 2.11
 
 ## Dependencies
@@ -25,11 +33,12 @@ In order to build the DUNE core modules you need at least the following software
 - Propagate dependencies of `dune-common` when consumed. This means that a CMake project may find
   `dune-common` and consume the `Dune::Common` target without the need of the dune build system.
 
-- Change the way include directories are set in dune projects. OLD behavior: use `include_directories`
-  in `dune_project` to set include dirs for the current project. NEW behavior: Provide a utility
-  `dune_default_include_directories` to set include dirs on targets manually. Which behavior to
+- The way include directories are set in dune projects has been changed. OLD behavior: Include dirs
+  are set automatically using `include_directories` inside of `dune_project`. NEW behavior: Include
+  directories must be set manually using the utility `dune_default_include_directories`.
+  Which behavior to
   activate can be decided in each module by using the new dune policy `DP_DEFAULT_INCLUDE_DIRS`, which can be set
-  to `OLD` or `NEW` correspondingly.
+  to `OLD` or `NEW` correspondingly. For 2.11 the default value for the policy is `OLD`.
 
 - The CMake function `dune_target_enable_all_packages` can now handle Interface libraries too.
 
