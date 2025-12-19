@@ -100,14 +100,28 @@ class Version:
             print(f"Error fetching data from PyPI: {e}")
             return [] # Return empty list
     @staticmethod
-    def next_version(package_name):
+    def next_version(baseversion, package_name):
+        major = Version(baseversion)
+        # don't compare build here
+        major.build = ''
         versions = Version.list_versions(package_name)
         if len(versions)>0:
+            # compare major versions of base branch and pypi
+            for i in range(len(versions)):
+                v = str(versions[i]).split('.')
+                pypimajor = Version('.'.join(v[i] for i in range(3))) # first 3 digits
+                # pick the latest version from pypi with same major
+                if major == pypimajor:
+                    v[-1] = str(int(v[-1])+1)
+                    return '.'.join(x for x in v)
+
+            # if no matching version found take last one
             v = str(versions[0]).split('.')
             v[-1] = str(int(v[-1])+1)
             return '.'.join(x for x in v)
-        else:
-            return None
+
+        # if no versions at all have been found return None
+        return None
 
 
 
@@ -296,7 +310,14 @@ class Data:
         if self.version.find('git') or version is not None:
             if version is None:
                 major = self.version.split('-')[0]
-                self.version = Version.next_version(self.name) # add +1 to latest version on pypi if exists
+                baseversion = Version(major)
+                # make full pypi version by padding with zeros
+                if baseversion.revision == '': baseversion.revision = '0'
+                if baseversion.build == '':  baseversion.build = '0'
+                # get next version from pypi or baseversion
+                nextpypiversion = Version(Version.next_version(baseversion, self.name)) # add +1 to latest version on pypi if exists
+                nextversion = nextpypiversion if nextpypiversion >= baseversion else baseversion
+                self.version = str(nextversion)
                 if self.version is None:
                     # devDate appended to base version - no package found on pypi
                     self.version = Version(major).__str__() + '.dev' + date.today().strftime('%Y%m%d')
