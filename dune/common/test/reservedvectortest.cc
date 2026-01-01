@@ -128,6 +128,48 @@ int main() {
       test.check( *it == i++ );
   }
 
+  { // check insert methods
+    Dune::ReservedVector<int, 8> rv = {3,2,1};
+
+    // insert an r-value
+    rv.insert(rv.begin(), 7);
+    test.check(rv.size() == 4);
+    test.check(rv[0] == 7);
+    test.check(rv[1] == 3);
+    test.check(rv[3] == 1);
+
+    // insert an l-value
+    const int value = 9;
+    auto it = rv.insert(rv.begin(), value);
+    test.check(rv.size() == 5);
+    test.check(rv[0] == 9);
+    test.check(it == rv.begin());
+
+    // insert at the end
+    auto it2 = rv.insert(rv.end(), 8);
+    test.check(rv.size() == 6);
+    test.check(rv[5] == 8);
+    test.check(it2 == rv.end()-1);
+
+    rv.clear();
+
+    // insert an initializer list
+    rv.insert(rv.end(), {1,2,3});
+    test.check(rv.size() == 3);
+    test.check(rv.back() == 3);
+
+    // insert value multiple times
+    rv.insert(rv.end(), 2, 9);
+    test.check(rv.size() == 5);
+    test.check(rv.back() == 9);
+
+    // insert a range
+    std::vector<int> v{8,7};
+    rv.insert(rv.begin(), v.begin(), v.end());
+    test.check(rv.size() == 7);
+    test.check(rv[0] == 8);
+  }
+
   { // check non-trivial types
     Dune::ReservedVector<A, 8> rvA;
     rvA.push_back(A(5));

@@ -5,7 +5,11 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 # Master (will become release 2.12)
 
-- ...
+## C++: Changelog
+
+- Add five variants of the method `insert(pos, ...)` to `ReservedVector`.
+  These are exactly the methods known from `std::vector`.
+
 
 ## Build system: Changelog
 

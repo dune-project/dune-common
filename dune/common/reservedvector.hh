@@ -164,6 +164,58 @@ namespace Dune
       size_ = s;
     }
 
+    //! Inserts a copy of value before pos.
+    constexpr iterator insert(const_iterator pos, const T& value)
+    {
+      CHECKSIZE(size_<n);
+      iterator it = begin() + std::distance(cbegin(), pos);
+      std::move_backward(it, end(), end()+1);
+      *it = value;
+      ++size_;
+      return it;
+    }
+
+    //! Inserts value before pos, possibly using move semantics.
+    constexpr iterator insert(const_iterator pos, T&& value)
+    {
+      CHECKSIZE(size_<n);
+      iterator it = begin() + std::distance(cbegin(), pos);
+      std::move_backward(it, end(), end()+1);
+      *it = std::move(value);
+      ++size_;
+      return it;
+    }
+
+    //! Inserts count copies of the value before pos.
+    constexpr iterator insert(const_iterator pos, size_type count, const T& value)
+    {
+      CHECKSIZE(size_+count<=n);
+      iterator it = begin() + std::distance(cbegin(), pos);
+      std::move_backward(it, end(), end()+count);
+      std::fill(it, it+count, value);
+      size_+=count;
+      return it;
+    }
+
+    //! Inserts elements from range [first, last) before pos.
+    template <std::forward_iterator InputIt>
+    constexpr iterator insert(const_iterator pos, InputIt first, InputIt last)
+    {
+      size_type count = std::distance(first,last);
+      CHECKSIZE(size_+count<=n);
+      iterator it = begin() + std::distance(cbegin(), pos);
+      std::move_backward(it, end(), end()+count);
+      std::copy(first, last, it);
+      size_+=count;
+      return it;
+    }
+
+    //! Inserts elements from initializer list ilist before pos.
+    constexpr iterator insert(const_iterator pos, std::initializer_list<T> ilist)
+    {
+      return insert(pos, ilist.begin(), ilist.end());
+    }
+
     //! Appends an element to the end of a vector, up to the maximum size n, O(1) time.
     constexpr void push_back(const value_type& t)
           noexcept(std::is_nothrow_copy_assignable_v<value_type>)
