@@ -4,7 +4,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH DUNECONTROL 1 "November 8, 2016"
+.TH DUNECONTROL 1 "January 5, 2026"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -170,19 +170,19 @@ Set options for COMMAND (this is mainly useful for the 'all' COMMAND)
 .SH OPTS FILE
 
 The options file contains different entries to specify the build
-environment, e.g. which compiler to use, which options to pass to
+environment, e.g., which compiler to use, which options to pass to
 cmake, where to build DUNE, etc.
 
-Variables are
+Variables are:
 
 .HP
-\fDUNE_CONTROL_PATH\fP
+\fBDUNE_CONTROL_PATH\fP
 .IP
 just as the environment variable DUNE_CONTROL_PATH, it is possible to
 define it in the options file. For details see the description below.
 
 .HP
-\fBBUILDDIR\fP=\Ifname\fP
+\fBBUILDDIR\fP=\fIname\fP
 .IP
 to specify the build directory, just as via the command line.
 Defining the build directory in the opts file, allows to easily switch
@@ -191,13 +191,12 @@ between different build directories for different DUNE configurations.
 .HP
 \fB[COMMAND]_FLAGS\fP=\fIopts\fP
 .IP
-Set options for \fICOMMAND\fP, e.g. CMAKE_FLAGS, to specify parameters
-passed to the specific command. In case of cmake this might look as
-follows
+Set options for a specific \fICOMMAND\fP. In the case of the CMAKE command,
+e.g., this might look like
 
 CMAKE_FLAGS="-DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_CXX_FLAGS='-fPIC -g -O3' -DFOO_PREFIX=/path/to/libfoo"
 
-In case of make a common use case is to enable concurrency, e.g.
+In case of the MAKE command, a common use is to enable concurrency:
 
 MAKE_FLAGS="-j4"
 
