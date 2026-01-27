@@ -46,7 +46,7 @@ def setModuleLog( fileName=None, procs=4 ):
         if procs_ > 1 and fileName is None:
             procs = procs_
             try:
-                fileName = Path(main.__file__).stem + ".modules"
+                fileName = Path(main.__file__).name + ".jitmodules"
             except AttributeError: # this can happen with notebooks
                 fileName = None
     if not fileName is None: # if fileName is set rebuild all listed if file exists
