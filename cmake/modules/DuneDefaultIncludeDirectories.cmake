@@ -9,7 +9,7 @@ Add the default include directories to a target.
 
 .. cmake:command:: dune_default_include_directories
 
-  Add the source and build directory the the targets include directories
+  Add the source and build directory to the targets include directories
   in the build-interface and the corresponding installed include dir in
   the install-interface.
 
