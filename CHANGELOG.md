@@ -15,6 +15,12 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
   in particular also applies to targets that make use of
   `dune_target_enable_all_packages`.
 
+## Deprecation and Removals
+
+- Remove the deprecated method `HybridMultiIndex::element`. From now on,
+  please use `HybridMultiIndex::operator[]` instead.
+
+
 # Release 2.11
 
 ## Dependencies
