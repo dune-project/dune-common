@@ -79,10 +79,10 @@ include(Headercheck)
 include(OverloadCompilerFlags)
 
 include(DunePolicy)
-dune_define_policy(DP_DEFAULT_INCLUDE_DIRS dune-common 2.12
+dune_define_policy(DP_DEFAULT_INCLUDE_DIRS
   "OLD behavior: Use global include_directories. NEW behavior: Include directories must be set on a module library target and are not set globally anymore.")
 
-dune_define_policy(DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM dune-common 2.12
+dune_define_policy(DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM
   "OLD behavior: All found dune modules listed in dune.module's 'Depends:' or 'Suggested:' are required in downstream projects. NEW behavior: Only dependencies listed in 'Depends:' and manually marked module dependencies are required.")
 
 option(DUNE_ENABLE_TESTING "Enable test subdirectories in dune modules by default." ON)

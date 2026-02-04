@@ -6,10 +6,8 @@ DunePolicy
 ----------
 
 Get and set dune policies to control changes in behavior of the dune build
-system. A policy is by default set to `OLD` if not set otherwise, except
-if the policy's activation version is reached. Each policy can specify
-when it is set automatically to `NEW`. The default behavior can be
-influenced by the global cmake variable ``DUNE_POLICY_DEFAULT``.
+system. A policy is by default set to `OLD` if not set otherwise. The default
+behavior can be influenced by the global cmake variable ``DUNE_POLICY_DEFAULT``.
 
 .. cmake:command:: dune_policy
 
@@ -23,14 +21,12 @@ influenced by the global cmake variable ``DUNE_POLICY_DEFAULT``.
 
   .. code-block:: cmake
 
-    dune_define_policy(<policy> <module> <version> "<doc>")
+    dune_define_policy(<policy> "<doc>")
 
   Introduces a `<policy>`, a name that identifies a change in behavior
-  of the dune build-system. It is associated to a dune `<module>` and
-  is set to "NEW" automatically, if that module reaches a given
-  `<version>`. The documentation `<doc>` is shown if the policy is not
-  set by the module author and the automatic activation version is not
-  reached.
+  of the dune build-system. The documentation `<doc>` is shown if the
+  policy is not set by the module author and ``DUNE_POLICY_DISABLE_WARNING``
+  is not set to ``TRUE``.
 
 Global options
 ^^^^^^^^^^^^^^
@@ -58,7 +54,7 @@ function(dune_policy_help _errorlevel _msg)
     "  dune_policy(HELP): show this help message.\n")
 endfunction(dune_policy_help)
 
-# get the value of a _policy, or the DUNE_POLICY_DEFAULT, or NEW if the policy's dune version is reached
+# get the value of a _policy, or the DUNE_POLICY_DEFAULT
 function(dune_get_policy _policy _var)
   get_property(_policy_defined GLOBAL PROPERTY DUNE_POLICY_${_policy} DEFINED)
   if(NOT _policy_defined)
@@ -66,21 +62,17 @@ function(dune_get_policy _policy _var)
   endif()
   get_property(_policy_set GLOBAL PROPERTY ${PROJECT_NAME}_POLICY_${_policy} SET)
   if(NOT _policy_set)
-    get_property(_policy_version GLOBAL PROPERTY DUNE_POLICY_${_policy}_VERSION)
-    get_property(_policy_module GLOBAL PROPERTY DUNE_POLICY_${_policy}_MODULE)
-    if(${_policy_module}_VERSION VERSION_GREATER_EQUAL _policy_version)
-      set(_policy_value "NEW")
-    else()
-      get_property(_policy_doc GLOBAL PROPERTY DUNE_POLICY_${_policy} BRIEF_DOCS)
-      get_property(_policy_warning GLOBAL PROPERTY ${PROJECT_NAME}_POLICY_${_policy}_WARNING)
-      if(NOT _policy_warning AND NOT DUNE_POLICY_DISABLE_WARNING)
-        message(AUTHOR_WARNING "Policy ${_policy} is not set: ${_policy_doc} "
-          "Use the dune_policy(SET) command to set the policy and suppress this warning. "
-          "The default value ${DUNE_POLICY_DEFAULT} will be used in the meantime.")
-        set_property(GLOBAL PROPERTY ${PROJECT_NAME}_POLICY_${_policy}_WARNING TRUE)
-      endif()
-      set(_policy_value ${DUNE_POLICY_DEFAULT})
+    get_property(_policy_doc GLOBAL PROPERTY DUNE_POLICY_${_policy} BRIEF_DOCS)
+    get_property(_policy_warning GLOBAL PROPERTY ${PROJECT_NAME}_POLICY_${_policy}_WARNING)
+    if(NOT _policy_warning AND NOT DUNE_POLICY_DISABLE_WARNING)
+      message(AUTHOR_WARNING "Policy ${_policy} is not set: ${_policy_doc} "
+        "Use the dune_policy(SET) command to set the policy and suppress this warning. "
+        "The default value ${DUNE_POLICY_DEFAULT} will be used in the meantime. "
+        "Setting a policy to NEW often requires some adaption to the buildsystem. "
+        "See the buildsystem documentation for the details regarding the specific policy.")
+      set_property(GLOBAL PROPERTY ${PROJECT_NAME}_POLICY_${_policy}_WARNING TRUE)
     endif()
+    set(_policy_value ${DUNE_POLICY_DEFAULT})
   else()
     get_property(_policy_value GLOBAL PROPERTY ${PROJECT_NAME}_POLICY_${_policy})
   endif()
@@ -132,11 +124,23 @@ function(dune_policy _method)
   endif()
 endfunction(dune_policy)
 
-# introduce a new policy into the system
-function(dune_define_policy _policy _module _version _doc)
+
+function(dune_define_policy_impl _policy _doc)
   define_property(GLOBAL PROPERTY DUNE_POLICY_${_policy}
     BRIEF_DOCS "${_doc}" FULL_DOCS "${_doc}")
-  set_property(GLOBAL PROPERTY DUNE_POLICY_${_policy}_MODULE ${_module})
-  set_property(GLOBAL PROPERTY DUNE_POLICY_${_policy}_VERSION ${_version})
   set_property(GLOBAL APPEND PROPERTY DUNE_POLICIES ${_policy})
+endfunction(dune_define_policy_impl)
+
+# introduce a new policy into the system
+function(dune_define_policy)
+  if(ARGC EQUAL 2)
+    dune_define_policy_impl(${ARGV0} ${ARGV1})
+  elseif(ARGC EQUAL 4)
+    # fallback for old implementation with 4 arguments.
+    # ignore the <module> and the <version> argument.
+    message(DEPRECATION "The signature dune_define_policy(<policy> <module> <version> <doc>) is deprecated. Use dune_define_policy(<policy> <doc>) instead. The <module> and <version> parameter are ignored.")
+    dune_define_policy_impl(${ARGV0} ${ARGV3})
+  else()
+    message(FATAL_ERROR "Usage dune_define_policy(<policy> <doc>).")
+  endif()
 endfunction(dune_define_policy)

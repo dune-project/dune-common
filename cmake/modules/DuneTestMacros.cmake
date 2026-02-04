@@ -221,7 +221,7 @@ enable_testing()
 include(CTest)
 
 include(DunePolicy)
-dune_define_policy(DP_TEST_ADD_ALL_FLAGS dune-common 2.13
+dune_define_policy(DP_TEST_ADD_ALL_FLAGS
   "OLD behavior: Automatically call add_dune_all_flags on all test targets. NEW behavior: flags must be set for each test target separately, e.g., using add_dune_pkg_flags, or in directory scope using dune_enable_all_packages.")
 
 # Introduce a target that triggers the building of all tests

@@ -193,8 +193,7 @@ we have introduced a way to maintain backwards compatibility in the behavior of 
 build system across multiple versions of Dune. A policy is an identifier that controls
 whether the ``OLD`` or the ``NEW`` introduced behavior should be used for a given
 Dune module. By default, the ``OLD`` behavior is still enabled, unless a module author
-explicitly changes it to  ``NEW``, or unless a specific version is reached where the ``NEW``
-behavior is enabled by default.
+explicitly changes it to  ``NEW``.
 
 The `OLD` behavior is deprecated by default and results in an author warning about unhandled
 policies. However, if it is explicitly set to `OLD` or `NEW`, the warning disappears. If you do
@@ -204,7 +203,7 @@ not want to see any policy warnings and just stick with the defaults, the global
 Policies Introduced by Dune 2.10
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``DP_DEFAULT_INCLUDE_DIRS`` (dune-common, set to NEW by default in version 2.12)
+``DP_DEFAULT_INCLUDE_DIRS``
     *OLD behavior:* Set global ``include_directories`` when creating a new ``dune_project``.
     *NEW behavior:* Include directories must be set on a module library targets and are not set globally anymore.
 
@@ -219,7 +218,7 @@ Policies Introduced by Dune 2.10
 Policies Introduced by Dune 2.11
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``DP_TEST_ADD_ALL_FLAGS`` (dune-common, set to NEW by default in version 2.13)
+``DP_TEST_ADD_ALL_FLAGS``
     *OLD behavior:* Automatically call ``add_dune_all_flags`` on all test targets inside of ``dune_add_test``.
     *NEW behavior:* Flags must be set for each test target separately, e.g., by using ``add_dune_pkg_flags``, or in directory scope using ``dune_enable_all_packages``.
 
