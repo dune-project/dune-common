@@ -74,9 +74,9 @@ bool run() {
   populateMatrix(dynMWrong22, 2, 2);
   populateMatrix(dynMWrong33, 3, 3);
 
-  Dune::DiagonalMatrix<ft, 1> const diagMWrong1 = {1};
-  Dune::DiagonalMatrix<ft, 2> const diagMWrong2 = {1, 2};
-  Dune::DiagonalMatrix<ft, 3> const diagMWrong3 = {1, 2, 3};
+  [[maybe_unused]] Dune::DiagonalMatrix<ft, 1> const diagMWrong1 = {1};
+  [[maybe_unused]] Dune::DiagonalMatrix<ft, 2> const diagMWrong2 = {1, 2};
+  [[maybe_unused]] Dune::DiagonalMatrix<ft, 3> const diagMWrong3 = {1, 2, 3};
 
   bool passed = true;
 
@@ -270,48 +270,27 @@ bool run() {
                 << ") All good: Exception thrown as expected." << std::endl;
     }
 
-    try {
-      // Should fail at run-time with RangeError
-      // Note: this could be made to fail at compile-time already if
-      // we further specialised DenseMatrixAssigner to (FieldMatrix,
-      // DiagonalMatrix)
+#ifdef FAILURE7
+    {
+      // Should fail at compile-time
       M fieldT;
       fieldT = diagMWrong1;
-      std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
-                << std::endl;
-      passed = false;
-    } catch (const Dune::RangeError&) {
-      std::cout << "(line " << __LINE__
-                << ") All good: Exception thrown as expected." << std::endl;
     }
-    try {
-      // Should fail at run-time with RangeError
-      // Note: this could be made to fail at compile-time already if
-      // we further specialised DenseMatrixAssigner to (FieldMatrix,
-      // DiagonalMatrix)
+#endif
+#ifdef FAILURE8
+    {
+      // Should fail at compile-time
       M fieldT;
       fieldT = diagMWrong2;
-      std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
-                << std::endl;
-      passed = false;
-    } catch (const Dune::RangeError&) {
-      std::cout << "(line " << __LINE__
-                << ") All good: Exception thrown as expected." << std::endl;
     }
-    try {
-      // Should fail at run-time with RangeError
-      // Note: this could be made to fail at compile-time already if
-      // we further specialised DenseMatrixAssigner to (FieldMatrix,
-      // DiagonalMatrix)
+#endif
+#ifdef FAILURE9
+    {
+      // Should fail at compile-time
       M fieldT;
       fieldT = diagMWrong3;
-      std::cout << "(line " << __LINE__ << ") Error: No exception thrown."
-                << std::endl;
-      passed = false;
-    } catch (const Dune::RangeError&) {
-      std::cout << "(line " << __LINE__
-                << ") All good: Exception thrown as expected." << std::endl;
     }
+#endif
   }
 
   // Invalid copy construction
