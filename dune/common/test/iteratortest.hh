@@ -396,10 +396,11 @@ int testIterator(Container& c, Opt& opt)
 template<class Iter, class Opt>
 void testAssignment(Iter begin, Iter end, Opt&)
 {
-  //std::cout << "Assignment: ";
+  if (begin == end)
+    return;
+  typename std::iterator_traits<Iter>::value_type tmp = *begin;
   for(; begin!=end; begin++)
-    *begin=typename std::iterator_traits<Iter>::value_type();
-  //std::cout<<" Done."<< std::endl;
+    *begin=tmp;
 }
 
 template<class Iter, class Opt>
