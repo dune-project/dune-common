@@ -162,27 +162,6 @@ namespace Dune {
       return entry;
     }
 
-    //! Get the last index value.
-    template<std::size_t i>
-    requires (sizeof...(T) > i)
-    [[deprecated("Method will be removed after Dune 2.11. Use operator[] instead.")]]
-    [[nodiscard]] constexpr auto element(Dune::index_constant<i> pos = {}) const
-    {
-      return std::get<i>(_data);
-    }
-
-    //! Get the index value at position pos.
-    [[deprecated("Method will be removed after Dune 2.11. Use operator[] instead.")]]
-    [[nodiscard]] constexpr std::size_t element(std::size_t pos) const
-    {
-      std::size_t entry = 0;
-      Dune::Hybrid::forEach(enumerate(), [&] (auto i) {
-          if (i==pos)
-            entry = (*this)[i];
-      });
-      return entry;
-    }
-
     //! Get the first index value. Only available in non-empty multi-indices.
     template<std::size_t n = sizeof...(T)>
     requires (n > 0 && n == sizeof...(T))
