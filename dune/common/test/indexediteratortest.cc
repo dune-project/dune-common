@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 #include <config.h>
 
+#include <array>
 #include <numeric>
 #include <type_traits>
 #include <vector>
