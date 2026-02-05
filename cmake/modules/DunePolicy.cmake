@@ -138,7 +138,7 @@ function(dune_define_policy)
   elseif(ARGC EQUAL 4)
     # fallback for old implementation with 4 arguments.
     # ignore the <module> and the <version> argument.
-    message(DEPRECATION "The signature dune_define_policy(<policy> <module> <version> <doc>) is deprecated. Use dune_define_policy(<policy> <doc>) instead. The <module> and <version> parameter are ignored.")
+    message(DEPRECATION "The signature dune_define_policy(<policy> <module> <version> <doc>) is deprecated. Use dune_define_policy(<policy> <doc>) instead. The <module> and <version> parameter are ignored. The old interface will be removed after the dune-common 2.12 release.")
     dune_define_policy_impl(${ARGV0} ${ARGV3})
   else()
     message(FATAL_ERROR "Usage dune_define_policy(<policy> <doc>).")
