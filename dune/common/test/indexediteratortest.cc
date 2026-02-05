@@ -30,11 +30,12 @@ auto testPointer()
 {
   using namespace Dune;
   TestSuite suite("Check pointer()");
-  std::array<int,10> vec{};
-  std::iota(vec.begin(), vec.end(), 0);
+  std::array<int,10> a{};
+  std::iota(a.begin(), a.end(), 0);
+  auto* begin = a.data();
+  auto* end = a.data() + a.size();
 
-  static_assert(std::is_pointer_v<decltype(vec.begin())>);
-  auto indexedRange = IteratorRange{IndexedIterator{vec.begin()}, IndexedIterator{vec.end()}};
+  auto indexedRange = IteratorRange{IndexedIterator{begin}, IndexedIterator{end}};
   for (auto&& [vi,i] : Dune::sparseRange(indexedRange))
     suite.check(vi == i);
 
