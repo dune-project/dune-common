@@ -49,6 +49,7 @@ install(FILES
   FindGMP.cmake
   FindInkscape.cmake
   FindLatexMk.cmake
+  FindMathJax2.cmake
   FindMETIS.cmake
   FindParMETIS.cmake
   FindPTScotch.cmake
