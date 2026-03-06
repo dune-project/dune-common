@@ -44,6 +44,9 @@ int main()
     static_assert(123_uc == 123u);
     static_assert(-123_sc == -123);
     static_assert(std::is_same_v<decltype(-123_sc), std::integral_constant<int,-123>>);
+
+    static_assert(-42_uc == -42);
+    static_assert(std::is_same_v<decltype(-42_uc), std::integral_constant<int,-42>>);
   }
 
   return 0;
