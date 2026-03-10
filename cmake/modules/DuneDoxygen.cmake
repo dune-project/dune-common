@@ -59,11 +59,9 @@ add_custom_target(doxygen_install)
 option(DUNE_MATHJAX_DISABLE_LOCAL "Flag to disable usage of local MathJax")
 option(DUNE_MATHJAX_DISABLE_CDN "Flag to disable usage of MathJax from content delivery network")
 
-# Variables forwarded to Doxygen
-set(DUNE_USE_MATHJAX "NO" GLOBAL)
-set(DUNE_MATHJAX_RELPATH "" GLOBAL)
-
 # Use local MathJax2 unless disabled
+set(mathjax_relpath "")
+set(use_mathjax OFF)
 if(NOT DUNE_MATHJAX_DISABLE_LOCAL)
   # This currently searches for MathJax2 only which is the default in Doxygen.
   # Newer versions do not provide MathJax.js and have to be enabled manually
@@ -71,25 +69,28 @@ if(NOT DUNE_MATHJAX_DISABLE_LOCAL)
   find_package(MathJax2)
   if(MATHJAX2_FOUND)
     message(STATUS "Using local MathJax found in ${MATHJAX2_PATH}")
-    set(DUNE_USE_MATHJAX "YES")
-    set(DUNE_MATHJAX_RELPATH "${MATHJAX2_PATH}")
+    set(use_mathjax ON)
+    set(mathjax_relpath "${MATHJAX2_PATH}")
   endif()
 endif()
 
 # Use MathJax2 from cdn unless disabled
-if((NOT DUNE_MATHJAX_DISABLE_CDN) AND (DUNE_MATHJAX_RELPATH STREQUAL ""))
+if((NOT DUNE_MATHJAX_DISABLE_CDN) AND (mathjax_relpath STREQUAL ""))
   message(STATUS "Using MathJax from content delivery network")
-  set(DUNE_USE_MATHJAX "YES")
+  set(use_mathjax ON)
 endif()
 
 # Don't use MathJax
-if(DUNE_USE_MATHJAX STREQUAL "NO")
+if(NOT use_mathjax)
   message(STATUS "MathJax is disabled")
 endif()
 
+# Variables forwarded to Doxygen
+set_property(GLOBAL PROPERTY DUNE_USE_MATHJAX "${use_mathjax}")
+set_property(GLOBAL PROPERTY DUNE_MATHJAX_RELPATH "${mathjax_relpath}")
+
 # End MathJax support
 ##############################
-
 
 #
 # prepare_doxyfile()
@@ -103,20 +104,25 @@ macro(prepare_doxyfile)
     set(DOXYFILE_TARGET ${PROJECT_NAME})
   endif()
 
+  # Get global properties for MathJax configuration
+  get_property(use_mathjax GLOBAL PROPERTY DUNE_USE_MATHJAX)
+  get_property(mathjax_relpath GLOBAL PROPERTY DUNE_MATHJAX_RELPATH)
+
   message(STATUS "using ${DOXYSTYLE_FILE} to create doxystyle file")
   message(STATUS "using C macro definitions from ${DOXYGENMACROS_FILE} for Doxygen")
 
   # check whether module has a Doxylocal file
   find_file(_DOXYLOCAL Doxylocal PATHS ${CMAKE_CURRENT_SOURCE_DIR} NO_DEFAULT_PATH)
-
+  # convert use_mathjax to YES/NO for Doxygen
+  set(use_mathjax $<IF:$<BOOL:${use_mathjax}>,YES,NO>)
   if(_DOXYLOCAL)
-    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${ProjectVersion} -D DOXYSTYLE=${DOXYSTYLE_FILE} -D DOXYGENMACROS=${DOXYGENMACROS_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${${PROJECT_NAME}_SOURCE_DIR} -D DUNE_USE_MATHJAX="${DUNE_USE_MATHJAX}" -D DUNE_MATHJAX_RELPATH="${DUNE_MATHJAX_RELPATH}" -P ${scriptdir}/CreateDoxyFile.cmake)
+    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${ProjectVersion} -D DOXYSTYLE=${DOXYSTYLE_FILE} -D DOXYGENMACROS=${DOXYGENMACROS_FILE}  -D DOXYLOCAL=${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D srcdir=${CMAKE_CURRENT_SOURCE_DIR} -D top_srcdir=${${PROJECT_NAME}_SOURCE_DIR} -D DUNE_USE_MATHJAX="${use_mathjax}" -D DUNE_MATHJAX_RELPATH="${mathjax_relpath}" -P ${scriptdir}/CreateDoxyFile.cmake)
     add_custom_command(OUTPUT Doxyfile.in Doxyfile
       COMMAND ${make_doxyfile_command}
       COMMENT "Creating Doxyfile.in"
       DEPENDS ${DOXYSTYLE_FILE} ${DOXYGENMACROS_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxylocal)
   else()
-    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE} -D DOXYGENMACROS=${DOXYGENMACROS_FILE} -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D top_srcdir=${${PROJECT_NAME}_SOURCE_DIR} -D DUNE_USE_MATHJAX="${DUNE_USE_MATHJAX}" -D DUNE_MATHJAX_RELPATH="${DUNE_MATHJAX_RELPATH}" -P ${scriptdir}/CreateDoxyFile.cmake)
+    set(make_doxyfile_command ${CMAKE_COMMAND} -D DOT_TRUE=${DOT_TRUE} -D DUNE_MOD_NAME=${ProjectName} -D DUNE_MOD_VERSION=${DUNE_MOD_VERSION} -D DOXYSTYLE=${DOXYSTYLE_FILE} -D DOXYGENMACROS=${DOXYGENMACROS_FILE} -D abs_top_srcdir=${CMAKE_SOURCE_DIR} -D top_srcdir=${${PROJECT_NAME}_SOURCE_DIR} -D DUNE_USE_MATHJAX="${use_mathjax}" -D DUNE_MATHJAX_RELPATH="${mathjax_relpath}" -P ${scriptdir}/CreateDoxyFile.cmake)
     add_custom_command(OUTPUT Doxyfile.in Doxyfile
       COMMAND ${make_doxyfile_command}
       COMMENT "Creating Doxyfile.in"
