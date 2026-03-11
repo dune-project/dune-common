@@ -11,6 +11,7 @@
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/typeutilities.hh>
+#include <dune/common/rangeutilities.hh>
 
 namespace Dune {
 
@@ -153,12 +154,8 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
         }
 
         //! Get a list of the available keys to the object factory
-        std::vector<std::string> keys() const {
-            std::vector<std::string> keys_;
-            keys_.reserve(registry_.size());
-            for (auto [key, _] : registry_)
-                keys_.push_back(key);
-            return keys_;
+        auto keys() const {
+            return transformedRangeView(registry_, [](const auto & entry) { return entry.first; } );
         }
 
     private:

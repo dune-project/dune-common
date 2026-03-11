@@ -58,9 +58,12 @@ int main()
     CheckInstance(globalPtrFactory<InterfaceA>(), Bix, 1);
 
     using KeySet = std::set<std::string>;
-    std::vector<std::string> keys = globalPtrFactory<InterfaceA>().keys();
-    if (KeySet(keys.begin(), keys.end()) != KeySet{"Ai", "Bi", "Ax", "Aix", "Bix"})
-        throw std::runtime_error("Error in globalPtrFactory<InterfaceA>().keys()");
+
+    {
+        auto keys = globalPtrFactory<InterfaceA>().keys();
+        if (KeySet(keys.begin(), keys.end()) != KeySet{"Ai", "Bi", "Ax", "Aix", "Bix"})
+            throw std::runtime_error("Error in globalPtrFactory<InterfaceA>().keys()");
+    }
 
     // default constructor
     Dune::ParameterizedObjectFactory<std::shared_ptr<InterfaceA>()> FactoryAd;
@@ -72,9 +75,11 @@ int main()
     FactoryAd.define("AImp2", Dune::stackobject_to_shared_ptr<AImp>(aimp));
     FactoryAd.define("AImp3", std::make_shared<AImp>("shared"));
 
-    keys = FactoryAd.keys();
-    if (KeySet(keys.begin(), keys.end()) != KeySet{"Ax", "Bx", "Ai", "AImp", "AImp2", "AImp3"})
-        throw std::runtime_error("Error in FactoryAd.keys()");
+    {
+        auto keys = FactoryAd.keys();
+        if (KeySet(keys.begin(), keys.end()) != KeySet{"Ax", "Bx", "Ai", "AImp", "AImp2", "AImp3"})
+            throw std::runtime_error("Error in FactoryAd.keys()");
+    }
 
     Dune::ParameterTree param;
     CheckInstance2(FactoryAd, Ax);
@@ -91,9 +96,11 @@ int main()
     CheckInstance2(FactoryAx, Ax);
     CheckInstance2(FactoryAx, Bx);
 
-    keys = FactoryAx.keys();
-    if (KeySet(keys.begin(), keys.end()) != KeySet{"Ax", "Bx"})
-        throw std::runtime_error("Error in FactoryAx.keys()");
+    {
+        auto keys = FactoryAx.keys();
+        if (KeySet(keys.begin(), keys.end()) != KeySet{"Ax", "Bx"})
+            throw std::runtime_error("Error in FactoryAx.keys()");
+    }
 
     // multiple parameters
     Dune::ParameterizedObjectFactory<std::unique_ptr<InterfaceB>(int, std::string)> FactoryB;
@@ -102,18 +109,22 @@ int main()
     CheckInstance(FactoryB, Ais, 0, std::to_string(2));
     CheckInstance(FactoryB, Bis, 1, "Hallo");
 
-    keys = FactoryB.keys();
-    if (KeySet(keys.begin(), keys.end()) != KeySet{"Ais", "Bis"})
-        throw std::runtime_error("Error in FactoryB.keys()");
+    {
+        auto keys = FactoryB.keys();
+        if (KeySet(keys.begin(), keys.end()) != KeySet{"Ais", "Bis"})
+            throw std::runtime_error("Error in FactoryB.keys()");
+    }
 
     // check for ambiguous overloads
     Dune::ParameterizedObjectFactory<bool()> FactoryBool;
     FactoryBool.define("true",true);
     FactoryBool.define("false",[](){return false;});
 
-    keys = FactoryBool.keys();
-    if (KeySet(keys.begin(), keys.end()) != KeySet{"true", "false"})
-        throw std::runtime_error("Error in FactoryBool.keys()");
+    {
+        auto keys = FactoryBool.keys();
+        if (KeySet(keys.begin(), keys.end()) != KeySet{"true", "false"})
+            throw std::runtime_error("Error in FactoryBool.keys()");
+    }
 
     // value semantics
     Dune::ParameterizedObjectFactory<std::function<double(double)>(int)> FactoryC;
@@ -124,9 +135,11 @@ int main()
         return [=](double x) { return x+i+1;};
     });
 
-    keys = FactoryC.keys();
-    if (KeySet(keys.begin(), keys.end()) != KeySet{"fi", "fi1"})
-        throw std::runtime_error("Error in FactoryC.keys()");
+    {
+        auto keys = FactoryC.keys();
+        if (KeySet(keys.begin(), keys.end()) != KeySet{"fi", "fi1"})
+            throw std::runtime_error("Error in FactoryC.keys()");
+    }
 
     assert(FactoryC.create("fi", 42)(0) == 42);
     assert(FactoryC.create("fi1", 42)(0) == 43);
