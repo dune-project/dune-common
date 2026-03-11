@@ -6,6 +6,7 @@ add_subdirectory("parallel")
 add_subdirectory("simd")
 add_subdirectory("std")
 add_subdirectory("test")
+add_subdirectory("typetree")
 
 # add some sources to the dunecommon library
 target_sources(dunecommon PRIVATE
@@ -25,7 +26,6 @@ target_sources(dunecommon PRIVATE
 install(FILES
         alignedallocator.hh
         arraylist.hh
-        assertandreturn.hh
         bartonnackmanifcheck.hh
         bigunsignedint.hh
         binaryfunctions.hh
@@ -55,11 +55,13 @@ install(FILES
         float_cmp.hh
         fmatrix.hh
         fmatrixev.hh
+        forceinline.hh
         ftraits.hh
         fvector.hh
         genericiterator.hh
         gmpfield.hh
         hash.hh
+        hybridmultiindex.hh
         hybridutilities.hh
         indent.hh
         indexediterator.hh
@@ -69,12 +71,12 @@ install(FILES
         ios_state.hh
         iteratorfacades.hh
         iteratorrange.hh
-        keywords.hh
         lru.hh
         mallocallocator.hh
         math.hh
         matrixconcepts.hh
         matvectraits.hh
+        metis.hh
         overloadset.hh
         parameterizedobject.hh
         parametertree.hh

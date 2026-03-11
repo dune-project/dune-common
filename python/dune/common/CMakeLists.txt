@@ -15,15 +15,18 @@ add_python_targets(common
 )
 
 dune_add_pybind11_module(NAME _common SOURCES _common.cc)
+target_link_libraries(_common PUBLIC Dune::Common)
+
 if( DUNE_ENABLE_PYTHONMODULE_PRECOMPILE )
-  set(FV_NUMS 0 1 2 3 4)
-  foreach( FV_NUM ${FV_NUMS} )
-    dune_add_pybind11_submodule(NAME registerfvector_${FV_NUM}
-                                MODULE _common SOURCES registerfvector.cc
-                                COMPILE_DEFINITIONS FV_NUM=${FV_NUM})
+  foreach(FV_NUM RANGE 0 4)
+    add_library(registerfvector_${FV_NUM} OBJECT registerfvector.cc)
+    target_compile_definitions(registerfvector_${FV_NUM} PRIVATE FV_NUM=${FV_NUM})
+    target_link_libraries(registerfvector_${FV_NUM} PRIVATE Dune::Common)
+
+    # Register the object in the pybind11 module _common
+    target_link_libraries(_common PRIVATE registerfvector_${FV_NUM})
   endforeach()
 endif()
-set_property(TARGET _common PROPERTY LINK_LIBRARIES dunecommon APPEND)
 
 if(SKBUILD)
   install(TARGETS _common LIBRARY DESTINATION python/dune/common)

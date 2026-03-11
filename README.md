@@ -28,20 +28,19 @@ Dependencies
 dune-common depends on the following software packages
 
 - CMake >= 3.16
-- Compiler (C, C++): GNU >= 9 or Clang >= 10
+- Compiler (C, C++): GNU >= 10 or Clang >= 13
+- Library: GNU libstdc++ >= 10 or Clang libc++ >= 13
 
-  Other compilers might work too, they need to support C++17 to the extent the
-  ones above do.
+Other compilers may also work, but they must support C++20 to the same extent as
+the above. For an overview of the C++20 features supported by these versions, see
+https://en.cppreference.com/w/cpp/compiler_support. For compiling the Python
+bindings, libc++ is not currently supported.
 
 The following software is recommended but optional:
 
 - pkg-config
 - MPI (either OpenMPI, lam, or mpich suffice)
 - Python >= 3.7 (interpreter and development kit for building the python bindings)
-
-For a full explanation of the DUNE installation process please read
-the [installation notes][installation]. The following introduction is meant for
-the impatient.
 
 License
 -------
@@ -75,10 +74,10 @@ full instructions please see [here][installation].
 Links
 -----
 
-0. https://www.dune-project.org/doc/installation
+0. https://www.dune-project.org/installation/installation-faq/
 1. https://dune-project.org/releases/
-2. https://dune-project.org/buildsystem/
+2. https://dune-project.org/doc/buildsystem/
 3. https://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license
 
-[installation]: https://www.dune-project.org/doc/installation
+[installation]: https://www.dune-project.org/installation/installation-buildsrc
 [license]: https://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.license

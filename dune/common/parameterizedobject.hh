@@ -11,6 +11,7 @@
 
 #include <dune/common/exceptions.hh>
 #include <dune/common/typeutilities.hh>
+#include <dune/common/rangeutilities.hh>
 
 namespace Dune {
 
@@ -150,6 +151,11 @@ class ParameterizedObjectFactory<TypeT(Args...), KeyT>
         bool contains(Key const& key) const
         {
             return registry_.count(key);
+        }
+
+        //! Get a list of the available keys to the object factory
+        auto keys() const {
+            return transformedRangeView(registry_, [](const auto & entry) { return entry.first; } );
         }
 
     private:

@@ -54,6 +54,11 @@ set_package_properties("TBB" PROPERTIES
   URL "https://github.com/oneapi-src/oneTBB"
 )
 
+# check if TBB was already found
+if(TBB_FOUND AND TARGET TBB::tbb)
+  return()
+endif()
+
 # first, try to find TBBs cmake configuration
 find_package(TBB ${TBB_FIND_VERSION} QUIET CONFIG)
 if(TBB_FOUND AND TARGET TBB::tbb)

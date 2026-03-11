@@ -42,6 +42,27 @@ Initialize and finalize a Dune module.
   configuration files is also created. For more information, see the build
   system documentation.
 
+
+.. cmake_function:: dune_mark_module_as_required_dependency
+
+  .. cmake_brief::
+
+    Mark a module as required in downstream projects
+
+  .. cmake_param:: MODULE
+     :single:
+
+    The name of the module to be marked as a required dependency.
+
+  This function is used to force a module to be required in downstream projects
+  even if it is only "suggested". This is useful for modules that are not required
+  by default but are needed for the module to work once found. The main example is
+  that once a dependency is found, a source file relying on the dependency is compiled
+  into the module library. Then, for consistency, this dependency becomes a requirement
+  for all downstream consumers of the module library.
+  This function should be called after ``dune_project()`` and before
+  ``finalize_dune_project()``.
+
 #]=======================================================================]
 include_guard(GLOBAL)
 
@@ -56,6 +77,50 @@ include(FeatureSummary)
 include(GNUInstallDirs)
 include(Headercheck)
 include(OverloadCompilerFlags)
+
+include(DunePolicy)
+dune_define_policy(DP_DEFAULT_INCLUDE_DIRS dune-common 2.12
+  "OLD behavior: Use global include_directories. NEW behavior: Include directories must be set on a module library target and are not set globally anymore.")
+
+dune_define_policy(DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM dune-common 2.12
+  "OLD behavior: All found dune modules listed in dune.module's 'Depends:' or 'Suggested:' are required in downstream projects. NEW behavior: Only dependencies listed in 'Depends:' and manually marked module dependencies are required.")
+
+
+function(dune_mark_module_as_required_dependency)
+  cmake_parse_arguments(ARG "" "MODULE" "" ${ARGN})
+  # does nothing when choosing the old behavior
+  # to mimic the old behavior with the policy set to NEW, call this macro
+  # for all found modules in the <module_name>_SUGGESTS list
+  dune_policy(GET DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM _require_module_policy)
+  if (_require_module_policy STREQUAL "OLD")
+    return()
+  endif()
+
+  # This shouldn't be called for modules that are not found
+  if(NOT ${ARG_MODULE}_FOUND)
+    message(FATAL_ERROR "Module ${ARG_MODULE} not found. Cannot force it as a required dependency of ${ProjectName}.")
+  endif()
+
+  # Check if the module is already required
+  foreach(_modandver IN LISTS ${ProjectName}_DEPENDS)
+    split_module_version(${_modandver} _mod_name _mod_ver)
+    if(${_mod_name} STREQUAL ${ARG_MODULE})
+      message(AUTHOR_WARNING "Module ${ARG_MODULE} is already a required dependency of ${ProjectName}.")
+      return()
+    endif()
+  endforeach()
+
+  # Check if the module is suggested, and if yes, make it required
+  foreach(_modandver IN LISTS ${ProjectName}_SUGGESTS)
+    split_module_version(${_modandver} _mod_name _mod_ver)
+    if(${_mod_name} STREQUAL ${ARG_MODULE})
+      list(APPEND ${ProjectName}_DEPENDS_FORCED ${_modandver})
+      set(${ProjectName}_DEPENDS_FORCED ${${ProjectName}_DEPENDS_FORCED} PARENT_SCOPE)
+      return()
+    endif()
+  endforeach()
+  message(FATAL_ERROR "Trying to force dependency on module ${ARG_MODULE} which is not a suggested dependency of ${ProjectName}: ${${ProjectName}_SUGGESTS}")
+endfunction()
 
 
 # Macro that should be called near the beginning of the top level CMakeLists.txt.
@@ -114,39 +179,6 @@ macro(dune_project)
     find_dune_package(${_mod_name} VERSION ${_mod_ver} REQUIRED)
   endforeach()
 
-  if(DUNE_COMMON_VERSION VERSION_LESS 2.12)
-    # this is only needed if config files of upstream modules were generated with dune-common < 2.10
-    # this behavior will be unsupported when dune-common == 2.12
-
-    set_property(GLOBAL PROPERTY DUNE_DISABLE_ALL_DEPENDENCIES_DEPRECATION_WARNING ON)
-    # creates dependency tree, finds all the modules and creates ALL_DEPENDENCIES variable
-    dune_create_dependency_tree(SKIP_CMAKE_PATH_SETUP)
-
-    # check if all the dependencies in the tree were indeed added into DUNE_FOUND_DEPENDENCIES
-    set(_legacy_order OFF)
-    foreach(_mod IN LISTS ALL_DEPENDENCIES)
-      list(FIND DUNE_FOUND_DEPENDENCIES ${_mod} _mod_in_dune_deps)
-      if (${_mod}_FOUND AND (${_mod_in_dune_deps} EQUAL -1))
-        set(_legacy_order ON)
-      endif()
-    endforeach()
-
-    # at least one found upstream module was not included into DUNE_FOUND_DEPENDENCIES (config file pre 2.10)
-    # so we reconstruct it from ALL_DEPENDENCIES
-    if (_legacy_order)
-      set(DUNE_FOUND_DEPENDENCIES ${ALL_DEPENDENCIES})
-      # remove not found modules
-      foreach(_mod IN LISTS ALL_DEPENDENCIES)
-        if (NOT ${_mod}_FOUND)
-          list(REMOVE_ITEM DUNE_FOUND_DEPENDENCIES ${_mod})
-        endif()
-      endforeach()
-    endif()
-    set_property(GLOBAL PROPERTY DUNE_DISABLE_ALL_DEPENDENCIES_DEPRECATION_WARNING OFF)
-  else()
-    message(AUTHOR_WARNING "This needs to be removed!")
-  endif()
-
   # assert the project names matches
   if(NOT (ProjectName STREQUAL PROJECT_NAME))
     message(FATAL_ERROR "Module name from dune.module does not match the name given in CMakeLists.txt.")
@@ -163,12 +195,14 @@ macro(dune_project)
   include(CheckCXXFeatures)
 
   # set include path and link path for the current project.
-  include_directories("${PROJECT_BINARY_DIR}")
-  include_directories("${PROJECT_SOURCE_DIR}")
-  include_directories("${CMAKE_CURRENT_BINARY_DIR}")
-  include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-  include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
-  include_directories("${CMAKE_CURRENT_BINARY_DIR}/include_private")
+  dune_policy(GET DP_DEFAULT_INCLUDE_DIRS _include_policy)
+  if(_include_policy STREQUAL "OLD")
+    include_directories("${PROJECT_SOURCE_DIR}")
+    include_directories("${PROJECT_BINARY_DIR}")
+    include_directories("${PROJECT_BINARY_DIR}/include")
+    include_directories("${PROJECT_BINARY_DIR}/include_private")
+  endif()
+  unset(_include_policy)
   add_definitions(-DHAVE_CONFIG_H)
 
   # Create custom target for building the documentation
@@ -245,18 +279,20 @@ macro(finalize_dune_project)
   get_property(${ProjectName}_INTERFACE_LIBRARIES GLOBAL PROPERTY ${ProjectName}_INTERFACE_LIBRARIES)
 
   if(${ProjectName} STREQUAL "dune-common")
-    set(DUNE_CUSTOM_PKG_CONFIG_SECTION
-"set_and_check(@DUNE_MOD_NAME@_SCRIPT_DIR \"@PACKAGE_SCRIPT_DIR@\")
-set_and_check(DOXYSTYLE_FILE \"@PACKAGE_DOXYSTYLE_DIR@/Doxystyle\")
-set_and_check(DOXYGENMACROS_FILE \"@PACKAGE_DOXYSTYLE_DIR@/doxygen-macros\")")
+  string(JOIN "\n" DUNE_CUSTOM_PKG_CONFIG_SECTION ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
+    [[set_and_check(@DUNE_MOD_NAME@_SCRIPT_DIR "@PACKAGE_SCRIPT_DIR@")]]
+    [[set_and_check(DOXYSTYLE_FILE "@PACKAGE_DOXYSTYLE_DIR@/Doxystyle")]]
+    [[set_and_check(DOXYGENMACROS_FILE "@PACKAGE_DOXYSTYLE_DIR@/doxygen-macros")]]
+  )
+
 endif()
 
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmake/pkg/${ProjectName}-config.cmake.in)
     if(NOT (${ProjectName} STREQUAL "dune-common"))
       # set up dune dependencies
       set(DUNE_DEPENDENCY_HEADER
-"macro(find_and_check_dune_dependency module version)
-  find_dependency(\${module})
+"macro(find_and_check_dune_dependency module version hints)
+  find_dependency(\${module} HINTS \${hints})
   list(PREPEND CMAKE_MODULE_PATH \"\${dune-common_MODULE_PATH}\")
   include(DuneModuleDependencies)
   list(POP_FRONT CMAKE_MODULE_PATH)
@@ -265,14 +301,27 @@ endif()
   endif()
 endmacro()
 ")
-      foreach(_mod IN LISTS ${ProjectName}_SUGGESTS ${ProjectName}_DEPENDS)
-        split_module_version(${_mod} _mod_name _mod_ver)
-        if(${_mod_name}_FOUND)
-          set(DUNE_DEPENDENCY_HEADER
-"${DUNE_DEPENDENCY_HEADER}
-find_and_check_dune_dependency(${_mod_name} \"${_mod_ver}\")")
-        endif()
-      endforeach()
+      dune_policy(GET DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM _require_module_policy)
+      if (_require_module_policy STREQUAL "NEW")
+        foreach(_mod IN LISTS ${ProjectName}_DEPENDS ${ProjectName}_DEPENDS_FORCED)
+          split_module_version(${_mod} _mod_name _mod_ver)
+          if(${_mod_name}_FOUND)
+            string(JOIN "\n" DUNE_DEPENDENCY_HEADER ${DUNE_DEPENDENCY_HEADER}
+              "find_and_check_dune_dependency(${_mod_name} \"${_mod_ver}\" \"@${_mod_name}_PATH_HINTS@\")"
+            )
+          endif()
+        endforeach()
+      else()
+        # old behavior: all found modules are automatically required downstream
+        foreach(_mod IN LISTS ${ProjectName}_SUGGESTS ${ProjectName}_DEPENDS)
+          split_module_version(${_mod} _mod_name _mod_ver)
+          if(${_mod_name}_FOUND)
+          string(JOIN "\n" DUNE_DEPENDENCY_HEADER ${DUNE_DEPENDENCY_HEADER}
+            "find_and_check_dune_dependency(${_mod_name} \"${_mod_ver}\" \"\")"
+          )
+          endif()
+        endforeach()
+      endif()
     endif()
     dune_module_to_uppercase(_upcase_module "${ProjectName}")
     # Generate a standard cmake package configuration file
@@ -319,7 +368,7 @@ set(HAVE_${_upcase_module} TRUE)
 # Lines that are set by the CMake build system via the variable DUNE_CUSTOM_PKG_CONFIG_SECTION
 ${DUNE_CUSTOM_PKG_CONFIG_SECTION}
 
-# If this file is found in a super build that includes ${ProjectName}, the 
+# If this file is found in a super build that includes ${ProjectName}, the
 # `${ProjectName}-targets.cmake`-file has not yet been generated. This variable
 # determines whether the configuration of ${ProjectName} has been completed.
 get_property(${ProjectName}_IN_CONFIG_MODE GLOBAL PROPERTY ${ProjectName}_LIBRARIES DEFINED)
@@ -391,6 +440,16 @@ macro(set_and_check _var _file)
   endforeach(_f)
 endmacro()")
   set(MODULE_INSTALLED OFF)
+
+  # Only for the build tree: set path hints for required modules to make it easier to find them in the build tree
+  # It's important to only the path hint variable here _after_ the installed config file is already configured
+  # (see configure call above). This way, we make sure that only the build tree configs contains hints.
+  foreach(_mod IN LISTS ${ProjectName}_DEPENDS ${ProjectName}_DEPENDS_FORCED)
+    split_module_version(${_mod} _mod_name _mod_ver)
+    if(${_mod_name}_FOUND)
+      set(${_mod_name}_PATH_HINTS "${${_mod_name}_DIR}")
+    endif()
+  endforeach()
 
   configure_file(
     ${CONFIG_SOURCE_FILE}
@@ -525,7 +584,9 @@ endif()")
   endif()
 
   # install pkg-config files
-  create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
+  if(EXISTS ${PROJECT_SOURCE_DIR}/${ProjectName}.pc.in)
+    create_and_install_pkconfig(${DUNE_INSTALL_LIBDIR})
+  endif()
 
   ###########################
   ### HEADER CONFIG FILEs ###
@@ -565,7 +626,7 @@ endif()")
   configure_file(${CMAKE_CURRENT_BINARY_DIR}/config_collected.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
   if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
-    feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES)
+    feature_summary(WHAT ALL)
   endif()
 
 endmacro(finalize_dune_project)

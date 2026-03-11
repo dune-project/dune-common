@@ -124,9 +124,8 @@ function(dune_add_pybind11_submodule)
   target_compile_definitions(${PYBIND11_SUBMODULE_NAME} PRIVATE ${PYBIND11_SUBMODULE_COMPILE_DEFINITIONS})
   # add all package flags
   dune_target_enable_all_packages(${PYBIND11_SUBMODULE_NAME})
-
-  # minimal c++ standard required
-  target_compile_features(${PYBIND11_SUBMODULE_NAME} PUBLIC cxx_std_17)
+  # Link against Dune::Common
+  target_link_libraries(${PYBIND11_SUBMODULE_NAME} PRIVATE Dune::Common)
 
   # link object file to parent module
   target_link_libraries(${PYBIND11_SUBMODULE_MODULE} PUBLIC ${PYBIND11_SUBMODULE_NAME})

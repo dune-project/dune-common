@@ -79,12 +79,23 @@ namespace Dune
       /*
        * Everybody else gets the standard treatment.
        */
+#if defined(_MSC_VER)
+      pointer ret = static_cast<pointer>(_aligned_malloc(alignment, size));
+#else
       pointer ret = static_cast<pointer>(std::aligned_alloc(alignment, size));
+#endif
       if (!ret)
         throw std::bad_alloc();
 
       return ret;
     }
+
+#if defined(_MSC_VER)
+    void deallocate(pointer p, [[maybe_unused]] size_type n)
+    {
+        _aligned_free(p);
+    }
+#endif
   };
 
 }

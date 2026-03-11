@@ -275,6 +275,33 @@ int testRandomAccessIterator(Iter begin, Iter end, Opt opt){
     }
   }
 
+  for(int i=0; i < no-1; i++)
+  {
+    Iter iter1 = begin+i;
+    Iter iter2 = begin+i+1;
+
+    if (!(iter1 < iter2) || (iter1 < iter1)) {
+      std::cerr<< "i<j and !(i<i) should hold, where i,j=i+1 are iterators!"<<std::endl;
+      ret++;
+    }
+    if (!(iter1 <= iter2) || !(iter1 <= iter1)) {
+      std::cerr<< "i<=j and i<=i should hold, where i,j=i+1 are iterators!"<<std::endl;
+      ret++;
+    }
+    if (!(iter2 > iter1) || (iter1 > iter1)) {
+      std::cerr<< "j>i and !(i>i) should hold, where i,j=i+1 are iterators!"<<std::endl;
+      ret++;
+    }
+    if (!(iter2 >= iter1) || !(iter1 >= iter1)) {
+      std::cerr<< "j>=i and i>=i should hold, where i,j=i+1 are iterators!"<<std::endl;
+      ret++;
+    }
+    if (!(iter1 == iter1) || (iter1 != iter1)) {
+      std::cerr<< "i==i and !(i!=i) should hold, where i is an iterator!"<<std::endl;
+      ret++;
+    }
+  }
+
   return ret;
 }
 
@@ -369,10 +396,11 @@ int testIterator(Container& c, Opt& opt)
 template<class Iter, class Opt>
 void testAssignment(Iter begin, Iter end, Opt&)
 {
-  //std::cout << "Assignment: ";
+  if (begin == end)
+    return;
+  typename std::iterator_traits<Iter>::value_type tmp = *begin;
   for(; begin!=end; begin++)
-    *begin=typename std::iterator_traits<Iter>::value_type();
-  //std::cout<<" Done."<< std::endl;
+    *begin=tmp;
 }
 
 template<class Iter, class Opt>

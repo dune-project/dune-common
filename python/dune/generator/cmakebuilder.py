@@ -10,6 +10,7 @@ import shlex
 import jinja2
 import json
 import copy
+from pathlib import Path
 
 import dune
 
@@ -31,6 +32,30 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 cxxFlags = None
 noDepCheck = False
+
+moduleLogFile = None
+def setModuleLog( fileName=None, procs=4 ):
+    global moduleLogFile
+    # if this is the first call then `moduleLogFile` is still None and then
+    # test the environment variable
+    #       DUNE_LOGMODULES: if greater zero then log module names using the main script name
+    # if the environment variable is not set (or <=0) then use the fileName if provided
+    if moduleLogFile is None: # check DUNE_LOGMODULES
+        import __main__ as main
+        procs_ = int( os.environ.get('DUNE_LOGMODULES', '-1') )
+        if procs_ > 1 and fileName is None:
+            procs = procs_
+            try:
+                fileName = Path(main.__file__).name + ".jitmodules"
+            except AttributeError: # this can happen with notebooks
+                fileName = None
+    if not fileName is None: # if fileName is set rebuild all listed if file exists
+        from dune.generator.make import makeGenerated
+        moduleLogFile = fileName
+        if Path(fileName).is_file():
+            makeGenerated([], fileName=fileName, threads=procs, force=False)
+            open(fileName,"w").close() # clear file
+    return moduleLogFile
 
 def deprecationMessage(dune_py_dir):
     print(f"Using a pre-existing old style dune-py with a newer version of dune-common. Remove dune-py folder `{dune_py_dir}` and re-run Python script!")
@@ -400,15 +425,25 @@ class Builder:
         if pythonName is None:
             pythonName = moduleName
 
-        # check whether module is already compiled and build it if necessary
-        # (only try to build module on rank 0!)
+        # only try to build module on rank 0!, setModuleLog also calls build
+        # which sets some barriers
+        moduleFile = setModuleLog()
+
+        # only build on rank 0
         # TODO replace if rank with something better and remove barrier further down
+        # this will not work if different processes use different dune-py directories
         if comm.rank == 0:
+            # check whether module is already compiled and build it if necessary
             module = sys.modules.get("dune.generated." + moduleName)
+
             if module is None:
+                if moduleFile:
+                    with open( moduleFile, 'a' ) as file:
+                        file.write(moduleName + '\n')
+                # build module if it could not be loaded before
                 self._buildModule( moduleName, source, pythonName, extraCMake )
 
-        ## TODO remove barrier here
+        ## TODO remove barrier here once building is based on file locks
         comm.barrier()
 
         logger.debug("Loading " + moduleName)
@@ -788,9 +823,17 @@ class MakefileBuilder(Builder):
             exit_code = make.returncode
 
         if self.savedOutput is not None:
-            self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
-            self.savedOutput[0].write(str(stdout.decode()) + "\n")
-            self.savedOutput[1].write(str(stderr.decode()) + "\n")
+            # only print return code if it's not 0
+            if exit_code != 0:
+                self.savedOutput[0].write('make return:' + str(exit_code) + "\n")
+            stdoutput = str(stdout.decode())
+            # only print output if it was not 'Nothing to be done for ...'
+            if not "Nothing to be done" in stdoutput:
+                self.savedOutput[0].write(stdoutput + "\n")
+            stderror = str(stderr.decode())
+            # only print error output if it's not empty
+            if stderror != "":
+                self.savedOutput[1].write(str(stderr.decode()) + "\n")
 
         # check return code
         if exit_code > 0:

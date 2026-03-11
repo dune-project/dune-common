@@ -18,6 +18,8 @@
 #include <initializer_list>
 
 #include <dune/common/hash.hh>
+#include <dune/common/std/algorithm.hh>
+#include <dune/common/std/compare.hh>
 
 #ifdef CHECK_RESERVEDVECTOR
 #define CHECKSIZE(X) assert(X)
@@ -139,38 +141,10 @@ namespace Dune
       return true;
     }
 
-    //! Compares the values in the vector `this` with `that` for not equality
-    constexpr bool operator!= (const ReservedVector& that) const noexcept
-    {
-      return !(*this == that);
-    }
-
     //! Lexicographically compares the values in the vector `this` with `that`
-    constexpr bool operator< (const ReservedVector& that) const noexcept
+    constexpr auto operator<=> (const ReservedVector& that) const noexcept
     {
-      for (size_type i=0; i<std::min(size(),that.size()); ++i) {
-        if (storage_[i] < that.storage_[i]) return true;
-        if (that.storage_[i] < storage_[i]) return false;
-      }
-      return size() < that.size();
-    }
-
-    //! Lexicographically compares the values in the vector `this` with `that`
-    constexpr bool operator> (const ReservedVector& that) const noexcept
-    {
-      return that < *this;
-    }
-
-    //! Lexicographically compares the values in the vector `this` with `that`
-    constexpr bool operator<= (const ReservedVector& that) const noexcept
-    {
-      return !(*this > that);
-    }
-
-    //! Lexicographically compares the values in the vector `this` with `that`
-    constexpr bool operator>= (const ReservedVector& that) const noexcept
-    {
-      return !(*this < that);
+      return Std::lexicographical_compare_three_way(begin(), end(), that.begin(), that.end());
     }
 
     /** @} */
@@ -188,6 +162,58 @@ namespace Dune
     {
       CHECKSIZE(s<=n);
       size_ = s;
+    }
+
+    //! Inserts a copy of value before pos.
+    constexpr iterator insert(const_iterator pos, const T& value)
+    {
+      CHECKSIZE(size_<n);
+      iterator it = begin() + std::distance(cbegin(), pos);
+      std::move_backward(it, end(), end()+1);
+      *it = value;
+      ++size_;
+      return it;
+    }
+
+    //! Inserts value before pos, possibly using move semantics.
+    constexpr iterator insert(const_iterator pos, T&& value)
+    {
+      CHECKSIZE(size_<n);
+      iterator it = begin() + std::distance(cbegin(), pos);
+      std::move_backward(it, end(), end()+1);
+      *it = std::move(value);
+      ++size_;
+      return it;
+    }
+
+    //! Inserts count copies of the value before pos.
+    constexpr iterator insert(const_iterator pos, size_type count, const T& value)
+    {
+      CHECKSIZE(size_+count<=n);
+      iterator it = begin() + std::distance(cbegin(), pos);
+      std::move_backward(it, end(), end()+count);
+      std::fill(it, it+count, value);
+      size_+=count;
+      return it;
+    }
+
+    //! Inserts elements from range [first, last) before pos.
+    template <std::forward_iterator InputIt>
+    constexpr iterator insert(const_iterator pos, InputIt first, InputIt last)
+    {
+      size_type count = std::distance(first,last);
+      CHECKSIZE(size_+count<=n);
+      iterator it = begin() + std::distance(cbegin(), pos);
+      std::move_backward(it, end(), end()+count);
+      std::copy(first, last, it);
+      size_+=count;
+      return it;
+    }
+
+    //! Inserts elements from initializer list ilist before pos.
+    constexpr iterator insert(const_iterator pos, std::initializer_list<T> ilist)
+    {
+      return insert(pos, ilist.begin(), ilist.end());
     }
 
     //! Appends an element to the end of a vector, up to the maximum size n, O(1) time.

@@ -12,11 +12,16 @@
 #include <dune/common/typeutilities.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/indices.hh>
+#include <dune/common/integersequence.hh>
 #include <dune/common/rangeutilities.hh>
 
 
 
 namespace Dune {
+
+/** \brief Namespace with loops, conditionals and other constructs that can
+ *  handle both compile-time and run-time conditions
+ */
 namespace Hybrid {
 
 namespace Impl {
@@ -89,7 +94,7 @@ namespace Impl {
   template<class T, T... t, class Index>
   constexpr decltype(auto) elementAt(std::integer_sequence<T, t...> c, Index, PriorityTag<1>)
   {
-    return Dune::integerSequenceEntry(c, std::integral_constant<std::size_t, Index::value>());
+    return Dune::get<Index::value>(c);
   }
 
   template<class Container, class Index>
@@ -393,7 +398,7 @@ namespace Impl {
  * integral constants. That's helpful to maintain the hybrid nature of a variable
  * after a transformation. For example, applying an operator + between two integral
  * constants will promote the result to its underlying type (e.g. std::size_t).
- * That's inconventient since the value of the result is not encoded in the type
+ * That's inconvenient since the value of the result is not encoded in the type
  * anymore, thus, losing its hybrid attribute (maybe still being constexpr).
  *
  * \code{.cpp}
@@ -570,23 +575,6 @@ inline constexpr auto minus = hybridFunctor(std::minus<>{});
  * \endcode
  */
 inline constexpr auto equal_to = hybridFunctor(std::equal_to<>{});
-
-
-/**
- * \brief Equality comparison
- *
- * \ingroup HybridUtilities
- *
- * If both types have a static member value, the result of comparing
- * these is returned as std::integral_constant<bool, *>. Otherwise
- * the result of a runtime comparison of t1 and t2 is directly returned.
- *
- * \deprecated
- */
-template<class T1, class T2>
-[[deprecated("Use Hybrid::equal_to instead!")]] constexpr auto equals(T1&& t1,  T2&& t2){
-  return equal_to(std::forward<T1>(t1), std::forward<T2>(t2));
-}
 
 
 namespace Impl {

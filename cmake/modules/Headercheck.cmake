@@ -87,6 +87,7 @@ macro(finalize_headercheck)
       add_library(headercheck_${targname} STATIC EXCLUDE_FROM_ALL
         ${CMAKE_BINARY_DIR}/headercheck/${rel}.cc)
       add_dependencies(headercheck headercheck_${targname})
+      dune_default_include_directories(headercheck_${targname} PUBLIC)
 
       #add PKG_ALL_FLAGS and the directory where the header is located
       set_property(TARGET headercheck_${targname}

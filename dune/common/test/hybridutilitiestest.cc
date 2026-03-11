@@ -261,5 +261,33 @@ int main()
   constexpr auto numberTupleConstexpr = Dune::makeTupleVector(0.25, 2, 3);
   static_assert(sum(numberTupleConstexpr) == 5.25, "Wrong compile time sum!");
 
+  { // CTAD tests
+
+    auto tv0 = Dune::TupleVector{};
+
+    // test construction with values
+    static_assert(std::is_same_v<decltype(tv0),Dune::TupleVector<>>);
+    auto tv1 = Dune::TupleVector{1,2.0,3.0f,4u};
+    static_assert(std::is_same_v<decltype(tv1),Dune::TupleVector<int,double,float,unsigned int>>);
+    auto tv2 = Dune::TupleVector{std::tuple{1,2.0,3.0f,4u}};
+    static_assert(std::is_same_v<decltype(tv2),Dune::TupleVector<int,double,float,unsigned int>>);
+    auto tv3 = Dune::TupleVector{std::pair{1,2.0}};
+    static_assert(std::is_same_v<decltype(tv3),Dune::TupleVector<int,double>>);
+
+    // test construction with l-values
+    Dune::FieldVector<double,2> arg1{};
+    std::vector<float> arg2{};
+    auto tv4 = Dune::TupleVector{arg1,arg2};
+    static_assert(std::is_same_v<decltype(tv4),Dune::TupleVector<Dune::FieldVector<double,2>,std::vector<float>>>);
+
+    // test construction with allocators
+    auto tv5 = Dune::TupleVector{std::allocator_arg_t{}, std::allocator<float>{}, arg1, arg2};
+    static_assert(std::is_same_v<decltype(tv4),decltype(tv5)>);
+    auto tv6 = Dune::TupleVector{std::allocator_arg_t{}, std::allocator<float>{}, std::tuple{arg1, arg2}};
+    static_assert(std::is_same_v<decltype(tv4),decltype(tv6)>);
+    auto tv7 = Dune::TupleVector{std::allocator_arg_t{}, std::allocator<float>{}, std::pair{arg1, arg2}};
+    static_assert(std::is_same_v<decltype(tv4),decltype(tv7)>);
+  }
+
   return test.exit();
 }

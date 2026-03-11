@@ -120,5 +120,19 @@ int main()
   CHECK((one ^ one) == zero);
   CHECK((one ^ zero) == one);
 
+  CHECK(bit_width(ShortInteger{0u}) == 0);
+  CHECK(bit_width(BigInteger{0u}) == 0);
+
+  for (unsigned int i = 1; i != 100; ++i) {
+    CHECK(bit_width(ShortInteger{i}) == std::bit_width(i));
+    CHECK(bit_width(BigInteger{i}) == std::bit_width(i));
+
+    CHECK(countl_zero(ShortInteger{i}) == std::numeric_limits<ShortInteger>::digits - std::bit_width(i));
+    CHECK(countl_zero(BigInteger{i}) == std::numeric_limits<BigInteger>::digits - std::bit_width(i));
+  }
+
+  CHECK(bit_width(std::numeric_limits<ShortInteger>::max()) == 16);
+  CHECK(bit_width(std::numeric_limits<BigInteger>::max()) == 128);
+
   return pass ? 0 : 1;
 }

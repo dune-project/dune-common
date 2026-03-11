@@ -90,7 +90,7 @@ class SimpleGenerator(object):
                            '< ' + bc + baseHolder + '>' +\
                            '( module, "cls' + str(i) + '"' +\
                            ', Dune::Python::GenerateTypeName("' + bc + '")' +\
-                           ', Dune::Python::IncludeFiles{}' +\
+                           ', Dune::Python::IncludeFiles{' + ','.join(['"' + i + '"' for i in includes]) + '}' +\
                            ");\n"
             options.append(bc)
 

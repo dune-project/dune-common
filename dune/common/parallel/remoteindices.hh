@@ -197,7 +197,7 @@ namespace Dune {
 
     template<class G, class T1, class T2>
     friend void fillIndexSetHoles(const G& graph, Dune::OwnerOverlapCopyCommunication<T1,T2>& oocomm);
-    friend std::ostream& operator<<<>(std::ostream&, const RemoteIndices<T>&);
+    friend std::ostream& operator<< <>(std::ostream&, const RemoteIndices<T>&);
 
   public:
 

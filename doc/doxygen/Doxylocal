@@ -10,3 +10,5 @@ INPUT                 += @srcdir@/mainpage.txt \
 EXCLUDE               += @top_srcdir@/dune/common/simd/test.cc \
                          @top_srcdir@/dune/common/debugallocator.cc
 
+# Disable various implementation namespaces particular to this module
+EXCLUDE_SYMBOLS       += AlignedNumberImpl MathImpl SimdImpl fvmeta

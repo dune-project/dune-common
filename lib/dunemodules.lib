@@ -99,6 +99,12 @@ parse_control() {
       module_inst="yes"
     fi
   fi
+  # Mark modules as installed if there is no CMakeLists.txt in path
+  # Not that path is where the dune.module file is located.
+  if test "$module_inst" = "no" && ! test -e "$path/CMakeLists.txt"; then
+    module_inst="yes"
+  fi
+
   # avoid multiple definition of the same module
   if eval test "x\$HAVE_$module" != "x"; then
     # make sure we don't stumble over the same module twice

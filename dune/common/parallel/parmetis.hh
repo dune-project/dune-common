@@ -6,8 +6,10 @@
 #define DUNE_PARMETIS_HH
 
 /**
- * \file This include file is intended to be used instead of the direct include of `parmetis.h`. It
- * provides the right order of necessary pre-includes, e.g. when ptscotch-parmetis is found, and introduces
+ * \file
+ * \brief This include file is intended to be used instead of the direct include of `parmetis.h`.
+ *
+ * It provides the right order of necessary pre-includes, e.g. when ptscotch-parmetis is found, and introduces
  * version-/distribution-independent type definitions for floating-point arguments (`real_t`) and
  * integer arguments (`idx_t`) in the namespace `Dune::ParMetis`.
  **/

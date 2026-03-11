@@ -16,6 +16,7 @@
 #include <dune/common/gmpfield.hh>
 #include <dune/common/quadmath.hh>
 #include <dune/common/typetraits.hh>
+#include <dune/common/simd/loop.hh>
 
 struct FVectorTestException : Dune::Exception {};
 
@@ -175,6 +176,7 @@ struct ScalarOperatorTest
     // testft has to initializable with an int
     testft a = 1;
     testft c = 2;
+    Dune::LoopSIMD<ft, 4> d = ft(2);
     FieldVector<ft,1> v(2);
     FieldVector<ft,1> w(2);
     [[maybe_unused]] bool b;
@@ -226,6 +228,12 @@ struct ScalarOperatorTest
     b = (v != a);
     b = (a == v);
     b = (a != v);
+
+    // test scalar operations with SIMD
+    auto x = a * d;
+    x = a / d;
+    x = a + d;
+    x = a - d;
 
   }
 };

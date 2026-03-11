@@ -10,6 +10,7 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/diagonalmatrix.hh>
 #include <dune/common/classname.hh>
+#include <dune/common/matrixconcepts.hh>
 #include <dune/common/test/testsuite.hh>
 
 template<class A>
@@ -48,6 +49,8 @@ void checkTranspose(Dune::TestSuite& suite, A a)
     auto at2 = transposedView(a);
     at = at2;
     at = transposedView(a);
+
+    static_assert(Dune::Impl::IsDenseMatrix<A>::value == Dune::Impl::IsDenseMatrix<decltype(at)>::value);
   }
 }
 

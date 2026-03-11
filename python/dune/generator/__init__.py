@@ -3,6 +3,7 @@
 
 import os, sys
 import logging
+from pathlib import Path
 
 import dune.common.module as moduleInfo
 from .exceptions import CompileError, ConfigurationError
@@ -65,6 +66,11 @@ def reset():
 
 def path(f):
     return os.path.dirname(os.path.realpath(f))+"/"
+
+def setModuleLog( scriptName, procs ):
+    fileName =  Path(scriptName).stem + ".modules"
+    logger.debug(f"Storing list of generated modules in {fileName} - if file exists modules listed are build")
+    builderModule.setModuleLog( fileName, procs )
 
 class Constructor(object):
     def __init__(self, args, body=None, extra=None):

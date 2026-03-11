@@ -121,7 +121,7 @@ namespace Dune
    * \returns Result of calling f with unpacked integers.
    */
   template<class F, class I, I... i>
-  decltype(auto) constexpr unpackIntegerSequence(F&& f, std::integer_sequence<I, i...> sequence)
+  decltype(auto) constexpr unpackIntegerSequence(F&& f, [[maybe_unused]] std::integer_sequence<I, i...> sequence)
   {
     return f(std::integral_constant<I, i>()...);
   }
@@ -170,7 +170,7 @@ namespace Dune
      * `1_ic -> std::integral_constant<std::size_t,1>`
      **/
     template <char... digits>
-    constexpr auto operator"" _ic()
+    constexpr auto operator""_ic()
     {
       return std::integral_constant<std::size_t, Impl::chars2number<std::size_t,digits...>()>{};
     }
@@ -182,7 +182,7 @@ namespace Dune
      * `1_uc -> std::integral_constant<unsigned,1>`
      **/
     template <char... digits>
-    constexpr auto operator"" _uc()
+    constexpr auto operator""_uc()
     {
       return std::integral_constant<unsigned, Impl::chars2number<unsigned,digits...>()>{};
     }
@@ -194,7 +194,7 @@ namespace Dune
      * `1_sc -> std::integral_constant<int,1>`
      **/
     template <char... digits>
-    constexpr auto operator"" _sc()
+    constexpr auto operator""_sc()
     {
       return std::integral_constant<int, Impl::chars2number<int,digits...>()>{};
     }

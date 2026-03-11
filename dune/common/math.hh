@@ -87,24 +87,6 @@ namespace Dune
     return result;
   }
 
-  //! Calculates the factorial of m at compile time
-  //! \deprecated Will be removed after release 2.9
-  template <int m>
-  struct Factorial
-  {
-    //! factorial stores m!
-    static constexpr int factorial = m * Factorial<m-1>::factorial;
-  };
-
-  //! end of recursion of factorial via specialization
-  template <>
-  struct [[deprecated("Use function factorial instead! Will be removed after Dune 2.9")]] Factorial<0>
-  {
-    // 0! = 1
-    static constexpr int factorial = 1;
-  };
-
-
   //! calculate the factorial of n as a constexpr
   // T has to be an integral type
   template<class T>
@@ -161,7 +143,7 @@ namespace Dune
   //! compute conjugate complex of x
   // conjugate complex does nothing for non-complex types
   template<class K>
-  inline K conjugateComplex (const K& x)
+  constexpr K conjugateComplex (const K& x)
   {
     return x;
   }
@@ -169,7 +151,7 @@ namespace Dune
 #ifndef DOXYGEN
   // specialization for complex
   template<class K>
-  inline std::complex<K> conjugateComplex (const std::complex<K>& c)
+  constexpr std::complex<K> conjugateComplex (const std::complex<K>& c)
   {
     return std::complex<K>(c.real(),-c.imag());
   }
@@ -177,7 +159,7 @@ namespace Dune
 
   //! Return the sign of the value
   template <class T>
-  int sign(const T& val)
+  constexpr int sign(const T& val)
   {
     return (val < 0 ? -1 : 1);
   }

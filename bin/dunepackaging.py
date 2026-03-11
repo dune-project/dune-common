@@ -2,17 +2,20 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
+import sys, os, io, getopt, re, shutil
 try:
     import skbuild
 except ImportError:
     print("skbuild needed for packaging, run 'pip install scikit-build'")
-    import sys
+    sys.exit(0)
+try:
+    import requests
+except ImportError:
+    print("'requests' package needed, run 'pip install requests'")
     sys.exit(0)
 
-import sys, os, io, getopt, re, shutil
 import importlib, subprocess
 import email.utils
-import pkg_resources
 from datetime import date
 
 # make sure that 'metadata' is taken from the current `dune-common` folder
@@ -26,20 +29,20 @@ sys.path.append(mods)
 pythonpath  = mods + ":" + os.environ.get('PYTHONPATH','.')
 os.environ['PYTHONPATH'] = pythonpath
 try:
-    from packagemetadata import metaData
+    from packagemetadata import metaData, Data
 except ImportError:
     # not calling from within a dune-common source module so use installed
     # version after all
-    from dune.packagemetadata import metaData
+    from dune.packagemetadata import metaData, Data
 
 def main(argv):
 
     repositories = ["gitlab", "testpypi", "pypi"]
     def usage():
-        return 'usage: dunepackaging.py [--upload <'+"|".join(repositories)+'> | -c | --clean | --version <version> | --onlysdist | --bdist_conda]'
+        return 'usage: dunepackaging.py [--upload <'+"|".join(repositories)+'> | -c | --clean | --version <version> | --onlysdist | --bdist_conda | --getversion]'
 
     try:
-        opts, args = getopt.getopt(argv, "hc", ["upload=", "clean", "version=", "onlysdist", "bdist_conda"])
+        opts, args = getopt.getopt(argv, "hc", ["upload=", "clean", "version=", "onlysdist", "bdist_conda", "getversion"])
     except getopt.GetoptError:
         print(usage())
         sys.exit(2)
@@ -70,6 +73,9 @@ def main(argv):
         elif opt in ("--bdist_conda"):
             onlysdist  = True
             bdistconda = True
+        elif opt in ("--getversion"):
+            print(Data().version)
+            sys.exit(0)
 
     # Remove generated files
     def removeFiles():
@@ -154,9 +160,8 @@ def main(argv):
         subprocess.call(remove)
 
         # check if we have scikit-build
-        import pkg_resources
-        installed = {pkg.key for pkg in pkg_resources.working_set}
-        if not 'scikit-build' in installed:
+        import importlib
+        if importlib.util.find_spec("skbuild") is None:
             print("Please install the pip package 'scikit-build' to build the source distribution.")
             sys.exit(2)
 
@@ -184,9 +189,8 @@ def main(argv):
 
         if not onlysdist:
             # check if we have twine
-            import pkg_resources
-            installed = {pkg.key for pkg in pkg_resources.working_set}
-            if not 'twine' in installed:
+            import importlib
+            if importlib.util.find_spec("twine") is None:
                 print("Please install the pip package 'twine' to upload the source distribution.")
                 sys.exit(2)
 

@@ -3,7 +3,159 @@ SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE
 SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 -->
 
-# Master (will become release 2.11)
+# Master (will become release 2.12)
+
+## C++: Changelog
+
+- Add five variants of the method `insert(pos, ...)` to `ReservedVector`.
+  These are exactly the methods known from `std::vector`.
+
+
+## Build system: Changelog
+
+- The default value for the `DP_DEFAULT_INCLUDE_DIRS` policy is now `NEW`
+  such that (unless the policy is manually set to `OLD`) the include
+  directories must be set manually, e.g., using `dune_default_include_directories`.
+  This in particular also applies to targets that make use of `dune_target_enable_all_packages`.
+
+## Deprecation and Removals
+
+- Remove the deprecated method `HybridMultiIndex::element`. From now on,
+  please use `HybridMultiIndex::operator[]` instead.
+
+
+# Release 2.11
+
+## Dependencies
+In order to build the DUNE core modules you need at least the following software:
+
+- C++ compilers LLVM Clang >= 13 or GCC g++ >= 10, with standard library LLVM
+  libc++ >= 13 or GNU libstdc++ >= 10.
+- CMake >= 3.16
+- pkg-config to find other optional dependencies
+- The Python bindings require at least Python 3.7 or higher and are currently not
+  compatible to libc++.
+
+
+## Build system: Changelog
+
+- Propagate dependencies of `dune-common` when consumed. This means that a CMake project may find
+  `dune-common` and consume the `Dune::Common` target without the need of the dune build system.
+
+- The way include directories are set in dune projects has been changed. OLD behavior: Include dirs
+  are set automatically using `include_directories` inside of `dune_project`. NEW behavior: Include
+  directories must be set manually, e.g., by using the utility `dune_default_include_directories`.
+  Which behavior to activate can be decided in each module by using the new dune policy
+  `DP_DEFAULT_INCLUDE_DIRS`, which can be set to `OLD` or `NEW` correspondingly.
+  For 2.11 the default value for the policy is `OLD`.
+
+- The CMake function `dune_target_enable_all_packages` can now handle Interface libraries too.
+
+- Add a module-specific CMake target `build_<module>_tests` to compile only tests
+  associated to a specific `<module>`. Additionally, add the `<module>`-name as
+  `LABEL` property to all tests created with `dune_add_tests` in that module. This
+  allows to run these tests with `ctest -L <module>`.
+
+- Change the behavior of `dune_add_test`: Do not add all package flags automatically. This new behavior
+  can be controlled by the new Dune policy `DP_TEST_ADD_ALL_FLAGS`.
+
+- Change the treatment of optional dependency modules listed in dune.module's `Suggests` section.
+  OLD behavior: when a suggsted dependency is found by cmake, it becomes a required dependency for all downstream
+  consumers of the module because the generated `<module>-config.cmake` file contains a line `find_dependency(<suggested dependency>)`.
+  `find_package(module)` fails when `<suggested dependency>` is not found by the downstream consumer.
+  NEW behavior: suggested dependency are not added to `<module>-config.cmake` unless explicitly enforced
+  by calling a new helper macro `dune_mark_module_as_required_dependency(<suggested dependency>)`.
+  The behavior is controlled by setting the Dune policy `DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM` to `OLD` or `NEW`.
+  When set to `NEW` the old behavior is recovered if all suggested dependencies are explicitly marked with `dune_mark_module_as_required_dependency(<suggested dependency>)`.
+  When to mark a suggested dependency in this way? If a suggested dependency, if found, is compiled into targets exported
+  by the dune module (e.g. it is needed to compile the module library) then the suggested dependency becomes a required dependency
+  for all downstream modules and must bet marked with the new macro. If the suggested dependency is only used internally (e.g. in tests) or is used header-only, then there is no need to force the dependency upon downstream consumers.
+
+- The `<module>-config.cmake` written to the build tree now contains path hints for dune module dependencies.
+  This makes it much easier for downstream consumers that do not use the Dune build system to find all module dependencies
+  including transient module dependencies. Before this change, the downstream consumer would need to know about the build location
+  even of transient dependencies that they do not directly use.
+  We write two different config files, one for the build tree to be used in a build/develop setup and one that is being installed. The installed version does not contain any type hints and is therefore not polluted by local build paths.
+
+## C++: Changelog
+
+- ParameterizedObjectFactory has now a method keys() the returns a range
+  of valid keys. One intended use case are improved diagnostics in user code.
+
+- A set of interfaces and utilities for multi-type tree structures was added
+  in the subdirectory `dune/common/typetree/` and namespace `Dune::TypeTree::`.
+  This originates in the dune-typetree module but only provides a modernized
+  slim subset of the latter. This subset contains concepts for tree nodes,
+  a class representing paths in a tree, and utilities for accessing children,
+  traversing trees, and creating nested random-access containers matching
+  the tree structure. Downstream modules that only use this subset can drop
+  dune-typetree as a dependency. However, the legacy interfaces and utilities
+  persist in dune-typetree and can still be used together with the functionality
+  added here.
+
+- The `Dune::HybridMultiIndex` class representing multi-indices with mixed
+  compile time and dynamic index entries has been added.
+
+- `Dune::IteratorRange` now supports different types for begin and end iterator
+  to model C++20's sentinel terminated ranges.
+
+- Add preprocessor macro `DUNE_FORCE_INLINE` as a portable attribute to force inlining of functions (if supported).
+
+- Add `bit_width` and `countl_zero` overloads for `bigunsignedint` objects.
+
+- `DUNE_THROW` no longer prevents functions from being used in `constexpr` contexts,
+  as long the exception is not thrown. As a sideproduct, the macros now
+  also supports the syntax `DUNE_THROW(ExceptionType, a << b) << c << d` and
+  `DUNE_THROW(ExceptionType) << a << b`.
+
+- Add `constexpr` qualifiers to many member functions of `DenseMatrix`, `FieldMatrix`, `DenseVector`,
+  `FieldVector`, `ForwardIteratorFacade`, `BidirectionalIteratorFacade`, `RandomAccessIteratorFacade`,
+  `TupleVector` and to the function `range`.
+
+- Add concepts `Std::three_way_comparable` and `Std::three_way_comparable_with` as well as an
+  algorithm `Std::lexicographical_compare_three_way` to provide library utilities for the `<=>`
+  comparison operator.
+
+- Add deduction guides to `TupleVector` analogous to `std::tuple`.
+
+- Add concept definition `Std::indirectly_copyable` to constrain the `DenseMatrixAssigner`.
+
+- Add concept definition `Concept::Number` to represent scalar number types in containers.
+
+- Add the macro `DUNE_ASSUME` for portable compiler assumption.
+
+- Fix bug in `operator<` and `operator>` of the iterators returned by `IntegralRange`.
+
+- Add converting constructor and assignment operator to `FieldMatrix` and `DiagonalMatrix` to
+  allow assignments between `FieldMatrix`es of different field types.
+
+## C++: Deprecations and removals
+
+- Remove deprecated alias `Dune::Std::bool_constant`. Please use `std::bool_constant` directly.
+- Deprecate the utility `integerSequenceEntry` in favour of the shorter `get` from `integersequence.hh`.
+- Remove the deprecated alias `CollectiveCommunication`, use `Communication` instead.
+- Remove deprecated `MPIHelper::getCollectiveCommunication`, use `MPIHelper::getCommunication` instead.
+- Remove the deprecated class `Factorial` from `math.hh`. Please use the method `factorial` instead.
+- Remove the deprecated class `SizeOf`. Use `sizeof...` instead.
+- Remove the deprecated header `assertandreturn.hh` which contained the macro `DUNE_ASSERT_AND_RETURN`.
+- Remove the deprecated header `keywords.hh` which contained the macros `DUNE_INLINE_VARIABLE`
+  and `DUNE_GENERALIZED_CONSTEXPR`. Use C++17's `inline` and `constexpr` instead.
+- Remove the deprecated function `Hybrid::equals`, use `Hybrid::equal_to` instead.
+
+## Python: Changelog
+
+- The `sdist` tar ball name should not use `-` (see PEP 625) so use `_` instead
+  `pip install dune-common` will still work as expected but `pip list` will
+  now show `dune_common` so the output of `pip list` is parsed anywhere
+  this is a breaking change.
+- Calling `dune.generator.setModuleLog( __file__ , procs=n)` at the top of a
+  script logs the names of all jit modules being loaded while the script is
+  running. If the file exists all modules listed will be rebuild in parallel
+  using `n` threads.
+  Setting the environment variable `DUNE_LOGMODULES` to an integer greater than zero
+  automatically logs the jit modules and rebuilds them in parallel if the file already exists.
+  The value of `DUNE_LOGMODULES` sets the number of threads used during the parallel rebuild.
+  See MR https://gitlab.dune-project.org/core/dune-common/-/merge_requests/1540.
 
 # Release 2.10
 
@@ -19,6 +171,8 @@ In order to build the DUNE core modules you need at least the following software
 
 
 ## C++: Changelog
+
+- Fix bug where `AlignedNumber` could not check if placement `new` alignment is correct.
 
 - `TupleVector` now implements the standard protocol for tuple-like types.
 

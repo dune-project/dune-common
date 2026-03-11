@@ -20,10 +20,13 @@
 
 #include <dune/common/boundschecking.hh>
 #include <dune/common/densematrix.hh>
+#include <dune/common/dynmatrix.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/ftraits.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/genericiterator.hh>
+#include <dune/common/matrixconcepts.hh>
 #include <dune/common/typetraits.hh>
 
 
@@ -51,6 +54,7 @@ namespace Dune {
   template<class K, int n>
   class DiagonalMatrix
   {
+    template<class, int> friend class DiagonalMatrix;
     typedef DiagonalMatrixWrapper< DiagonalMatrix<K,n> > WrapperType;
 
   public:
@@ -118,10 +122,24 @@ namespace Dune {
                  diag_.begin());
     }
 
+    //! Converting constructor
+    template <class OtherK>
+    DiagonalMatrix (const DiagonalMatrix<OtherK,n>& other)
+      : diag_(other.diag_)
+    {}
+
     /** \brief Assignment from a scalar */
     DiagonalMatrix& operator= (const K& k)
     {
       diag_ = k;
+      return *this;
+    }
+
+    //! Converting assignment operator
+    template <class OtherK>
+    DiagonalMatrix& operator= (const DiagonalMatrix<OtherK,n>& other)
+    {
+      diag_ = other.diag_;
       return *this;
     }
 
@@ -473,7 +491,39 @@ namespace Dune {
       return result;
     }
 
+    /**
+     * \brief Multiply a diagonal matrix with a dense matrix.
+     *
+     * The result of this multiplication is either a `FieldMatrix` if the
+     * `matrixB` is a matrix with static size, or a `DynamicMatrix`. This
+     * overload is deactivated for `matrixB` being a `FieldMatrix` since this
+     * is already covered by the corresponding overload of the `operator*` in
+     * the `FieldMatrix` class.
+     */
+    template <class OtherMatrix,
+      std::enable_if_t<(Impl::IsDenseMatrix<OtherMatrix>::value), int> = 0,
+      std::enable_if_t<(not Impl::IsFieldMatrix<OtherMatrix>::value), int> = 0>
+    friend auto operator* ( const DiagonalMatrix& matrixA,
+                            const OtherMatrix& matrixB)
+    {
+      using OtherField = typename FieldTraits<OtherMatrix>::field_type;
+      using F = typename PromotionTraits<field_type, OtherField>::PromotedType;
 
+      auto result = [&]{
+        if constexpr (Impl::IsStaticSizeMatrix_v<OtherMatrix>) {
+          static_assert(n == OtherMatrix::rows);
+          return FieldMatrix<F, n, OtherMatrix::cols>{};
+        } else {
+          assert(n == matrixB.N());
+          return DynamicMatrix<F>{n,matrixB.M()};
+        }
+      }();
+
+      for (int i = 0; i < result.N(); ++i)
+        for (int j = 0; j < result.M(); ++j)
+          result[i][j] = matrixA.diagonal(i) * matrixB[i][j];
+      return result;
+    }
 
     //===== sizes
 
@@ -601,6 +651,12 @@ namespace Dune {
       (*this)[0][0] = scalar;
     }
 
+    //! Converting constructor
+    template <class OtherK>
+    DiagonalMatrix(const DiagonalMatrix<OtherK,1>& other)
+      : Base(FieldMatrix<OtherK,1,1>(other))
+    {}
+
     //! Get const reference to diagonal entry
     const K& diagonal(size_type) const
     {
@@ -638,6 +694,31 @@ namespace Dune {
                             const DiagonalMatrix<OtherScalar, 1>& matrixB)
     {
       return DiagonalMatrix<typename PromotionTraits<K,OtherScalar>::PromotedType, 1>{matrixA.diagonal(0)*matrixB.diagonal(0)};
+    }
+
+    template <class OtherMatrix,
+      std::enable_if_t<(Impl::IsDenseMatrix<OtherMatrix>::value), int> = 0,
+      std::enable_if_t<(not Impl::IsFieldMatrix<OtherMatrix>::value), int> = 0>
+    friend auto operator* ( const DiagonalMatrix& matrixA,
+                            const OtherMatrix& matrixB)
+    {
+      using OtherField = typename FieldTraits<OtherMatrix>::field_type;
+      using F = typename PromotionTraits<K, OtherField>::PromotedType;
+
+      auto result = [&]{
+        if constexpr (Impl::IsStaticSizeMatrix_v<OtherMatrix>) {
+          static_assert(1 == OtherMatrix::rows);
+          return FieldMatrix<F, 1, OtherMatrix::cols>{};
+        } else {
+          assert(1 == matrixB.N());
+          return DynamicMatrix<F>{1,matrixB.M()};
+        }
+      }();
+
+      for (int i = 0; i < result.N(); ++i)
+        for (int j = 0; j < result.M(); ++j)
+          result[i][j] = matrixA.diagonal(i) * matrixB[i][j];
+      return result;
     }
 
   };
@@ -1105,9 +1186,14 @@ namespace Dune {
   template <class DenseMatrix, class field, int N>
   struct DenseMatrixAssigner<DenseMatrix, DiagonalMatrix<field, N>> {
     static void apply(DenseMatrix& denseMatrix,
-                      DiagonalMatrix<field, N> const& rhs) {
-      DUNE_ASSERT_BOUNDS(denseMatrix.M() == N);
-      DUNE_ASSERT_BOUNDS(denseMatrix.N() == N);
+                      DiagonalMatrix<field, N> const& rhs)
+      requires (IsFieldMatrixShapeCorrect<DenseMatrix,N,N>::value)
+    {
+#ifdef DUNE_CHECK_BOUNDS
+      if (denseMatrix.M() != N || denseMatrix.N() != N)
+        DUNE_THROW(Dune::RangeError, "Incompatible matrix dimensions in assignment.");
+#endif // DUNE_CHECK_BOUNDS
+
       denseMatrix = field(0);
       for (int i = 0; i < N; ++i)
         denseMatrix[i][i] = rhs.diagonal()[i];

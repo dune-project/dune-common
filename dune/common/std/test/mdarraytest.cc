@@ -84,8 +84,12 @@ void test_container (Dune::TestSuite& testSuite, std::string name, const M& mapp
   // convert to mdspan
   auto tensor_span = tensor3.to_mdspan();
 
+  const Tensor& ctensor = tensor3;
+  auto ctensor_span = ctensor.to_mdspan();
+
   // construct from mdspan
   Tensor tensor6{tensor_span};
+  Tensor tensor7{ctensor_span};
 
   checkAccess(subTestSuite, tensor3);
   testSuite.subTest(subTestSuite);

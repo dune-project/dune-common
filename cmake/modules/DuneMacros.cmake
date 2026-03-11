@@ -30,11 +30,8 @@ include_guard(GLOBAL)
 
 enable_language(C) # Enable C to skip CXX bindings for some tests.
 
-# By default use -pthread flag. This option is set at the beginning to enforce it for
-# find_package(Threads) everywhere
-set(THREADS_PREFER_PTHREAD_FLAG TRUE CACHE BOOL "Prefer -pthread compiler and linker flag")
-
 include(DuneAddLibrary)
+include(DuneDefaultIncludeDirectories)
 include(DuneEnableAllPackages)
 include(DuneExecuteProcess)
 include(DuneModuleDependencies)

@@ -4,10 +4,10 @@
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 #include <config.h>
 
+#include <span>
 #include <type_traits>
 
 #include <dune/common/std/extents.hh>
-#include <dune/common/std/span.hh>
 #include <dune/common/test/testsuite.hh>
 
 int main(int argc, char** argv)
@@ -15,7 +15,7 @@ int main(int argc, char** argv)
   Dune::TestSuite testSuite;
 
   // a placeholder for dynamic extents
-  static constexpr std::size_t dyn = Dune::Std::dynamic_extent;
+  static constexpr std::size_t dyn = std::dynamic_extent;
 
   // rank 0
   using Extents0 = Dune::Std::extents<int>;

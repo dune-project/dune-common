@@ -6,6 +6,7 @@
 #define DUNE_COMMON_STD_MDSPAN_HH
 
 #include <array>
+#include <span>
 #include <type_traits>
 #include <utility>
 #if __has_include(<version>)
@@ -17,7 +18,6 @@
 #include <dune/common/std/extents.hh>
 #include <dune/common/std/layout_right.hh>
 #include <dune/common/std/no_unique_address.hh>
-#include <dune/common/std/span.hh>
 
 namespace Dune::Std {
 
@@ -129,7 +129,7 @@ public:
   #if __cpp_conditional_explicit >= 201806L
   explicit(N != extents_type::rank_dynamic())
   #endif
-  constexpr mdspan (data_handle_type p, Std::span<IndexType,N> exts)
+  constexpr mdspan (data_handle_type p, std::span<IndexType,N> exts)
     : mdspan(std::move(p), extents_type(exts))
   {}
 
@@ -168,10 +168,10 @@ public:
 
   /// \brief Converting constructor
   template <class OtherElementType, class OtherExtends, class OtherLayoutPolicy, class OtherAccessor,
-    std::enable_if_t<std::is_constructible_v<mapping_type, const typename OtherElementType::template mapping<OtherExtends>&>, int> = 0,
+    std::enable_if_t<std::is_constructible_v<mapping_type, const typename OtherLayoutPolicy::template mapping<OtherExtends>&>, int> = 0,
     std::enable_if_t<std::is_constructible_v<accessor_type, const OtherAccessor&>, int> = 0>
   #if __cpp_conditional_explicit >= 201806L
-  explicit(!std::is_convertible_v<const typename OtherElementType::template mapping<OtherExtends>&, mapping_type>
+  explicit(!std::is_convertible_v<const typename OtherLayoutPolicy::template mapping<OtherExtends>&, mapping_type>
     || !std::is_convertible_v<const OtherAccessor&, accessor_type>)
   #endif
   constexpr mdspan (const mdspan<OtherElementType,OtherExtends,OtherLayoutPolicy,OtherAccessor>& other) noexcept
@@ -228,7 +228,7 @@ public:
   template <class Index,
     std::enable_if_t<std::is_convertible_v<const Index&, index_type>, int> = 0,
     std::enable_if_t<std::is_nothrow_constructible_v<index_type, const Index&>, int> = 0>
-  constexpr reference operator[] (Std::span<Index,extents_type::rank()> indices) const
+  constexpr reference operator[] (std::span<Index,extents_type::rank()> indices) const
   {
     return unpackIntegerSequence([&](auto... ii) -> reference {
       return accessor_.access(data_handle_, mapping_(index_type(indices[ii])...)); },
@@ -354,7 +354,7 @@ mdspan (ElementType*, II...)
   -> mdspan<ElementType, Std::dextents<std::size_t, sizeof...(II)>>;
 
 template <class ElementType, class SizeType, std::size_t N>
-mdspan (ElementType*, Std::span<SizeType,N>&)
+mdspan (ElementType*, std::span<SizeType,N>)
   -> mdspan<ElementType, Std::dextents<std::size_t, N>>;
 
 template <class ElementType, class SizeType, std::size_t N>

@@ -8,7 +8,16 @@
 
 int main()
 {
+#if (PY_MAJOR_VERSION >= 3) && (PY_MINOR_VERSION >= 11)
+  PyConfig config;
+  PyConfig_InitPythonConfig(&config);
+  PyConfig_SetString(&config, &config.program_name, PYTHON_INTERPRETER);
+  pybind11::scoped_interpreter guard{&config};
+#else
   Py_SetProgramName(PYTHON_INTERPRETER);
+  pybind11::scoped_interpreter guard{};
+#endif
+
   /*
      remark: combine getting the guard and loading
              dune.common in a single 'initialization' function -
@@ -16,7 +25,6 @@ int main()
              types - although a 'dummy' scope can also be used, i.e.,
              pybind11::handle scope;
   */
-  pybind11::scoped_interpreter guard{};
   pybind11::module dcommon = pybind11::module::import("dune.common");
   auto global = pybind11::dict(pybind11::module::import("__main__").attr("__dict__"));
 

@@ -9,9 +9,16 @@
 #include<Python.h>
 int main()
 {
+#if (PY_MAJOR_VERSION >= 3) && (PY_MINOR_VERSION >= 11)
+  PyConfig config;
+  PyConfig_InitPythonConfig(&config);
+  PyConfig_SetString(&config, &config.program_name, PYTHON_INTERPRETER);
+  pybind11::scoped_interpreter guard{&config};
+#else
   Py_SetProgramName(PYTHON_INTERPRETER);
-
   pybind11::scoped_interpreter guard{};
+#endif
+
   auto global = pybind11::dict(pybind11::module::import("__main__").attr("__dict__"));
   {
     pybind11::module dcommon = pybind11::module::import("dune.common");

@@ -23,7 +23,7 @@ namespace Dune {
   struct AutonomousValueType<ZeroExpr> { using type = int; };
 
   // doAutoCopy should not pick up this overload
-  constexpr auto autoCopy(ZeroExpr) = delete;
+  auto autoCopy(ZeroExpr) = delete;
 } // namespace Dune
 
 int main()

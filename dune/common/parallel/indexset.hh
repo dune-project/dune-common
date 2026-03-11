@@ -83,7 +83,7 @@ namespace Dune
   template<class TG, class TL>
   class IndexPair
   {
-    friend std::ostream& operator<<<>(std::ostream&, const IndexPair<TG,TL>&);
+    friend std::ostream& operator<< <>(std::ostream&, const IndexPair<TG,TL>&);
     friend bool operator==<>(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
     friend bool operator!=<>(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
     friend bool operator< <>(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);

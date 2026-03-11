@@ -7,6 +7,7 @@
 #define DUNE_BIGUNSIGNEDINT_HH
 
 #include <algorithm>
+#include <bit>
 #include <iostream>
 #include <limits>
 #include <cstdint>
@@ -175,6 +176,29 @@ namespace Dune
 
     friend class bigunsignedint<k/2>;
     friend struct Impl::numeric_limits_helper< bigunsignedint<k> >;
+
+    /**
+     * @brief Bit width
+     * @details If x is not zero, calculates the number of bits needed to store the value arg
+     */
+    friend int bit_width(const bigunsignedint& arg)
+    {
+      int width = bits * std::size(arg.digit);
+      auto it = std::rbegin(arg.digit);
+      do {
+          width -= (bits - std::bit_width(*it));
+      } while ((*it == 0) and ((++it) != std::rend(arg.digit)));
+      return width;
+    }
+
+    /**
+     * @brief Count left zero bits
+     * @details The number of consecutive ​0​ bits in the value of arg, starting from the most significant bit
+     */
+    friend int countl_zero(const bigunsignedint& arg)
+    {
+      return bits*n - bit_width(arg);
+    }
 
     inline friend std::size_t hash_value(const bigunsignedint& arg)
     {

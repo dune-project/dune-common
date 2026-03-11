@@ -134,7 +134,7 @@ namespace Dune
     template<class T>
     int send([[maybe_unused]] const T& data,
              [[maybe_unused]] int dest_rank,
-             [[maybe_unused]] int tag)
+             [[maybe_unused]] int tag) const
     {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
@@ -143,9 +143,9 @@ namespace Dune
         @returns Future<T> containing the send buffer, completes when data is send
      */
     template<class T>
-    PseudoFuture<T> isend([[maybe_unused]] const T&& data,
+    PseudoFuture<T> isend([[maybe_unused]] T&& data,
                           [[maybe_unused]] int dest_rank,
-                          [[maybe_unused]] int tag)
+                          [[maybe_unused]] int tag) const
     {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
@@ -157,7 +157,7 @@ namespace Dune
     T recv([[maybe_unused]] T&& data,
            [[maybe_unused]] int source_rank,
            [[maybe_unused]] int tag,
-           [[maybe_unused]] void* status = 0)
+           [[maybe_unused]] void* status = 0) const
     {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
@@ -168,7 +168,7 @@ namespace Dune
     template<class T>
     PseudoFuture<T> irecv([[maybe_unused]] T&& data,
                           [[maybe_unused]] int source_rank,
-                          [[maybe_unused]] int tag)
+                          [[maybe_unused]] int tag) const
     {
       DUNE_THROW(ParallelError, "This method is not supported in sequential programs");
     }
@@ -292,7 +292,7 @@ namespace Dune
         @returns Future<T> containing the distributed data
      */
     template<class T>
-    PseudoFuture<T> ibroadcast(T&& data, int root) const{
+    PseudoFuture<T> ibroadcast(T&& data, int /*root*/) const{
       return {std::forward<T>(data)};
     }
 
@@ -310,7 +310,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int gather (const T* in, T* out, int len, [[maybe_unused]] int root) const     // note out must have same size as in
+    int gather (const T* in, T* out, int len, int /*root*/) const     // note out must have same size as in
     {
       for (int i=0; i<len; i++)
         out[i] = in[i];
@@ -321,7 +321,7 @@ namespace Dune
         @returns Future<TOUT, TIN> containing the gathered data
      */
     template<class TIN, class TOUT = std::vector<TIN>>
-    PseudoFuture<TOUT> igather(TIN&& data_in, TOUT&& data_out, int root){
+    PseudoFuture<TOUT> igather(TIN&& data_in, TOUT&& data_out, int /*root*/){
       *(data_out.begin()) = std::forward<TIN>(data_in);
       return {std::forward<TOUT>(data_out)};
     }
@@ -373,7 +373,7 @@ namespace Dune
      * @returns MPI_SUCCESS (==0) if successful, an MPI error code otherwise
      */
     template<typename T>
-    int scatter (const T* sendData, T* recvData, int len, [[maybe_unused]] int root) const // note out must have same size as in
+    int scatter (const T* sendData, T* recvData, int len, int /*root*/) const // note out must have same size as in
     {
       for (int i=0; i<len; i++)
         recvData[i] = sendData[i];
@@ -384,7 +384,7 @@ namespace Dune
      * @returns Future<TOUT, TIN> containing scattered data;
      */
     template<class TIN, class TOUT = TIN>
-    PseudoFuture<TOUT> iscatter(TIN&& data_in, TOUT&& data_out, int root){
+    PseudoFuture<TOUT> iscatter(TIN&& data_in, TOUT&& data_out, int /*root*/){
       data_out = *(std::forward<TIN>(data_in).begin());
       return {std::forward<TOUT>(data_out)};
     }
@@ -442,7 +442,7 @@ namespace Dune
      @returns Future<TOUT, TIN> containing the distributed data
      */
     template<class TIN, class TOUT = TIN>
-    PseudoFuture<TOUT> iallgather(TIN&& data_in, TOUT&& data_out){
+    PseudoFuture<TOUT> iallgather(TIN&& /*data_in*/, TOUT&& data_out){
       return {std::forward<TOUT>(data_out)};
     }
 
@@ -529,16 +529,6 @@ namespace Dune
     }
 
   };
-
-  /**
-   * \deprecated CollectiveCommunication is deprecated and will be removed after Dune 2.9.
-   *
-   * Use Communication instead.
-   */
-  template<class T>
-  using CollectiveCommunication
-  [[deprecated("CollectiveCommunication is deprecated. Use Communication instead.")]]
-  = Communication<T>;
 }
 
 #endif // DUNE_COMMON_PARALLEL_COMMUNICATION_HH

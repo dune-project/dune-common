@@ -21,6 +21,7 @@ install(FILES
   DuneAddLibrary.cmake
   DuneAddPybind11Module.cmake
   DuneCommonMacros.cmake
+  DuneDefaultIncludeDirectories.cmake
   DuneDoc.cmake
   DuneDoxygen.cmake
   DuneEnableAllPackages.cmake
@@ -48,6 +49,7 @@ install(FILES
   FindGMP.cmake
   FindInkscape.cmake
   FindLatexMk.cmake
+  FindMathJax2.cmake
   FindMETIS.cmake
   FindParMETIS.cmake
   FindPTScotch.cmake

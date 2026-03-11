@@ -5,13 +5,7 @@
 #ifndef DUNE_TIMER_HH
 #define DUNE_TIMER_HH
 
-#ifndef TIMER_USE_STD_CLOCK
-// headers for std::chrono
 #include <chrono>
-#else
-// headers for std::clock
-#include <ctime>
-#endif
 
 namespace Dune {
 
@@ -26,21 +20,17 @@ namespace Dune {
 
   /** \brief A simple stop watch
 
-     This class reports the elapsed user-time, i.e. time spent computing,
-     after the last call to Timer::reset(). The results are seconds and
-     fractional seconds. Note that the resolution of the timing depends
-     on your OS kernel which should be somewhere in the millisecond range.
+     This class reports the elapsed real time, i.e. time elapsed
+     after Timer::reset(). It does not measure the time spent computing,
+     i.e. time spend in concurrent threads is not added up while
+     time measurements include the time elapsed while sleeping.
 
-     The class is basically a wrapper for the libc-function getrusage()
-
-     \warning In a multi-threading situation, this class does NOT return wall-time!
-     Instead, the run time for all threads will be added up.
-     For example, if you have four threads running in parallel taking one second each,
-     then the Timer class will return an elapsed time of four seconds.
-
+     The class is basically a wrapper around std::chrono::high_resolution_clock::now().
    */
   class Timer
   {
+    using Clock = std::chrono::high_resolution_clock;
+    using Units = std::chrono::duration<double>; // seconds stored as double
   public:
 
     /** \brief A new timer, create and reset
@@ -56,9 +46,9 @@ namespace Dune {
     //! Reset timer while keeping the running/stopped state
     void reset() noexcept
     {
-      sumElapsed_ = 0.0;
-      storedLastElapsed_ = 0.0;
-      rawReset();
+      sumElapsed_ = std::chrono::seconds{0};
+      storedLastElapsed_ = std::chrono::seconds{0};
+      cstart = Clock::now();
     }
 
 
@@ -67,7 +57,7 @@ namespace Dune {
     {
       if (not (isRunning_))
       {
-        rawReset();
+        cstart = Clock::now();
         isRunning_ = true;
       }
     }
@@ -76,25 +66,14 @@ namespace Dune {
     //! Get elapsed user-time from last reset until now/last stop in seconds.
     double elapsed () const noexcept
     {
-      // if timer is running add the time elapsed since last start to sum
-      if (isRunning_)
-        return sumElapsed_ + lastElapsed();
-
-      return sumElapsed_;
+      return durationCast(rawElapsed());
     }
-
 
     //! Get elapsed user-time from last start until now/last stop in seconds.
     double lastElapsed () const noexcept
     {
-      // if timer is running return the current value
-      if (isRunning_)
-        return rawElapsed();
-
-      // if timer is not running return stored value from last run
-      return storedLastElapsed_;
+      return durationCast(rawLastElapsed());
     }
-
 
     //! Stop the timer and return elapsed().
     double stop() noexcept
@@ -102,7 +81,7 @@ namespace Dune {
       if (isRunning_)
       {
         // update storedLastElapsed_ and  sumElapsed_ and stop timer
-        storedLastElapsed_ = lastElapsed();
+        storedLastElapsed_ = rawLastElapsed();
         sumElapsed_ += storedLastElapsed_;
         isRunning_ = false;
       }
@@ -113,37 +92,34 @@ namespace Dune {
   private:
 
     bool isRunning_;
-    double sumElapsed_;
-    double storedLastElapsed_;
+    Clock::duration sumElapsed_;
+    Clock::duration storedLastElapsed_;
 
-
-#ifdef TIMER_USE_STD_CLOCK
-    void rawReset() noexcept
+    Clock::duration rawElapsed () const noexcept
     {
-      cstart = std::clock();
+      // if timer is running add the time elapsed since last start to sum
+      if (isRunning_)
+        return sumElapsed_ + rawLastElapsed();
+
+      return sumElapsed_;
     }
 
-    double rawElapsed () const noexcept
+    //! Get elapsed user-time from last start until now/last stop in seconds.
+    Clock::duration rawLastElapsed () const noexcept
     {
-      return (std::clock()-cstart) / static_cast<double>(CLOCKS_PER_SEC);
+      // if timer is running return the current value
+      if (isRunning_)
+        return Clock::now() - cstart;
+
+      // if timer is not running return stored value from last run
+      return storedLastElapsed_;
     }
 
-    std::clock_t cstart;
-#else
-    void rawReset() noexcept
-    {
-      cstart = std::chrono::high_resolution_clock::now();
+    double durationCast(Clock::duration duration) const noexcept {
+      return std::chrono::duration_cast<Units>(duration).count();
     }
 
-    double rawElapsed () const noexcept
-    {
-      std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double> >(now - cstart);
-      return time_span.count();
-    }
-
-    std::chrono::high_resolution_clock::time_point cstart;
-#endif
+    Clock::time_point cstart;
   }; // end class Timer
 
   /** @} end documentation */

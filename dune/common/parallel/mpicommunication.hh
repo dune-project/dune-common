@@ -457,7 +457,7 @@ namespace Dune
       return future;
     }
 
-    //! @copydoc Communication::allreduce(Type* in,Type* out,int len) const
+    //! @copydoc Communication::allreduce(const Type* in,Type* out,int len) const
     template<typename BinaryFunction, typename Type>
     int allreduce(const Type* in, Type* out, int len) const
     {

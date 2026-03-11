@@ -168,7 +168,10 @@ def plotGrid(grid, gridLines="black", figure=None,
         try:
             subPlot = figure[1]
             figure = figure[0]
-            pyplot.subplot(subPlot)
+            if isinstance(subPlot, pyplot.Axes):
+                pyplot.sca(subPlot)
+            else:
+                pyplot.subplot(subPlot)
         except:
             pass
         show = False

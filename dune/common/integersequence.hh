@@ -116,7 +116,7 @@ constexpr std::array<T, N> sortedImpl (std::array<T, N> array, Compare comp)
 
 //! Sort a given sequence by the comparator `comp`.
 template <class T, T... II, class Compare>
-constexpr auto sorted (std::integer_sequence<T,II...> seq, Compare comp)
+constexpr auto sorted (std::integer_sequence<T,II...> /*seq*/, Compare comp)
 {
   constexpr auto sorted = Impl::sortedImpl(std::array<T,sizeof...(II)>{II...}, comp);
   return unpackIntegerSequence([&](auto... i) {

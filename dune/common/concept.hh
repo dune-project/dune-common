@@ -12,7 +12,6 @@
 #include <dune/common/typeutilities.hh>
 #include <dune/common/typelist.hh>
 #include <dune/common/indices.hh>
-#include <dune/common/std/type_traits.hh>
 
 /**
  * \file
@@ -183,7 +182,7 @@ namespace Impl {
 template<class C, class... T>
 constexpr auto models()
 {
-  return Std::bool_constant<Concept::Impl::models<C, T...>()>();
+  return std::bool_constant<Concept::Impl::models<C, T...>()>();
 }
 
 

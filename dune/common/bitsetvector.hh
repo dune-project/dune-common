@@ -281,65 +281,49 @@ namespace Dune {
     //! Bitwise and (for bitset).
     BitSetVectorReference& operator&=(const bitset& x)
     {
-      for (size_type i=0; i<block_size; i++)
-        getBit(i) = (test(i) & x.test(i));
-      return *this;
+      return (*this) = bitset(*this) & x;
     }
 
     //! Bitwise and (for BitSetVectorConstReference and BitSetVectorReference)
     BitSetVectorReference& operator&=(const BitSetVectorConstReference& x)
     {
-      for (size_type i=0; i<block_size; i++)
-        getBit(i) = (test(i) & x.test(i));
-      return *this;
+      return (*this) &= bitset(x);
     }
 
     //! Bitwise inclusive or (for bitset)
     BitSetVectorReference& operator|=(const bitset& x)
     {
-      for (size_type i=0; i<block_size; i++)
-        getBit(i) = (test(i) | x.test(i));
-      return *this;
+      return (*this) = bitset(*this) | x;
     }
 
     //! Bitwise inclusive or (for BitSetVectorConstReference and BitSetVectorReference)
     BitSetVectorReference& operator|=(const BitSetVectorConstReference& x)
     {
-      for (size_type i=0; i<block_size; i++)
-        getBit(i) = (test(i) | x.test(i));
-      return *this;
+      return (*this) |= bitset(x);
     }
 
     //! Bitwise exclusive or (for bitset).
     BitSetVectorReference& operator^=(const bitset& x)
     {
-      for (size_type i=0; i<block_size; i++)
-        getBit(i) = (test(i) ^ x.test(i));
-      return *this;
+      return (*this) = bitset(*this) ^ x;
     }
 
     //! Bitwise exclusive or (for BitSetVectorConstReference and BitSetVectorReference)
     BitSetVectorReference& operator^=(const BitSetVectorConstReference& x)
     {
-      for (size_type i=0; i<block_size; i++)
-        getBit(i) = (test(i) ^ x.test(i));
-      return *this;
+      return (*this) ^= bitset(x);
     }
 
     //! Left shift.
     BitSetVectorReference& operator<<=(size_type n)
     {
-      for (size_type i=0; i<block_size-n; i++)
-        getBit(i) = test(i+n);
-      return *this;
+      return (*this) = bitset(*this) << n;
     }
 
     //! Right shift.
     BitSetVectorReference& operator>>=(size_type n)
     {
-      for (size_type i=0; i<block_size-n; i++)
-        getBit(i+n) = test(i);
-      return *this;
+      return (*this) = bitset(*this) >> n;
     }
 
     //! Sets every bit.

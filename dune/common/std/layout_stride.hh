@@ -6,6 +6,7 @@
 #define DUNE_COMMON_STD_LAYOUT_STRIDE_HH
 
 #include <array>
+#include <span>
 #include <type_traits>
 
 #include <dune/common/indices.hh>
@@ -57,7 +58,7 @@ public:
   template <class OtherIndexType,
     std::enable_if_t<std::is_convertible_v<const OtherIndexType&, index_type>, int> = 0,
     std::enable_if_t<std::is_nothrow_constructible_v<index_type, const OtherIndexType&>, int> = 0>
-  constexpr mapping (const extents_type& e, const span<OtherIndexType,rank_>& s) noexcept
+  constexpr mapping (const extents_type& e, const std::span<OtherIndexType,rank_>& s) noexcept
     : extents_(e)
     , strides_{}
   {

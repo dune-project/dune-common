@@ -181,13 +181,16 @@ function(dune_add_library_normal _name)
   # Link with specified libraries from parameter ADD_LIBS
   target_link_libraries(${_name} PUBLIC "${ARG_LINK_LIBRARIES}")
 
+  # Activate warnings from all imported targets we link against
+  set_target_properties(${_name} PROPERTIES NO_SYSTEM_FROM_IMPORTED TRUE)
+
   # Set target options from COMPILE_FLAGS
   target_compile_options(${_name} PUBLIC "${ARG_COMPILE_OPTIONS}")
 
-  # Build library in ${PROJECT_BINARY_DIR}/lib
+  # Build library in ${CMAKE_BINARY_DIR}/lib
   set_target_properties(${_name} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
-    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
   # Set an output name for the created library file
   if(ARG_OUTPUT_NAME)
@@ -197,13 +200,7 @@ function(dune_add_library_normal _name)
   # Prepare the export of the library
   if(NOT ARG_NO_EXPORT)
     if(NOT ARG_EXPORT_NAME)
-      message(DEPRECATION
-        "The function dune_add_library(<lib> ...) now requires to provide NO_EXPORT or EXPORT_NAME. "
-        "We recommend to choose an export name with a camel title case matching your library name "
-        "(e.g., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)\n"
-        " * Calls to `dune_add_library(<lib> ...)` without export specification will be supported until Dune 2.11\n"
-        " * Consumption of unscoped targets `<lib>` will be supported until Dune 2.12")
-      set(ARG_EXPORT_NAME ${_name})
+      message(FATAL_ERROR "You must provide either NO_EXPORT or EXPORT_NAME to dune_add_library")
     endif()
 
     if(NOT ARG_NAMESPACE)
@@ -250,19 +247,16 @@ function(dune_add_library_interface _name)
   # Link with specified libraries from parameter LINK_LIBRARIES
   target_link_libraries(${_name} INTERFACE "${ARG_LINK_LIBRARIES}")
 
+  # Activate warnings from all imported targets we link against
+  set_target_properties(${_name} PROPERTIES NO_SYSTEM_FROM_IMPORTED TRUE)
+
   # Set target options from COMPILE_FLAGS
   target_compile_options(${_name} INTERFACE "${ARG_COMPILE_OPTIONS}")
 
   # Prepare the export of the library
   if(NOT ARG_NO_EXPORT)
     if(NOT ARG_EXPORT_NAME)
-      message(DEPRECATION
-        "The function dune_add_library(<lib> ...) now requires to provide NO_EXPORT or EXPORT_NAME. "
-        "We recommend to choose an export name with a camel title case matching your library name "
-        "(e.g., Common, ISTL, and MultiDomainGrid will be exported as Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)\n"
-        " * Calls to `dune_add_library(<lib> ...)` without export specification will be supported until Dune 2.11\n"
-        " * Consumption of unscoped targets `<lib>` will be supported until Dune 2.12")
-      set(ARG_EXPORT_NAME ${_name})
+      message(FATAL_ERROR "You must provide either NO_EXPORT or EXPORT_NAME to dune_add_library")
     endif()
 
     if(NOT ARG_NAMESPACE)

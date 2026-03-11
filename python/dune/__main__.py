@@ -48,6 +48,8 @@ def run(arguments=None):
               help='name of a file containing list of modules to make (one per line)')
     parserMake.add_argument('--force', dest='force', action='store_const', const=True, default=False,
               help='force make without checking dependencies (same as "make -B"')
+    parserMake.add_argument('--verbose', dest='verbose', action='store_const', const=True, default=False,
+              help='verbose output of all compile errors"')
     parserMake.add_argument('-B', dest='bforce', action='store_const', const=True, default=False,
               help='force make without checking dependencies (same as "make -B"')
     parserMake.add_argument('modules', nargs='*',  default=[],
@@ -93,7 +95,8 @@ def run(arguments=None):
             parserMake.print_help()
         else:
             ret = makegenerated(args.modules, args.file, args.threads,
-                                args.force or args.bforce)
+                                force=(args.force or args.bforce),
+                                verbose=args.verbose)
 
     elif args.command == 'fix-dunepy':
         ret = fixdunepy(args.force)

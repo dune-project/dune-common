@@ -86,8 +86,7 @@
 #       A list of targets to add all flags etc. too.
 #
 #    Adds all currently registered package flags (see :ref:`dune_register_package_flags`) to the given targets.
-#    This function is mainly intended to help write DUNE modules that want to use :ref:`dune_enable_all_packages` and
-#    define their own libraries, but need to be compatible with CMake < 3.1
+#    The scope of the added flags is PUBLIC if its a compiled library, or INTERFACE otherwise.
 #
 # .. cmake_function:: dune_register_package_flags
 #
@@ -261,6 +260,7 @@ function(dune_enable_all_packages)
   # throughout the module.
 
   if(DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
+    message(DEPRECATION "The `MODULE_LIBRARIES <lib>` argument to `dune_enable_all_packages` is deprecated. To achieve the same thing, first create a library with `dune_add_library(<lib>)`, then add all packages to this library with `dune_target_enable_all_packages(<lib>)`, and finally link this library to all other available targets with `link_libraries(<lib>)`.")
 
     # make sure the /lib directory exists - we need it to create the stub source file in there
     file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
@@ -296,36 +296,34 @@ endfunction(dune_enable_all_packages)
 
 function(dune_target_enable_all_packages)
   foreach(_target ${ARGN})
+    get_target_property(_target_type ${_target} TYPE)
+    if (${_target_type} STREQUAL "INTERFACE_LIBRARY")
+      set(scope INTERFACE)
+    else()
+      set(scope PUBLIC)
+    endif()
 
     get_property(all_incs GLOBAL PROPERTY ALL_PKG_INCS)
-    target_include_directories(${_target} PUBLIC ${all_incs})
+    target_include_directories(${_target} ${scope} ${all_incs})
 
     get_property(all_defs GLOBAL PROPERTY ALL_PKG_DEFS)
-    target_compile_definitions(${_target} PUBLIC ${all_defs})
+    target_compile_definitions(${_target} ${scope} ${all_defs})
 
     get_property(all_opts GLOBAL PROPERTY ALL_PKG_OPTS)
-    target_compile_options(${_target} PUBLIC ${all_opts})
+    target_compile_options(${_target} ${scope} ${all_opts})
 
     get_property(all_libs GLOBAL PROPERTY ALL_PKG_LIBS)
-    target_link_libraries(${_target} PUBLIC ${DUNE_LIBS} ${all_libs})
+    target_link_libraries(${_target} ${scope} ${DUNE_LIBS} ${all_libs})
 
   endforeach()
 endfunction(dune_target_enable_all_packages)
 
 
 function(dune_library_add_sources lib)
-  if (NOT (DEFINED DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES))
-    message(FATAL_ERROR "You must call dune_enable_all_packages with the MODULE_LIBRARIES option before calling dune_library_add_sources")
-  endif()
-
-  if (NOT lib IN_LIST DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES)
-    message(FATAL_ERROR
-"Attempt to add sources to library ${lib}, which has not been defined in dune_enable_all_packages.
-List of libraries defined in dune_enable_all_packages: ${DUNE_ENABLE_ALL_PACKAGES_MODULE_LIBRARIES}")
-  endif()
+  message(DEPRECATION "The function `dune_library_add_sources(<lib> SOURCES ...)` is
+  deprecated. Use the cmake function `target_sources(<lib> PRIVATE ...)` directly.")
 
   cmake_parse_arguments(DUNE_LIBRARY_ADD_SOURCES "" "" "SOURCES" ${ARGN})
-
   if(DUNE_LIBRARY_ADD_SOURCES_UNPARSED_ARGUMENTS)
     message(WARNING "Unrecognized arguments for dune_library_add_sources!")
   endif()

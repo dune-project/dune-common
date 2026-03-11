@@ -21,8 +21,8 @@ int main() try {
 
   t.checkThrow<Dune::RangeError>([&]{ a+=b;})<<"Add matrices of different sizes didn't throw.";
   t.checkThrow<Dune::RangeError>([&]{ a-=b;})<<"Subtract matrices of different sizes didn't throw.";
-  t.checkThrow<Dune::RangeError>([&]{ (a == b);})<<"Comparing matrices of different sizes for equality didn't throw.";
-  t.checkThrow<Dune::RangeError>([&]{ (a != b);})<<"Comparing matrices of different sizes for inequality didn't throw.";
+  t.checkThrow<Dune::RangeError>([&]{ std::ignore = (a == b);})<<"Comparing matrices of different sizes for equality didn't throw.";
+  t.checkThrow<Dune::RangeError>([&]{ std::ignore = (a != b);})<<"Comparing matrices of different sizes for inequality didn't throw.";
   t.checkThrow<Dune::RangeError>([&]{a.axpy(2,b); })<<"Axpy for matrices of different sizes didn't throw.";
 
   Dune::FieldMatrix<double, 1, 3> c = {{1, 2, 3}};

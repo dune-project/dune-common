@@ -516,13 +516,13 @@ function(dune_python_configure_package)
 
     # Add a custom target that globally installs this package if requested
     if (NOT PYPKGCONF_INSTALL_TARGET)
-      string(MD5 path_hash "${PYCONFBIND_FULLPATH}")
+      string(MD5 path_hash "${PYPKGCONF_PATH}")
       set(PYPKGCONF_INSTALL_TARGET "install_python_${path_hash}")
     endif()
 
     # TODO this creates an egg-info folder in the source directory
     add_custom_target(${PYPKGCONF_INSTALL_TARGET}
-                      COMMAND ${Python3_EXECUTABLE} -m pip install
+                      COMMAND Python3::Interpreter -m pip install
                         "${USER_INSTALL_OPTION}"
                        "${DUNE_PIP_INDEX}"
                         # --use-feature=in-tree-build
