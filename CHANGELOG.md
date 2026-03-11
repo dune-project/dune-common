@@ -57,6 +57,9 @@ In order to build the DUNE core modules you need at least the following software
 
 ## C++: Changelog
 
+- ParameterizedObjectFactory has now a method keys() the returns a range
+  of valid keys. One intended use case are improved diagnostics in user code.
+
 - A set of interfaces and utilities for multi-type tree structures was added
   in the subdirectory `dune/common/typetree/` and namespace `Dune::TypeTree::`.
   This originates in the dune-typetree module but only provides a modernized
