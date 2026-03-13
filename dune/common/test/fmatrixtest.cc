@@ -18,6 +18,7 @@
 #include <dune-common-config.hh> // HAVE_LAPACK
 
 #include <dune/common/classname.hh>
+#include <dune/common/deprecated.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fmatrixev.hh>
 #include <dune/common/ftraits.hh>
@@ -637,6 +638,7 @@ struct ScalarOperatorTest
 {
   ScalarOperatorTest()
   {
+DUNE_NO_DEPRECATED_BEGIN
     ft a = 1;
     ft c = 2;
     FieldMatrix<ft,1,1> v(2);
@@ -685,6 +687,7 @@ struct ScalarOperatorTest
     b = (v != a);
     b = (a == v);
     b = (a != v);
+DUNE_NO_DEPRECATED_END
 
   }
 };

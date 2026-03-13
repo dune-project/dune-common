@@ -247,6 +247,7 @@ namespace Dune
 
     //! Binary addition, when using FieldVector<K,1,1> like K
     template <Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     friend constexpr auto operator+ (const FieldMatrix& a, const S& b) noexcept
         requires(ROWS*COLS == 1)
     {
@@ -256,6 +257,7 @@ namespace Dune
 
     //! Binary addition, when using FieldMatrix<K,1,1> like K
     template <Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     friend constexpr auto operator+ (const S& a, const FieldMatrix& b) noexcept
         requires(ROWS*COLS == 1)
     {
@@ -265,6 +267,7 @@ namespace Dune
 
     //! add scalar
     template <Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     constexpr FieldMatrix& operator+= (const S& scalar)
         requires(ROWS*COLS == 1)
     {
@@ -288,6 +291,7 @@ namespace Dune
 
     //! Binary subtraction, when using FieldMatrix<K,1,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     friend constexpr auto operator- (const FieldMatrix& a, const S& b) noexcept
         requires(ROWS*COLS == 1)
     {
@@ -297,6 +301,7 @@ namespace Dune
 
     //! Binary subtraction, when using FieldMatrix<K,1,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     friend constexpr auto operator- (const S& a, const FieldMatrix& b) noexcept
         requires(ROWS*COLS == 1)
     {
@@ -306,6 +311,7 @@ namespace Dune
 
     //! subtract scalar
     template <Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     constexpr FieldMatrix& operator-= (const S& scalar)
         requires(ROWS*COLS == 1)
     {
@@ -337,7 +343,14 @@ namespace Dune
       return result;
     }
 
-    //! multiplication with scalar
+    /** \brief multiplication with scalar
+     *
+     * \deprecated This method implements a special handling for 1x1 matrices,
+     * and will be removed in Dune 2.13 or later. It is not deprecated by a C++ attribute
+     * because the operation it implements is legit for matrices of all sizes.
+     * The method exists only to resolve an overloading ambiguity warning
+     * that appears without it.
+     */
     template <Concept::Number S>
     constexpr FieldMatrix& operator*= (const S& scalar)
         requires(ROWS*COLS == 1)
@@ -361,13 +374,21 @@ namespace Dune
 
     //! Binary division, when using FieldMatrix<K,1,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     friend constexpr FieldMatrix operator/ (const S& a, const FieldMatrix& b) noexcept
         requires(ROWS*COLS == 1)
     {
       return FieldMatrix{a / b[0][0]};
     }
 
-    //! division by scalar
+    /** \brief division by scalar
+    *
+    * \deprecated This method implements a special handling for 1x1 matrices,
+    * and will be removed in Dune 2.13 or later. It is not deprecated by a C++ attribute
+    * because the operation it implements is legit for matrices of all sizes.
+    * The method exists only to resolve an overloading ambiguity warning
+    * that appears without it.
+    */
     template <Concept::Number S>
     constexpr FieldMatrix& operator/= (const S& scalar)
         requires(ROWS*COLS == 1)
@@ -508,6 +529,7 @@ namespace Dune
     }
 
     //! Conversion operator
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     constexpr operator const_reference () const noexcept
         requires(ROWS*COLS == 1)
     {
@@ -515,6 +537,7 @@ namespace Dune
     }
 
     //! Conversion operator
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     constexpr operator reference () noexcept
         requires(ROWS*COLS == 1)
     {
@@ -529,6 +552,7 @@ namespace Dune
 
     //! comparing FieldMatrix<1,1> with scalar for equality
     template<Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     friend constexpr bool operator== (const FieldMatrix& a, const S& b) noexcept
         requires(ROWS*COLS == 1)
     {
@@ -537,6 +561,7 @@ namespace Dune
 
     //! comparing FieldMatrix<1,1> with scalar for equality
     template<Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     friend constexpr bool operator== (const S& a, const FieldMatrix& b) noexcept
         requires(ROWS*COLS == 1)
     {
@@ -557,6 +582,7 @@ namespace Dune
 
     //! three-way comparison of FieldMatrix<1,1> with scalar
     template<Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     friend constexpr auto operator<=> (const FieldMatrix& a, const S& b) noexcept
         requires(ROWS*COLS == 1)
     {
@@ -565,6 +591,7 @@ namespace Dune
 
     //! three-way comparison of FieldMatrix<1,1> with scalar
     template<Concept::Number S>
+    [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
     friend constexpr auto operator<=> (const S& a, const FieldMatrix& b) noexcept
         requires(ROWS*COLS == 1)
     {
@@ -574,7 +601,13 @@ namespace Dune
     /// @}
   };
 
-  /** \brief Sends the matrix to an output stream */
+  /** \brief Sends the matrix to an output stream
+   *
+   * \deprecated This method implements a special handling for 1x1 matrices,
+   * and will be removed in Dune 2.13 or later. It is not deprecated by a C++ attribute
+   * because the operation it implements is legit for matrices of all sizes.
+   * It is unclear why this method exists at all.
+   */
   template<typename K>
   std::ostream& operator<< (std::ostream& s, const FieldMatrix<K,1,1>& a)
   {
