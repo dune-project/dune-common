@@ -208,7 +208,8 @@ namespace Dune
     template <class T, T value>
     constexpr auto operator- (std::integral_constant<T,value>)
     {
-      return std::integral_constant<std::make_signed_t<T>, -value>{};
+      using S = std::make_signed_t<T>;
+      return std::integral_constant<S, -S(value)>{};
     }
 
   }} //namespace Indices::Literals
