@@ -315,11 +315,13 @@ if(DUNE_PYTHON_USE_VENV)
   # if pip was not found before then we can set it here since it was now found
   set(DUNE_PYTHON_pip_FOUND ON CACHE INTERNAL "Whether dune has found python pip")
 
-  # install setuptools into the venv (needed to find dependencies later on)
+  # install setuptools into the venv (needed to find dependencies later on).
+  # Editable installs require a setuptools version with PEP 660 support.
   dune_execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip install
+        --upgrade
         "${DUNE_PIP_INDEX}"
-        setuptools>=41 ninja
-    WARNING_MESSAGE "python 'setuptools' package could not be installed - possibly connection to the python package index failed"
+        setuptools>=64,<80 ninja
+    WARNING_MESSAGE "python bootstrap packages could not be installed - possibly connection to the python package index failed"
     )
 
 else()
