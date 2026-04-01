@@ -8,7 +8,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/detail/descr.h>
+#else
 #include "common.h"
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
@@ -169,3 +171,4 @@ constexpr descr<N + 2, Ts...> type_descr(const descr<N, Ts...> &descr) {
 
 PYBIND11_NAMESPACE_END(detail)
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

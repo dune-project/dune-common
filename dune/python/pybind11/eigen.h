@@ -8,5 +8,8 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/eigen.h>
+#else
 #include "eigen/matrix.h"
+#endif // DUNE_USE_SYSTEM_PYBIND11

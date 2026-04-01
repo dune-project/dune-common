@@ -32,6 +32,13 @@ debian:11 gcc-10-20-expensive:
   # is unavailable
   allow_failure: true
 
+debian:13 gcc-14-23-pybind11:
+  extends: .common
+  image: registry.dune-project.org/docker/ci/debian:13
+  variables:
+    DUNECI_TOOLCHAIN: gcc-14-23
+    DUNECI_CMAKE_FLAGS: '-DDUNE_USE_SYSTEM_PYBIND11:BOOL=TRUE'
+
 core-modules-test:
   stage: downstream
   inherit:

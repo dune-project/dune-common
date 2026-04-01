@@ -9,7 +9,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/cast.h>
+#else
 #include "detail/common.h"
 #include "detail/descr.h"
 #include "detail/type_caster_base.h"
@@ -1835,3 +1837,4 @@ handle type::handle_of() {
 #define PYBIND11_TYPE(...) __VA_ARGS__
 
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

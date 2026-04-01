@@ -8,7 +8,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/options.h>
+#else
 #include "detail/common.h"
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
@@ -90,3 +92,4 @@ private:
 };
 
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

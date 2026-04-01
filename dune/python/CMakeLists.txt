@@ -2,5 +2,5 @@
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 add_subdirectory(common)
-add_subdirectory(test)
 add_subdirectory(pybind11)
+add_subdirectory(test)

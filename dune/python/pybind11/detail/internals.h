@@ -8,7 +8,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/detail/internals.h>
+#else
 #include "common.h"
 
 #if defined(WITH_THREAD) && defined(PYBIND11_SIMPLE_GIL_MANAGEMENT)
@@ -665,3 +667,4 @@ T &get_or_create_shared_data(const std::string &name) {
 }
 
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

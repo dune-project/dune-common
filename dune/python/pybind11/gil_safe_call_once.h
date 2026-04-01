@@ -1,7 +1,9 @@
 // Copyright (c) 2023 The pybind Community.
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/gil_safe_call_once.h>
+#else
 #include "detail/common.h"
 #include "gil.h"
 
@@ -89,3 +91,4 @@ private:
 };
 
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

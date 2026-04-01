@@ -514,8 +514,8 @@ get_filename_component(_dir \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)
       FILE ${PROJECT_BINARY_DIR}/${_target_file}
       NAMESPACE ${_namespace})
 
-    set(_glob_target_file "${_glob_target_file}
-include(\"\${_dir}/${_target_file}\")")
+    set(_glob_target_file "include(\"\${_dir}/${_target_file}\")
+    ${_glob_target_file}")
   endforeach()
 
   # add deprecated unaliased targets and warnings (remove after dune 2.12)

@@ -8,7 +8,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/detail/type_caster_base.h>
+#else
 #include "../pytypes.h"
 #include "common.h"
 #include "descr.h"
@@ -1216,3 +1218,4 @@ PYBIND11_NOINLINE std::string type_info_description(const std::type_info &ti) {
 
 PYBIND11_NAMESPACE_END(detail)
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

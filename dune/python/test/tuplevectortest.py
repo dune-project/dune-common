@@ -61,7 +61,7 @@ runCode="""
 #include <dune/common/tuplevector.hh>
 #include <dune/common/fvector.hh>
 #include <iostream>
-#include <dune/python/pybind11/cast.h>
+#include <pybind11/cast.h>
 
 double run(const Dune::TupleVector<Dune::FieldVector<double,3>,Dune::FieldVector<double,2>> &t) {
 double res=0;

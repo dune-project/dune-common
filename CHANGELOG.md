@@ -27,6 +27,17 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
   These methods created semantic ambiguities and were the source of some confusion.
 
 
+- You can now build the Python interface using an external installation
+  of `pybind11` (for example, the global one provided by your system).
+  The vendored copy of `pybind11` that we have been shipping remains
+  in place, and it remains the default. That means that you should not see
+  any changes at all unless you explicitly opt for an external `pybind11`,
+  by setting the build option `-DDUNE_USE_SYSTEM_PYBIND11:BOOL=TRUE`.
+
+  We encourage everyone to try the new option eventually, as we are considering
+  to completely remove our vendored copy of `pybind11` in some later release.
+
+
 # Release 2.11
 
 ## Dependencies

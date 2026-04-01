@@ -8,7 +8,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/detail/init.h>
+#else
 #include "class.h"
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
@@ -456,3 +458,4 @@ struct pickle_factory<Get, Set, RetState(Self), NewInstance(ArgState)> {
 PYBIND11_NAMESPACE_END(initimpl)
 PYBIND11_NAMESPACE_END(detail)
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

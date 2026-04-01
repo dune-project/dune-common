@@ -10,7 +10,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/eval.h>
+#else
 #include "pybind11.h"
 
 #include <utility>
@@ -154,3 +156,4 @@ object eval_file(str fname, object global = globals(), object local = object()) 
 #endif
 
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

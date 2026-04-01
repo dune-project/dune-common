@@ -9,7 +9,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/chrono.h>
+#else
 #include "pybind11.h"
 
 #include <chrono>
@@ -223,3 +225,4 @@ class type_caster<std::chrono::duration<Rep, Period>>
 
 PYBIND11_NAMESPACE_END(detail)
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11
