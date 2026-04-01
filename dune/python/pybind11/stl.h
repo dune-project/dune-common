@@ -8,7 +8,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/stl.h>
+#else
 #include "pybind11.h"
 #include "detail/common.h"
 
@@ -446,3 +448,4 @@ inline std::ostream &operator<<(std::ostream &os, const handle &obj) {
 }
 
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

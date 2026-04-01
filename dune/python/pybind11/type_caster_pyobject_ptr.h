@@ -1,7 +1,9 @@
 // Copyright (c) 2023 The pybind Community.
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/type_caster_pyobject_ptr.h>
+#else
 #include "detail/common.h"
 #include "detail/descr.h"
 #include "cast.h"
@@ -59,3 +61,4 @@ private:
 
 PYBIND11_NAMESPACE_END(detail)
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

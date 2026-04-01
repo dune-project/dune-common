@@ -8,7 +8,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/detail/common.h>
+#else
 #define PYBIND11_VERSION_MAJOR 2
 #define PYBIND11_VERSION_MINOR 12
 #define PYBIND11_VERSION_PATCH 0
@@ -1265,3 +1267,4 @@ constexpr
 
 PYBIND11_NAMESPACE_END(detail)
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

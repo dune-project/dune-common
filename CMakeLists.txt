@@ -69,6 +69,9 @@ add_subdirectory(share)
 
 # if Python bindings are enabled, include necessary sub directories.
 if(DUNE_ENABLE_PYTHONBINDINGS)
+  include(Pybind11)
+  dune_provide_pybind11(dunecommon)
+
   add_subdirectory(python)
 endif()
 

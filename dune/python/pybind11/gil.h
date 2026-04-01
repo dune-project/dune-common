@@ -8,7 +8,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/gil.h>
+#else
 #include "detail/common.h"
 
 #include <cassert>
@@ -245,3 +247,4 @@ public:
 #endif // WITH_THREAD
 
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

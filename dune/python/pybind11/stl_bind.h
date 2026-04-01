@@ -8,7 +8,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/stl_bind.h>
+#else
 #include "detail/common.h"
 #include "detail/type_caster_base.h"
 #include "cast.h"
@@ -821,3 +823,4 @@ class_<Map, holder_type> bind_map(handle scope, const std::string &name, Args &&
 }
 
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

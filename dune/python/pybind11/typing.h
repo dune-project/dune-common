@@ -9,7 +9,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/typing.h>
+#else
 #include "detail/common.h"
 #include "cast.h"
 #include "pytypes.h"
@@ -123,3 +125,4 @@ struct handle_type_name<typing::Callable<Return(Args...)>> {
 
 PYBIND11_NAMESPACE_END(detail)
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

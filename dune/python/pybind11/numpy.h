@@ -8,7 +8,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/numpy.h>
+#else
 #include "pybind11.h"
 #include "detail/common.h"
 #include "complex.h"
@@ -2131,3 +2133,4 @@ Helper vectorize(Return (Class::*f)(Args...) const) {
 }
 
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

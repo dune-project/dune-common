@@ -18,7 +18,9 @@
 */
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/iostream.h>
+#else
 #include "pybind11.h"
 
 #include <algorithm>
@@ -263,3 +265,4 @@ add_ostream_redirect(module_ m, const std::string &name = "ostream_redirect") {
 }
 
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

@@ -3,7 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 #pragma once
-
+#ifdef DUNE_USE_SYSTEM_PYBIND11
+#include <pybind11/stl/filesystem.h>
+#else
 #include "../pybind11.h"
 #include "../detail/common.h"
 #include "../detail/descr.h"
@@ -114,3 +116,4 @@ struct type_caster<std::experimental::filesystem::path>
 
 PYBIND11_NAMESPACE_END(detail)
 PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
+#endif // DUNE_USE_SYSTEM_PYBIND11

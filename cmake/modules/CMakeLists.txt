@@ -60,6 +60,7 @@ install(FILES
   Headercheck.cmake
   latexmkrc.cmake
   OverloadCompilerFlags.cmake
+  Pybind11.cmake
   UseInkscape.cmake
   UseLatexMk.cmake
   DESTINATION ${DUNE_INSTALL_MODULEDIR})

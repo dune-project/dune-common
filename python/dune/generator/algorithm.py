@@ -114,7 +114,7 @@ def load(functionName, includes, *args, pythonName=None):
       following code will work
       ```
       code="""
-      #include <dune/python/pybind11/eigen.h>
+      #include <pybind11/eigen.h>
       auto test(ColVec_t& x_1) {...}
       """
 
@@ -187,7 +187,7 @@ def load(functionName, includes, *args, pythonName=None):
     source += "".join(["#include <" + i + ">\n" for i in includes])
     source += "\n"
     source += '#include <dune/python/common/typeregistry.hh>\n'
-    source += '#include <dune/python/pybind11/pybind11.h>\n'
+    source += '#include <pybind11/pybind11.h>\n'
     source += '\n'
 
     source += cppSource
