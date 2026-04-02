@@ -31,17 +31,19 @@ extern "C" {
   #define METIS_OK 1
 #endif
 
+#endif // HAVE_METIS
+
 namespace Dune::Metis {
 
-#if defined(REALTYPEWIDTH) || defined(SCOTCH_METIS_DATATYPES)
+#if HAVE_METIS && (defined(REALTYPEWIDTH) || defined(SCOTCH_METIS_DATATYPES))
   using real_t = ::real_t;
 #else
   using real_t = double;
 #endif
 
-#if defined(IDXTYPEWIDTH) || defined(SCOTCH_METIS_DATATYPES)
+#if HAVE_METIS && (defined(IDXTYPEWIDTH) || defined(SCOTCH_METIS_DATATYPES))
   using idx_t = ::idx_t;
-#elif HAVE_SCOTCH_METIS
+#elif HAVE_METIS && HAVE_SCOTCH_METIS
   using idx_t = SCOTCH_Num;
 #else
   using idx_t = int;
@@ -49,5 +51,4 @@ namespace Dune::Metis {
 
 } // end namespace Dune::Metis
 
-#endif // HAVE_METIS
 #endif // DUNE_METIS_HH

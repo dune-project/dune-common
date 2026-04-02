@@ -29,18 +29,19 @@ extern "C" {
 extern "C" {
   #include <parmetis.h>
 }
+#endif // HAVE_PARMETIS
 
 namespace Dune::ParMetis {
 
-#if defined(REALTYPEWIDTH)
+#if HAVE_PARMETIS && defined(REALTYPEWIDTH)
   using real_t = ::real_t;
 #else
   using real_t = float;
 #endif
 
-#if defined(IDXTYPEWIDTH)
+#if HAVE_PARMETIS && defined(IDXTYPEWIDTH)
   using idx_t = ::idx_t;
-#elif HAVE_PTSCOTCH_PARMETIS
+#elif HAVE_PARMETIS && HAVE_PTSCOTCH_PARMETIS
   using idx_t = SCOTCH_Num;
 #else
   using idx_t = int;
@@ -48,5 +49,4 @@ namespace Dune::ParMetis {
 
 } // end namespace Dune::ParMetis
 
-#endif // HAVE_PARMETIS
 #endif // DUNE_PARMETIS_HH
