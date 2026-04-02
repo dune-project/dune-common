@@ -10,6 +10,7 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 - Add five variants of the method `insert(pos, ...)` to `ReservedVector`.
   These are exactly the methods known from `std::vector`.
 
+- Make `IndexedIterator` compatible with raw pointers as iterators.
 
 ## Build system: Changelog
 

@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 #include <config.h>
 
+#include <array>
 #include <numeric>
+#include <type_traits>
 #include <vector>
 
 #include <dune/common/indexediterator.hh>
@@ -24,10 +26,27 @@ auto testSparseRange()
   return suite;
 }
 
+auto testPointer()
+{
+  using namespace Dune;
+  TestSuite suite("Check pointer()");
+  std::array<int,10> a{};
+  std::iota(a.begin(), a.end(), 0);
+  auto* begin = a.data();
+  auto* end = a.data() + a.size();
+
+  auto indexedRange = IteratorRange{IndexedIterator{begin}, IndexedIterator{end}};
+  for (auto&& [vi,i] : Dune::sparseRange(indexedRange))
+    suite.check(vi == i);
+
+  return suite;
+}
+
 int main()
 {
   Dune::TestSuite suite;
   suite.subTest(testSparseRange());
+  suite.subTest(testPointer());
 
   return suite.exit();
 }
