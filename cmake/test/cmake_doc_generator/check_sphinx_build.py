@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import shutil
 import subprocess
@@ -14,12 +15,24 @@ from pathlib import Path
 SKIP_RETURN_CODE = 77
 
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        required=True,
+        help="Build-tree directory for generated test output",
+    )
+    return parser.parse_args()
+
+
 def main() -> int:
+    args = get_args()
     if importlib.util.find_spec("sphinx") is None:
         return SKIP_RETURN_CODE
 
     test_dir = Path(__file__).resolve().parent
-    build_dir = test_dir / "_sphinx_fixture"
+    build_dir = args.output_root / "sphinx"
     fixture = test_dir / "FixtureModernDocs.cmake"
     scripts_dir = test_dir.parents[1] / "scripts"
     extract_script = scripts_dir / "extract_cmake_data.py"

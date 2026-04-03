@@ -37,12 +37,14 @@ add_test(
     NAME cmakedocgeneratorextracttest
     COMMAND ${Python3_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake_doc_generator/check_extract_cmake_data.py
+    --output-root ${CMAKE_CURRENT_BINARY_DIR}/cmake_doc_generator
 )
 
 add_test(
     NAME cmakedocgeneratorsphinxtest
     COMMAND ${Python3_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake_doc_generator/check_sphinx_build.py
+    --output-root ${CMAKE_CURRENT_BINARY_DIR}/cmake_doc_generator
 )
 set_tests_properties(cmakedocgeneratorsphinxtest PROPERTIES SKIP_RETURN_CODE 77)
 

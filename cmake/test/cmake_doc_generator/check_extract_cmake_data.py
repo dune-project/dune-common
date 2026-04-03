@@ -4,15 +4,28 @@
 
 from __future__ import annotations
 
+import argparse
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        required=True,
+        help="Build-tree directory for generated test output",
+    )
+    return parser.parse_args()
+
+
 def main() -> int:
+    args = get_args()
     test_dir = Path(__file__).resolve().parent
-    build_dir = test_dir / "_build"
+    build_dir = args.output_root / "extract"
     fixture = test_dir / "FixtureModernDocs.cmake"
     script = test_dir.parents[1] / "scripts" / "extract_cmake_data.py"
     command_script = test_dir.parents[1] / "scripts" / "generate_cmake_command_pages.py"
