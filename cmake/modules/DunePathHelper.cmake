@@ -1,49 +1,50 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Some helper functions for people developing the CMake build system
-# to get quick and easy access to path variables of Dune modules.
-#
-# .. cmake_function:: dune_module_path
-#
-#    .. cmake_param:: MODULE
-#       :single:
-#       :required:
-#
-#       The name of the module.
-#
-#    .. cmake_param:: RESULT
-#       :single:
-#       :required:
-#
-#       The name of the variable to export the result.
-#
-#    .. cmake_param:: CMAKE_MODULES
-#       :option:
-#
-#       Set to return the path to cmake modules
-#
-#    .. cmake_param:: BUILD_DIR
-#       :option:
-#
-#       Set to return the path to the build directory
-#
-#    .. cmake_param:: SOURCE_DIR
-#       :option:
-#
-#       Set to return the include path of the module
-#
-#    .. cmake_param:: SCRIPT_DIR
-#       :option:
-#
-#       Set to return the CMake script dir
-#
-#
-#    Returns the specified path of the given module. This differs
-#    whether it is called from the actual module, or from a module
-#    requiring or suggesting this module. One and only one type of path
-#    may be requested.
-#
+#[=======================================================================[.rst:
+DunePathHelper
+--------------
+
+Helper commands to query path variables of Dune modules.
+
+.. cmake:command:: dune_module_path
+
+  Return a selected path associated with a Dune module.
+
+  .. code-block:: cmake
+
+    dune_module_path(
+      MODULE <module>
+      RESULT <result>
+      [CMAKE_MODULES]
+      [BUILD_DIR]
+      [SOURCE_DIR]
+      [SCRIPT_DIR]
+    )
+
+  ``MODULE``
+    The name of the module whose path is requested.
+
+  ``RESULT``
+    The name of the output variable receiving the result.
+
+  ``CMAKE_MODULES``
+    Return the path to the module's CMake modules directory.
+
+  ``BUILD_DIR``
+    Return the path to the module's build directory.
+
+  ``SOURCE_DIR``
+    Return the path to the module's source directory.
+
+  ``SCRIPT_DIR``
+    Return the path to the module's CMake scripts directory.
+
+  Exactly one path selector must be requested. The returned path depends on
+  whether the command is called from the module itself or from a dependent
+  module that already knows the exported path variables.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 function(dune_module_path)
