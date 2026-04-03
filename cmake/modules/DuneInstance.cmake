@@ -1,471 +1,192 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Module to generate instantiations, typically for some template
-#
-# .. cmake_module::
-#
-#    This module can be used to generate explicit template instantiations.
-#    Suppose you have a template test function that you want to call for a
-#    number of template arguments.  You want to explicitly instantiate the
-#    function for each set of template arguments, and put the instantiation
-#    into its own translation unit.  (This can be beneficial in that it limits
-#    the amount of code that the optimizer sees at once, and thus it can
-#    reduce both memory and cpu requirements during compilation.)
-#
-#    .. rubric:: Examples
-#
-#    Let's say you are writing a test ``mytest.cc`` and need to call a
-#    template function for several types::
-#
-#      #include <mytestsuite.hh>
-#
-#      int main() {
-#        MyTestSuite suite;
-#
-#        suite.test<bool>();
-#        suite.test<char>();
-#        suite.test<int>();
-#        suite.test<double>();
-#
-#        return suite.good() ? EXIT_SUCCESS : EXIT_FAILURE;
-#      }
-#
-#    Let's further say that you want to explicitly instantiate each used
-#    ``MyTestSuite::test()`` instance in it's own translation unit.  Then you
-#    need a series of files ``mytest_instance_bool.cc``,
-#    ``mytest_instance_char.cc``, etc, all with essentially the same content::
-#
-#      #include <mytestsuite.hh>
-#
-#      template void MyTestSuite::test<@TYPE@>();
-#
-#    where ``@TYPE@`` is replaced by ``bool``, ``char``, etc as appropriate.
-#
-#    This is however not enough: all translation units need to know which
-#    instances of ``MyTestSuite::test()`` are instantiated explicitly so they
-#    do not instantiate them implicitly themselves (that would violate the
-#    one-definition rule).  C++ only allows to declare individual instances as
-#    extern, not all of them collectively, so we need to put a list of all
-#    these instances into a header ``mytest.hh``::
-#
-#      #include <mytestsuite.hh>
-#
-#      extern template void MyTestSuite::test<bool>();
-#      extern template void MyTestSuite::test<char>();
-#      extern template void MyTestSuite::test<int>();
-#      extern template void MyTestSuite::test<double>();
-#
-#    We also need to include that header from each translation unit in the
-#    test, we can simply replace ``#include <mytestsuite.hh>`` with ``#include
-#    <mytest.hh>``.
-#
-#    This is of course tedious and prone tp break if the list of tested types
-#    changes.  To make this less fragile this module provides a series of
-#    commands: :ref:`dune_instance_begin() <dune_instance_begin>`,
-#    :ref:`dune_instance_add() <dune_instance_add>`, and
-#    :ref:`dune_instance_end() <dune_instance_end>`, which can be used to
-#    automatically generate the explicit instantiations for each type and the
-#    contents for the header and the body of main.
-#
-#    This may look like this in ``CMakeLists.txt``::
-#
-#      dune_instance_begin(FILES mytest.cc mytest.hh)
-#
-#      foreach(TYPE IN ITEMS bool char int double)
-#        dune_instance_add(ID "${TYPE}" FILES mytest_instance.cc)
-#      endforeach(TYPE IN ITEMS bool char int double)
-#
-#      dune_instance_end()
-#
-#      list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
-#      dune_add_test(NAME mytest
-#        SOURCES ${DUNE_INSTANCE_GENERATED})
-#
-#    The call to :ref:`dune_instance_begin() <dune_instance_begin>` reads
-#    ``mytest.cc.in`` and ``mytest.hh.in`` and splits them into embedded
-#    templates and other content.  It will replace occurrences of ``@VAR@``
-#    now in the other content and save the result for later.
-#
-#    The call to :ref:`dune_instance_add() <dune_instance_add>` occurs in a
-#    loop.  Each call will instantiate the embedded templates extracted
-#    earlier to replace an occurrence of ``@TYPE@`` by the value of the variable
-#    ``TYPE`` set in the for loop.  Then files containing explicit
-#    instantiatons will be generated as ``mytest_instance_bool.cc``,
-#    ``mytest_instance_bool.cc``, etc, from a template file
-#    ``mytest_instance.cc.in``.  The name of the generated files are the base
-#    file name from the template definition with the ``ID`` inserted before
-#    the extension.  The name of the template file is the same base file name
-#    with ``.in`` appended.
-#
-#    :ref:`dune_instance_end() <dune_instance_end>` is used to write
-#    ``mytest.cc`` and ``mytest.hh`` with the collected content from the
-#    embedded templates.  The list of generated files will be available in the
-#    variable ``DUNE_INSTANCE_GENERATED``.
-#
-#    The template files then look like this:
-#
-#    ``mytest.cc.in``::
-#
-#      // @GENERATED_SOURCE@
-#
-#      #include <config.h>
-#
-#      #include <mytest.hh>
-#
-#      int main() {
-#        MyTestSuite suite;
-#
-#      #cmake @template@
-#        suite.test<@TYPE@>();
-#      #cmake @endtemplate@
-#
-#        return suite.good() ? EXIT_SUCCESS : EXIT_FAILURE;
-#      }
-#
-#    ``mytest.hh.in``::
-#
-#      // @GENERATED_SOURCE@
-#
-#      #include <mytestsuite.hh>
-#
-#      #cmake @template@
-#      extern template void MyTestSuite::test<@TYPE@>();
-#      #cmake @endtemplate@
-#
-#    ``mytest_instance.cc.in``::
-#
-#      // @GENERATED_SOURCE@
-#
-#      #include <config.h>
-#
-#      #include <mytest.hh>
-#
-#      template void MyTestSuite::test<@TYPE@>();
-#
-#    The ``@GENERATED_SOURCE@`` substitution is good practice, it tells a
-#    human reader that this file was generated and what the template file was,
-#    and it hints editors to go into read-only mode.
-#
-#    .. rubric:: Embedded Templates
-#
-#    The template files given in :ref:`dune_instance_begin()
-#    <dune_instance_begin>` can contain embedded templates.  These will be
-#    instantiated by :ref:`dune_instance_add() <dune_instance_add>`, and all
-#    instantiations will be concatenated together and replace the original
-#    embedded template.
-#
-#    The begin of an embedded template is marked by a line containing
-#    ``@template@`` or ``@template NAME@``.  Leaving off the name is
-#    equivalent to an empty name.  ``dune_instance_add(TEMPLATE NAME)`` will
-#    only instantiate embedded templates whose name matches and ignore all
-#    others.
-#
-#    The end of an embedded template is marked by a line containing
-#    ``@endtemplate@`` or ``@endtemplate NAME@``.  If a name is given, it must
-#    match the name of the embedded template it closes.  If no name is given
-#    (or the name is empty), that check is omitted.
-#
-#    There may be arbitrary characters on the same line before or after the
-#    begin and end markers.  These are ignored, so you can use them for
-#    comments or to trick your editor into proper indentation.  The one
-#    exception is that the line surrounding the marker may not contain any
-#    ``@`` characters to avoid ambiguities.
-#
-#    .. rubric:: How Files And Strings Are Generated
-#
-#    The generation is done using the cmake command ``configure_file(...)``
-#    for template files and ``string(CONFIGURE ...)`` for template strings.
-#    These simply substitute the current variable values, so make sure to set
-#    up the variables to substitute before calling :ref:`dune_instance_add()
-#    <dune_instance_add>` or :ref:`dune_instance_begin()
-#    <dune_instance_begin>`.
-#
-#    Refrain from using substitutions that begin with an underscore
-#    (i.e. ``@_my_local_var@``).  The generation functions in this module use
-#    such names for their local variables and may hide the variable you are
-#    trying to substitute.
-#
-#    When instantiating files we set up a few convenience variables before
-#    calling ``configure_file()`` that can be used in substitutions:
-#    ``@TEMPLATE@`` contains the name of the template file.  ``@INSTANCE@``
-#    contains the name of the file being generated, not including an implied
-#    ``${CMAKE_CURRENT_BINARY_DIR}``.  Use ``@BINDIR_INSTANCE@`` if you do
-#    want the implied ``${CMAKE_CURRENT_BINARY_DIR}``.  ``@GENERATED_SOURCE@``
-#    contains a one-line message that this file was generated, including the
-#    name of the template file.
-#
-#    .. rubric:: Main Interface
-#
-#    These are the ones you normally use.
-#
-#    * :ref:`dune_instance_begin() <dune_instance_begin>`
-#    * :ref:`dune_instance_add() <dune_instance_add>`
-#    * :ref:`dune_instance_end() <dune_instance_end>`
-#    * :ref:`DUNE_INSTANCE_GENERATED <DUNE_INSTANCE_GENERATED>`
-#
-#    .. rubric:: Utilities
-#
-#    You would not use these directly under normal circumstances.
-#
-#    * :ref:`dune_instance_parse_file_spec() <dune_instance_parse_file_spec>`
-#    * :ref:`dune_instance_from_id() <dune_instance_from_id>`
-#    * :ref:`dune_instance_generate_file() <dune_instance_generate_file>`
-#
-#
-# .. cmake_function:: dune_instance_begin
-#
-#    .. cmake_brief::
-#
-#       Prepare for a list of instances.
-#
-#    .. cmake_param:: FILES
-#       :multi:
-#       :argname: file_spec
-#
-#       List of template files with embedded templates.
-#
-#    Read the given template files, and extract embedded templates.  Run the
-#    generator on the remaining file content with the variables currently in
-#    effect.
-#
-#    .. note::
-#
-#       A matching :ref:`dune_instance_end() <dune_instance_end>` is required.
-#       Since information is communicated through variables in the callers
-#       scope, :ref:`dune_instance_begin()
-#       <dune_instance_begin>`/:ref:`dune_instance_end() <dune_instance_end>`
-#       blocks may not be nested inside the same scope.  Since a function is a
-#       new scope, it may safely contain a :ref:`dune_instance_begin()
-#       <dune_instance_begin>`/:ref:`dune_instance_end() <dune_instance_end>`
-#       block, even if it is itself called from one.
-#
-#
-# .. cmake_function:: dune_instance_add
-#
-#    .. cmake_brief::
-#
-#       Instantiate a template with the currently set variable values.
-#
-#    .. cmake_param:: FILES
-#       :multi:
-#       :argname: file_spec
-#
-#       List of template file specifications.  These are usually the names of
-#       template files with the ``.in`` extension removed.  See the ID
-#       parameter for details.
-#
-#    .. cmake_param:: ID
-#       :single:
-#
-#       Used to build the names of generated files.  Each file specification
-#       together with this id is given to :ref:`dune_instance_from_id()
-#       <dune_instance_from_id>` to determine the name of a template file and
-#       the name of an instance file.  To get unique instance file names this
-#       ID should usually be a list of variable values joined together by
-#       ``_``.
-#
-#       Specifically, each file specification may be of the form
-#       ``template_file_name:base_instance_file_name``, or it may be a single
-#       token not containing ``:``.  In the latter case, if that token
-#       contains a trailing ``.in``, that is removed and the result is the base
-#       instance file name.  The base instance file name has the ``.in``
-#       appended again to form the template file name.
-#
-#       The template file name is used as-is to generate files from.
-#
-#       The ID is mangled by replacing any runs of non-alphanumeric characters
-#       with an underscore ``_``, and stripping any resulting underscore from
-#       the beginning and the end.  The result is inserted before any
-#       extension into the base instance file name to form the instance file
-#       name.
-#
-#    .. cmake_param:: TEMPLATE
-#       :single:
-#
-#       Instantiate embedded templates by this name.  Defaults to an empty
-#       name, matching embedded templates without name.
-#
-#    Instantiate any embedded templates that match the given template name,
-#    substituting the current variables values.  Then, generate files
-#    according the the file specifications in the template, doing
-#    substitutions as well.
-#
-#
-# .. cmake_function:: dune_instance_end
-#
-#    .. cmake_brief::
-#
-#       Close a block started by :ref:`dune_instance_begin()
-#       <dune_instance_begin>`, and write the files generated from the
-#       templates given there.
-#
-#    Write the files generated from the template files given in
-#    :ref:`dune_instance_begin() <dune_instance_begin>`, including any content
-#    generated from embedded templates in :ref:`dune_instance_add()
-#    <dune_instance_add>`.
-#
-#
-# .. cmake_function:: dune_instance_parse_file_spec
-#
-#    .. cmake_brief::
-#
-#       Parse a file specification into a template file name and an instance
-#       file name.
-#
-#    .. cmake_param:: spec
-#       :positional:
-#       :single:
-#       :required:
-#
-#       The file specification.
-#
-#    .. cmake_param:: template_var
-#       :positional:
-#       :single:
-#
-#       Name of the variable to store the template file name in.  Can be empty
-#       to discard the template file name.
-#
-#    .. cmake_param:: instance_var
-#       :positional:
-#       :single:
-#
-#       Name of the variable to store the instance file name in.  Can be empty
-#       to discard then instance file name.
-#
-#    The file specification can be the name of a template file if it has
-#    ``.in`` at the end, or the name of an instance file if it doesn't.  The
-#    name of the other file is obtained by appending or removing ``.in``, as
-#    applicable.  Both file names can also be given explicitly in the form
-#    ``template_file_name:instance_file_name``.
-#
-#    .. note::
-#
-#       This is the function use to parse the file specifications in
-#       :ref:`dune_instance_begin() <dune_instance_begin>`.  It is also used
-#       as a helper in :ref:`dune_instance_from_id() <dune_instance_from_id>`
-#       to determine template file name and base instance file name.
-#
-#
-# .. cmake_function:: dune_instance_from_id
-#
-#    .. cmake_brief::
-#
-#       Determine a template file name and an instance file name from a file
-#       specification and a unique id.
-#
-#    .. cmake_param:: file_spec
-#       :positional:
-#       :single:
-#       :required:
-#
-#       The file specification.
-#
-#    .. cmake_param:: id
-#       :positional:
-#       :single:
-#       :required:
-#
-#       The id specification.  This should uniquely identify an instance.
-#
-#    .. cmake_param:: template_var
-#       :positional:
-#       :single:
-#
-#       Name of the variable to store the template file name in.  Can be empty
-#       to discard the template file name.
-#
-#    .. cmake_param:: instance_var
-#       :positional:
-#       :single:
-#
-#       Name of the variable to store the instance file name in.  Can be empty
-#       to discard the instance file name.
-#
-#    The file specification is handed to :ref:`dune_instance_parse_file_spec()
-#    <dune_instance_parse_file_spec>` to determine a template file name and a
-#    *base* instance file name.
-#
-#    The ID is mangled by replacing any runs of non-alphanumeric characters
-#    with an underscore ``_``, and stripping any resulting underscore from the
-#    beginning and the end.  The result is inserted before any extension into
-#    the base instance file name to form the instance file name.
-#
-#    .. note::
-#
-#       This is the function use to parse the file specifications given in
-#       :ref:`dune_instance_add(FILES ...) <dune_instance_add>`.
-#
-#
-# .. cmake_function:: dune_instance_apply_bindir
-#
-#    .. cmake_brief::
-#
-#       Modify a filename to be relative to ``CMAKE_CURRENT_BINARY_DIR``.
-#
-#    .. cmake_param:: fname_var
-#       :positional:
-#       :single:
-#       :required:
-#
-#       The name of the variable containing the file name.
-#
-#    This is used to mimic the behaviour of ``configure_file()``.  If the file
-#    name given is not absolute, it is modified by prepending
-#    ``${CMAKE_CURRENT_BINARY_DIR}``.
-#
-#
-# .. cmake_function:: dune_instance_generate_file
-#
-#    .. cmake_brief::
-#
-#       Convenience replacement for ``configure_file()``: enable standard
-#       substitutions, register files as generated, and flag the same file
-#       being generated twice.
-#
-#    .. cmake_param:: TEMPLATE
-#       :positional:
-#       :single:
-#       :required:
-#
-#       The name of the template file.
-#
-#    .. cmake_param:: INSTANCE
-#       :positional:
-#       :single:
-#       :required:
-#
-#       The name of the generated file.  This is assumed relative to
-#       ``${CMAKE_CURRENT_BINARY_DIR}``.
-#
-#    Make sure the variables ``TEMPLATE``, ``INSTANCE``, and
-#    ``BINDIR_INSTANCE`` are set to the parameter values and available for
-#    substitution.  Also set the variable ``GENERATED_SOURCE`` to a one-line
-#    message that tells a human reader that this file is generated, and the
-#    name of the template file it was generated from.  The message also
-#    includes hints for common editors telling them to switch to read-only
-#    mode.
-#
-#    Then generate the file as if by ``configure_file()``.
-#
-#    If the instance file has been registered as a generated source file
-#    before, this function generates a fatal error.  This ensures that any
-#    accidental attempt to generate the same file twice is caught.  As a
-#    special exception, if the generated content is the same as before, the
-#    error is silently skipped.
-#
-#
-# .. cmake_variable:: DUNE_INSTANCE_GENERATED
-#
-#    After :ref:`dune_instance_end() <dune_instance_end>`, this holds the list
-#    of files that were generated.  The list entries include an implied
-#    ``${CMAKE_CURRENT_BINARY_DIR}``, as appropriate.
-#
-#    Do not rely on the value of this variable and do not modify it inside a
-#    :ref:`dune_instance_begin()
-#    <dune_instance_begin>`/:ref:`dune_instance_end() <dune_instance_end>`
-#    block.
+#[=======================================================================[.rst:
+DuneInstance
+============
+
+Generate explicit template instantiations from CMake-driven template files.
+
+This module helps split many explicit instantiations across generated
+translation units. A typical workflow is:
+
+.. code-block:: cmake
+
+  dune_instance_begin(FILES mytest.cc mytest.hh)
+
+  foreach(TYPE IN ITEMS bool char int double)
+    dune_instance_add(ID "${TYPE}" FILES mytest_instance.cc)
+  endforeach()
+
+  dune_instance_end()
+
+  list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\\.cc$]])
+  dune_add_test(NAME mytest SOURCES ${DUNE_INSTANCE_GENERATED})
+
+The files listed in :cmake:command:`dune_instance_begin()` are expected as
+template files with an implicit ``.in`` suffix. Embedded templates delimited by
+``@template@`` and ``@endtemplate@`` are instantiated by
+:cmake:command:`dune_instance_add()`. The collected generated content is
+written by :cmake:command:`dune_instance_end()`.
+
+Template generation is based on :dune:cmake-command:`configure_file` and
+``string(CONFIGURE ...)``, so current CMake variable values are substituted
+directly.
+
+.. cmake:command:: dune_instance_begin
+
+  Prepare generation of a family of explicit instantiations.
+
+  .. code-block:: cmake
+
+    dune_instance_begin(FILES <file-spec>...)
+
+  ``FILES``
+    Template files with embedded templates. In the common case these are given
+    without the trailing ``.in`` suffix.
+
+  The command reads the given templates, extracts embedded template sections,
+  and applies substitutions to the remaining content with the variables
+  currently in scope.
+
+  .. note::
+
+    A matching :cmake:command:`dune_instance_end()` call is required. Since the
+    implementation communicates through variables in the caller scope,
+    begin/end blocks must not be nested in the same scope.
+
+.. cmake:command:: dune_instance_add
+
+  Instantiate embedded templates and generate instance files for one set of
+  template arguments.
+
+  .. code-block:: cmake
+
+    dune_instance_add(
+      FILES <file-spec>...
+      ID <id>
+      [TEMPLATE <template-name>]
+    )
+
+  ``FILES``
+    Template file specifications. These are usually file names without the
+    trailing ``.in`` suffix.
+
+  ``ID``
+    Unique identifier used to derive instance file names. The identifier is
+    normalized by replacing non-alphanumeric characters with ``_`` before it is
+    inserted into the generated file name.
+
+  ``TEMPLATE``
+    Name of the embedded template to instantiate. The default is the unnamed
+    embedded template.
+
+  Each file specification is mapped to a template file and an instance file
+  name through :cmake:command:`dune_instance_from_id()`.
+
+.. cmake:command:: dune_instance_end
+
+  Finish a generation block started by :cmake:command:`dune_instance_begin()`.
+
+  .. code-block:: cmake
+
+    dune_instance_end()
+
+  This writes the files prepared by :cmake:command:`dune_instance_begin()`,
+  including all content contributed by :cmake:command:`dune_instance_add()`.
+
+.. cmake:command:: dune_instance_parse_file_spec
+
+  Parse a file specification into a template file name and an instance file
+  name.
+
+  .. code-block:: cmake
+
+    dune_instance_parse_file_spec(<spec> <template-var> <instance-var>)
+
+  ``spec``
+    File specification to parse.
+
+  ``template-var``
+    Variable name receiving the template file name. It may be empty.
+
+  ``instance-var``
+    Variable name receiving the instance file name. It may be empty.
+
+  A file specification can be written as ``template.in:instance`` or as a
+  single name, in which case ``.in`` is appended or removed automatically.
+
+.. cmake:command:: dune_instance_from_id
+
+  Derive a template file name and a unique instance file name from a file
+  specification and an identifier.
+
+  .. code-block:: cmake
+
+    dune_instance_from_id(<file-spec> <id> <template-var> <instance-var>)
+
+  ``file-spec``
+    File specification to interpret.
+
+  ``id``
+    Identifier used to derive the generated instance file name.
+
+  ``template-var``
+    Variable name receiving the template file name. It may be empty.
+
+  ``instance-var``
+    Variable name receiving the instance file name. It may be empty.
+
+  The file specification is parsed by
+  :cmake:command:`dune_instance_parse_file_spec()`. The derived base instance
+  file name is then extended with a mangled form of ``id``.
+
+.. cmake:command:: dune_instance_apply_bindir
+
+  Make a file name relative to ``CMAKE_CURRENT_BINARY_DIR``.
+
+  .. code-block:: cmake
+
+    dune_instance_apply_bindir(<filename-var>)
+
+  ``filename-var``
+    Variable containing the file name to normalize.
+
+  Relative paths are prefixed with ``${CMAKE_CURRENT_BINARY_DIR}``, matching
+  the behavior of :dune:cmake-command:`configure_file`.
+
+.. cmake:command:: dune_instance_generate_file
+
+  Generate one file from one template with standard DUNE instance-generation
+  substitutions.
+
+  .. code-block:: cmake
+
+    dune_instance_generate_file(<template> <instance>)
+
+  ``TEMPLATE``
+    Template file name.
+
+  ``INSTANCE``
+    Generated file name, interpreted relative to
+    ``${CMAKE_CURRENT_BINARY_DIR}``.
+
+  Besides generating the file, this command prepares convenience substitution
+  variables such as ``TEMPLATE``, ``INSTANCE``, ``BINDIR_INSTANCE``, and
+  ``GENERATED_SOURCE``. Re-generating the same output file with different
+  content is treated as a fatal error.
+
+.. cmake:variable:: DUNE_INSTANCE_GENERATED
+
+  After :cmake:command:`dune_instance_end()`, this variable contains the list
+  of generated files, including the implied ``${CMAKE_CURRENT_BINARY_DIR}``
+  prefix where applicable.
+
+  Do not modify this variable inside a
+  :cmake:command:`dune_instance_begin()` /
+  :cmake:command:`dune_instance_end()` block.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 # macro to print additional information to the cmake output file.
