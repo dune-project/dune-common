@@ -35,7 +35,7 @@ bindings.
 
   ``COMPILE_DEFINITIONS``
     Additional compile definitions passed to
-    :command:`target_compile_definitions`.
+    :external+cmake:cmake:command:`target_compile_definitions() <command:target_compile_definitions>`.
 
   ``CMAKE_GUARD``
     Conditions evaluated before the module target is added. If one of the
@@ -74,7 +74,7 @@ bindings.
 
   ``COMPILE_DEFINITIONS``
     Additional compile definitions passed to
-    :command:`target_compile_definitions`.
+    :external+cmake:cmake:command:`target_compile_definitions() <command:target_compile_definitions>`.
 
   ``CMAKE_GUARD``
     Conditions evaluated before the submodule target is added. If one of the

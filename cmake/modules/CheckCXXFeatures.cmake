@@ -17,9 +17,9 @@ given C++ source compiles and links into an executable.
   The macro checks that the given sources compiles and links into an executable. Thus,
   it must at least provide a valid ``main()`` function. The macro is inspired by the
   cmake function ``check_cxx_source_compiles()`` but does not provide all of its
-  functionality. It is also based on the :command:`try_compile` command but without any
+  functionality. It is also based on the :external+cmake:cmake:command:`try_compile() <command:try_compile>` command but without any
   additional flags set, like include directories or link options. The only fixed flag that
-  is passed to :command:`try_compile` is ``CXX_STANDARD`` with value 17. This can only be
+  is passed to :external+cmake:cmake:command:`try_compile() <command:try_compile>` is ``CXX_STANDARD`` with value 17. This can only be
   influenced by setting the global variable ``CMAKE_CXX_STANDARD``.
 
 #]=======================================================================]
