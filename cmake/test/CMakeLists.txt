@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
 dune_declare_test_label(LABELS buildsystem)
 
 # test that dune policies are local to a project
@@ -31,7 +33,13 @@ add_test(
 
 set_tests_properties(dunecommonstandalonebuildtest PROPERTIES DEPENDS dunecommonstandaloneconfiguretest)
 
+add_test(
+    NAME cmakedocgeneratorextracttest
+    COMMAND ${Python3_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake_doc_generator/check_extract_cmake_data.py
+)
+
 set_tests_properties(
-        dunepolicytest dunecommonstandaloneconfiguretest dunecommonstandalonebuildtest
+        dunepolicytest dunecommonstandaloneconfiguretest dunecommonstandalonebuildtest cmakedocgeneratorextracttest
     PROPERTIES LABELS buildsystem
 )

@@ -17,12 +17,14 @@ install(FILES
   setup.py.in
   sphinx_cmake_dune.py
   sphinx_moderncmakedomain.py
+  sphinx_moderncmakedomain.py.license
   WritePythonCMakeMetadata.cmake
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts)
 
 # Install executable programs
 install(PROGRAMS
   extract_cmake_data.py
+  generate_cmake_command_pages.py
   run-in-dune-env.sh.in
   set-dune-pythonpath.sh.in
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/dune/cmake/scripts

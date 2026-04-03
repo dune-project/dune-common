@@ -155,16 +155,26 @@ function(dune_cmake_sphinx_doc)
 
   # Generate the rst files for all cmake modules
   foreach(module ${SPHINX_DOC_MODULE_LIST})
-    get_filename_component(modname ${module} NAME)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/modules/${modname}
+    get_filename_component(modname ${module} NAME_WE)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/modules/${modname}.rst
                        COMMAND Python3::Interpreter ${DUNE_SPHINX_EXT_PATH}/extract_cmake_data.py
                          --module=${module}
                          --builddir=${CMAKE_CURRENT_BINARY_DIR}
                        DEPENDS ${module}
                        COMMENT "Extracting CMake API documentation from ${modname}"
                       )
-    set(DOC_DEPENDENCIES ${DOC_DEPENDENCIES} ${CMAKE_CURRENT_BINARY_DIR}/modules/${modname})
+    set(DOC_DEPENDENCIES ${DOC_DEPENDENCIES} ${CMAKE_CURRENT_BINARY_DIR}/modules/${modname}.rst)
   endforeach()
+
+  # Generate flat public command reference pages for modern cmake:command docs
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/commands/.dune-public-commands.stamp
+    COMMAND Python3::Interpreter ${DUNE_SPHINX_EXT_PATH}/generate_cmake_command_pages.py
+      --builddir=${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${DOC_DEPENDENCIES}
+    COMMENT "Generating public CMake command reference pages"
+  )
+  set(DOC_DEPENDENCIES ${DOC_DEPENDENCIES} ${CMAKE_CURRENT_BINARY_DIR}/commands/.dune-public-commands.stamp)
 
   # Call Sphinx once for each requested build type
   foreach(type ${SPHINX_CMAKE_BUILDTYPE})

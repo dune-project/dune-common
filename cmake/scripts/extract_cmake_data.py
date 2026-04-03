@@ -70,6 +70,8 @@ def read_module(args=get_args()):
                 o = open(modfile, 'w')
                 continue
             elif ml_block == 0 and not l.startswith('#'):
+                if not l.strip() and not o:
+                    continue
                 # a line after a contiguous sequence of comments
                 return
 

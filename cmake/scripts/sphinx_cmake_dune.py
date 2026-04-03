@@ -18,6 +18,10 @@ class CMakeParamNode(nodes.Element):
 class CMakeBriefNode(nodes.Element):
     pass
 
+
+class DuneInternalNode(nodes.Element):
+    pass
+
 class CMakeFunction(Directive):
     # We do require the name to be an argument
     required_arguments = 1
@@ -65,7 +69,6 @@ class CMakeFunction(Directive):
                 sl.append(" "*5 + paramnode['argname'] + '\n')
 
         def render_optional(paramnode):
-            print(paramnode['name'],paramnode['argname'])
             if paramnode["multi"]:
                 sl.append(' '*4 + '[' + paramnode['name'] + ' ' + paramnode['argname'] + '1 [' + paramnode['argname'] + '2 ...]' + ']\n')
             if paramnode["single"]:
@@ -183,13 +186,25 @@ class CMakeModule(Directive):
         self.state.nested_parse(self.content, self.content_offset, node)
         return [node]
 
+
+class DuneInternal(Directive):
+    required_arguments = 0
+    optional_arguments = 0
+    final_argument_whitespace = False
+    has_content = False
+
+    def run(self):
+        return [DuneInternalNode()]
+
 def setup(app):
     app.add_node(CMakeBriefNode)
     app.add_node(CMakeParamNode)
+    app.add_node(DuneInternalNode)
     app.add_directive('cmake_module', CMakeModule)
     app.add_directive('cmake_brief', CMakeBrief)
     app.add_directive('cmake_function', CMakeFunction)
     app.add_directive('cmake_param', CMakeParam)
     app.add_directive('cmake_variable', CMakeVariable)
+    app.add_directive('dune:internal', DuneInternal)
 
     return {'version': '0.1'}
