@@ -31,6 +31,10 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 - Remove the unused `DunePythonCompiler.cmake` module and the stale commented
   include hook from the `dune-py` CMake template.
 
+- Rename the internal pybind11 provider module from `Pybind11.cmake` to
+  `DuneProvidePybind11.cmake` to avoid name clashes with upstream or external
+  pybind11 CMake packages, and document `dune_provide_pybind11()`.
+
 ## Deprecation and Removals
 
 - Remove the deprecated method `HybridMultiIndex::element`. From now on,

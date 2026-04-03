@@ -32,6 +32,7 @@ install(FILES
   DunePathHelper.cmake
   DunePkgConfig.cmake
   DunePolicy.cmake
+  DuneProvidePybind11.cmake
   DuneProject.cmake
   DunePythonCommonMacros.cmake
   DunePythonFindPackage.cmake
@@ -59,7 +60,6 @@ install(FILES
   Headercheck.cmake
   latexmkrc.cmake
   OverloadCompilerFlags.cmake
-  Pybind11.cmake
   UseInkscape.cmake
   UseLatexMk.cmake
   DESTINATION ${DUNE_INSTALL_MODULEDIR})
