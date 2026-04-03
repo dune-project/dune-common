@@ -3,7 +3,6 @@
 
 # Install the buildsystem documentation defined in dune-common
 install(FILES
-  dune-common.rst
   buildsystem-overview.rst
   buildsystem-faq.rst
   DESTINATION ${CMAKE_INSTALL_DOCDIR})
