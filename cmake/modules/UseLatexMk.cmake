@@ -1,106 +1,76 @@
-# UseLatexMk.cmake is a CMake module to build Latex documents
-# from CMake.
 #
-# add_latex_document(SOURCE texsource
-#                    [TARGET target]
-#                    [EXCLUDE_FROM_ALL]
-#                    [REQUIRED]
-#                    [FATHER_TARGET father1 [father2 ...]]
-#                    [RCFILE rcfile1 [rcfile2 ...]]
-#                    [INSTALL destination]
-#                    [BUILD_ON_INSTALL]
-#                    )
+# SPDX-FileCopyrightInfo: Copyright (c) 2017, Dominic Kempf, Steffen Muething
+# SPDX-License-Identifier: BSD-3-Clause
 #
-# The arguments:
-# SOURCE
-#   Required argument with a single tex source that defines the document to be built
-# TARGET
-#   An optional target name, defaults to a suitable mangling of the given source and its path.
-#   An additional target with _clean appended will be added as well, which cleans the output
-#   and all auxiliary files.
-# EXCLUDE_FROM_ALL
-#   Set this to avoid the target from being built by default. If the FATHER_TARGET
-#   parameter is set, this option is automatically set.
-# REQUIRED
-#   Set this option to issue a fatal error if the document could not
-#   be built. By default it is only skipped.
-# FATHER_TARGET
-#   A list of meta-targets that should trigger a rebuild of this target (like "make doc").
-#   The targets are expected to exist already. Specifying any such targets will automatically add the
-#   above EXCLUDE_FROM_ALL option.
-# RCFILE
-#   A list configuration file to customize the latexmk build process. These are read by latexmk
-#   *after* the automatically generated rc file in the indicated order. Note that latexmk rcfiles
-#   override any previous settings.
-#   You may also use CMake variables within @'s (like @CMAKE_CURRENT_BINARY_DIR@) and have
-#   them replaced with the matching CMake variables (see cmake's configure_file command).
-#   Note, that this is a powerful, but advanced feature. For details on what can be achieved
-#   see the latexmk manual. Note, that triggering non-PDF builds through latexmkrc files might
-#   cause problems with other features of UseLatexMk.
-# INSTALL
-#   Set this option to an install directory to create an installation rule for this document.
-# BUILD_ON_INSTALL
-#   Set this option, if you want to trigger a build of this document during installation.
+# Vendored from UseLatexMk. See UseLatexMk.cmake.license for the upstream
+# license metadata retained alongside this file.
 #
-# Furthermore, UseLatexMk defines a CMake target clean_latex which cleans the build tree from
-# all PDF output and all auxiliary files. Note, that (at least for the Unix Makefiles generator)
-# it is not possible to connect this process with the builtin clean target.
-#
-# Please note the following security restriction:
-#
-# UseLatexMk relies on latexmk separating input and output directory correctly.
-# This includes using an absolute path for the output directory. On some TeX
-# systems this requires the disabling of a security measure by setting `openout_any = a`.
-# From the latexmk documentation:
-#
-# Commonly, the directory specified for output files is a subdirectory of the current working direc-
-# tory. However, if you specify some other directory, e.g., "/tmp/foo" or "../output", be aware that
-# this could cause problems, e.g., with makeindex or bibtex. This is because modern versions of
-# these programs, by default, will refuse to work when they find that they are asked to write to a file
-# in a directory that appears not to be the current working directory or one of its subdirectories. This
-# is part of security measures by the whole TeX system that try to prevent malicious or errant TeX
-# documents from incorrectly messing with a user’s files. If for $out_dir or $aux_dir you really do
-# need to specify an absolute pathname (e.g., "/tmp/foo") or a path (e.g., "../output") that includes a
-# higher-level directory, and you need to use makeindex or bibtex, then you need to disable the secu-
-# rity measures (and assume any risks). One way of doing this is to temporarily set an operating
-# system environment variable openout_any to "a" (as in "all"), to override the default "paranoid"
-# setting.
-#
-# UseLatexMk.cmake allows to re-enable the TeX security measure by setting LATEXMK_PARANOID to TRUE
-# through cmake -D, but it is not guaranteed to work correctly in that case.
-#
-# For further information, visit https://github.com/dokempf/UseLatexMk
-#
-#
-# Copyright (c) 2017, Dominic Kempf, Steffen Müthing
-#
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without modification,
-# are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice, this
-#   list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice, this
-#   list of conditions and the following disclaimer in the documentation and/or
-#   other materials provided with the distribution.
-#
-# * Neither the name of the Universität Heidelberg nor the names of its
-#   contributors may be used to endorse or promote products derived from this
-#   software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
+
+#[=======================================================================[.rst:
+UseLatexMk
+----------
+
+Helpers for building LaTeX documents with ``latexmk`` from CMake.
+
+.. cmake:command:: add_latex_document
+
+  Add a custom target that builds a PDF document from a LaTeX source file.
+
+  .. code-block:: cmake
+
+    add_latex_document(
+      SOURCE <tex-source>
+      [TARGET <target-name>]
+      [EXCLUDE_FROM_ALL]
+      [REQUIRED]
+      [FATHER_TARGET <meta-target>...]
+      [RCFILE <latexmkrc>...]
+      [INSTALL <destination>]
+      [BUILD_ON_INSTALL]
+    )
+
+  ``SOURCE``
+    Required path to the main LaTeX source file.
+
+  ``TARGET``
+    Optional target name. If omitted, a name is derived from the source path.
+
+  ``EXCLUDE_FROM_ALL``
+    Exclude the generated target from the default ``all`` target. This is
+    implied when ``FATHER_TARGET`` is specified.
+
+  ``REQUIRED``
+    Fail with a fatal error if the document cannot be built because LaTeX or
+    ``latexmk`` is unavailable.
+
+  ``FATHER_TARGET``
+    Existing meta-targets that should depend on the generated document target.
+
+  ``RCFILE``
+    Additional ``latexmkrc`` files that are configured with
+    :cmake:command:`configure_file()` and loaded after the automatically
+    generated rc file.
+
+  ``INSTALL``
+    Install destination for the generated PDF document.
+
+  ``BUILD_ON_INSTALL``
+    Trigger a build of the document during installation.
+
+  The module also creates a global ``clean_latex`` target that removes LaTeX
+  output and auxiliary files.
+
+.. cmake:variable:: LATEXMK_PARANOID
+
+  Re-enable TeX's stricter output-directory security behavior. By default,
+  this module relaxes that behavior because ``latexmk`` builds may need to
+  write outputs outside the current working directory.
+
+  Enabling this option may break some document builds depending on the TeX
+  toolchain and auxiliary tools in use.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 # ensure CMake version is recent enough

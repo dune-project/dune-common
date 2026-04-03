@@ -1,13 +1,63 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# .. cmake_variable:: ENABLE_HEADERCHECK
-#
-#    Set this variable to TRUE if you want to use the CMake
-#    reimplementation of the old autotools feaure :code:`make headercheck`.
-#    There has been a couple of issues with this implementation in
-#    the past, so it was deactivated by default.
-#
+#[=======================================================================[.rst:
+Headercheck
+-----------
+
+Infrastructure for the optional ``headercheck`` validation target.
+
+.. cmake:variable:: ENABLE_HEADERCHECK
+
+  Enable the CMake reimplementation of the old autotools ``make headercheck``
+  feature.
+
+  The feature has historically been somewhat fragile, so it is disabled by
+  default.
+
+.. cmake:command:: setup_headercheck
+
+  .. dune:internal::
+
+  Collect the public header files of the current module and create the global
+  ``headercheck`` target if it does not exist yet.
+
+.. cmake:command:: exclude_from_headercheck
+
+  .. dune:internal::
+
+  Remove the given header files from the global headercheck list.
+
+.. cmake:command:: exclude_dir_from_headercheck
+
+  .. dune:internal::
+
+  Remove all ``*.hh`` files in the current directory from the global
+  headercheck list.
+
+.. cmake:command:: exclude_subdir_from_headercheck
+
+  .. dune:internal::
+
+  Remove all ``*.hh`` files below the given subdirectory from the global
+  headercheck list.
+
+.. cmake:command:: exclude_all_but_from_headercheck
+
+  .. dune:internal::
+
+  Remove all ``*.hh`` files in the current directory from the global
+  headercheck list except the specified ones.
+
+.. cmake:command:: finalize_headercheck
+
+  .. dune:internal::
+
+  Create the individual headercheck compilation targets for all headers that
+  remain in the global headercheck list.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 # sets up a global property with the names of all header files
