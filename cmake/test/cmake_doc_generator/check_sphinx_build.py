@@ -105,6 +105,8 @@ def main() -> int:
     module_html = (html_dir / "modules" / "FixtureModernDocs.html").read_text()
     if "dune_fixture_helper" not in module_html:
         raise AssertionError("Expected helper command reference to appear in rendered module page")
+    if "https://cmake.org/cmake/help/latest/command/target_compile_definitions.html#command:target_compile_definitions" not in module_html:
+        raise AssertionError("Expected upstream CMake command shortcut to render as an external link")
 
     return 0
 

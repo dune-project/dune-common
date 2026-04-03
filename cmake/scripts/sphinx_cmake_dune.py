@@ -12,6 +12,7 @@ from docutils import nodes
 from docutils.parsers.rst import Directive
 from itertools import chain
 from sphinx.domains import Domain
+from sphinx.util.docutils import ReferenceRole
 
 class CMakeParamNode(nodes.Element):
     pass
@@ -194,13 +195,35 @@ class DuneInternal(Directive):
         return []
 
 
+class DuneExternalCMakeCommandRole(ReferenceRole):
+    def run(self):
+        target = self.target.strip()
+        if target.startswith("command:"):
+            command = target.split(":", 1)[1]
+        else:
+            command = target
+
+        command = command[:-2] if command.endswith("()") else command
+        title = self.title if self.has_explicit_title else f"{command}()"
+        refuri = (
+            "https://cmake.org/cmake/help/latest/command/"
+            f"{command}.html#command:{command}"
+        )
+
+        literal = nodes.literal(title, title, classes=["xref", "cmake", "cmake-command"])
+        reference = nodes.reference("", "", literal, refuri=refuri)
+        return [reference], []
+
+
 class DuneDomain(Domain):
     name = 'dune'
     label = 'DUNE'
     directives = {
         'internal': DuneInternal,
     }
-    roles = {}
+    roles = {
+        'cmake-command': DuneExternalCMakeCommandRole(),
+    }
     initial_data = {}
 
     def get_objects(self):

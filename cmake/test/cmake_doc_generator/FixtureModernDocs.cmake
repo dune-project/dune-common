@@ -9,8 +9,9 @@ Minimal documentation fixture for the DUNE CMake documentation generator.
 
 This file is intentionally small, but it demonstrates the modern bracketed
 module documentation block, modern CMake domain commands, version directives,
-cross references, variables, and an internal marker aligned with the Doxygen
-concept of internal documentation.
+cross references, variables, links to upstream CMake commands via
+:dune:cmake-command:`target_compile_definitions`, and an internal marker
+aligned with the Doxygen concept of internal documentation.
 
 .. cmake:command:: dune_fixture_public
 
