@@ -24,10 +24,10 @@
 #       You may set the following variables to modify the
 #       behaviour of this module:
 #
-#    :ref:`DUNE_MATHJAX_DISABLE_LOCAL`
+#    :code:`DUNE_MATHJAX_DISABLE_LOCAL`
 #       disable search for and usage of locally available MathJax2
 #
-#    :ref:`DUNE_MATHJAX_DISABLE_CDN`
+#    :code:`DUNE_MATHJAX_DISABLE_CDN`
 #       disable usage of MathJax2 from content delivery network
 #
 #    This macro creates a target for building (:code:`doxygen_${ProjectName}`) and installing

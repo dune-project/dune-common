@@ -11,7 +11,7 @@
 #
 #       The package name to look for.
 #
-#    .. cmake_param: RESULT
+#    .. cmake_param:: RESULT
 #       :single:
 #
 #       The variable to store the result of the check in
@@ -38,9 +38,9 @@
 #    .. cmake_param:: INTERPRETER
 #       :single:
 #
-#       The python interpreter, whose paths are searched for the package.
+#       The python interpreter whose paths are searched for the package.
 #       Defaults to the location of :code:`Python3::Interpreter`, which might differ when
-#       dealing with the configure-time virtualenv set up with :ref:`DUNE_PYTHON_VIRTUALENV_SETUP`.
+#       using the configure-time virtual environment managed by :code:`DunePythonVirtualenv`.
 #
 #    Find a given python package on the system.
 #

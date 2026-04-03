@@ -79,13 +79,13 @@
 #    of the build tree, that allows to jump to the corresponding
 #    source directory. Call this from your top-level :code:`CMakeLists.txt`
 #    to enable it for a given module. To enable it for all modules,
-#    set the variable :ref:`DUNE_SYMLINK_TO_SOURCE_TREE` instead.
+#    set the variable :ref:`var_dune_symlink_to_source_tree` instead.
 #    If used on Windows systems, a warning is issued.
 #
 # .. cmake_variable:: DUNE_SYMLINK_TO_SOURCE_TREE
 #
 #    If this variable is set to TRUE, the functionality of
-#    :ref:`dune_symlink_to_source_tree` is enabled in all modules.
+#    :cmake:command:`dune_symlink_to_source_tree()` is enabled in all modules.
 #    This will place symlinks to the corresponding source directory
 #    in every subdirectory of the build directory.
 #

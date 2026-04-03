@@ -12,6 +12,7 @@
 #       and during `ctest`. You are required to either pass SCRIPT or MODULE.
 #
 #       .. note::
+#          Pass the script path only. Do not include the Python interpreter here.
 #
 #    .. cmake_param:: MODULE
 #       :multi:

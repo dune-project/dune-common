@@ -8,7 +8,7 @@ CheckCXXFeatures
 This module checks for several CXX compiler features and introduces a macro to check if
 given C++ source compiles and links into an executable.
 
-.. command:: dune_check_cxx_source_compiles
+.. cmake:command:: dune_check_cxx_source_compiles
 
   .. code-block:: cmake
 

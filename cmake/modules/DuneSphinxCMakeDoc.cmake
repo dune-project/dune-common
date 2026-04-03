@@ -34,7 +34,7 @@ Generate CMake API documentation with Sphinx.
 
   ``RST_SOURCES``
     Additional rst source templates configured into the build tree. If omitted,
-    dune-common generates a default ``index.rst`` and ``contents.rst`` setup.
+    dune-common generates a default ``index.rst`` setup.
 
   ``MODULE_ONLY``
     Only document CMake functionality from the current Dune module.
@@ -89,8 +89,8 @@ function(dune_cmake_sphinx_doc)
 
   # Apply defaults to the rst sources that are not module dependent.
   if(NOT SPHINX_CMAKE_RST_SOURCES)
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/contents.rst "")
-    set(SPHINX_CMAKE_RST_SOURCES ${DUNE_SPHINX_EXT_PATH}/index.rst.in ${CMAKE_CURRENT_BINARY_DIR}/contents.rst)
+    file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/contents.rst)
+    set(SPHINX_CMAKE_RST_SOURCES ${DUNE_SPHINX_EXT_PATH}/index.rst.in)
   endif()
 
   # Write the conf.py, which sets up Sphinx into the build directory

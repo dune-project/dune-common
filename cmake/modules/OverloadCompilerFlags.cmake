@@ -19,7 +19,8 @@
 #
 #    :code:`make CXXFLAGS="your flags" GRIDTYPE="grid type"`
 #
-#    :code:`GRIDTYPE` can be anything defined in :code:`config.h` via the :ref:`dune_define_gridtype` macro from dune-grid.
+#    :code:`GRIDTYPE` can be anything defined in :code:`config.h` via
+#    :code:`dune_define_gridtype()` from dune-grid.
 #    Furthermore any CPP variable of the form :code:`-DVAR=VALUE` can be overloaded on the command line.
 #
 #    .. note::

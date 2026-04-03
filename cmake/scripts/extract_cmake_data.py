@@ -18,6 +18,18 @@ import errno
 import os
 import re
 
+def make_label(kind, name):
+    normalized = name.lower()
+    if kind == 'variable' and normalized == 'dune_symlink_to_source_tree':
+        return 'var_' + normalized
+    return name
+
+def make_title(kind, name):
+    normalized = name.lower()
+    if kind == 'variable' and normalized == 'dune_symlink_to_source_tree':
+        return name + ' variable'
+    return name
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-b', '--builddir', help='The directory where to place the produced output', required=True)
@@ -105,9 +117,10 @@ def read_module(args=get_args()):
                     raise e
                 varfile = os.path.join(varpath, var + ".rst")
                 o = open(varfile, 'w')
-                o.write(".. _" + var + ":\n\n")
-                o.write(var + "\n")
-                o.write("="*len(var) + "\n\n")
+                title = make_title('variable', var)
+                o.write(".. _" + make_label('variable', var) + ":\n\n")
+                o.write(title + "\n")
+                o.write("="*len(title) + "\n\n")
                 write_line(o, l)
             elif comment.startswith('.. cmake_module'):
                 if o:

@@ -24,7 +24,7 @@
 #
 #       The targets to add the flags of all external libraries to.
 #
-#    This function is superseded by :ref:`dune_target_enable_all_packages`.
+#    This function is superseded by :cmake:command:`dune_target_enable_all_packages()`.
 #
 include_guard(GLOBAL)
 

@@ -19,15 +19,16 @@
 #       A non-zero result stands for a failure on the configuration of the dependencies.
 #
 #    .. cmake_param:: INSTALL_CONCRETE_DEPENDENCIES
-#       :option:
+#       :single:
+#       :argname: value
 #
 #       This option forces the package dependencies to be installed with concrete dependencies
 #       listed in the requirements.txt file
 #
-#     This function installs the dependencies of a python package at configure time.
-#     The dependencies are extracted from the :setup.py: and :requirements.txt: file
-#     A failure on the installation of the dependencies does will no trigger a
-#     CMake fatal error but it will be reflected on the :RESULT: variable.
+#    This function installs the dependencies of a python package at configure time.
+#    The dependencies are extracted from the :code:`setup.py` and :code:`requirements.txt` files.
+#    A failure during dependency installation does not trigger a CMake fatal error,
+#    but it is reflected in the :code:`RESULT` variable.
 #
 #
 # .. cmake_function:: dune_link_dune_py
@@ -53,14 +54,13 @@
 #       an entry of the form "flagname:=value" is added. These flags are
 #       then set in the CMakeLists.txt file of a generated dune-py module.
 #
-#     This function generates the metadata required for Python package in order to be
-#     used by the dune-py module. It essentially glues together python code generation
-#     of dune-py (via CMake) with a python package. This is achieved by generating a
-#     filename that CMake should export some meta data about this build to.
-#     The file will be installed together with the Python package. This mechanism
-#     is used by the Python bindings to transport information from CMake to
-#     the installed Python package. A module dune-mymodule that provides a Python
-#     package dune.mymodule should set this to dune/mymodule/metadata.cmake
+#    This function generates the metadata required for a Python package so that it can
+#    be used by the dune-py module. It glues together dune-py code generation via CMake
+#    with a Python package by generating a file path that CMake exports metadata to.
+#    The file is installed together with the Python package. This mechanism is used by
+#    the Python bindings to transport information from CMake to the installed package.
+#    A module dune-mymodule that provides a Python package dune.mymodule should set this
+#    to :code:`dune/mymodule/metadata.cmake`.
 #
 #    For historic reasons, this function installs the package at configure time rather than at
 #    build time. This distinction is important because it means that the package dependencies
