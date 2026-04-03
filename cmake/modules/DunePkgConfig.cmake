@@ -1,10 +1,32 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# searches for pkg-config, creates the
-# file <module-name>.pc from <module-name>.pc.in,
-# and adds installation directives.
-#
+#[=======================================================================[.rst:
+DunePkgConfig
+=============
+
+Helper code for generating and installing ``pkg-config`` files for DUNE
+modules.
+
+.. cmake:command:: create_and_install_pkconfig
+
+  .. dune:internal::
+
+  Create ``<module>.pc`` from ``<module>.pc.in`` and install it.
+
+  .. code-block:: cmake
+
+    create_and_install_pkconfig(<install-libdir>)
+
+  ``install-libdir``
+    Library installation directory below the install prefix. The generated
+    ``pkg-config`` file is installed into ``<install-libdir>/pkgconfig``.
+
+  This helper is used by :cmake:command:`dune_project()` while finalizing a
+  module configuration. It configures the ``prefix``, compiler, include, and
+  dependency fields expected by downstream ``pkg-config`` consumers.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 include(FeatureSummary)
