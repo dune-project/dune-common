@@ -1,60 +1,50 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Module to generate CMake API documentation with Sphinx
-#
-# .. cmake_function:: dune_cmake_sphinx_doc
-#
-#    .. cmake_brief::
-#
-#       Generate the documentation that you are just browsing!!!
-#
-#    .. cmake_param:: BUILDTYPE
-#       :multi:
-#
-#       Set the type of build that is requested. By default, "html" is chosen.
-#       The list of available build types:
-#
-#       * `html`
-#
-#    .. cmake_param:: SPHINX_CONF
-#       :single:
-#       :argname: conf
-#
-#       A template for a conf file to be passed to :code:`sphinx-build`.
-#       The real configuration file will be generated through CMakes
-#       :code:`configure_file` mechanism. A reasonable default file is
-#       provided by dune-common. Only use this if you want to create
-#       custom documentation.
-#
-#    .. cmake_param:: RST_SOURCES
-#       :multi:
-#       :argname: src
-#
-#       A list of rst sources, that should be configured into the build tree
-#       (using :code:`configure_file`). If omitted, this defaults to
-#       :code:`index.rst` and :code:`contents.rst` with suitable content.
-#       Only use this if you want to create custom documentation.
-#
-#    .. cmake_param:: MODULE_ONLY
-#       :option:
-#
-#       Only document CMake functionality from the current Dune module.
-#
-#    Generate a documentation for the CMake API. A set of cmake
-#    modules defined by the parameters and all functions and macros
-#    there in are automatically generated. The top level directory
-#    of the documentation is the current build directory (aka the
-#    directory that this function is called from)
-#
-#    There are some assumptions on how the documentation in
-#    the CMake modules is written:
-#
-#    * At the beginning of each CMake module there is a comment block that is written in restructured text.
-#      The first two characters of each line (the comment character
-#      and a blank) are ignored. Any resulting content of lines most form valid rst.
-#    * TODO document more
-#
+#[=======================================================================[.rst:
+DuneSphinxCMakeDoc
+------------------
+
+Generate CMake API documentation with Sphinx.
+
+.. cmake:command:: dune_cmake_sphinx_doc
+
+  Generate the buildsystem documentation from documented CMake modules.
+
+  .. code-block:: cmake
+
+    dune_cmake_sphinx_doc(
+      [BUILDTYPE <type>...]
+      [SPHINX_CONF <conf>]
+      [RST_SOURCES <src>...]
+      [MODULE_ONLY]
+    )
+
+  A set of documented CMake modules is scanned and converted into Sphinx input.
+  The top-level directory of the generated documentation is the current binary
+  directory of the calling project.
+
+  ``BUILDTYPE``
+    Set the requested Sphinx build type. If omitted, ``html`` is used.
+
+  ``SPHINX_CONF``
+    Template for the ``conf.py`` file passed to ``sphinx-build``. The final
+    configuration file is generated with ``configure_file()``. If omitted, the
+    default template shipped with dune-common is used.
+
+  ``RST_SOURCES``
+    Additional rst source templates configured into the build tree. If omitted,
+    dune-common generates a default ``index.rst`` and ``contents.rst`` setup.
+
+  ``MODULE_ONLY``
+    Only document CMake functionality from the current Dune module.
+
+  The documented CMake modules are expected to start with a bracketed ``.rst``
+  documentation block. Public commands documented with ``.. cmake:command::``
+  are collected into a flat public command reference, while commands marked
+  with ``.. dune:internal::`` are excluded from that public command list.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 find_package(Sphinx)

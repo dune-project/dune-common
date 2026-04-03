@@ -1,56 +1,47 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-#
-# Module that provides a custom target make doc at the top level
-# directory and utility macros for creating install directives
-# that make sure that the files to be installed are previously
-# generated even if make doc was not called.
-#
-# All documentation (Latex, Doxygen) will be generated during
-# make doc.
-# It provides the following macros:
-#
-# .. cmake_function:: dune_add_latex_document
-#
-#    .. cmake_brief::
-#
-#       wrapper around add_latex_document for compatibility reasons
-#
-# .. cmake_function:: create_doc_install
-#
-#    .. cmake_brief::
-#
-#       creates a target for creating and installing a file
-#       to a given directory.
-#
-#    .. cmake_param:: filename
-#       :single:
-#       :required:
-#       :positional:
-#
-#       The name of the file to be installed.
-#
-#    .. cmake_param:: targetdir
-#       :single:
-#       :required:
-#       :positional:
-#
-#       The directory into which the beforementioned file will be installed.
-#
-#    .. cmake_param:: dependency
-#       :single:
-#       :required:
-#       :positional:
-#
-#       A target that gets called to create the file that will be installed.
-#
-#    .. note::
-#
-#       This macro is needed, as we cannot add dependencies to the install
-#       target. See https://gitlab.kitware.com/cmake/cmake/issues/8438
-#       and https://gitlab.dune-project.org/core/dune-common/issues/36
-#
+#[=======================================================================[.rst:
+DuneDoc
+-------
+
+Documentation helper commands used by dune-common.
+
+This module provides the top-level ``doc`` target together with helper commands
+used to build and install generated documentation files.
+
+.. cmake:command:: dune_add_latex_document
+
+  Wrapper around ``add_latex_document()`` for compatibility reasons.
+
+  .. code-block:: cmake
+
+    dune_add_latex_document(<args...>)
+
+
+.. cmake:command:: create_doc_install
+
+  Create a target for building and installing a generated documentation file.
+
+  .. code-block:: cmake
+
+    create_doc_install(<filename> <targetdir> <dependency>)
+
+  ``filename``
+    The name of the file to be installed.
+
+  ``targetdir``
+    The directory into which the file is installed.
+
+  ``dependency``
+    The target that creates the file before installation.
+
+  This helper is needed because dependencies cannot be attached directly to the
+  install target. See the related CMake issue
+  ``https://gitlab.kitware.com/cmake/cmake/issues/8438`` and the DUNE issue
+  ``https://gitlab.dune-project.org/core/dune-common/issues/36``.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 include(UseLatexMk)
