@@ -35,6 +35,12 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
   `DuneProvidePybind11.cmake` to avoid name clashes with upstream or external
   pybind11 CMake packages, and document `dune_provide_pybind11()`.
 
+- Modernize the buildsystem documentation generator and migrate the
+  `dune-common` CMake module docs to the modern CMake/Sphinx documentation
+  style. The generated reference now supports modern bracketed `.rst`
+  documentation blocks, public/internal command separation, generated command
+  and variable reference pages, and links to upstream CMake command docs.
+
 ## Deprecation and Removals
 
 - Remove the deprecated method `HybridMultiIndex::element`. From now on,
