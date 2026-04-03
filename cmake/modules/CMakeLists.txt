@@ -17,7 +17,6 @@ install(FILES
   AddSuiteSparseFlags.cmake
   AddVcFlags.cmake
   CheckCXXFeatures.cmake
-  CMakeBuiltinFunctionsDocumentation.cmake
   DuneAddLibrary.cmake
   DuneAddPybind11Module.cmake
   DuneCommonMacros.cmake
