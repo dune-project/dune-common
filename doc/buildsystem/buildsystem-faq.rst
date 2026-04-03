@@ -200,3 +200,56 @@ To disable an external dependency ``Foo``, add:
 .. code-block:: cmake
 
    -DCMAKE_DISABLE_FIND_PACKAGE_Foo=TRUE
+
+The name of the dependency is case sensitive, but there is no canonical naming
+scheme. Check the configure output to determine the exact name.
+
+This is also the mechanism to force a sequential build when MPI is installed.
+For example:
+
+.. code-block:: cmake
+
+   -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
+
+disables MPI discovery and therefore prevents a parallel DUNE build.
+
+When changing dependency-discovery settings, it is usually safest to delete the
+build directory or at least the CMake cache.
+
+.. _troubleshoot:
+
+How do I troubleshoot?
+======================
+
+CMake caches aggressively, which makes it bad at recognizing changed
+configurations. To trigger a fresh configure run, delete ``CMakeCache.txt``
+from the build directory or remove the build directory entirely.
+
+Whenever you experience problems, the first step should usually be to delete
+all build directories. A useful shortcut is:
+
+.. code-block:: bash
+
+   dunecontrol exec "rm -rf build-cmake"
+
+This removes the default build directories from all DUNE modules.
+
+If configure fails, inspect ``CMakeError.log`` in the ``CMakeFiles``
+subdirectory of the build directory. That log is usually what you should send
+along when asking for help.
+
+Where can I get help?
+=====================
+
+The CMake manual is available on the command line:
+
+* ``cmake --help-command-list``
+* ``cmake --help-command <command>``
+* ``cmake --help-property-list``
+* ``cmake --help-property <property>``
+* ``cmake --help-module-list``
+* ``cmake --help-module <module>``
+
+For DUNE-specific buildsystem issues, ask on the DUNE mailing lists. For
+general CMake usage, the upstream CMake documentation and broader community
+resources are often useful too.
