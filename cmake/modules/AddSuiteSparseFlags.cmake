@@ -1,17 +1,28 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Defines the functions to use SuiteSparse
-#
-# .. cmake_function:: add_dune_suitesparse_flags
-#
-#    .. cmake_param:: targets
-#       :positional:
-#       :single:
-#       :required:
-#
-#       A list of targets to use SuiteSparse with.
-#
+#[=======================================================================[.rst:
+AddSuiteSparseFlags
+-------------------
+
+Helpers for using `SuiteSparse <http://faculty.cse.tamu.edu/davis/suitesparse.html>`_
+from DUNE targets.
+
+.. cmake:command:: add_dune_suitesparse_flags
+
+  Link the given targets against ``SuiteSparse::SuiteSparse`` and add the
+  compile definitions corresponding to the detected SuiteSparse components.
+
+  The command has an effect only when ``SuiteSparse_FOUND`` is true.
+
+  .. code-block:: cmake
+
+    add_dune_suitesparse_flags(targets)
+
+  :param targets: target or list of targets to configure
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 # set HAVE_SUITESPARSE for config.h
