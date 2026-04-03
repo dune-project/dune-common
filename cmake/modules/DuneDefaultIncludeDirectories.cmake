@@ -9,13 +9,22 @@ Add the default include directories to a target.
 
 .. cmake:command:: dune_default_include_directories
 
-  Add the source and build directory to the targets include directories
-  in the build-interface and the corresponding installed include dir in
-  the install-interface.
+  Add the standard DUNE include directories to a target.
 
   .. code-block:: cmake
 
     dune_default_include_directories(<target> [PRIVATE|PUBLIC|INTERFACE])
+
+  ``<target>``
+    Target whose include directories should be extended.
+
+  ``[PRIVATE|PUBLIC|INTERFACE]``
+    Visibility used for the default include directories added through
+    ``target_include_directories()``.
+
+  The command adds the project source directory, build directory, generated
+  public include directory, and installed include directory. For non-interface
+  targets it also adds the generated private include directory.
 
 #]=======================================================================]
 include_guard(GLOBAL)
