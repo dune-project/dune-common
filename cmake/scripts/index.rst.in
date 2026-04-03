@@ -2,22 +2,38 @@
    SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
    SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-.. title:: @PROJECT_NAME@ CMake reference
+.. title:: The DUNE Build System
 
 .. role:: cmake(code)
    :language: cmake
 
-Introduction
-============
+The DUNE Build System
+=====================
+
+.. include:: buildsystem-overview.rst
+   :start-after: .. overview-intro-start
+   :end-before: .. overview-intro-end
+
+Guides
+======
+
+The DUNE buildsystem guide and FAQ are available here:
+
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
+
+   buildsystem-overview
+   buildsystem-faq
 
 @CMAKE_DOC_DEPENDENCIES@
+
+Reference Manual
+================
 
 .. _variableref:
 
 Input Variable reference
-========================
+------------------------
 .. toctree::
    :maxdepth: 1
    :glob:
@@ -27,7 +43,7 @@ Input Variable reference
 .. _commandref:
 
 Command reference
-=================
+-----------------
 .. toctree::
    :maxdepth: 1
    :glob:
@@ -37,7 +53,7 @@ Command reference
 .. _moduleref:
 
 Module reference
-================
+----------------
 .. toctree::
    :maxdepth: 1
    :glob:

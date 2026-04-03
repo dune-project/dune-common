@@ -2,7 +2,16 @@
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 # Install the buildsystem documentation defined in dune-common
-install(FILES dune-common.rst DESTINATION ${CMAKE_INSTALL_DOCDIR})
+install(FILES
+  dune-common.rst
+  buildsystem-overview.rst
+  buildsystem-faq.rst
+  DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
 # Also always build the CMake API documentation in dune-common
-dune_cmake_sphinx_doc()
+dune_cmake_sphinx_doc(
+  RST_SOURCES
+    ${PROJECT_SOURCE_DIR}/cmake/scripts/index.rst.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/buildsystem-overview.rst
+    ${CMAKE_CURRENT_SOURCE_DIR}/buildsystem-faq.rst
+)

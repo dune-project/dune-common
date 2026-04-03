@@ -79,6 +79,11 @@ function(dune_cmake_sphinx_doc)
     set(SPHINX_CMAKE_BUILDTYPE html)
   endif()
 
+  set(SPHINX_CMAKE_HAS_CUSTOM_RST_SOURCES FALSE)
+  if(SPHINX_CMAKE_RST_SOURCES)
+    set(SPHINX_CMAKE_HAS_CUSTOM_RST_SOURCES TRUE)
+  endif()
+
   # Extract the script directory from dune-common
   dune_module_path(MODULE dune-common RESULT DUNE_SPHINX_EXT_PATH SCRIPT_DIR)
 
@@ -91,6 +96,9 @@ function(dune_cmake_sphinx_doc)
   if(NOT SPHINX_CMAKE_RST_SOURCES)
     file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/contents.rst)
     set(SPHINX_CMAKE_RST_SOURCES ${DUNE_SPHINX_EXT_PATH}/index.rst.in)
+  endif()
+  if(SPHINX_CMAKE_HAS_CUSTOM_RST_SOURCES)
+    file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rst)
   endif()
 
   # Write the conf.py, which sets up Sphinx into the build directory
@@ -106,6 +114,9 @@ function(dune_cmake_sphinx_doc)
   set(CMAKE_DOC_DEPENDENCIES "")
   set(${PROJECT_NAME}_PREFIX ${PROJECT_SOURCE_DIR})
   foreach(dep ${DOC_CMAKE_MODULES} ${PROJECT_NAME})
+    if("${dep}" STREQUAL "${PROJECT_NAME}" AND SPHINX_CMAKE_HAS_CUSTOM_RST_SOURCES)
+      continue()
+    endif()
     # Look for a build system documentation exported by the module dep
     set(RSTFILE "")
     # check in the correct path for non-installed modules
@@ -127,8 +138,16 @@ function(dune_cmake_sphinx_doc)
 
   # Write the non-module dependent rst source files from templates
   foreach(rstin ${SPHINX_CMAKE_RST_SOURCES})
-    get_filename_component(rst ${rstin} NAME_WE)
-    configure_file(${rstin} ${CMAKE_CURRENT_BINARY_DIR}/${rst}.rst)
+    if(rstin MATCHES [[\.rst\.in$]])
+      get_filename_component(rst ${rstin} NAME_WE)
+      configure_file(${rstin} ${CMAKE_CURRENT_BINARY_DIR}/${rst}.rst)
+    elseif(rstin MATCHES [[\.rst$]])
+      get_filename_component(rst ${rstin} NAME)
+      configure_file(${rstin} ${CMAKE_CURRENT_BINARY_DIR}/${rst} COPYONLY)
+    else()
+      message(FATAL_ERROR
+        "Unsupported RST source '${rstin}'. Expected a .rst or .rst.in file.")
+    endif()
   endforeach()
 
   # Generate the list of modules by looking through the module paths
