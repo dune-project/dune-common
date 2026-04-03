@@ -3,4 +3,6 @@
 
 add_subdirectory(common)
 add_subdirectory(pybind11)
-add_subdirectory(test)
+if(DUNE_MODULE_ENABLE_TESTING)
+  add_subdirectory(test)
+endif()

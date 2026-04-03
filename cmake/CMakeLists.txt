@@ -3,4 +3,6 @@
 
 add_subdirectory(modules)
 add_subdirectory(scripts)
-add_subdirectory(test)
+if(DUNE_MODULE_ENABLE_TESTING)
+  add_subdirectory(test)
+endif()
