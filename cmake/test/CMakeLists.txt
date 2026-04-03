@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-find_package(Python3 COMPONENTS Interpreter REQUIRED)
+find_package(Python3 COMPONENTS Interpreter)
 
 dune_declare_test_label(LABELS buildsystem)
 
@@ -33,22 +33,28 @@ add_test(
 
 set_tests_properties(dunecommonstandalonebuildtest PROPERTIES DEPENDS dunecommonstandaloneconfiguretest)
 
-add_test(
-    NAME cmakedocgeneratorextracttest
-    COMMAND ${Python3_EXECUTABLE}
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake_doc_generator/check_extract_cmake_data.py
-    --output-root ${CMAKE_CURRENT_BINARY_DIR}/cmake_doc_generator
-)
+if(Python3_Interpreter_FOUND)
+  add_test(
+      NAME cmakedocgeneratorextracttest
+      COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/cmake_doc_generator/check_extract_cmake_data.py
+      --output-root ${CMAKE_CURRENT_BINARY_DIR}/cmake_doc_generator
+  )
 
-add_test(
-    NAME cmakedocgeneratorsphinxtest
-    COMMAND ${Python3_EXECUTABLE}
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake_doc_generator/check_sphinx_build.py
-    --output-root ${CMAKE_CURRENT_BINARY_DIR}/cmake_doc_generator
-)
-set_tests_properties(cmakedocgeneratorsphinxtest PROPERTIES SKIP_RETURN_CODE 77)
-
-set_tests_properties(
-        dunepolicytest dunecommonstandaloneconfiguretest dunecommonstandalonebuildtest cmakedocgeneratorextracttest cmakedocgeneratorsphinxtest
-    PROPERTIES LABELS buildsystem
-)
+  add_test(
+      NAME cmakedocgeneratorsphinxtest
+      COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/cmake_doc_generator/check_sphinx_build.py
+      --output-root ${CMAKE_CURRENT_BINARY_DIR}/cmake_doc_generator
+  )
+  set_tests_properties(cmakedocgeneratorsphinxtest PROPERTIES SKIP_RETURN_CODE 77)
+  set_tests_properties(
+          dunepolicytest dunecommonstandaloneconfiguretest dunecommonstandalonebuildtest cmakedocgeneratorextracttest cmakedocgeneratorsphinxtest
+      PROPERTIES LABELS buildsystem
+  )
+else()
+  set_tests_properties(
+          dunepolicytest dunecommonstandaloneconfiguretest dunecommonstandalonebuildtest
+      PROPERTIES LABELS buildsystem
+  )
+endif()
