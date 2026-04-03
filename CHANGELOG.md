@@ -14,19 +14,28 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 ## Build system: Changelog
 
-- The default value for the `DP_DEFAULT_INCLUDE_DIRS` policy is now `NEW`
-  such that (unless the policy is manually set to `OLD`) the include
-  directories must be set manually, e.g., using `dune_default_include_directories`.
-  This in particular also applies to targets that make use of `dune_target_enable_all_packages`.
+- Dune buildsystem policies, such as `DP_DEFAULT_INCLUDE_DIRS`, `DP_TEST_ADD_ALL_FLAGS`,
+  and `DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM`, do not change automatically
+  to `NEW` if a certain event, like a dune version number increment, occurred. Any
+  module or version dependency is removed from the policy definition.
+
+- The signature of the cmake function `dune_define_policy(<policy> <module> <version> <doc>)`
+  is deprecated. Use `dune_define_policy(<policy> <doc>)` instead. The `<module>`
+  and `<version>` parameter are ignored.
+
+- If the value for the `DP_DEFAULT_INCLUDE_DIRS` policy is set to `NEW`
+  the include directory must be set using `dune_default_include_directories`. This
+  in particular also applies to targets that make use of
+  `dune_target_enable_all_packages`.
 
 ## Deprecation and Removals
 
 - Remove the deprecated method `HybridMultiIndex::element`. From now on,
   please use `HybridMultiIndex::operator[]` instead.
+
 - The methods that allowed to treat `FieldMatrix` objects of size 1x1 as scalars
   have been deprecated, and will be removed in a release not earlier than 2.13.
   These methods created semantic ambiguities and were the source of some confusion.
-
 
 - You can now build the Python interface using an external installation
   of `pybind11` (for example, the global one provided by your system).
