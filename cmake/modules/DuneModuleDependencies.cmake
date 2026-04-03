@@ -57,7 +57,7 @@ Macros to extract dependencies between Dune modules by inspecting the
   files.
 
   .. dune:internal::
-  .. deprecated:: 2.12
+  .. deprecated:: 2.10
      Kept only for compatibility with older DUNE configurations using
      ``ALL_DEPENDENCIES``.
 

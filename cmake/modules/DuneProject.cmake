@@ -33,6 +33,10 @@ Initialize and finalize a Dune module.
 
     finalize_dune_project()
 
+  .. versionchanged:: 2.10
+    The legacy arguments to :cmake:command:`finalize_dune_project()` were
+    removed. The command no longer takes parameters.
+
   This command should be run at the end of every top-level
   ``CMakeLists.txt`` file. Among other things it creates the cmake package
   configuration file and package version file. Modules can add additional
@@ -52,6 +56,8 @@ Initialize and finalize a Dune module.
   .. code-block:: cmake
 
     dune_mark_module_as_required_dependency(MODULE <module>)
+
+  .. versionadded:: 2.11
 
   ``MODULE``
     Name of the suggested dependency that should be treated as required for

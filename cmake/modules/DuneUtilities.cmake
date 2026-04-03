@@ -53,7 +53,7 @@ Utility functions used by multiple files.
   the transitional handling of ``ALL_DEPENDENCIES``.
 
   .. dune:internal::
-  .. deprecated:: 2.12
+  .. deprecated:: 2.10
      Internal compatibility helper for deprecated ``ALL_DEPENDENCIES`` usage.
 
   .. code-block:: cmake
