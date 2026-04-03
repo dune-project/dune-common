@@ -223,6 +223,20 @@ Policies Introduced by Dune 2.11
     *OLD behavior:* Automatically call ``add_dune_all_flags`` on all test targets inside of ``dune_add_test``.
     *NEW behavior:* Flags must be set for each test target separately, e.g., by using ``add_dune_pkg_flags``, or in directory scope using ``dune_enable_all_packages``.
 
+Testing Options
+===============
+
+The global option ``DUNE_ENABLE_TESTING`` controls whether dune modules add
+their test subdirectories by default. It defaults to ``ON``.
+
+Each dune module also gets a module-specific option
+``<MODULE>_ENABLE_TESTING`` when ``dune_project()`` is called. If set,
+it overrides the global default for that module. For example,
+``dune-common`` uses ``DUNE_COMMON_ENABLE_TESTING``.
+
+Within a module, the effective value is available as
+``DUNE_MODULE_ENABLE_TESTING`` and can be used to guard ``add_subdirectory(test)``.
+
 .. _faq:
 
 --------------------------------

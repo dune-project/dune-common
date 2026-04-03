@@ -85,6 +85,8 @@ dune_define_policy(DP_DEFAULT_INCLUDE_DIRS dune-common 2.12
 dune_define_policy(DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM dune-common 2.12
   "OLD behavior: All found dune modules listed in dune.module's 'Depends:' or 'Suggested:' are required in downstream projects. NEW behavior: Only dependencies listed in 'Depends:' and manually marked module dependencies are required.")
 
+option(DUNE_ENABLE_TESTING "Enable test subdirectories in dune modules by default." ON)
+
 
 function(dune_mark_module_as_required_dependency)
   cmake_parse_arguments(ARG "" "MODULE" "" ${ARGN})
@@ -150,6 +152,13 @@ macro(dune_project)
   set(ProjectAuthor          "${${DUNE_MOD_NAME_UPPERCASE}_AUTHOR}")
   set(ProjectUrl             "${${DUNE_MOD_NAME_UPPERCASE}_URL}")
   set(ProjectPythonRequires  "${${DUNE_MOD_NAME_UPPERCASE}_PYTHON_REQUIRES}")
+
+  set(_module_testing_option "${DUNE_MOD_NAME_UPPERCASE}_ENABLE_TESTING")
+  option(${_module_testing_option}
+    "Enable test subdirectories for the ${ProjectName} module."
+    ${DUNE_ENABLE_TESTING})
+  set(DUNE_MODULE_ENABLE_TESTING ${${_module_testing_option}})
+  unset(_module_testing_option)
 
   # check whether this module has been explicitly disabled through the cmake flags.
   # If so, stop the build. This is necessary because dunecontrol does not parse

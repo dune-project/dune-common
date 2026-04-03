@@ -5,8 +5,11 @@ add_subdirectory("concepts")
 add_subdirectory("parallel")
 add_subdirectory("simd")
 add_subdirectory("std")
-add_subdirectory("test")
 add_subdirectory("typetree")
+
+if(DUNE_MODULE_ENABLE_TESTING)
+  add_subdirectory("test")
+endif()
 
 # add some sources to the dunecommon library
 target_sources(dunecommon PRIVATE
