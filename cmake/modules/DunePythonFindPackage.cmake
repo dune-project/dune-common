@@ -1,49 +1,56 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# This module provides functions to check for the existence of python packages on the host system.
-#
-# .. cmake_function:: dune_python_find_package
-#
-#    .. cmake_param:: PACKAGE
-#       :required:
-#       :single:
-#
-#       The package name to look for.
-#
-#    .. cmake_param:: RESULT
-#       :single:
-#
-#       The variable to store the result of the check in
-#       in the calling scope. Defaults to :code:`DUNE_PYTHON_<package>_FOUND`
-#       Note that the package name is case sensitive and will
-#       usually be lowercase.
-#
-#    .. cmake_param:: REQUIRED
-#       :option:
-#
-#       If set, the function will error out if the package is not
-#       found.
-#
-#    .. cmake_param:: VERSION
-#       :single:
-#
-#       The minimum version of the package that is required.
-#
-#    .. cmake_param:: EXACT
-#       :option:
-#
-#       Whether the given version requirement has to be matched exactly.
-#
-#    .. cmake_param:: INTERPRETER
-#       :single:
-#
-#       The python interpreter whose paths are searched for the package.
-#       Defaults to the location of :code:`Python3::Interpreter`, which might differ when
-#       using the configure-time virtual environment managed by :code:`DunePythonVirtualenv`.
-#
-#    Find a given python package on the system.
-#
+#[=======================================================================[.rst:
+DunePythonFindPackage
+---------------------
+
+Helpers for checking whether Python packages are available for a given
+interpreter.
+
+.. cmake:command:: dune_python_find_package
+
+  Check whether a Python package can be imported and optionally whether it
+  satisfies a version constraint.
+
+  .. code-block:: cmake
+
+    dune_python_find_package(
+      PACKAGE <package>
+      [RESULT <var>]
+      [REQUIRED]
+      [VERSION <version>]
+      [EXACT]
+      [INTERPRETER <python>]
+    )
+
+  ``PACKAGE``
+    Name of the Python package to look for.
+
+  ``RESULT``
+    Variable that receives the result in the calling scope. If omitted, the
+    default is ``DUNE_PYTHON_<package>_FOUND``. The package name is case
+    sensitive and is typically lowercase.
+
+  ``REQUIRED``
+    If given, configuration fails when the package cannot be found.
+
+  ``VERSION``
+    Minimum version required for the package.
+
+  ``EXACT``
+    Require the version given by ``VERSION`` to match exactly.
+
+  ``INTERPRETER``
+    Python interpreter whose search path is used. The default is
+    ``Python3::Interpreter``. This can differ from the system interpreter when
+    using DUNE's configure-time virtual environment.
+
+  The package check is performed by importing the module with the selected
+  interpreter. If the import succeeds, the package version is queried through
+  the dune-common helper script ``pyversion.py``.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 function(dune_python_find_package)
