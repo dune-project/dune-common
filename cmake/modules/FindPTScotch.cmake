@@ -5,32 +5,31 @@
 FindPTScotch
 ------------
 
-Find library `PTScotch <https://gitlab.inria.fr/scotch/scotch>`_, i.e. Software
-package and libraries for sequential and parallel graph partitioning, static
-mapping and clustering, sequential mesh and hypergraph partitioning, and
-sequential and parallel sparse matrix block ordering
+Find `PTScotch <https://gitlab.inria.fr/scotch/scotch>`_, the Scotch software
+suite for sequential and parallel graph partitioning and related ordering
+algorithms.
 
 Components
 ^^^^^^^^^^
 
-The PTScotch module allows to search for the following components
+This module supports the following components:
 
 ``SCOTCH``
-  Sequential version of Scotch
+  Sequential Scotch library.
 ``PTSCOTCH``
   Parallel version of Scotch. Requires MPI.
 
-Imported targets
+Imported Targets
 ^^^^^^^^^^^^^^^^
 
-This module defines the following `IMPORTED`_ target:
+This module provides the following imported targets, if found:
 
 ``PTScotch::Scotch``
-  The sequential Scotch library to link against
+  `Imported target <https://cmake.org/cmake/help/latest/command/add_library.html#imported-libraries>`_
+  for the sequential Scotch library.
 ``PTScotch::PTScotch``
-  The parallel PTScotch library to link against
-
-.. _IMPORTED: https://cmake.org/cmake/help/latest/command/add_library.html#id5
+  `Imported target <https://cmake.org/cmake/help/latest/command/add_library.html#imported-libraries>`_
+  for the parallel PTScotch library.
 
 Result Variables
 ^^^^^^^^^^^^^^^^
@@ -38,23 +37,24 @@ Result Variables
 This module defines the following variables:
 
 ``PTScotch_FOUND``
-  The Scotch and/or PTScotch library with all its dependencies is found
+  Boolean result indicating whether the requested PTScotch components were
+  found.
 ``PTScotch_SCOTCH_FOUND``
-  The sequential Scotch library is found
+  Boolean result indicating whether the sequential Scotch library was found.
 ``PTScotch_PTSCOTCH_FOUND``
-  The parallel PTScotch library is found
+  Boolean result indicating whether the parallel PTScotch library was found.
 ``PTScotch_VERSION``
-  Version of Scotch that is found
+  Version of the detected Scotch installation.
 
-Cache Variables
-^^^^^^^^^^^^^^^
+Hints
+^^^^^
 
 The following variables may be set to influence this module's behavior:
 
 ``PTSCOTCH_SUFFIX``
   Scotch might be compiled using different integer sizes (int32, int64, long).
-  When this is set the headers and libraries are search under the suffix
-  :code:`include/scotch-${PTSCOTCH_SUFFIX}`, and :code:`lib/scotch-${PTSCOTCH_SUFFIX}`,
+  When this is set, the headers and libraries are searched under the suffix
+  ``include/scotch-${PTSCOTCH_SUFFIX}`` and ``lib/scotch-${PTSCOTCH_SUFFIX}``,
   respectively.
 
 ``SCOTCH_INCLUDE_DIR``
@@ -64,10 +64,10 @@ The following variables may be set to influence this module's behavior:
   Include directory where the ptscotch.h is found.
 
 ``SCOTCH_LIBRARY`` and ``SCOTCHERR_LIBRARY``
-  Full path to the scotch library
+  Full paths to the sequential Scotch libraries.
 
 ``PTSCOTCH_LIBRARY`` and ``PTSCOTCHERR_LIBRARY``
-  Full path to the ptscotch library
+  Full paths to the parallel PTScotch libraries.
 
 #]=======================================================================]
 
