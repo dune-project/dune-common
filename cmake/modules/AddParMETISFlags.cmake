@@ -1,17 +1,29 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Defines the functions to use ParMETIS
-#
-# .. cmake_function:: add_dune_parmetis_flags
-#
-#    .. cmake_param:: targets
-#       :positional:
-#       :single:
-#       :required:
-#
-#       A list of targets to use ParMETIS with.
-#
+#[=======================================================================[.rst:
+AddParMETISFlags
+----------------
+
+Helpers for using `ParMETIS <http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview>`_
+from DUNE targets.
+
+.. cmake:command:: add_dune_parmetis_flags
+
+  Link the given targets against ``ParMETIS::ParMETIS`` and add the compile
+  definitions corresponding to the detected ParMETIS configuration.
+
+  This command also applies :cmake:command:`add_dune_metis_flags` and
+  :cmake:command:`add_dune_mpi_flags`.
+
+  .. code-block:: cmake
+
+    add_dune_parmetis_flags(targets)
+
+  :param targets: target or list of targets to configure
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 # set HAVE_PARMETIS for config.h
