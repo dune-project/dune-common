@@ -10,11 +10,10 @@ Find Sphinx, the Python documentation generator.
 This find-module searches for the ``sphinx-build`` executable and provides the
 usual ``find_package(Sphinx)`` result variables.
 
-.. cmake:variable:: SPHINX_ROOT
+Result Variables
+^^^^^^^^^^^^^^^^
 
-  Preferred search prefix for the ``sphinx-build`` executable. If set, this
-  path is searched with higher priority before falling back to the system
-  search path.
+This module defines the following variables:
 
 .. cmake:variable:: SPHINX_FOUND
 
@@ -23,6 +22,17 @@ usual ``find_package(Sphinx)`` result variables.
 .. cmake:variable:: SPHINX_EXECUTABLE
 
   Full path to the discovered ``sphinx-build`` executable.
+
+Hints
+^^^^^
+
+The following variable may be set to influence this module's behavior:
+
+.. cmake:variable:: SPHINX_ROOT
+
+  Preferred search prefix for the ``sphinx-build`` executable. If set, this
+  path is searched with higher priority before falling back to the system
+  search path.
 
 #]=======================================================================]
 

@@ -11,10 +11,10 @@ especially Doxygen output.
 This find-module searches for a local installation containing ``MathJax.js``
 and provides the usual ``find_package(MathJax2)`` result variables.
 
-.. cmake:variable:: MathJax2_ROOT
+Result Variables
+^^^^^^^^^^^^^^^^
 
-  Preferred search prefix for the MathJax2 installation. If set, this path is
-  searched before the built-in system locations.
+This module defines the following variables:
 
 .. cmake:variable:: MATHJAX2_FOUND
 
@@ -23,6 +23,16 @@ and provides the usual ``find_package(MathJax2)`` result variables.
 .. cmake:variable:: MATHJAX2_PATH
 
   Directory containing the discovered ``MathJax.js`` script.
+
+Hints
+^^^^^
+
+The following variable may be set to influence this module's behavior:
+
+.. cmake:variable:: MathJax2_ROOT
+
+  Preferred search prefix for the MathJax2 installation. If set, this path is
+  searched before the built-in system locations.
 
 #]=======================================================================]
 

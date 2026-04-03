@@ -1,18 +1,39 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# .. cmake_module::
-#
-#    Module that checks for inkscape
-#
-#    Sets the following variables
-#
-#    :code:`INKSCAPE_FOUND`
-#       Whether inkscape was found
-#
-#    :code:`INKSCAPE`
-#       Path to inkscape to generate .png's form .svg's
-#
+#[=======================================================================[.rst:
+FindInkscape
+============
+
+Find Inkscape and related conversion tools used for documentation asset
+generation.
+
+This find-module locates the ``inkscape`` executable and a compatible
+ImageMagick ``convert`` executable.
+
+Result Variables
+^^^^^^^^^^^^^^^^
+
+This module defines the following variables:
+
+.. cmake:variable:: INKSCAPE_FOUND
+
+  Boolean result indicating whether Inkscape was found.
+
+.. cmake:variable:: INKSCAPE
+
+  Full path to the ``inkscape`` executable.
+
+.. cmake:variable:: CONVERT
+
+  Full path to the ``convert`` executable, if found.
+
+.. cmake:variable:: INKSCAPE_NEW_VERSION
+
+  Boolean result indicating whether the detected Inkscape behaves like version
+  1.0 or newer with respect to command-line options.
+
+#]=======================================================================]
 
 # text for feature summary
 include(FeatureSummary)
