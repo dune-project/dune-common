@@ -64,6 +64,7 @@ def main() -> int:
             "",
             "   commands/*",
             "   modules/*",
+            "   variables/*",
             "",
         ])
     )
@@ -91,6 +92,7 @@ def main() -> int:
         html_dir / "index.html",
         html_dir / "modules" / "FixtureModernDocs.html",
         html_dir / "commands" / "dune_fixture_public.html",
+        html_dir / "variables" / "DUNE_FIXTURE_VARIABLE.html",
     ]
     for path in expected:
         if not path.exists():

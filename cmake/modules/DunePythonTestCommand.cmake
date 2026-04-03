@@ -27,8 +27,8 @@
 #       the LABELS property on the test so :code:`ctest -L ${label_regex}` can
 #       be used to run all tests with certain labels. We always add the label
 #       :code:`python` per default. The labels are forwarded to
-#       :ref:`dune_add_test`. See :ref:`dune_add_test` for a
-#       more detailed documentation.
+#       :cmake:command:`dune_add_test()`. See :cmake:command:`dune_add_test()`
+#       for a more detailed documentation.
 #
 #    .. cmake_param:: WORKING_DIRECTORY
 #       :single:

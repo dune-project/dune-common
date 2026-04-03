@@ -40,6 +40,7 @@ def main() -> int:
         "FixtureModernDocs",
         ".. cmake:command:: dune_fixture_public",
         ".. cmake:command:: dune_fixture_helper",
+        ".. cmake:variable:: DUNE_FIXTURE_VARIABLE",
         ".. versionchanged:: 2.9",
         ":cmake:command:`dune_fixture_helper()`",
         ".. dune:internal::",
@@ -50,18 +51,24 @@ def main() -> int:
 
     public_command_rst = build_dir / "commands" / "dune_fixture_public.rst"
     internal_command_rst = build_dir / "commands" / "dune_fixture_helper.rst"
+    variable_rst = build_dir / "variables" / "DUNE_FIXTURE_VARIABLE.rst"
     stamp = build_dir / "commands" / ".dune-public-commands.stamp"
 
     if not public_command_rst.exists():
         raise AssertionError(f"Expected public command page {public_command_rst} to exist")
     if internal_command_rst.exists():
         raise AssertionError(f"Did not expect internal command page {internal_command_rst} to exist")
+    if not variable_rst.exists():
+        raise AssertionError(f"Expected variable page {variable_rst} to exist")
     if not stamp.exists():
         raise AssertionError(f"Expected stamp file {stamp} to exist")
 
     public_content = public_command_rst.read_text()
     if "../modules/FixtureModernDocs" not in public_content:
         raise AssertionError("Expected generated public command page to link to the module page")
+    variable_content = variable_rst.read_text()
+    if ":cmake:variable:`DUNE_FIXTURE_VARIABLE`" not in variable_content:
+        raise AssertionError("Expected generated variable page to link back through the cmake variable role")
 
     return 0
 
