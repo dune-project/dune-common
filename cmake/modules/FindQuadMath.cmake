@@ -5,7 +5,7 @@
 FindQuadMath
 ------------
 
-Find the GCC Quad-Precision library
+Find the GCC quad-precision math library.
 
 This module checks if the used compiler has built-in support for QuadMath
 by compiling a small source file.
@@ -16,15 +16,15 @@ Imported Targets
 This module provides the following imported targets, if found:
 
 ``QuadMath::QuadMath``
-  Library to link against if QuadMath should be used.
+  Imported target to link against when QuadMath support is available.
 
 Result Variables
 ^^^^^^^^^^^^^^^^
 
-This will define the following variables:
+This module defines the following variables:
 
 ``QuadMath_FOUND``
-  True if the Quad-Precision library was found.
+  Boolean result indicating whether quad-precision support is available.
 
 #]=======================================================================]
 
