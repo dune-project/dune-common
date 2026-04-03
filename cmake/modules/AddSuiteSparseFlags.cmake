@@ -17,9 +17,10 @@ from DUNE targets.
 
   .. code-block:: cmake
 
-    add_dune_suitesparse_flags(targets)
+    add_dune_suitesparse_flags(<target> [<target>...])
 
-  :param targets: target or list of targets to configure
+  ``targets``
+    One or more existing targets to configure.
 
 #]=======================================================================]
 

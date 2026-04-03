@@ -1,17 +1,28 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Defines the functions to use TBB
-#
-# .. cmake_function:: add_dune_tbb_flags
-#
-#    .. cmake_param:: targets
-#       :positional:
-#       :single:
-#       :required:
-#
-#       A list of targets to use TBB with.
-#
+#[=======================================================================[.rst:
+AddTBBFlags
+-----------
+
+Helpers for using `TBB <https://github.com/oneapi-src/oneTBB>`_ from DUNE
+targets.
+
+.. cmake:command:: add_dune_tbb_flags
+
+  Link the given targets against ``TBB::tbb``.
+
+  The command has an effect only when ``TBB_FOUND`` is true.
+
+  .. code-block:: cmake
+
+    add_dune_tbb_flags(<target> [<target>...])
+
+  ``targets``
+    One or more existing targets to configure.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 # set variable for config.h

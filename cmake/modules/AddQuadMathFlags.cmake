@@ -1,17 +1,29 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Defines the functions to use QuadMath
-#
-# .. cmake_function:: add_dune_quadmath_flags
-#
-#    .. cmake_param:: targets
-#       :positional:
-#       :single:
-#       :required:
-#
-#       A list of targets to use QuadMath with.
-#
+#[=======================================================================[.rst:
+AddQuadMathFlags
+----------------
+
+Helpers for using `QuadMath <https://gcc.gnu.org/onlinedocs/libquadmath>`_
+from DUNE targets.
+
+.. cmake:command:: add_dune_quadmath_flags
+
+  Link the given targets against ``QuadMath::QuadMath`` and add the compile
+  definition ``HAVE_QUADMATH=1``.
+
+  The command has an effect only when ``QuadMath_FOUND`` is true.
+
+  .. code-block:: cmake
+
+    add_dune_quadmath_flags(<target> [<target>...])
+
+  ``targets``
+    One or more existing targets to configure.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 # set HAVE_QUADMATH for config.h

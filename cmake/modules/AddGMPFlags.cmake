@@ -1,17 +1,28 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Defines the functions to use GMP
-#
-# .. cmake_function:: add_dune_gmp_flags
-#
-#    .. cmake_param:: targets
-#       :positional:
-#       :single:
-#       :required:
-#
-#       A list of targets to use GMP with.
-#
+#[=======================================================================[.rst:
+AddGMPFlags
+-----------
+
+Helpers for using `GMP <https://gmplib.org>`_ from DUNE targets.
+
+.. cmake:command:: add_dune_gmp_flags
+
+  Link the given targets against ``GMP::gmpxx`` and add the compile
+  definition ``HAVE_GMP=1``.
+
+  The command has an effect only when ``GMP_FOUND`` is true.
+
+  .. code-block:: cmake
+
+    add_dune_gmp_flags(<target> [<target>...])
+
+  ``targets``
+    One or more existing targets to configure.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 # set HAVE_GMP for the config.h file

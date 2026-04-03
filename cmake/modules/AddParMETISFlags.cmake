@@ -18,9 +18,10 @@ from DUNE targets.
 
   .. code-block:: cmake
 
-    add_dune_parmetis_flags(targets)
+    add_dune_parmetis_flags(<target> [<target>...])
 
-  :param targets: target or list of targets to configure
+  ``targets``
+    One or more existing targets to configure.
 
 #]=======================================================================]
 
