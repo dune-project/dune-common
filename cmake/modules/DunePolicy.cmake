@@ -57,14 +57,15 @@ default behavior can be influenced by the global CMake variable
      The signature ``dune_define_policy(<policy> <module> <version> <doc>)``
      is deprecated. Use ``dune_define_policy(<policy> <doc>)`` instead.
 
-Global options
-^^^^^^^^^^^^^^
+.. cmake:variable:: DUNE_POLICY_DEFAULT
 
-``DUNE_POLICY_DEFAULT`` (default="OLD")
-  The default value of an unset policy. Either `OLD` (default) or `NEW`.
+  Default value of an unset policy. Supported values are ``OLD`` and ``NEW``.
+  The default is ``OLD``.
 
-``DUNE_POLICY_DISABLE_WARNING`` (default=FALSE)
-  If set to `TRUE`, warnings about unset dune policies are deactivated.
+.. cmake:variable:: DUNE_POLICY_DISABLE_WARNING
+
+  If set to ``TRUE``, warnings about unset DUNE policies are suppressed. The
+  default is ``FALSE``.
 
 #]=======================================================================]
 include_guard(GLOBAL)
