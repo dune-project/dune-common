@@ -39,7 +39,14 @@ add_test(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake_doc_generator/check_extract_cmake_data.py
 )
 
+add_test(
+    NAME cmakedocgeneratorsphinxtest
+    COMMAND ${Python3_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake_doc_generator/check_sphinx_build.py
+)
+set_tests_properties(cmakedocgeneratorsphinxtest PROPERTIES SKIP_RETURN_CODE 77)
+
 set_tests_properties(
-        dunepolicytest dunecommonstandaloneconfiguretest dunecommonstandalonebuildtest cmakedocgeneratorextracttest
+        dunepolicytest dunecommonstandaloneconfiguretest dunecommonstandalonebuildtest cmakedocgeneratorextracttest cmakedocgeneratorsphinxtest
     PROPERTIES LABELS buildsystem
 )

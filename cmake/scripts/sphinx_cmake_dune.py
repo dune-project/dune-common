@@ -11,15 +11,12 @@ build system documentation.
 from docutils import nodes
 from docutils.parsers.rst import Directive
 from itertools import chain
+from sphinx.domains import Domain
 
 class CMakeParamNode(nodes.Element):
     pass
 
 class CMakeBriefNode(nodes.Element):
-    pass
-
-
-class DuneInternalNode(nodes.Element):
     pass
 
 class CMakeFunction(Directive):
@@ -194,17 +191,29 @@ class DuneInternal(Directive):
     has_content = False
 
     def run(self):
-        return [DuneInternalNode()]
+        return []
+
+
+class DuneDomain(Domain):
+    name = 'dune'
+    label = 'DUNE'
+    directives = {
+        'internal': DuneInternal,
+    }
+    roles = {}
+    initial_data = {}
+
+    def get_objects(self):
+        return []
 
 def setup(app):
     app.add_node(CMakeBriefNode)
     app.add_node(CMakeParamNode)
-    app.add_node(DuneInternalNode)
     app.add_directive('cmake_module', CMakeModule)
     app.add_directive('cmake_brief', CMakeBrief)
     app.add_directive('cmake_function', CMakeFunction)
     app.add_directive('cmake_param', CMakeParam)
     app.add_directive('cmake_variable', CMakeVariable)
-    app.add_directive('dune:internal', DuneInternal)
+    app.add_domain(DuneDomain)
 
     return {'version': '0.1'}
