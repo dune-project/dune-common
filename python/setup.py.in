@@ -29,7 +29,7 @@ setup(name="${ProjectName}",
     author="${ProjectAuthor}",
     author_email="${ProjectMaintainerEmail}",
     zip_safe = 0,
-    package_data = {'': ['*.so']},
+    package_data = {'': ['*.so'], 'dune.data': ['*.cmake']},
     install_requires = pkg,
     include_package_data=True,
   )

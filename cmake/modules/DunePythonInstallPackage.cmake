@@ -329,7 +329,14 @@ function(dune_link_dune_py)
   set(_export_builddirs "${CMAKE_BINARY_DIR}")
   foreach(mod ${DUNE_FOUND_DEPENDENCIES})
     string(APPEND _deps " ${mod}")
-    string(APPEND _export_builddirs "\;${${mod}_DIR}")
+    # Installed modules expose their package config from lib/cmake/<module>.
+    # They do not provide a reusable build directory for dune-py, so keep the
+    # DEPBUILDDIRS entry empty instead of exporting the package config path.
+    if("${${mod}_DIR}" MATCHES "/lib(32|64)?/cmake/")
+      string(APPEND _export_builddirs "\;")
+    else()
+      string(APPEND _export_builddirs "\;${${mod}_DIR}")
+    endif()
   endforeach()
 
   # add the list of HAVE_{MODULE} flags to the meta data
