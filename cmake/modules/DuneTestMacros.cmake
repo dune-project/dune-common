@@ -354,19 +354,21 @@ function(dune_add_test)
   # Add the executable if it is not already present
   if(ADDTEST_SOURCES)
     add_executable(${ADDTEST_NAME} ${ADDTEST_SOURCES})
-
-    # add all flags to the target if corresponding policy is OLD and not explicitly disabled.
-    dune_policy(GET DP_TEST_ADD_ALL_FLAGS _add_all_flags)
-    if(_add_all_flags STREQUAL "OLD")
-      add_dune_all_flags(${ADDTEST_NAME})
-    endif()
-    unset(_add_all_flags)
-
-    # This is just a placeholder
-    target_compile_definitions(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_DEFINITIONS})
-    target_compile_options(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_FLAGS})
-    target_link_libraries(${ADDTEST_NAME} PUBLIC ${ADDTEST_LINK_LIBRARIES})
     set(ADDTEST_TARGET ${ADDTEST_NAME})
+
+    if(NOT SHOULD_SKIP_TEST)
+      # add all flags to the target if corresponding policy is OLD and not explicitly disabled.
+      dune_policy(GET DP_TEST_ADD_ALL_FLAGS _add_all_flags)
+      if(_add_all_flags STREQUAL "OLD")
+        add_dune_all_flags(${ADDTEST_NAME})
+      endif()
+      unset(_add_all_flags)
+
+      # This is just a placeholder
+      target_compile_definitions(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_DEFINITIONS})
+      target_compile_options(${ADDTEST_NAME} PUBLIC ${ADDTEST_COMPILE_FLAGS})
+      target_link_libraries(${ADDTEST_NAME} PUBLIC ${ADDTEST_LINK_LIBRARIES})
+    endif()
   endif()
 
   # If target is mutable, make sure to exclude the target from all, even when it is user-provided
