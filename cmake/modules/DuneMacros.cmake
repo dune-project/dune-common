@@ -13,8 +13,6 @@ Legacy compatibility helpers for the DUNE buildsystem.
 
   Link libraries to the given target.
 
-  Deprecated compatibility wrapper around :cmake:command:`target_link_libraries`.
-
   .. code-block:: cmake
 
     dune_target_link_libraries(<target> <libraries>)
@@ -30,9 +28,6 @@ Legacy compatibility helpers for the DUNE buildsystem.
   .. dune:internal::
 
   Add all globally collected package flags to the given targets.
-
-  Deprecated compatibility helper. Use
-  :cmake:command:`dune_target_enable_all_packages()` instead.
 
   .. code-block:: cmake
 
