@@ -1,161 +1,150 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# This cmake module provides infrastructure for cmake installation rules concerning python packages.
-#
-# .. cmake_function:: dune_python_configure_dependencies
-#
-#    .. cmake_param:: PATH
-#       :required:
-#       :single:
-#
-#       Path to the python package source code containing a valid setup.py file.
-#       In case of a relative path, it will be evaluated with respect to the :CMAKE_CURRENT_SOURCE_DIR:.
-#
-#    .. cmake_param:: RESULT
-#       :single:
-#
-#       Variable where to store the result of the dependency configuration.
-#       A non-zero result stands for a failure on the configuration of the dependencies.
-#
-#    .. cmake_param:: INSTALL_CONCRETE_DEPENDENCIES
-#       :option:
-#
-#       This option forces the package dependencies to be installed with concrete dependencies
-#       listed in the requirements.txt file
-#
-#     This function installs the dependencies of a python package at configure time.
-#     The dependencies are extracted from the :setup.py: and :requirements.txt: file
-#     A failure on the installation of the dependencies does will no trigger a
-#     CMake fatal error but it will be reflected on the :RESULT: variable.
-#
-#
-# .. cmake_function:: dune_link_dune_py
-#
-#    .. cmake_param:: PATH
-#       :required:
-#       :single:
-#
-#       Absolute path to the python package source code where to generate metadata.
-#
-#    .. cmake_param:: INSTALL_TARGET
-#       :required:
-#       :single:
-#
-#       Name of the target that generates the package metadata and triggers the :dune-py:
-#       module configuration at installation time. This target will only be generated if
-#       the build system is setup to install python packages :ref:`DUNE_PYTHON_INSTALL_LOCATION`.
-#
-#    .. cmake_param:: CMAKE_METADATA_FLAGS
-#       :multi:
-#
-#       A list of cmake flags to add to meta data file. For each flag given
-#       an entry of the form "flagname:=value" is added. These flags are
-#       then set in the CMakeLists.txt file of a generated dune-py module.
-#
-#     This function generates the metadata required for Python package in order to be
-#     used by the dune-py module. It essentially glues together python code generation
-#     of dune-py (via CMake) with a python package. This is achieved by generating a
-#     filename that CMake should export some meta data about this build to.
-#     The file will be installed together with the Python package. This mechanism
-#     is used by the Python bindings to transport information from CMake to
-#     the installed Python package. A module dune-mymodule that provides a Python
-#     package dune.mymodule should set this to dune/mymodule/metadata.cmake
-#
-#    For historic reasons, this function installs the package at configure time rather than at
-#    build time. This distinction is important because it means that the package dependencies
-#    will be available to be used during configuration time.
-#
-# .. cmake_function:: dune_python_configure_package
-#
-#    .. cmake_param:: PATH
-#       :required:
-#       :single:
-#
-#       Path to the python package. In case of a relative path, it will be
-#       evaluated with respect to the :CMAKE_CURRENT_SOURCE_DIR:.
-#
-#    .. cmake_param:: INSTALL_TARGET
-#       :single:
-#
-#       Name of the target that installs the package on the install directory.
-#
-#    .. cmake_param:: RESULT
-#       :single:
-#
-#       Variable where to store the result of the package configuration.
-#       A non-zero result stands for a failure on the configuration of the package.
-#
-#    .. cmake_param:: ADDITIONAL_PIP_PARAMS
-#       :multi:
-#       :argname: param
-#
-#       Parameters to add to any :code:`pip install` call (appended).
-#
-#    .. cmake_param:: INSTALL_CONCRETE_DEPENDENCIES
-#       :option:
-#
-#       See :dune_python_configure_dependencies:
-#
-#    This function installs the python package located at the given path:
-#
-#    * installs it to the location specified with :ref:`DUNE_PYTHON_INSTALL_LOCATION` during
-#      :code:`make install_python` and during :code:`make install`.
-#    * installs a wheel into the Dune wheelhouse during :code:`make install`.
-#      This is necessary for mixing installed and non-installed Dune modules.
-#
-#    The package at the given location is expected to be a pip-installable package.
-#    This function installs the package at configure time. This distinction is
-#    important because it means that the package will be available to be used during
-#    other CMake configuration tasks.
-#
-#
-#
-# .. cmake_function:: dune_python_configure_bindings
-#
-#    .. cmake_param:: PATH
-#       :required:
-#       :single:
-#
-#       Relative path to the given python package source code.
-#
-#    .. cmake_param:: PACKAGENAME
-#       :single:
-#
-#       Name of the python package.
-#
-#    .. cmake_param:: ADDITIONAL_PIP_PARAMS
-#       :multi:
-#       :argname: param
-#
-#       Parameters to add to any :code:`pip install` call (appended).
-#
-#    .. cmake_param:: CMAKE_METADATA_FLAGS
-#       :multi:
-#
-#       A list of cmake flags to add to meta data file. For each flag given
-#       an entry of the form "flagname:=value" is added. These flags are
-#       then set in the CMakeLists.txt file of a generated dune-py module.
-#
-#    .. cmake_param:: REQUIRED
-#       :option:
-#
-#       If set, the function will error out if the package could not be installed.
-#       Default behavior is to only show a warning.
-#
-#    This is a convenience function that performs the tasks of
-#    :dune_python_configure_dependencies:, :dune_link_dune_py:, and :dune_python_configure_package:.
-#    Additionally, it makes sure that a 'setup.py' is available with the following procedure:
-#
-#      1. If PATH contains a `setup.py` file, such file will be used to make a `pip install` from the source directory
-#      2. If PATH contains a `setup.py.in` file, such file will be configured and used to `pip install` the package from the binary directory
-#      3. Otherwise, this script will provide a template for `setup.py.in` and continue with 2.
-#
-# .. cmake_variable:: DUNE_PYTHON_ADDITIONAL_PIP_PARAMS
-#
-#    Use this variable to set additional flags for pip in this build. This can e.g.
-#    be used to point pip to alternative package indices in restricted environments.
-#
+#[=======================================================================[.rst:
+DunePythonInstallPackage
+------------------------
+
+Helpers for configuring and installing Python packages from the DUNE build
+system.
+
+.. cmake:command:: dune_python_configure_dependencies
+
+  Install dependencies of a Python package at configure time.
+
+  .. code-block:: cmake
+
+    dune_python_configure_dependencies(
+      PATH <path>
+      [RESULT <var>]
+      [INSTALL_CONCRETE_DEPENDENCIES <value>]
+    )
+
+  ``PATH``
+    Path to the package source directory containing a valid ``setup.py`` file.
+    Relative paths are evaluated with respect to ``CMAKE_CURRENT_SOURCE_DIR``.
+
+  ``RESULT``
+    Variable receiving the result of dependency configuration. A non-zero value
+    indicates failure.
+
+  ``INSTALL_CONCRETE_DEPENDENCIES``
+    Force installation of the concrete dependencies listed in
+    ``requirements.txt``.
+
+  Dependencies are extracted from ``setup.py`` and ``requirements.txt``.
+  Failure during dependency installation does not trigger a fatal CMake error,
+  but it is reflected in ``RESULT``.
+
+.. cmake:command:: dune_link_dune_py
+
+  Generate metadata that lets an installed Python package interact with
+  dune-py.
+
+  .. code-block:: cmake
+
+    dune_link_dune_py(
+      PATH <path>
+      INSTALL_TARGET <target>
+      [CMAKE_METADATA_FLAGS <flags...>]
+    )
+
+  ``PATH``
+    Absolute path to the Python package source tree where metadata should be
+    generated.
+
+  ``INSTALL_TARGET``
+    Name of the target that generates the package metadata and triggers dune-py
+    module configuration during installation.
+
+  ``CMAKE_METADATA_FLAGS``
+    Extra CMake flags written into the metadata file as ``flag:=value`` pairs.
+
+  The generated metadata is installed together with the package and is used by
+  the Python bindings to transport CMake-side build information into the
+  installed package. A module ``dune-mymodule`` providing the package
+  ``dune.mymodule`` would typically use
+  ``dune/mymodule/metadata.cmake`` as the metadata file path.
+
+.. cmake:command:: dune_python_configure_package
+
+  Configure installation of a Python package at configure time.
+
+  .. code-block:: cmake
+
+    dune_python_configure_package(
+      PATH <path>
+      [INSTALL_TARGET <target>]
+      [RESULT <var>]
+      [ADDITIONAL_PIP_PARAMS <param>...]
+      [INSTALL_CONCRETE_DEPENDENCIES]
+    )
+
+  ``PATH``
+    Path to the Python package. Relative paths are evaluated with respect to
+    ``CMAKE_CURRENT_SOURCE_DIR``.
+
+  ``INSTALL_TARGET``
+    Target that installs the package into the configured install directory.
+
+  ``RESULT``
+    Variable receiving the result of package configuration.
+
+  ``ADDITIONAL_PIP_PARAMS``
+    Extra arguments appended to any ``pip install`` invocation.
+
+  ``INSTALL_CONCRETE_DEPENDENCIES``
+    Forwarded to :cmake:command:`dune_python_configure_dependencies()`.
+
+  The package is installed to ``DUNE_PYTHON_INSTALL_LOCATION`` during
+  ``make install_python`` and ``make install``. A wheel is also placed into the
+  DUNE wheelhouse so installed and non-installed module stacks can be mixed.
+
+.. cmake:command:: dune_python_configure_bindings
+
+  Convenience wrapper for configuring a Python package together with its
+  dune-py metadata.
+
+  .. code-block:: cmake
+
+    dune_python_configure_bindings(
+      PATH <path>
+      [PACKAGENAME <name>]
+      [ADDITIONAL_PIP_PARAMS <param>...]
+      [CMAKE_METADATA_FLAGS <flags...>]
+      [REQUIRED]
+    )
+
+  ``PATH``
+    Relative path to the Python package source directory.
+
+  ``PACKAGENAME``
+    Name of the Python package.
+
+  ``ADDITIONAL_PIP_PARAMS``
+    Extra arguments appended to any ``pip install`` invocation.
+
+  ``CMAKE_METADATA_FLAGS``
+    Extra metadata flags written into the generated metadata file.
+
+  ``REQUIRED``
+    Fail with a CMake error if the package cannot be installed. By default only
+    a warning is emitted.
+
+  This command combines
+  :cmake:command:`dune_python_configure_dependencies()`,
+  :cmake:command:`dune_link_dune_py()`, and
+  :cmake:command:`dune_python_configure_package()`. It also ensures that a
+  ``setup.py`` file is available, either directly from the source tree, from a
+  configured ``setup.py.in``, or from a generated template.
+
+.. cmake:variable:: DUNE_PYTHON_ADDITIONAL_PIP_PARAMS
+
+  Additional pip flags used globally for the current build. This can be used,
+  for example, to point pip to alternative package indices in restricted
+  environments.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 

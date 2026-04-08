@@ -11,6 +11,8 @@ build system documentation.
 from docutils import nodes
 from docutils.parsers.rst import Directive
 from itertools import chain
+from sphinx.domains import Domain
+from sphinx.util.docutils import ReferenceRole
 
 class CMakeParamNode(nodes.Element):
     pass
@@ -182,6 +184,51 @@ class CMakeModule(Directive):
         self.state.nested_parse(self.content, self.content_offset, node)
         return [node]
 
+
+class DuneInternal(Directive):
+    required_arguments = 0
+    optional_arguments = 0
+    final_argument_whitespace = False
+    has_content = False
+
+    def run(self):
+        return []
+
+
+class DuneExternalCMakeCommandRole(ReferenceRole):
+    def run(self):
+        target = self.target.strip()
+        if target.startswith("command:"):
+            command = target.split(":", 1)[1]
+        else:
+            command = target
+
+        command = command[:-2] if command.endswith("()") else command
+        title = self.title if self.has_explicit_title else f"{command}()"
+        refuri = (
+            "https://cmake.org/cmake/help/latest/command/"
+            f"{command}.html#command:{command}"
+        )
+
+        literal = nodes.literal(title, title, classes=["xref", "cmake", "cmake-command"])
+        reference = nodes.reference("", "", literal, refuri=refuri)
+        return [reference], []
+
+
+class DuneDomain(Domain):
+    name = 'dune'
+    label = 'DUNE'
+    directives = {
+        'internal': DuneInternal,
+    }
+    roles = {
+        'cmake-command': DuneExternalCMakeCommandRole(),
+    }
+    initial_data = {}
+
+    def get_objects(self):
+        return []
+
 def setup(app):
     app.add_node(CMakeBriefNode)
     app.add_node(CMakeParamNode)
@@ -190,5 +237,6 @@ def setup(app):
     app.add_directive('cmake_function', CMakeFunction)
     app.add_directive('cmake_param', CMakeParam)
     app.add_directive('cmake_variable', CMakeVariable)
+    app.add_domain(DuneDomain)
 
     return {'version': '0.1'}

@@ -16,20 +16,24 @@ Imported Targets
 This module provides the following imported targets, if found:
 
 ``TBB::tbb``
-  Imported library to link against if TBB should be used.
+  Imported target to link against when TBB is found.
 
 Result Variables
 ^^^^^^^^^^^^^^^^
 
-This will define the following variables:
+This module defines the following variables:
 
 ``TBB_FOUND``
-  True if the TBB library was found.
+  Boolean result indicating whether TBB was found.
 
-Finding the TBB library
-^^^^^^^^^^^^^^^^^^^^^^^
+``TBB_VERSION``
+  Version reported by the detected TBB package or pkg-config metadata, if
+  available.
 
-Two strategies are implemented for finding the TBB library:
+Hints
+^^^^^
+
+Two strategies are implemented for finding TBB:
 
 1. Searching for the TBB cmake config file, typically named
    ``TBBConfig.cmake``. In recent TBB versions, this file can be
@@ -40,7 +44,7 @@ Two strategies are implemented for finding the TBB library:
 2. Using pkg-config to configure TBB. Therefore it is necessary
    to find the ``tbb.pc`` file. Several distributions provide this file
    directly. In order to point pkg-config to the location of that file,
-   simply set the environmental variable ``PKG_CONFIG_PATH`` to include
+   simply set the environment variable ``PKG_CONFIG_PATH`` to include
    the directory containing the .pc file, or add this path to the
    ``CMAKE_PREFIX_PATH``.
 

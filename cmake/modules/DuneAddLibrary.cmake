@@ -10,7 +10,7 @@ Add a library to a Dune module.
 .. cmake:command:: dune_add_library
 
   Create a new library target. There are three different interfaces following
-  the standard cmake signatures.
+  the standard CMake signatures.
 
   .. code-block:: cmake
 
@@ -25,25 +25,32 @@ Add a library to a Dune module.
       [NO_MODULE_LIBRARY]
     )
 
-    Create a new library target with ``<basename>`` for the library name. On Unix
-    this created ``lib<libname>.so`` or ``lib<libname>.a``. The target properties
-    are automatically filled with the given (optional) arguments.
+  Create a new library target with ``<basename>`` for the library name. On Unix
+  this creates ``lib<libname>.so`` or ``lib<libname>.a``. The target properties
+  are automatically filled with the given optional arguments.
 
-    A dune library is exported into a unique export set if the parameter
-    ``NO_EXPORT`` is not given. This export set is automatically installed and
-    exported in the ``dune_finalize_project()`` function.
+  A dune library is exported into a unique export set if the parameter
+  ``NO_EXPORT`` is not given. This export set is automatically installed and
+  exported in the :cmake:command:`finalize_dune_project()` function.
 
   ``SOURCES``
     The source files from which to build the library.
 
-  ``LINK_LIBRARIES``
-    A list of dependency the libraries is explicitly linked against.
+  ``LINK_LIBRARIES`` (or ``ADD_LIBS``)
+    A list of libraries the target is explicitly linked against.
 
-  ``COMPILE_OPTIONS``
-    Any additional compile flags for building the library.
+    .. versionchanged:: 2.9
+      The parameter ``ADD_LIBS`` is deprecated.
+
+  ``COMPILE_OPTIONS`` (or ``COMPILE_FLAGS``)
+    Additional compile flags for building the library.
+
+    .. versionchanged:: 2.9
+      The parameter ``COMPILE_FLAGS`` is deprecated.
 
   ``OUTPUT_NAME``
-    Name of the library file, e.g. ``lib<libname>.so`` or ``lib<libname>.a``.
+    Name of the created library file, e.g. ``lib<libname>.so`` or
+    ``lib<libname>.a``.
 
   ``NAMESPACE``
     Name to be prepended to the export name of the target.
@@ -51,19 +58,17 @@ Add a library to a Dune module.
 
   ``EXPORT_NAME``
     Name of the exported target to be used when linking against the library.
-    The name is prepended with the given namespace (e.g. the default Dune::).
-    We recommend to choose an export name with a camel title case matching your
-    library name (e.g., Common, ISTL, and MultiDomainGrid will be exported as
-    Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)
+    The name is prepended with the given namespace.
 
   ``NO_EXPORT``
     If omitted the library is exported for usage in other modules.
 
   ``NO_MODULE_LIBRARY``
-    If omitted the library is added to the global property ``<module>_LIBRARIES``
-    and used for internal module configuration. If ``NO_EXPORT`` is omitted, the library
-    will additionally be added to the global property ``<module>_INTERFACE_LIBRARIES``.
+    If omitted the library is added to the global property
+    ``<module>_LIBRARIES``. If ``NO_EXPORT`` is omitted, the library is also
+    added to the global property ``<module>_EXPORTED_LIBRARIES``.
 
+  .. versionadded:: 2.9
 
   .. code-block:: cmake
 
@@ -76,19 +81,25 @@ Add a library to a Dune module.
       [NO_MODULE_LIBRARY]
     )
 
-    Create an interface library target with ``<basename>`` for the library name.
-    An interface target does not contain any sources but my contain flags and
-    dependencies.
+  Create an interface library target with ``<basename>`` for the library name.
+  An interface target does not contain any sources but may contain flags and
+  dependencies.
 
-    A dune library is exported into a unique export set if the parameter
-    ``NO_EXPORT`` is not given. This export set is automatically installed and
-    exported in the ``dune_finalize_project()`` function.
+  A dune library is exported into a unique export set if the parameter
+  ``NO_EXPORT`` is not given. This export set is automatically installed and
+  exported in the :cmake:command:`finalize_dune_project()` function.
 
-  ``LINK_LIBRARIES``
-    A list of dependency the libraries is explicitly linked against.
+  ``LINK_LIBRARIES`` (or ``ADD_LIBS``)
+    A list of libraries the target is explicitly linked against.
 
-  ``COMPILE_OPTIONS``
-    Any additional compile flags for building the library.
+    .. versionchanged:: 2.9
+      The parameter ``ADD_LIBS`` is deprecated.
+
+  ``COMPILE_OPTIONS`` (or ``COMPILE_FLAGS``)
+    Additional compile flags for building the library.
+
+    .. versionchanged:: 2.9
+      The parameter ``COMPILE_FLAGS`` is deprecated.
 
   ``NAMESPACE``
     Name to be prepended to the export name of the target.
@@ -96,19 +107,15 @@ Add a library to a Dune module.
 
   ``EXPORT_NAME``
     Name of the exported target to be used when linking against the library.
-    The name is prepended with the given namespace (e.g. the default Dune::).
-    We recommend to choose an export name with a camel title case matching your
-    library name (e.g., Common, ISTL, and MultiDomainGrid will be exported as
-    Dune::Common, Dune::ISTL, and Dune::MultiDomainGrid)
+    The name is prepended with the given namespace.
 
   ``NO_EXPORT``
-    If omitted the library is exported for usage in other modules and is added to
-    the global property ``<module>_EXPORTED_LIBRARIES``.
+    If omitted the library is exported for usage in other modules.
 
   ``NO_MODULE_LIBRARY``
-    If omitted and if ``NO_EXPORT`` is also omitted, the library
-    will be added to the global property ``<module>_LIBRARIES``.
+    If omitted the library is added to the global property ``<module>_LIBRARIES``.
 
+  .. deprecated:: 2.9
 
   .. code-block:: cmake
 
@@ -118,19 +125,19 @@ Add a library to a Dune module.
       [COMPILE_OPTIONS "<flags>;..."]
     )
 
-    Create an object library target ``<basename>`` to collect multiple sources
-    to be added to a library target later. Note, this utility is deprecated.
-    Create a regular library target in a parent scope and add the sources
-    directly using ``target_sources(<target> PRIVATE <sources>...)`` instead.
+  Create an object library target ``<basename>`` to collect multiple sources
+  to be added to a library target later. This utility is deprecated. Create a
+  regular library target in a parent scope and add the sources directly using
+  ``target_sources(<target> PRIVATE <sources>...)`` instead.
 
   ``SOURCES``
     The source files from which to build the library.
 
   ``LINK_LIBRARIES``
-    A list of dependency the libraries is explicitly linked against.
+    A list of libraries the target is explicitly linked against.
 
   ``COMPILE_OPTIONS``
-    Any additional compile flags for building the library.
+    Additional compile flags for building the library.
 
 #]=======================================================================]
 include_guard(GLOBAL)

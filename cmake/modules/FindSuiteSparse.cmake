@@ -5,7 +5,8 @@
 FindSuiteSparse
 ---------------
 
-Find the SuiteSparse libraries like UMFPACK or SPQR.
+Find the `SuiteSparse <http://faculty.cse.tamu.edu/davis/suitesparse.html>`_
+libraries such as UMFPACK and SPQR.
 
 Use this module by invoking find_package with the form:
 
@@ -23,7 +24,7 @@ Use this module by invoking find_package with the form:
 Components
 ^^^^^^^^^^
 
-The SuiteSparse module allows to search for the following components
+This module supports the following components:
 
 ``CHOLMOD``
   Supernodal Cholesky factorization.
@@ -50,35 +51,40 @@ Imported Targets
 This module provides the following imported targets, if found:
 
 ``SuiteSparse::SuiteSparse``
-  A meta library including all the requested optional or required components.
+  `Imported target <https://cmake.org/cmake/help/latest/command/add_library.html#imported-libraries>`_
+  combining the requested optional and required components.
+``SuiteSparse::SuiteSparse_config``
+  `Imported target <https://cmake.org/cmake/help/latest/command/add_library.html#imported-libraries>`_
+  for the common SuiteSparse configuration library.
 ``SuiteSparse::<COMPONENT>``
-  Library and include directories for the found ``<COMPONENT>``.
+  `Imported target <https://cmake.org/cmake/help/latest/command/add_library.html#imported-libraries>`_
+  for the found ``<COMPONENT>`` library.
 
 Result Variables
 ^^^^^^^^^^^^^^^^
 
-This will define the following variables:
+This module defines the following variables:
 
 ``SuiteSparse_FOUND``
-  True if all the (required) components are found
+  Boolean result indicating whether all required SuiteSparse components were
+  found.
 ``SuiteSparse_<COMPONENT>_FOUND``
-  True if a searched ``<COMPONENT>`` is found
+  Boolean result indicating whether the requested ``<COMPONENT>`` was found.
+``SuiteSparse_FOUND_COMPONENTS``
+  List of SuiteSparse components for which imported targets were created.
 
-Input and Cache Variables
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Hints
+^^^^^
 
-You may set the following variables to modify the behaviour of
-this module:
+The following variables may be set to influence this module's behavior:
 
 ``SuiteSparse_ROOT``
-  The root directory of the SuiteSparse installation, containing
-  subdirectories :code:`include/` and :code:`lib/` including the
-  header files and libraries of SuiteSparse and its components,
-  respectively.
+  Root directory of the SuiteSparse installation, usually containing
+  ``include/`` and ``lib/`` subdirectories.
 ``SUITESPARSE_INCLUDE_DIR``
-  The directory containing ``SuiteSparse_config.h``.
+  Include directory containing ``SuiteSparse_config.h``.
 ``SUITESPARSE_CONFIG_LIB``
-  The path to the suitesparseconfig library.
+  Full path to the ``suitesparseconfig`` library.
 
 #]=======================================================================]
 

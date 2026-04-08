@@ -1,60 +1,57 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Wrap python testing commands into the CMake build system
-#
-# .. cmake_function:: dune_python_add_test
-#
-#    .. cmake_param:: SCRIPT
-#       :multi:
-#
-#       The script to execute using the python interpreter. It will be executed during :code:`make test_python`
-#       and during `ctest`. You are required to either pass SCRIPT or MODULE.
-#
-#       .. note::
-#
-#    .. cmake_param:: MODULE
-#       :multi:
-#
-#       The Python module to execute using the python interpreter. It will be executed during :code:`make test_python`
-#       and during `ctest`. You are required to either pass SCRIPT or MODULE.
-#
-#    .. cmake_param:: LABELS
-#       :multi:
-#
-#       A list of labels to add to the test. This sets
-#       the LABELS property on the test so :code:`ctest -L ${label_regex}` can
-#       be used to run all tests with certain labels. We always add the label
-#       :code:`python` per default. The labels are forwarded to
-#       :ref:`dune_add_test`. See :ref:`dune_add_test` for a
-#       more detailed documentation.
-#
-#    .. cmake_param:: WORKING_DIRECTORY
-#       :single:
-#       :argname: dir
-#
-#       The working directory of the command. Defaults to
-#       the current build directory.
-#
-#    .. cmake_param:: TIMEOUT
-#       :single:
-#
-#       If set, the test will time out after the given number of seconds. This supersedes
-#       any timeout setting in ctest (see `cmake --help-property TIMEOUT`). If you
-#       specify the MPI_RANKS option, you need to specify a TIMEOUT.
-#
-#    .. cmake_param:: NAME
-#       :single:
-#
-#       A name to identify this test in ctest. Names must be unique throughout
-#       the project. If omitted, defaults to mangling of the command.
-#
-#    Integrates a python testing framework command into the Dune
-#    build system. Added commands are run, when the target
-#    :code:`test_python` is built and during :code:`ctest`.
-#
-#    This function uses `dune_add_test` and forwards all unparsed arguments.
-#
+#[=======================================================================[.rst:
+DunePythonTestCommand
+---------------------
+
+Helpers for integrating Python-based tests into the DUNE test infrastructure.
+
+.. cmake:command:: dune_python_add_test
+
+  Register a Python script or module as a DUNE test.
+
+  .. code-block:: cmake
+
+    dune_python_add_test(
+      [SCRIPT <script...>]
+      [MODULE <module...>]
+      [LABELS <labels...>]
+      [WORKING_DIRECTORY <dir>]
+      [TIMEOUT <seconds>]
+      [NAME <name>]
+      ...
+    )
+
+  ``SCRIPT``
+    Script path to execute with the Python interpreter. Pass the script path
+    only, not the interpreter itself. Either ``SCRIPT`` or ``MODULE`` must be
+    provided.
+
+  ``MODULE``
+    Python module to execute with ``python -m``. Either ``SCRIPT`` or
+    ``MODULE`` must be provided.
+
+  ``LABELS``
+    Labels attached to the test. The label ``python`` is added by default. The
+    labels are forwarded to :cmake:command:`dune_add_test()`.
+
+  ``WORKING_DIRECTORY``
+    Working directory used for the command. The default is the current build
+    directory.
+
+  ``TIMEOUT``
+    Timeout in seconds. This overrides the default ctest timeout.
+
+  ``NAME``
+    Explicit ctest name for the generated test. If omitted, the name is
+    derived from the command and working directory.
+
+  The command integrates a Python-based test into the DUNE build system so it
+  is built through ``test_python`` and executed through ``ctest``. Unparsed
+  arguments are forwarded to :cmake:command:`dune_add_test()`.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 function(dune_python_add_test)

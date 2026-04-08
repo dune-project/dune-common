@@ -1,17 +1,29 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Defines the functions to use METIS
-#
-# .. cmake_function:: add_dune_metis_flags
-#
-#    .. cmake_param:: targets
-#       :positional:
-#       :single:
-#       :required:
-#
-#       A list of targets to use METIS with.
-#
+#[=======================================================================[.rst:
+AddMETISFlags
+-------------
+
+Helpers for using `METIS <http://glaros.dtc.umn.edu/gkhome/metis/metis/overview>`_
+from DUNE targets.
+
+.. cmake:command:: add_dune_metis_flags
+
+  Link the given targets against ``METIS::METIS`` and add the compile
+  definitions corresponding to the detected METIS configuration.
+
+  The command has an effect only when :cmake:variable:`METIS_FOUND` is true.
+
+  .. code-block:: cmake
+
+    add_dune_metis_flags(<target> [<target>...])
+
+  ``targets``
+    One or more existing targets to configure.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 # register HAVE_METIS for config.h

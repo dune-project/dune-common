@@ -1,19 +1,35 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# The DUNE way to compile MPI applications is to use the CXX
-# compiler with MPI flags usually used for C. CXX bindings
-# are deactivated to prevent ABI problems.
-#
-# .. cmake_function:: add_dune_mpi_flags
-#
-#    .. cmake_param:: targets
-#       :single:
-#       :required:
-#       :positional:
-#
-#       The target list to add the MPI flags to.
-#
+#[=======================================================================[.rst:
+AddMPIFlags
+-----------
+
+Helpers for using MPI from DUNE targets.
+
+.. cmake:command:: add_dune_mpi_flags
+
+  Link the given targets against ``MPI::MPI_C`` and add the compile
+  definitions used by DUNE to disable the deprecated MPI C++ bindings.
+
+  DUNE intentionally uses the C MPI interface for C++ targets to avoid ABI
+  problems with vendor-specific MPI C++ bindings.
+
+  .. code-block:: cmake
+
+    add_dune_mpi_flags([SOURCE_ONLY] [OBJECT] <target> [<target>...])
+
+  ``SOURCE_ONLY``
+    Accepted for compatibility and ignored.
+
+  ``OBJECT``
+    Accepted for compatibility and ignored.
+
+  ``targets``
+    One or more existing targets to configure.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 # text for feature summary

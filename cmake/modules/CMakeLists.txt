@@ -17,7 +17,6 @@ install(FILES
   AddSuiteSparseFlags.cmake
   AddVcFlags.cmake
   CheckCXXFeatures.cmake
-  CMakeBuiltinFunctionsDocumentation.cmake
   DuneAddLibrary.cmake
   DuneAddPybind11Module.cmake
   DuneCommonMacros.cmake
@@ -33,6 +32,7 @@ install(FILES
   DunePathHelper.cmake
   DunePkgConfig.cmake
   DunePolicy.cmake
+  DuneProvidePybind11.cmake
   DuneProject.cmake
   DunePythonCommonMacros.cmake
   DunePythonFindPackage.cmake
@@ -60,7 +60,6 @@ install(FILES
   Headercheck.cmake
   latexmkrc.cmake
   OverloadCompilerFlags.cmake
-  Pybind11.cmake
   UseInkscape.cmake
   UseLatexMk.cmake
   DESTINATION ${DUNE_INSTALL_MODULEDIR})

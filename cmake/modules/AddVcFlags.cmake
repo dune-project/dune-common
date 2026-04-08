@@ -1,20 +1,28 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Defines the functions to use Vc
-#
-# Vc is a library for high-level Vectorization support in C++
-# see https://github.com/VcDevel/Vc
-#
-# .. cmake_function:: add_dune_vc_flags
-#
-#    .. cmake_param:: targets
-#       :positional:
-#       :single:
-#       :required:
-#
-#       A list of targets to use VC with.
-#
+#[=======================================================================[.rst:
+AddVcFlags
+----------
+
+Helpers for using `Vc <https://github.com/VcDevel/Vc>`_ from DUNE targets.
+
+.. cmake:command:: add_dune_vc_flags
+
+  Link the given targets against Vc and add the include directories, compile
+  options, and compile definitions required for SIMD support.
+
+  The command has an effect only when ``Vc_FOUND`` is true.
+
+  .. code-block:: cmake
+
+    add_dune_vc_flags(<target> [<target>...])
+
+  ``targets``
+    One or more existing targets to configure.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 # text for feature summary

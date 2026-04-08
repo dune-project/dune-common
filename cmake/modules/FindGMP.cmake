@@ -5,8 +5,8 @@
 FindGMP
 -------
 
-Find the GNU MULTI-Precision Bignum (GMP) library
-and the corresponding C++ bindings GMPxx.
+Find the GNU Multiple Precision Arithmetic Library (GMP) and its C++ bindings
+GMPxx.
 
 This module searches for both libraries and only considers the package
 found if both can be located. It then defines separate targets for the C
@@ -18,33 +18,32 @@ Imported Targets
 This module provides the following imported targets, if found:
 
 ``GMP::gmp``
-  Library target of the C library.
+  Imported target for the GMP C library.
 ``GMP::gmpxx``
-  Library target of the C++ library, which also links to the C library.
+  Imported target for the GMP C++ library. It also links to ``GMP::gmp``.
 
 Result Variables
 ^^^^^^^^^^^^^^^^
 
-This will define the following variables:
+This module defines the following variables:
 
 ``GMP_FOUND``
-  True if the GMP library, the GMPxx headers and
-  the GMPxx library were found.
+  Boolean result indicating whether the GMP headers and library as well as the
+  GMPxx headers and library were found and passed the compile test.
 
-Cache Variables
-^^^^^^^^^^^^^^^
+Hints
+^^^^^
 
-You may set the following variables to modify the behaviour of
-this module:
+The following cache variables may be set to influence this module's behavior:
 
 ``GMP_INCLUDE_DIR``
   The directory containing ``gmp.h``.
 ``GMP_LIB``
-  The path to the gmp library.
+  Full path to the GMP library.
 ``GMPXX_INCLUDE_DIR``
   The directory containing ``gmpxx.h``.
 ``GMPXX_LIB``
-  The path to the gmpxx library.
+  Full path to the GMPxx library.
 
 #]=======================================================================]
 

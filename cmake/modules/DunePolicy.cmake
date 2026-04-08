@@ -6,36 +6,67 @@ DunePolicy
 ----------
 
 Get and set dune policies to control changes in behavior of the dune build
-system. A policy is by default set to `OLD` if not set otherwise. The default
-behavior can be influenced by the global cmake variable ``DUNE_POLICY_DEFAULT``.
+system. A policy is by default set to ``OLD`` if not set otherwise. The
+default behavior can be influenced by the global CMake variable
+``DUNE_POLICY_DEFAULT``.  See :ref:`policies` for the list of introduced
+DUNE build system policies.
 
 .. cmake:command:: dune_policy
+
+  Get, set, list, or explain DUNE buildsystem policies.
 
   .. code-block:: cmake
 
     dune_policy(GET <policy> <var>)
     dune_policy(SET <policy> <value> [QUIET])
     dune_policy(LIST)
+    dune_policy(HELP)
+
+  ``GET <policy> <var>``
+    Retrieve the effective value of ``<policy>`` into ``<var>``.
+
+  ``SET <policy> <value> [QUIET]``
+    Set ``<policy>`` to ``OLD`` or ``NEW`` for the current project. If
+    ``QUIET`` is given, undefined policies are ignored without a warning.
+
+  ``LIST``
+    Print the registered policies and their current values.
+
+  ``HELP``
+    Print a short usage summary for :cmake:command:`dune_policy()`.
 
 .. cmake:command:: dune_define_policy
+
+  Register a new DUNE buildsystem policy.
 
   .. code-block:: cmake
 
     dune_define_policy(<policy> "<doc>")
+    dune_define_policy(<policy> <module> <version> "<doc>")
 
-  Introduces a `<policy>`, a name that identifies a change in behavior
-  of the dune build-system. The documentation `<doc>` is shown if the
-  policy is not set by the module author and ``DUNE_POLICY_DISABLE_WARNING``
-  is not set to ``TRUE``.
+  ``<policy>``
+    Policy identifier naming a specific behavior change.
 
-Global options
-^^^^^^^^^^^^^^
+  ``<doc>``
+    Documentation shown when the policy is unset and
+    ``DUNE_POLICY_DISABLE_WARNING`` is not set to ``TRUE``.
 
-``DUNE_POLICY_DEFAULT`` (default="OLD")
-  The default value of an unset policy. Either `OLD` (default) or `NEW`.
+  ``<module>``, ``<version>``
+    Deprecated compatibility arguments. They are ignored.
 
-``DUNE_POLICY_DISABLE_WARNING`` (default=FALSE)
-  If set to `TRUE`, warnings about unset dune policies are deactivated.
+  .. deprecated:: 2.12
+     The signature ``dune_define_policy(<policy> <module> <version> <doc>)``
+     is deprecated. Use ``dune_define_policy(<policy> <doc>)`` instead.
+
+.. cmake:variable:: DUNE_POLICY_DEFAULT
+
+  Default value of an unset policy. Supported values are ``OLD`` and ``NEW``.
+  The default is ``OLD``.
+
+.. cmake:variable:: DUNE_POLICY_DISABLE_WARNING
+
+  If set to ``TRUE``, warnings about unset DUNE policies are suppressed. The
+  default is ``FALSE``.
 
 #]=======================================================================]
 include_guard(GLOBAL)

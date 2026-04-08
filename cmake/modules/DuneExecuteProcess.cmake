@@ -1,36 +1,54 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# An error checking wrapper around the cmake command execute_process
-#
-# .. cmake_command:: dune_execute_process
-#
-#    .. cmake_param:: ERROR_MESSAGE
-#       :single:
-#
-#       Error message to show if command exited with non-zero exit code.
-#       This also implies abortion of the current cmake run with a fatal error.
-#
-#    .. cmake_param:: WARNING_MESSAGE
-#       :single:
-#
-#       A warning message to show if command exited with non-zero exit code.
-#       This will not abort the current cmake run.
-#
-#    .. cmake_param:: WORKING_DIRECTORY
-#       :single:
-#
-#       The named directory will be set as the current working directory of the
-#       child processes.
-#
-#    Note, that if neither warning or error message is provided, no return
-#    code checking is done. If both are given the error message will be
-#    used and the cmake run aborted.
-#
-#    A thin wrapper around the cmake command :code:`execute_process`, that
-#    exits on non-zero exit codes. All arguments are forwarded to the actual
-#    cmake command.
-#
+#[=======================================================================[.rst:
+DuneExecuteProcess
+==================
+
+Wrapper around :dune:cmake-command:`execute_process` with optional error and
+warning handling.
+
+.. cmake:command:: dune_execute_process
+
+  Run :dune:cmake-command:`execute_process` and optionally stop or warn on
+  non-zero exit status.
+
+  .. code-block:: cmake
+
+    dune_execute_process(
+      [ERROR_MESSAGE <message>]
+      [WARNING_MESSAGE <message>]
+      [WORKING_DIRECTORY <dir>]
+      [RESULT_VARIABLE <var>]
+      [OUTPUT_VARIABLE <var>]
+      [ERROR_VARIABLE <var>]
+      COMMAND <command> [<args>...]
+    )
+
+  ``ERROR_MESSAGE``
+    Fatal error message emitted when the command exits with non-zero status.
+
+  ``WARNING_MESSAGE``
+    Warning message emitted when the command exits with non-zero status.
+
+  ``WORKING_DIRECTORY``
+    Working directory for the spawned process. The default is
+    ``${CMAKE_CURRENT_BINARY_DIR}``.
+
+  ``RESULT_VARIABLE``
+    Variable receiving the command exit status.
+
+  ``OUTPUT_VARIABLE``
+    Variable receiving standard output.
+
+  ``ERROR_VARIABLE``
+    Variable receiving standard error.
+
+  If neither ``ERROR_MESSAGE`` nor ``WARNING_MESSAGE`` is given, the command
+  behaves like a thin forwarding wrapper around
+  :dune:cmake-command:`execute_process`.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 function(dune_execute_process)

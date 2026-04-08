@@ -1,25 +1,53 @@
-# Find module for LatexMk
-#
-# This module honors the following input variables:
-# LATEXMK_ROOT
-#   Directory to take the latexmk executable from
-# LATEXMK_DIR
-#   Alternative variable instead of LATEXMK_ROOT
-#
-# The module checks for the presence of the LatexMk executable
-# and sets the following variables:
-#
-# LATEXMK_FOUND
-#   Whether the latexmk executable was found on the system
-# LATEXMK_EXECUTABLE
-#   The full path of the found latexmk executable
-# LATEXMK_VERSION_STRING
-#   A well readable string of the latexmk version.
-# LATEXMK_VERSION_MAJOR
-#   The major version of the latexmk executable
-# LATEXMK_VERSION_MINOR
-#   The minor version of the latexmk executable
-#
+#[=======================================================================[.rst:
+FindLatexMk
+===========
+
+Find LatexMk, the Perl-based LaTeX build tool.
+
+This find-module locates the ``latexmk`` executable and extracts version
+information from ``latexmk --version`` output.
+
+Result Variables
+^^^^^^^^^^^^^^^^
+
+This module defines the following variables:
+
+.. cmake:variable:: LATEXMK_FOUND
+
+  Boolean result indicating whether the ``latexmk`` executable was found.
+
+.. cmake:variable:: LATEXMK_EXECUTABLE
+
+  Full path to the discovered ``latexmk`` executable.
+
+.. cmake:variable:: LATEXMK_VERSION_STRING
+
+  Version string reported by the detected ``latexmk`` executable.
+
+.. cmake:variable:: LATEXMK_VERSION_MAJOR
+
+  Major version component extracted from ``LATEXMK_VERSION_STRING``.
+
+.. cmake:variable:: LATEXMK_VERSION_MINOR
+
+  Minor version component extracted from ``LATEXMK_VERSION_STRING``.
+
+Hints
+^^^^^
+
+The following variables may be set to influence this module's behavior:
+
+.. cmake:variable:: LATEXMK_ROOT
+
+  Preferred search prefix for the ``latexmk`` executable.
+
+.. cmake:variable:: LATEXMK_DIR
+
+  Alternative search prefix for the ``latexmk`` executable. This is treated
+  like ``LATEXMK_ROOT``.
+
+#]=======================================================================]
+
 # Copyright (c) 2017, Dominic Kempf, Steffen Müthing
 #
 # All rights reserved.

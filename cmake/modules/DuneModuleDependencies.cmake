@@ -10,30 +10,56 @@ Macros to extract dependencies between Dune modules by inspecting the
 
 .. cmake:command:: dune_check_module_version
 
+  Check whether a module version satisfies a version requirement.
+
   .. code-block:: cmake
 
     dune_check_module_version(<dune-module> [REQUIRED] [QUIET] VERSION <version-requirement>)
 
-  Check that the version of a dune module `<dune-module>` is compatible with
-  `<version-requirement>`. Notice that the `dune_module_information` macro is
-  invoked with the dune.module file of `<dune-module>`, thus, the variables for
-  `<dune-module>_VERSION` are populated here.
+  ``<dune-module>``
+    Module whose version should be checked.
+
+  ``REQUIRED``
+    Treat a missing module or incompatible version as a fatal configuration
+    error.
+
+  ``QUIET``
+    Reduce reporting for optional dependency checks.
+
+  ``VERSION <version-requirement>``
+    Version requirement using ``>=``, ``<=``, or ``=``.
+
+  The command parses the module's ``dune.module`` file through
+  :cmake:command:`dune_module_information()` and populates the corresponding
+  ``<module>_VERSION`` information as part of the check.
 
 .. cmake:command:: dune_cmake_path_setup
+
+  Internal helper that updates ``CMAKE_MODULE_PATH`` according to a dependency
+  order.
+
+  .. dune:internal::
 
   .. code-block:: cmake
 
     dune_cmake_path_setup(<dependencies>)
 
-  Set up the cmake module paths. The paths of all projects, including the
-  current project, are added so that they follow the reverse order of the
-  dependencies. This is an internal function of dune-common.
-
   ``dependencies``
-  The list of dependencies of the project. The dependencies must be order
-  as list resulting of a depth-first search of the dependency tree.
+    List of dependencies in the depth-first-search order used by the DUNE
+    dependency traversal.
+
+  The paths of all dependency projects and of the current project are inserted
+  into ``CMAKE_MODULE_PATH`` so newer modules take precedence.
 
 .. cmake:command:: dune_create_dependency_tree
+
+  Deprecated helper that computes ``ALL_DEPENDENCIES`` from ``dune.module``
+  files.
+
+  .. dune:internal::
+  .. deprecated:: 2.10
+     Kept only for compatibility with older DUNE configurations using
+     ``ALL_DEPENDENCIES``.
 
   .. code-block:: cmake
 
@@ -43,11 +69,14 @@ Macros to extract dependencies between Dune modules by inspecting the
   files recursively. All of the searched dependencies are stored in a list
   variable named ``ALL_DEPENDENCIES`` which is the result of a depth-first
   search on the dependency tree. If ``SKIP_CMAKE_PATH_SETUP`` is omitted,
-  this function will additionally set up the cmake paths on
-  ``ALL_DEPENDENCIES``. This is an internal function of dune-common and will be
-  removed after version 2.12.
+  this command additionally calls :cmake:command:`dune_cmake_path_setup()` on
+  ``ALL_DEPENDENCIES``. It is deprecated and kept only for compatibility with
+  older DUNE configurations.
 
 .. cmake:command:: dune_process_dependency_macros
+
+  Include dependency-specific ``Dune<module>Macros.cmake`` files for the
+  current project and its dependencies.
 
   .. code-block:: cmake
 
@@ -55,6 +84,44 @@ Macros to extract dependencies between Dune modules by inspecting the
 
   Include the corresponding ``Dune<module>Macros.cmake`` file of all
   dependencies if this file exists.
+
+.. cmake:command:: find_dune_package
+
+  Find and validate a DUNE dependency during dependency-tree traversal.
+
+  .. dune:internal::
+
+  .. code-block:: cmake
+
+    find_dune_package(<module> [REQUIRED] [QUIET] VERSION <version>)
+
+  Internal helper used while processing ``dune.module`` dependency lists.
+
+.. cmake:command:: dune_process_dependency_leafs
+
+  Process one level of dependency and suggestion lists while building the
+  dependency tree.
+
+  .. dune:internal::
+
+  .. code-block:: cmake
+
+    dune_process_dependency_leafs(<modules> <versions> <is-required> <next-level-deps> <next-level-sugs>)
+
+  Internal helper used by :cmake:command:`dune_create_dependency_tree()`.
+
+.. cmake:command:: remove_processed_modules
+
+  Deprecated helper for pruning already processed modules from dependency
+  lists.
+
+  .. dune:internal::
+  .. deprecated:: 2.9
+     Legacy helper retained for older dependency-tree logic.
+
+  .. code-block:: cmake
+
+    remove_processed_modules(<modules> <versions> <is-required>)
 
 #]=======================================================================]
 include_guard(GLOBAL)

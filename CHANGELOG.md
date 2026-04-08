@@ -28,6 +28,19 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
   in particular also applies to targets that make use of
   `dune_target_enable_all_packages`.
 
+- Remove the unused `DunePythonCompiler.cmake` module and the stale commented
+  include hook from the `dune-py` CMake template.
+
+- Rename the internal pybind11 provider module from `Pybind11.cmake` to
+  `DuneProvidePybind11.cmake` to avoid name clashes with upstream or external
+  pybind11 CMake packages, and document `dune_provide_pybind11()`.
+
+- Modernize the buildsystem documentation generator and migrate the
+  `dune-common` CMake module docs to the modern CMake/Sphinx documentation
+  style. The generated reference now supports modern bracketed `.rst`
+  documentation blocks, public/internal command separation, generated command
+  and variable reference pages, and links to upstream CMake command docs.
+
 ## Deprecation and Removals
 
 - Remove the deprecated method `HybridMultiIndex::element`. From now on,

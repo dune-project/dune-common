@@ -51,8 +51,6 @@ endif()
 find_package(dune-common REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH})
 
-# include(DunePythonCompiler)
-
 include(DuneMacros)
 
 # deactivate global include-directories

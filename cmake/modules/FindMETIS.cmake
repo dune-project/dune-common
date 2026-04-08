@@ -5,18 +5,18 @@
 FindMETIS
 ---------
 
-Find Serial Graph Partitioning library
-`METIS <http://glaros.dtc.umn.edu/gkhome/metis/metis/overview>`_
+Find the serial graph partitioning library
+`METIS <http://glaros.dtc.umn.edu/gkhome/metis/metis/overview>`_.
 
-Imported targets
+Imported Targets
 ^^^^^^^^^^^^^^^^
 
-This module defines the following `IMPORTED`_ target:
+This module provides the following imported target, if found:
 
 ``METIS::METIS``
-  The libraries, flags, and includes to use for METIS, if found.
-
-.. _IMPORTED: https://cmake.org/cmake/help/latest/command/add_library.html#id5
+  `Imported target <https://cmake.org/cmake/help/latest/command/add_library.html#imported-libraries>`_
+  encapsulating the include directories, compile definitions, and libraries
+  needed to use METIS.
 
 Result Variables
 ^^^^^^^^^^^^^^^^
@@ -24,26 +24,26 @@ Result Variables
 This module defines the following variables:
 
 ``METIS_FOUND``
-  The METIS library with all its dependencies is found
+  Boolean result indicating whether METIS and its required dependencies were
+  found.
 
-Cache Variables
-^^^^^^^^^^^^^^^
+Hints
+^^^^^
 
 The following variables may be set to influence this module's behavior:
 
 ``METIS_INCLUDE_DIR``
-  Include directory of METIS
+  Include directory containing ``metis.h``.
 
 ``METIS_LIBRARY``
-  Full path to the METIS library
+  Full path to the METIS library.
 
 ``METIS_API_VERSION``
-  This variable specifies the METIS API version provided by the scotch-metis library. This
-  is required for Scotch >= 6.0.7 versions if it is not detected automatically. The
-  variable may be set to 3 to indicate that scotch implements the METIS API v3 (default
-  for older Scotch versions), or it can be set to 5 to indicate that v5 of the METIS API
-  is provided. This variable corresponds to the preprocessor flag `SCOTCH_METIS_VERSION`
-  that is used when compiling Scotch from source.
+  METIS API version provided by a ``scotch-metis`` compatibility library.
+  This is required for Scotch versions >= 6.0.7 if it cannot be detected
+  automatically. Supported values are ``3`` and ``5``. The chosen value is
+  also propagated as the ``SCOTCH_METIS_VERSION`` preprocessor definition when
+  compiling against Scotch's METIS compatibility headers.
 
 #]=======================================================================]
 

@@ -1,6 +1,70 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
+#[=======================================================================[.rst:
+DuneSphinxDoc
+-------------
+
+Build Sphinx-based documentation from rst sources in the current project.
+
+.. cmake:command:: dune_sphinx_doc
+
+  Configure and build a Sphinx documentation tree from the current source
+  directory.
+
+  .. code-block:: cmake
+
+    dune_sphinx_doc(
+      [CONF <conf.py-or-stem>]
+      [BUILDTYPE <type>...]
+    )
+
+  ``CONF``
+    Configuration file name used for Sphinx. If omitted, ``conf.py`` is used.
+    If ``<conf>.in`` exists, it is configured with ``configure_file()``.
+    Otherwise the file is copied verbatim.
+
+  ``BUILDTYPE``
+    Sphinx builders to invoke. If omitted, ``html`` is built.
+
+  For each requested build type, this command creates a target named
+  ``sphinx_doc_<type>`` and also adds it as a dependency of the top-level
+  ``doc`` target.
+
+.. cmake:command:: add_sphinx_targets
+
+  Convenience wrapper that declares the ``sphinx_files`` target, registers a
+  set of documentation input files, and then calls
+  :cmake:command:`dune_sphinx_doc`.
+
+  .. code-block:: cmake
+
+    add_sphinx_targets(<base> <file>...)
+
+  ``base``
+    Prefix used for the generated helper target names.
+
+  ``file``
+    Documentation input files copied into the Sphinx build tree. Notebook
+    files with the ``.ipynb`` suffix are additionally converted to ``.rst``
+    when ``jupyter`` is available.
+
+.. cmake:command:: add_sphinx_target
+
+  .. dune:internal::
+
+  Internal helper used by :cmake:command:`add_sphinx_targets` to register a
+  single documentation input file.
+
+.. cmake:command:: add_sphinx_files
+
+  .. dune:internal::
+
+  Internal helper used by :cmake:command:`add_sphinx_targets` to register
+  multiple documentation input files.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 find_package(Sphinx)
 find_package(Python3 COMPONENTS Interpreter Development)
@@ -30,7 +94,7 @@ function(dune_sphinx_doc)
   endif()
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${SPHINX_DOC_CONF}.in)
     configure_file(${SPHINX_DOC_CONF}.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
-  elseif(EXISTS ${CMAKE_CURRENT_SOUREC_DIR}/${SPHINX_DOC_CONF})
+  elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${SPHINX_DOC_CONF})
     configure_file(${SPHINX_DOC_CONF} ${CMAKE_CURRENT_BINARY_DIR}/conf.py COPYONLY)
   else()
     message(SEND_ERROR "Sphinx configuration '${SPHINX_DOC_CONF}' not found.")

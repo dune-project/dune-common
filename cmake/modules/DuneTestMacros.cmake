@@ -1,219 +1,140 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Module that provides tools for testing the Dune way.
-#
-# Note that "the Dune way" of doing this has changed after
-# the 2.4 release. See the build system documentation for details.
-#
-# .. cmake_function:: dune_declare_test_label
-#
-#    .. cmake_brief::
-#
-#       Declare labels for :ref:`dune_add_test`.
-#
-#    .. cmake_param:: LABELS
-#       :multi:
-#
-#       The names of labels to declare.  Label names must be nonempty and
-#       consist only of alphanumeric characters plus :code:`-` and :code:`_`
-#       to make sure it is easy to construct regular expressions from them for
-#       :code:`ctest -L ${label_regex}`.
-#
-#    Labels need to be declared to ensure that the target
-#    :code:`build_${label}_tests` exists.  They will normally be declared
-#    on-demand by :ref:`dune_add_test`.  But sometimes it is useful to be able to
-#    run :code:`make build_${label}_tests` whether or not any tests with that
-#    label exists in a module.  For these cases :ref:`dune_declare_test_label` can
-#    be called explicitly.
-#
-#    The label :code:`quick` is always predeclared.
-#
-# .. cmake_function:: dune_add_test
-#
-#    .. cmake_brief::
-#
-#       Adds a test to the Dune testing suite!
-#
-#    .. cmake_param:: NAME
-#       :single:
-#
-#       The name of the test that should be added. If an executable
-#       is also added (by specifying SOURCES), the executable is also
-#       named accordingly. If omitted, the name will be deduced from
-#       the (single) sources parameter or from the given target. Note
-#       that this requires you to take care, that you only use a target
-#       or source file for but one such test.
-#
-#    .. cmake_param:: SOURCES
-#       :multi:
-#
-#       The source files that this test depends on. These are the
-#       sources that will be passed to :ref:`add_executable`.
-#
-#       You *must* specify either :code:`SOURCES` or :code:`TARGET`.
-#
-#    .. cmake_param:: TARGET
-#       :single:
-#
-#       An executable target which should be used for the test. Use
-#       this option over the :code:`SOURCES` parameter if you want to
-#       reuse already added targets.
-#
-#       You *must* specify either :code:`SOURCES` or :code:`TARGET`.
-#
-#    .. cmake_param:: COMPILE_DEFINITIONS
-#       :multi:
-#       :argname: def
-#
-#       A set of compile definitions to add to the target.
-#       Only definitions beyond the application of :ref:`add_dune_all_flags`
-#       have to be stated.
-#       This is only used, if :code:`dune_add_test` adds the executable itself.
-#
-#    .. cmake_param:: COMPILE_FLAGS
-#       :multi:
-#       :argname: flag
-#
-#       A set of non-definition compile flags to add to the target.
-#       Only flags beyond the application of :ref:`add_dune_all_flags`
-#       have to be stated.
-#       This is only used, if :code:`dune_add_test` adds the executable itself.
-#
-#    .. cmake_param:: LINK_LIBRARIES
-#       :multi:
-#       :argname: lib
-#
-#       A list of libraries to link the target to.
-#       Only libraries beyond the application of :ref:`add_dune_all_flags`
-#       have to be stated.
-#       This is only used, if :code:`dune_add_test` adds the executable itself.
-#
-#    .. cmake_param:: EXPECT_COMPILE_FAIL
-#       :option:
-#
-#       If given, the test is expected to not compile successfully!
-#
-#    .. cmake_param:: EXPECT_FAIL
-#       :option:
-#
-#       If given, this test is expected to compile, but fail to run.
-#
-#    .. cmake_param:: CMD_ARGS
-#       :multi:
-#       :argname: arg
-#
-#       Command line arguments that should be passed to this test.
-#
-#    .. cmake_param:: MPI_RANKS
-#       :multi:
-#       :argname: ranks
-#
-#       The numbers of cores that this test should be executed with.
-#       Note that one test (in the ctest sense) is created for each number
-#       given here. Any number exceeding the user-specified processor maximum
-#       :ref:`DUNE_MAX_TEST_CORES` will be ignored. Tests with a
-#       processor number :code:`n` higher than one will have the suffix
-#       :code:`-mpi-n` appended to their name. You need to specify the
-#       TIMEOUT option when specifying the MPI_RANKS option.
-#
-#    .. cmake_param:: CMAKE_GUARD
-#       :multi:
-#       :argname: condition
-#
-#       A number of conditions that CMake should evaluate before adding this
-#       test. If one of the conditions fails, the test should be shown
-#       as skipped in the test summary. Use this feature instead of guarding
-#       the call to :code:`dune_add_test` with an :code:`if` clause.
-#
-#       The passed condition can be a complex expression like
-#       `( A OR B ) AND ( C OR D )`. Mind the spaces around the parentheses.
-#
-#       Example: Write CMAKE_GUARD dune-foo_FOUND if you want your test to only
-#       build and run when the dune-foo module is present.
-#
-#    .. cmake_param:: COMMAND
-#       :multi:
-#       :argname: cmd
-#
-#       You may specify the COMMAND option to give the exact command line to be
-#       executed when running the test. This defaults to the name of the executable
-#       added by dune_add_test for this test or the name of the executable of the given TARGET.
-#       Note that if you specify both CMD_ARGS
-#       and COMMAND, the given CMD_ARGS will be put behind your COMMAND. If you use
-#       this in combination with the MPI_RANKS parameter, the call to mpi will still be
-#       wrapped around the given commands.
-#
-#    .. cmake_param:: COMPILE_ONLY
-#       :option:
-#
-#       Set if the given test should only be compiled during :code:`make build_tests`,
-#       but not run during :code:`make test`. This is useful if you compile the same
-#       executable twice, but with different compile flags, where you want to assure that
-#       it compiles with both sets of flags, but you already know they will produce the
-#       same result.
-#
-#    .. cmake_param:: TIMEOUT
-#       :single:
-#
-#       If set, the test will time out after the given number of seconds. This supersedes
-#       any timeout setting in ctest (see `cmake --help-property TIMEOUT`). If you
-#       specify the MPI_RANKS option, you need to specify a TIMEOUT.
-#
-#    .. cmake_param:: WORKING_DIRECTORY
-#       :single:
-#
-#       Set the WORKING_DIRECTORY test property to specify the working directory in which to execute the test.
-#       If not specified the test will be run with the current working directory set to the build directory corresponding to the current source directory.
-#
-#    .. cmake_param:: LABELS
-#       :multi:
-#
-#       A list of labels to add to the test.  This has two effects: it sets
-#       the LABELS property on the test so :code:`ctest -L ${label_regex}` can
-#       be used to run all tests with certain labels.  It also adds any
-#       targets created as dependencies to a custom target, so you can build
-#       all tests with a particular label by doing :code:`make
-#       build_${label}_tests` without having to build all the other tests as
-#       well.
-#
-#       The :code:`build_${label}_tests` targets are created on-demand the
-#       first time a test with that label is added.  In some situations it can
-#       depend on the values of cmake cache variables whether a test is added,
-#       and then it can happen that the :code:`build_${target}_tests` target
-#       exists only sometimes.  If your workflow relies on the existence of
-#       these targets, even if building them just returns successfully without
-#       doing anything, you can ensure they exist by calling
-#       :ref:`dune_declare_test_label` unconditionally.  The label
-#       :code:`quick` is always predeclared in this way.
-#
-#       The label names must be non-empty, and must only contain alphanumeric
-#       characters other than :code:`-` or :code:`_`.  This restriction is in
-#       place to make it easy to construct regular expressions from the label
-#       names for :code:`ctest -L ${label_regex}`.
-#
-#    This function defines the Dune way of adding a test to the testing suite.
-#    You may either add the executable yourself through :ref:`add_executable`
-#    and pass it to the :code:`TARGET` option, or you may rely on :ref:`dune_add_test`
-#    to do so.
-#
-# .. cmake_variable:: DUNE_MAX_TEST_CORES
-#
-#    You may set this variable to give an upperbound to the number of processors, that
-#    a single test may use. Defaults to 2, when MPI is found and to 1 otherwise.
-#
-# .. cmake_variable:: DUNE_BUILD_TESTS_ON_MAKE_ALL
-#
-#    You may set this variable through your opts file or on a per module level (in the toplevel
-#    :code:`CMakeLists.txt` before :code:`include(DuneMacros)`) to have the Dune build system
-#    build all tests during `make all`. Note, that this may take quite some time for some modules.
-#    If not in use, you have to build tests through the target :code:`build_tests`. This option
-#    does not apply on non-mutable targets (i.e., aliased and imported targets).
-#
-# .. cmake_variable:: PYTHON_TEST
-#
-#    This flag specifies a python test and is set by the dune_python_add_test command. It disables the check on the existence of the target file.
-#
+#[=======================================================================[.rst:
+DuneTestMacros
+---------------
+
+Tools for integrating tests into the DUNE build system.
+
+.. cmake:command:: dune_declare_test_label
+
+  Declare labels for :cmake:command:`dune_add_test()`.
+
+  .. code-block:: cmake
+
+    dune_declare_test_label(LABELS <labels...>)
+
+  ``LABELS``
+    Names of labels to declare. Label names must be non-empty and may contain
+    only alphanumeric characters plus ``-`` and ``_`` so they remain easy to
+    use in ``ctest -L`` regular expressions.
+
+  Labels are normally declared on demand by :cmake:command:`dune_add_test()`.
+  Call this command explicitly if you want ``build_<label>_tests`` targets to
+  exist even when no test with that label is added in the current configuration.
+  The label ``quick`` is always predeclared.
+
+.. cmake:command:: dune_add_test
+
+  Add a test to the DUNE testing suite.
+
+  .. code-block:: cmake
+
+    dune_add_test(
+      [NAME <name>]
+      [SOURCES <sources...>]
+      [TARGET <target>]
+      [COMPILE_DEFINITIONS <def>...]
+      [COMPILE_FLAGS <flag>...]
+      [LINK_LIBRARIES <lib>...]
+      [EXPECT_COMPILE_FAIL]
+      [EXPECT_FAIL]
+      [CMD_ARGS <arg>...]
+      [MPI_RANKS <ranks>...]
+      [CMAKE_GUARD <condition>...]
+      [COMMAND <cmd>...]
+      [COMPILE_ONLY]
+      [TIMEOUT <seconds>]
+      [WORKING_DIRECTORY <dir>]
+      [LABELS <labels...>]
+    )
+
+  ``NAME``
+    Name of the test. If omitted, the name is deduced from the single source
+    file or the given target.
+
+  ``SOURCES``
+    Source files used to build the test executable. You must provide either
+    ``SOURCES`` or ``TARGET``.
+
+  ``TARGET``
+    Existing executable target to use for the test. You must provide either
+    ``SOURCES`` or ``TARGET``.
+
+  ``COMPILE_DEFINITIONS``
+    Extra compile definitions to add when :cmake:command:`dune_add_test()`
+    creates the executable itself.
+
+  ``COMPILE_FLAGS``
+    Extra non-definition compile flags to add when
+    :cmake:command:`dune_add_test()` creates the executable itself.
+
+  ``LINK_LIBRARIES``
+    Extra libraries to link when :cmake:command:`dune_add_test()` creates the
+    executable itself.
+
+  ``EXPECT_COMPILE_FAIL``
+    Expect the test target to fail during compilation.
+
+  ``EXPECT_FAIL``
+    Expect the test to compile but fail at run time.
+
+  ``CMD_ARGS``
+    Additional command line arguments passed to the test command.
+
+  ``MPI_RANKS``
+    Numbers of MPI ranks with which the test should run. One ctest test is
+    created for each rank count. Values larger than
+    :cmake:variable:`DUNE_MAX_TEST_CORES` are ignored. When this option is
+    used, ``TIMEOUT`` must also be specified.
+
+  ``CMAKE_GUARD``
+    Conditions evaluated by CMake before adding the test. Use this instead of
+    guarding the call with a plain ``if()`` when you want the test summary to
+    report the case as skipped.
+
+  ``COMMAND``
+    Exact command line to execute for the test. If ``CMD_ARGS`` is also given,
+    those arguments are appended to the command.
+
+  ``COMPILE_ONLY``
+    Compile the test during ``make build_tests`` but do not run it during
+    ``make test``.
+
+  ``TIMEOUT``
+    Timeout in seconds. This overrides the default ctest timeout for the test.
+
+  ``WORKING_DIRECTORY``
+    Working directory used when executing the test. By default this is the
+    build directory corresponding to the current source directory.
+
+  ``LABELS``
+    Labels attached to the test. They also control creation of
+    ``build_<label>_tests`` targets. Use :cmake:command:`dune_declare_test_label()`
+    when you want such targets to exist unconditionally.
+
+  You may either create the executable yourself with
+  :cmake:command:`add_executable()` and pass it through ``TARGET``, or let
+  :cmake:command:`dune_add_test()` create the executable from ``SOURCES``.
+
+.. cmake:variable:: DUNE_MAX_TEST_CORES
+
+  Upper bound for the number of processors a single test may use. The default
+  is 2 when MPI is found and 1 otherwise.
+
+.. cmake:variable:: DUNE_BUILD_TESTS_ON_MAKE_ALL
+
+  If enabled, build all tests during ``make all``. Otherwise tests are built
+  through the ``build_tests`` target. This option does not apply to immutable
+  targets such as imported or aliased targets.
+
+.. cmake:variable:: PYTHON_TEST
+
+  Marker used by :cmake:command:`dune_python_add_test()` to identify python
+  tests. It disables the check for the existence of the target file.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 # enable the testing suite on the CMake side.

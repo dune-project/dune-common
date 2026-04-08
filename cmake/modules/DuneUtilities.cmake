@@ -45,6 +45,21 @@ Utility functions used by multiple files.
 
     variable_watch(<deprecared-variable> dune_deprecate_variable)
 
+  .. dune:internal::
+
+.. cmake:command:: dune_deprecate_ALL_DEPENDENCIES
+
+  Internal helper around :cmake:command:`dune_deprecate_variable()` used for
+  the transitional handling of ``ALL_DEPENDENCIES``.
+
+  .. dune:internal::
+  .. deprecated:: 2.10
+     Internal compatibility helper for deprecated ``ALL_DEPENDENCIES`` usage.
+
+  .. code-block:: cmake
+
+    variable_watch(ALL_DEPENDENCIES dune_deprecate_ALL_DEPENDENCIES)
+
 
 #]=======================================================================]
 include_guard(GLOBAL)

@@ -1,30 +1,40 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# .. cmake_module::
-#
-#    Find MathJax2 for rendering LaTeX in webpages like Doxygen documentation
-#
-#    You may set the following variables to modify the
-#    behaviour of this module:
-#
-#    :ref:`MathJax2_ROOT`
-#       the path to look for sphinx with the highest priority
-#
-#    The following variables are set by this module:
-#
-#    :code:`MATHJAX2_FOUND`
-#       whether MathJax2 was found
-#
-#    :code:`MATHJAX2_PATH`
-#       the path where the MathJax.js script is located
-#
-# .. cmake_variable:: MathJax2_ROOT
-#
-#   You may set this variable to have :ref:`FindMathJax2` look
-#   for the :code:`MathJax.js` script in the given path
-#   before inspecting system paths.
-#
+#[=======================================================================[.rst:
+FindMathJax2
+============
+
+Find MathJax2 for rendering LaTeX formulas in generated web documentation,
+especially Doxygen output.
+
+This find-module searches for a local installation containing ``MathJax.js``
+and provides the usual ``find_package(MathJax2)`` result variables.
+
+Result Variables
+^^^^^^^^^^^^^^^^
+
+This module defines the following variables:
+
+.. cmake:variable:: MATHJAX2_FOUND
+
+  Boolean result indicating whether MathJax2 was found.
+
+.. cmake:variable:: MATHJAX2_PATH
+
+  Directory containing the discovered ``MathJax.js`` script.
+
+Hints
+^^^^^
+
+The following variable may be set to influence this module's behavior:
+
+.. cmake:variable:: MathJax2_ROOT
+
+  Preferred search prefix for the MathJax2 installation. If set, this path is
+  searched before the built-in system locations.
+
+#]=======================================================================]
 
 find_path(MATHJAX2_PATH
   MathJax.js

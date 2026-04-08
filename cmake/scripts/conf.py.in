@@ -5,7 +5,11 @@ import sys
 
 sys.path.append('@DUNE_SPHINX_EXT_PATH@')
 
-extensions = ['sphinx_cmake_dune']
+extensions = ['sphinx.ext.intersphinx', 'sphinx_cmake_dune', 'sphinx_moderncmakedomain']
+
+intersphinx_mapping = {
+    'cmake': ('https://cmake.org/cmake/help/latest/', None),
+}
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.

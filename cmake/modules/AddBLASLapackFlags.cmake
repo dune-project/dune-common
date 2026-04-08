@@ -1,17 +1,26 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Defines the functions to use BLAS/Lapack
-#
-# .. cmake_function:: add_dune_blas_lapack_flags
-#
-#    .. cmake_param:: targets
-#       :positional:
-#       :single:
-#       :required:
-#
-#       A list of targets to use BLAS/Lapack with.
-#
+#[=======================================================================[.rst:
+AddBLASLapackFlags
+------------------
+
+Helpers for using BLAS and LAPACK from DUNE targets.
+
+.. cmake:command:: add_dune_blas_lapack_flags
+
+  Link the given targets against LAPACK when available, and otherwise against
+  BLAS.
+
+  .. code-block:: cmake
+
+    add_dune_blas_lapack_flags(<target> [<target>...])
+
+  ``targets``
+    One or more existing targets to configure.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 include(FeatureSummary)

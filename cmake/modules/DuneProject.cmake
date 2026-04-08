@@ -9,28 +9,35 @@ Initialize and finalize a Dune module.
 
 .. cmake:command:: dune_project
 
-  The command ``dune_project()`` starts a new Dune module by setting several
-  variables and loading necessary dependencies.
+  Initialize a DUNE module from its top-level ``CMakeLists.txt``.
 
   .. code-block:: cmake
 
     dune_project()
 
-  This function needs to be called from every module top-level
-  ``CMakeLists.txt`` file. It sets up the module, defines basic variables and
-  manages dependencies. Don't forget to call :command:`finalize_dune_project`
-  at the end of that ``CMakeLists.txt`` file.
+  This command should be called from every module top-level
+  ``CMakeLists.txt`` file. It reads ``dune.module``, initializes the standard
+  ``Project*`` variables, finds required and suggested DUNE dependencies,
+  enables the project documentation and header-check infrastructure, and
+  prepares the build system for module-specific macros and package exports.
+
+  Call :cmake:command:`finalize_dune_project()` at the end of the same
+  ``CMakeLists.txt`` file.
 
 
 .. cmake:command:: finalize_dune_project
 
-  Finalize the creation of the Dune module by creating package config files.
+  Finalize the top-level DUNE project setup and generate export metadata.
 
   .. code-block:: cmake
 
     finalize_dune_project()
 
-  This function needs to be run at the end of every top-level
+  .. versionchanged:: 2.10
+    The legacy arguments to :cmake:command:`finalize_dune_project()` were
+    removed. The command no longer takes parameters.
+
+  This command should be run at the end of every top-level
   ``CMakeLists.txt`` file. Among other things it creates the cmake package
   configuration file and package version file. Modules can add additional
   entries to these files by setting the variable ``${ProjectName}_INIT``.
@@ -42,26 +49,25 @@ Initialize and finalize a Dune module.
   configuration files is also created. For more information, see the build
   system documentation.
 
+.. cmake:command:: dune_mark_module_as_required_dependency
 
-.. cmake_function:: dune_mark_module_as_required_dependency
+  Force a suggested module dependency to become required downstream.
 
-  .. cmake_brief::
+  .. code-block:: cmake
 
-    Mark a module as required in downstream projects
+    dune_mark_module_as_required_dependency(MODULE <module>)
 
-  .. cmake_param:: MODULE
-     :single:
+  .. versionadded:: 2.11
 
-    The name of the module to be marked as a required dependency.
+  ``MODULE``
+    Name of the suggested dependency that should be treated as required for
+    downstream consumers.
 
-  This function is used to force a module to be required in downstream projects
-  even if it is only "suggested". This is useful for modules that are not required
-  by default but are needed for the module to work once found. The main example is
-  that once a dependency is found, a source file relying on the dependency is compiled
-  into the module library. Then, for consistency, this dependency becomes a requirement
-  for all downstream consumers of the module library.
-  This function should be called after ``dune_project()`` and before
-  ``finalize_dune_project()``.
+  Use this when a dependency listed only in the section ``Suggested:`` of the
+  dune.module file becomes effectively required once it is found, for example
+  because corresponding source files are compiled into the module library.
+  Call this command after :cmake:command:`dune_project()` and before
+  :cmake:command:`finalize_dune_project()`.
 
 #]=======================================================================]
 include_guard(GLOBAL)

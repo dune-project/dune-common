@@ -1,31 +1,43 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Core DUNE module for CMake.
-#
-# Documentation of the public API defined in this module:
-#
-# .. cmake_function:: dune_target_link_libraries
-#
-#    .. cmake_param:: BASENAME
-#
-#    .. cmake_param:: LIBRARIES
-#
-#    Link libraries to the static and shared version of
-#    library BASENAME
-#
-#
-# .. cmake_function:: add_dune_all_flags
-#
-#    .. cmake_param:: targets
-#       :single:
-#       :required:
-#       :positional:
-#
-#       The targets to add the flags of all external libraries to.
-#
-#    This function is superseded by :ref:`dune_target_enable_all_packages`.
-#
+#[=======================================================================[.rst:
+DuneMacros
+----------
+
+Legacy compatibility helpers for the DUNE buildsystem.
+
+.. cmake:command:: dune_target_link_libraries
+
+  .. dune:internal::
+
+  Link libraries to the given target.
+
+  .. code-block:: cmake
+
+    dune_target_link_libraries(<target> <libraries>)
+
+  ``target``
+    Target to link against the given libraries.
+
+  ``libraries``
+    Libraries to link to the target.
+
+.. cmake:command:: add_dune_all_flags
+
+  .. dune:internal::
+
+  Add all globally collected package flags to the given targets.
+
+  .. code-block:: cmake
+
+    add_dune_all_flags(<target> [<target>...])
+
+  ``targets``
+    One or more existing targets to configure.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 enable_language(C) # Enable C to skip CXX bindings for some tests.

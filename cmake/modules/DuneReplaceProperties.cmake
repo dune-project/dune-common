@@ -5,21 +5,56 @@
 DuneReplaceProperties
 ---------------------
 
-Utility functions to modify target properties
+Utility functions to modify CMake properties by applying regular-expression
+based replacements.
 
 .. cmake:command:: replace_properties
 
-.. code-block:: cmake
+  Replace property values on global, directory, target, source, test, or cache
+  scopes.
 
-  replace_properties(<replacements>...
-    [GLOBAL]
-    [DIRECTORY <dir>]
-    [PROPERTY <prop>]
-    [TARGET <targets>...]
-    [SOURCE <sources>...]
-    [TEST <tests>...]
-    [CACHE <cache>...]
-  )
+  .. code-block:: cmake
+
+    replace_properties(
+      <regex> <replacement>...
+      [GLOBAL]
+      [DIRECTORY [<dir>]]
+      [PROPERTY <property>]
+      [TARGET <targets>...]
+      [SOURCE <sources>...]
+      [TEST <tests>...]
+      [CACHE <entries>...]
+    )
+
+  ``<regex> <replacement>...``
+    One or more pairs of regular expressions and replacement strings. Every
+    matching property entry is replaced by the corresponding replacement.
+
+  ``GLOBAL``
+    Operate on a global property.
+
+  ``DIRECTORY``
+    Operate on a directory property. Without an explicit directory argument,
+    the current directory is used.
+
+  ``PROPERTY``
+    Name of the property to update.
+
+  ``TARGET``
+    One or more target names whose property should be modified.
+
+  ``SOURCE``
+    One or more source file names whose property should be modified.
+
+  ``TEST``
+    One or more test names whose property should be modified.
+
+  ``CACHE``
+    One or more cache entries whose property should be modified.
+
+  If the selected property is not set yet, replacement strings are inserted as
+  the initial property value. Duplicate property entries are removed after
+  processing.
 
 #]=======================================================================]
 include_guard(GLOBAL)

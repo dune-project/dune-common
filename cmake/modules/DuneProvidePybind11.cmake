@@ -1,8 +1,38 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Module that provides a macro to find or download pybind11 to link into a target
-#
+#[=======================================================================[.rst:
+DuneProvidePybind11
+-------------------
+
+Helpers for providing pybind11 to DUNE Python extension targets.
+
+.. cmake:variable:: DUNE_USE_SYSTEM_PYBIND11
+
+  Use an external pybind11 installation instead of the vendored headers shipped
+  with ``dune-common``.
+
+  When this option is enabled, :cmake:command:`dune_provide_pybind11()` first
+  tries :cmake:command:`find_package(pybind11 CONFIG)`. If that fails, it
+  downloads pybind11 and creates an imported compatibility target for it.
+
+.. cmake:command:: dune_provide_pybind11
+
+  Ensure that the given target can use pybind11.
+
+  Depending on :cmake:variable:`DUNE_USE_SYSTEM_PYBIND11`, this either links the
+  target against an external or downloaded ``pybind11::module`` target, or adds
+  the vendored include directory from ``dune-common`` directly.
+
+  .. code-block:: cmake
+
+    dune_provide_pybind11(<target>)
+
+  ``target``
+    Existing target that should be configured for pybind11 usage.
+
+#]=======================================================================]
+
 include_guard(GLOBAL)
 
 macro(dune_provide_pybind11 _target)

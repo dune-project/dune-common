@@ -1,40 +1,52 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# Module for building documentation using doxygen.
-#
-# .. cmake_function:: add_doxygen_target
-#
-#    .. cmake_param:: TARGET
-#       :single:
-#
-#       The suffix to add to the target name, default to the module name.
-#
-#    .. cmake_param:: DEPENDS
-#       :multi:
-#
-#       A list of further dependencies of the doxygen documentation.
-#       Might include :code:`mainpage.txt`.
-#
-#    .. cmake_param:: OUTPUT
-#       :single:
-#
-#       Name of the output target, necessary if you don't generate html.
-#
-#       You may set the following variables to modify the
-#       behaviour of this module:
-#
-#    :ref:`DUNE_MATHJAX_DISABLE_LOCAL`
-#       disable search for and usage of locally available MathJax2
-#
-#    :ref:`DUNE_MATHJAX_DISABLE_CDN`
-#       disable usage of MathJax2 from content delivery network
-#
-#    This macro creates a target for building (:code:`doxygen_${ProjectName}`) and installing
-#    (:code:`doxygen_install_${ProjectName}`) the generated doxygen documentation.
-#    The documentation is built during the top-level :code:`make doc` call. We have added a dependency
-#    that makes sure it is built before running :code:`make install`.
-#
+#[=======================================================================[.rst:
+DuneDoxygen
+===========
+
+Support for building module documentation with Doxygen.
+
+.. cmake:command:: add_doxygen_target
+
+  Create a Doxygen build target for the current module.
+
+  .. code-block:: cmake
+
+    add_doxygen_target(
+      [TARGET <target-suffix>]
+      [DEPENDS <files>...]
+      [OUTPUT <path>]
+    )
+
+  ``TARGET``
+    Suffix of the generated build target. The default is the current module
+    name.
+
+  ``DEPENDS``
+    Additional dependencies of the generated Doxygen build step, for example a
+    manually maintained ``mainpage.txt`` file.
+
+  ``OUTPUT``
+    Output path produced by the Doxygen run. The default is the generated
+    ``html`` directory in the current binary directory.
+
+  This command creates a module-specific ``doxygen_<target>`` target and adds
+  it as a dependency of the top-level ``doxygen`` and ``doc`` targets. During
+  installation, the generated Doxygen output is copied into
+  ``${CMAKE_INSTALL_DOCDIR}/doxygen``.
+
+.. cmake:variable:: DUNE_MATHJAX_DISABLE_LOCAL
+
+  If set to ``TRUE``, local MathJax discovery is disabled and Doxygen will not
+  use an installed MathJax2 copy from the system.
+
+.. cmake:variable:: DUNE_MATHJAX_DISABLE_CDN
+
+  If set to ``TRUE``, MathJax will not be loaded from the content delivery
+  network when no local MathJax2 installation is available.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 find_package(Doxygen)

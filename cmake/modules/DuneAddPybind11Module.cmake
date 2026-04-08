@@ -1,50 +1,90 @@
 # SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
-# This cmake module provides infrastructure for building modules using Pybind11
-#
-# .. cmake_function:: dune_add_pybind11_module
-#
-#    .. cmake_param:: NAME
-#       :required:
-#       :single:
-#
-#       name of the Python module
-#
-#    .. cmake_param:: SOURCES
-#       :multi:
-#
-#       source files to build shared library
-#
-#       If this parameter is omitted, <name>.cc will be used if it exists.
-#
-#    .. cmake_param:: EXCLUDE_FROM_ALL
-#       :option:
-#
-#       exclude this module from the all target
-#
-#    .. cmake_param:: COMPILE_DEFINITIONS
-#       :multi:
-#       :argname: def
-#
-#       A set of compile definitions to add to the target.
-#       Only definitions beyond the application of :ref:`add_dune_all_flags`
-#       have to be stated.
-#
-#    .. cmake_param:: CMAKE_GUARD
-#       :multi:
-#       :argname: condition
-#
-#       A number of conditions that CMake should evaluate before adding this
-#       module. Use this feature instead of guarding the call to
-#       :code:`dune_add_pybind11_module` with an :code:`if` clause.
-#
-#       The passed condition can be a complex expression like
-#       `( A OR B ) AND ( C OR D )`. Mind the spaces around the parentheses.
-#
-#       Example: Write CMAKE_GUARD dune-foo_FOUND if you want your module to only
-#       build when the dune-foo module is present.
-#
+#[=======================================================================[.rst:
+DuneAddPybind11Module
+=====================
+
+Infrastructure for building Python extension modules with pybind11-style
+bindings.
+
+.. cmake:command:: dune_add_pybind11_module
+
+  Add a Python extension module as a shared library target.
+
+  .. code-block:: cmake
+
+    dune_add_pybind11_module(
+      NAME <module-name>
+      [SOURCES <sources>...]
+      [EXCLUDE_FROM_ALL]
+      [COMPILE_DEFINITIONS <definitions>...]
+      [CMAKE_GUARD <condition>...]
+    )
+
+  ``NAME``
+    Name of the Python extension module target.
+
+  ``SOURCES``
+    Source files used to build the shared library. If omitted,
+    ``<NAME>.cc`` is used when that file exists in the current source
+    directory.
+
+  ``EXCLUDE_FROM_ALL``
+    Exclude the generated target from the default ``all`` target.
+
+  ``COMPILE_DEFINITIONS``
+    Additional compile definitions passed to
+    :dune:cmake-command:`target_compile_definitions`.
+
+  ``CMAKE_GUARD``
+    Conditions evaluated before the module target is added. If one of the
+    conditions evaluates to false, the target is skipped.
+
+  The generated target links against ``Dune::Common`` and ``Python3::Module``
+  and is configured with :cmake:command:`dune_target_enable_all_packages()`.
+
+.. cmake:command:: dune_add_pybind11_submodule
+
+  Add an object-library submodule and link it into an existing Python module.
+
+  .. code-block:: cmake
+
+    dune_add_pybind11_submodule(
+      MODULE <parent-module>
+      NAME <submodule-name>
+      SOURCES <sources>...
+      [EXCLUDE_FROM_ALL]
+      [COMPILE_DEFINITIONS <definitions>...]
+      [CMAKE_GUARD <condition>...]
+    )
+
+  ``MODULE``
+    Name of the previously created parent module target that receives the
+    submodule object library.
+
+  ``NAME``
+    Name of the object-library target providing the submodule sources.
+
+  ``SOURCES``
+    Source files compiled into the object library.
+
+  ``EXCLUDE_FROM_ALL``
+    Exclude the object-library target from the default ``all`` target.
+
+  ``COMPILE_DEFINITIONS``
+    Additional compile definitions passed to
+    :dune:cmake-command:`target_compile_definitions`.
+
+  ``CMAKE_GUARD``
+    Conditions evaluated before the submodule target is added. If one of the
+    conditions evaluates to false, the target is skipped.
+
+  The generated object library links against ``Dune::Common``, is configured
+  with :cmake:command:`dune_target_enable_all_packages()`, and is linked into
+  the parent module target specified by ``MODULE``.
+
+#]=======================================================================]
 include_guard(GLOBAL)
 
 function(dune_add_pybind11_module)
