@@ -5,23 +5,43 @@
 DunePythonVirtualenv
 --------------------
 
-Manage the configure-time Python virtual environment used by the DUNE build
-system.
+This module manages the creation of virtual python environment during
+configuration. The purpose of this virtual environment is to be able to run
+python code from cmake in situations such as python-based code generation,
+running postprocessing in python during testing etc.
+If enabled the Python bindings are also installed (editable) into the
+internal virtual environment.
 
-This module sets up the virtual environment used for Python code generation,
-Python-based tests, and editable installation of DUNE Python bindings during
-configuration. If configuration already runs inside an active virtual
-environment, that environment is reused instead of creating an internal one.
+The internal virtual environment is only generated if the
+configuration is not run with an active virtual environment. If an
+external environment is detected this will be used instead of the
+internal environment.
 
-The created or detected environment can be inspected manually. A symlink to the
-activation script and the helper script ``run-in-dune-env`` are placed in the
-top-level build directory so commands can be run inside the selected
-environment.
+Although designed for internal use, the internal (or detected external)
+virtualenv can also be manually inspected. A symlink to the activation script is
+placed in the top level build directory of all Dune modules in the stack.
+To directly execute a command in the virtualenv, you can use the script
+``run-in-dune-env <command>``, which is also placed into every build directory.
 
-Packages installed through
-:cmake:command:`dune_python_configure_bindings()` or
-:cmake:command:`dune_python_configure_package()` are installed into this
-environment automatically.
+All packages installed with :cmake:command:`dune_python_configure_bindings()`
+or :cmake:command:`dune_python_configure_package()` are automatically
+installed into the virtualenv.
+
+After execution of this module, the following are available for use in
+downstream modules:
+
+* ``DUNE_PYTHON_VIRTUALENV_PATH`` The path of the virtual environment
+* ``DUNE_PYTHON_VIRTUALENV_EXECUTABLE`` The python interpreter in the virtual environment
+
+By default, the created virtualenv resides in the first non-installed Dune
+module of the module stack (if no installation is performed: dune-common). Be
+aware that mixing installed and non-installed modules may result in a
+situation, where multiple such environments are created, although only one
+should.  You can change this behavior by either specifying a fixed path for the
+virtualenv using :cmake:variable:`DUNE_PYTHON_VIRTUALENV_PATH` or by enabling
+:cmake:variable:`DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR` if you
+are using an absolute build directory with dunecontrol. Note that this flag is
+enabled by default starting from Dune 2.7.
 
 .. cmake:variable:: DUNE_PYTHON_VIRTUALENV_PATH
 
@@ -31,21 +51,40 @@ environment automatically.
 
 .. cmake:variable:: DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR
 
-  Control where the virtual environment is placed when dunecontrol uses an
-  absolute build directory. If enabled, the environment is created in a shared
-  directory named ``dune-python-env`` below that absolute build root so it can
-  be reused by all modules in the stack.
+  Before Dune 2.7, the virtualenv was always placed inside the build
+  directory of the first non-installed Dune module that the current module
+  depends on. When using installed core modules or a multi-stage
+  installation process, this can lead to situations where there are
+  multiple virtualenvs, making it impossible to find all Python modules
+  installed by upstream modules. In order to avoid this problem at least
+  for builds using an absolute build directory (i.e., the ``--builddir``
+  option of dunecontrol refers to an absolute path), the build system will
+  place the virtualenv in a dedicated directory ``dune-python-env`` inside
+  that absolute build directory, where it will be found by all Dune
+  modules. If you want to disable this behavior, set
+  ``DUNE_PYTHON_EXTERNAL_VIRTUALENV_FOR_ABSOLUTE_BUILDDIR=0``.
 
 .. cmake:variable:: DUNE_PYTHON_ALLOW_GET_PIP
 
-  Allow the build system to download and run ``get-pip.py`` during configure if
-  creating a virtual environment with pip already installed fails. This is a
-  fallback for systems where the standard ``venv`` setup lacks pip support.
+  The Dune build system will try to build a virtualenv with pip installed
+  into it, but this can fail in some situations, in particular on Debian
+  and Ubuntu distributions. In this case, you will see a warning message
+  in the CMake output. If you are on Debian or Ubuntu, try installing the
+  ``python3-venv`` (for Python 3) and / or ``python-virtualenv`` packages,
+  delete your build directory and try configuring again.
+
+  If that still does not help, set this variable to allow the Dune build
+  system to download ``get-pip.py`` from
+  https://bootstrap.pypa.io/get-pip.py at configure time and execute it to
+  install pip into the freshly set up virtual environment. While this
+  should normally not be necessary anymore, see
+  https://bugs.launchpad.net/debian/+source/python3.4/+bug/1290847 for
+  more information about the underlying distribution bug.
 
 .. cmake:variable:: DUNE_PYTHON_WHEELHOUSE
 
-  Location of the wheelhouse used for storing Python wheels. This directory is
-  expected to be shared consistently across the relevant DUNE installations.
+  The place where python wheels are stored. Notice that this wheelhouse
+  directory shall be the same for all dune installations.
 
 #]=======================================================================]
 include_guard(GLOBAL)

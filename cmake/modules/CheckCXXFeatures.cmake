@@ -16,11 +16,15 @@ given C++ source compiles and links into an executable.
 
   The macro checks that the given sources compiles and links into an executable. Thus,
   it must at least provide a valid ``main()`` function. The macro is inspired by the
-  cmake function ``check_cxx_source_compiles()`` but does not provide all of its
-  functionality. It is also based on the :dune:cmake-command:`try_compile` command but without any
-  additional flags set, like include directories or link options. The only fixed flag that
-  is passed to :dune:cmake-command:`try_compile` is ``CXX_STANDARD`` with value 17. This can only be
-  influenced by setting the global variable ``CMAKE_CXX_STANDARD``.
+  CMake module command
+  `check_cxx_source_compiles() <https://cmake.org/cmake/help/latest/module/CheckCXXSourceCompiles.html#command:check_cxx_source_compiles>`_
+  but does not provide all of its functionality. It is also based on the
+  :dune:cmake-command:`try_compile` command but without any additional flags
+  set, like include directories or link options. The only fixed flag that is
+  passed to :dune:cmake-command:`try_compile` is
+  `CXX_STANDARD <https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html>`_
+  with value 17. This can only be influenced by setting the global variable
+  `CMAKE_CXX_STANDARD <https://cmake.org/cmake/help/latest/variable/CMAKE_CXX_STANDARD.html>`_.
 
 #]=======================================================================]
 

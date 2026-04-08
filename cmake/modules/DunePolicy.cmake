@@ -8,7 +8,8 @@ DunePolicy
 Get and set dune policies to control changes in behavior of the dune build
 system. A policy is by default set to ``OLD`` if not set otherwise. The
 default behavior can be influenced by the global CMake variable
-``DUNE_POLICY_DEFAULT``.
+``DUNE_POLICY_DEFAULT``.  See :ref:`policies` for the list of introduced
+DUNE build system policies.
 
 .. cmake:command:: dune_policy
 

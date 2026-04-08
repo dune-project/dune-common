@@ -5,10 +5,15 @@
 DuneInstance
 ============
 
-Generate explicit template instantiations from CMake-driven template files.
+This module can be used to generate explicit template instantiations.
+Suppose you have a template test function that you want to call for a
+number of template arguments.  You want to explicitly instantiate the
+function for each set of template arguments, and put the instantiation
+into its own translation unit.  (This can be beneficial in that it limits
+the amount of code that the optimizer sees at once, and thus it can
+reduce both memory and cpu requirements during compilation.)
 
-This module helps split many explicit instantiations across generated
-translation units. A typical workflow is:
+A typical workflow is:
 
 .. code-block:: cmake
 
@@ -23,15 +28,98 @@ translation units. A typical workflow is:
   list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\\.cc$]])
   dune_add_test(NAME mytest SOURCES ${DUNE_INSTANCE_GENERATED})
 
-The files listed in :cmake:command:`dune_instance_begin()` are expected as
-template files with an implicit ``.in`` suffix. Embedded templates delimited by
-``@template@`` and ``@endtemplate@`` are instantiated by
-:cmake:command:`dune_instance_add()`. The collected generated content is
-written by :cmake:command:`dune_instance_end()`.
+The call to :cmake:command:`dune_instance_begin()` reads ``mytest.cc.in``
+and ``mytest.hh.in`` and splits them into embedded templates and other
+content.  It will replace occurrences of ``@VAR@`` now in the other
+content and save the result for later.
 
-Template generation is based on :dune:cmake-command:`configure_file` and
-``string(CONFIGURE ...)``, so current CMake variable values are substituted
-directly.
+The call to :cmake:command:`dune_instance_add()` occurs in a loop.  Each
+call will instantiate the embedded templates extracted earlier to replace
+an occurrence of ``@TYPE@`` by the value of the variable ``TYPE`` set in
+the for loop.  Then files containing explicit instantiatons will be
+generated as ``mytest_instance_bool.cc``, ``mytest_instance_bool.cc``,
+etc, from a template file ``mytest_instance.cc.in``.  The name of the
+generated files are the base file name from the template definition with
+the ``ID`` inserted before the extension.  The name of the template file
+is the same base file name with ``.in`` appended.
+
+:cmake:command:`dune_instance_end()` is used to write ``mytest.cc`` and
+``mytest.hh`` with the collected content from the embedded templates.
+The list of generated files will be available in the variable
+``DUNE_INSTANCE_GENERATED``.
+
+The template files then look like this:
+
+``mytest.cc.in``::
+
+  // @GENERATED_SOURCE@
+
+  #include <config.h>
+
+  #include <mytest.hh>
+
+  int main() {
+    MyTestSuite suite;
+
+  #cmake @template@
+    suite.test<@TYPE@>();
+  #cmake @endtemplate@
+
+    return suite.good() ? EXIT_SUCCESS : EXIT_FAILURE;
+  }
+
+``mytest.hh.in``::
+
+  // @GENERATED_SOURCE@
+
+  #include <mytestsuite.hh>
+
+  #cmake @template@
+  extern template void MyTestSuite::test<@TYPE@>();
+  #cmake @endtemplate@
+
+``mytest_instance.cc.in``::
+
+  // @GENERATED_SOURCE@
+
+  #include <config.h>
+
+  #include <mytest.hh>
+
+  template void MyTestSuite::test<@TYPE@>();
+
+The ``@GENERATED_SOURCE@`` substitution is good practice, it tells a
+human reader that this file was generated and what the template file was,
+and it hints editors to go into read-only mode.
+
+The begin of an embedded template is marked by a line containing
+``@template@`` or ``@template NAME@``.  Leaving off the name is
+equivalent to an empty name.  ``dune_instance_add(TEMPLATE NAME)`` will
+only instantiate embedded templates whose name matches and ignore all
+others.
+
+The end of an embedded template is marked by a line containing
+``@endtemplate@`` or ``@endtemplate NAME@``.  If a name is given, it must
+match the name of the embedded template it closes.  If no name is given
+(or the name is empty), that check is omitted.
+
+There may be arbitrary characters on the same line before or after the
+begin and end markers.  These are ignored, so you can use them for
+comments or to trick your editor into proper indentation.  The one
+exception is that the line surrounding the marker may not contain any
+``@`` characters to avoid ambiguities.
+
+The generation is done using the cmake command
+:dune:cmake-command:`configure_file` for template files and
+``string(CONFIGURE ...)`` for template strings.  These simply substitute
+the current variable values, so make sure to set up the variables to
+substitute before calling :cmake:command:`dune_instance_add()` or
+:cmake:command:`dune_instance_begin()`.
+
+Refrain from using substitutions that begin with an underscore
+(``@_my_local_var@``).  The generation functions in this module use such
+names for their local variables and may hide the variable you are trying
+to substitute.
 
 .. cmake:command:: dune_instance_begin
 
@@ -42,23 +130,26 @@ directly.
     dune_instance_begin(FILES <file-spec>...)
 
   ``FILES``
-    Template files with embedded templates. In the common case these are given
-    without the trailing ``.in`` suffix.
+    List of template files with embedded templates.
 
-  The command reads the given templates, extracts embedded template sections,
-  and applies substitutions to the remaining content with the variables
-  currently in scope.
+  Read the given template files, and extract embedded templates.  Run the
+  generator on the remaining file content with the variables currently in
+  effect.
 
   .. note::
 
-    A matching :cmake:command:`dune_instance_end()` call is required. Since the
-    implementation communicates through variables in the caller scope,
-    begin/end blocks must not be nested in the same scope.
+    A matching :cmake:command:`dune_instance_end()` is required.  Since
+    information is communicated through variables in the callers scope,
+    :cmake:command:`dune_instance_begin()` /
+    :cmake:command:`dune_instance_end()` blocks may not be nested inside
+    the same scope.  Since a function is a new scope, it may safely
+    contain a :cmake:command:`dune_instance_begin()` /
+    :cmake:command:`dune_instance_end()` block, even if it is itself
+    called from one.
 
 .. cmake:command:: dune_instance_add
 
-  Instantiate embedded templates and generate instance files for one set of
-  template arguments.
+  Instantiate a template with the currently set variable values.
 
   .. code-block:: cmake
 
@@ -69,33 +160,58 @@ directly.
     )
 
   ``FILES``
-    Template file specifications. These are usually file names without the
-    trailing ``.in`` suffix.
+    List of template file specifications.  These are usually the names of
+    template files with the ``.in`` extension removed.  See the ``ID``
+    parameter for details.
 
   ``ID``
-    Unique identifier used to derive instance file names. The identifier is
-    normalized by replacing non-alphanumeric characters with ``_`` before it is
-    inserted into the generated file name.
+    Used to build the names of generated files.  Each file specification
+    together with this id is given to
+    :cmake:command:`dune_instance_from_id()` to determine the name of a
+    template file and the name of an instance file.  To get unique
+    instance file names this ID should usually be a list of variable
+    values joined together by ``_``.
+
+    Specifically, each file specification may be of the form
+    ``template_file_name:base_instance_file_name``, or it may be a single
+    token not containing ``:``.  In the latter case, if that token
+    contains a trailing ``.in``, that is removed and the result is the
+    base instance file name.  The base instance file name has the ``.in``
+    appended again to form the template file name.
+
+    The template file name is used as-is to generate files from.
+
+    The ID is mangled by replacing any runs of non-alphanumeric
+    characters with an underscore ``_``, and stripping any resulting
+    underscore from the beginning and the end.  The result is inserted
+    before any extension into the base instance file name to form the
+    instance file name.
 
   ``TEMPLATE``
-    Name of the embedded template to instantiate. The default is the unnamed
-    embedded template.
+    Instantiate embedded templates by this name.  Defaults to an empty
+    name, matching embedded templates without name.
 
-  Each file specification is mapped to a template file and an instance file
-  name through :cmake:command:`dune_instance_from_id()`.
+  Instantiate any embedded templates that match the given template name,
+  substituting the current variables values.  Then, generate files
+  according the the file specifications in the template, doing
+  substitutions as well.
 
 .. cmake:command:: dune_instance_end
 
-  Finish a generation block started by :cmake:command:`dune_instance_begin()`.
+  Close a block started by :cmake:command:`dune_instance_begin()`, and
+  write the files generated from the templates given there.
 
   .. code-block:: cmake
 
     dune_instance_end()
 
-  This writes the files prepared by :cmake:command:`dune_instance_begin()`,
-  including all content contributed by :cmake:command:`dune_instance_add()`.
+  Write the files generated from the template files given in
+  :cmake:command:`dune_instance_begin()`, including any content generated
+  from embedded templates in :cmake:command:`dune_instance_add()`.
 
 .. cmake:command:: dune_instance_parse_file_spec
+
+  .. dune:internal::
 
   Parse a file specification into a template file name and an instance file
   name.
@@ -113,13 +229,25 @@ directly.
   ``instance-var``
     Variable name receiving the instance file name. It may be empty.
 
-  A file specification can be written as ``template.in:instance`` or as a
-  single name, in which case ``.in`` is appended or removed automatically.
+  The file specification can be the name of a template file if it has
+  ``.in`` at the end, or the name of an instance file if it doesn't.
+  The name of the other file is obtained by appending or removing
+  ``.in``, as applicable.  Both file names can also be given explicitly
+  in the form ``template_file_name:instance_file_name``.
+
+  .. note::
+
+    This is the function use to parse the file specifications in
+    :cmake:command:`dune_instance_begin()`.  It is also used as a helper
+    in :cmake:command:`dune_instance_from_id()` to determine template
+    file name and base instance file name.
 
 .. cmake:command:: dune_instance_from_id
 
-  Derive a template file name and a unique instance file name from a file
-  specification and an identifier.
+  .. dune:internal::
+
+  Determine a template file name and an instance file name from a file
+  specification and a unique id.
 
   .. code-block:: cmake
 
@@ -129,7 +257,7 @@ directly.
     File specification to interpret.
 
   ``id``
-    Identifier used to derive the generated instance file name.
+    The id specification.  This should uniquely identify an instance.
 
   ``template-var``
     Variable name receiving the template file name. It may be empty.
@@ -137,28 +265,46 @@ directly.
   ``instance-var``
     Variable name receiving the instance file name. It may be empty.
 
-  The file specification is parsed by
-  :cmake:command:`dune_instance_parse_file_spec()`. The derived base instance
-  file name is then extended with a mangled form of ``id``.
+  The file specification is handed to
+  :cmake:command:`dune_instance_parse_file_spec()` to determine a
+  template file name and a *base* instance file name.
+
+  The ID is mangled by replacing any runs of non-alphanumeric characters
+  with an underscore ``_``, and stripping any resulting underscore from
+  the beginning and the end.  The result is inserted before any
+  extension into the base instance file name to form the instance file
+  name.
+
+  .. note::
+
+    This is the function use to parse the file specifications given in
+    ``dune_instance_add(FILES ...)``.
 
 .. cmake:command:: dune_instance_apply_bindir
 
-  Make a file name relative to ``CMAKE_CURRENT_BINARY_DIR``.
+  .. dune:internal::
+
+  Modify a filename to be relative to ``CMAKE_CURRENT_BINARY_DIR``.
 
   .. code-block:: cmake
 
     dune_instance_apply_bindir(<filename-var>)
 
   ``filename-var``
-    Variable containing the file name to normalize.
+    The name of the variable containing the file name.
 
-  Relative paths are prefixed with ``${CMAKE_CURRENT_BINARY_DIR}``, matching
-  the behavior of :dune:cmake-command:`configure_file`.
+  This is used to mimic the behaviour of
+  :dune:cmake-command:`configure_file`.  If the file name given is not
+  absolute, it is modified by prepending
+  ``${CMAKE_CURRENT_BINARY_DIR}``.
 
 .. cmake:command:: dune_instance_generate_file
 
-  Generate one file from one template with standard DUNE instance-generation
-  substitutions.
+  .. dune:internal::
+
+  Convenience replacement for :dune:cmake-command:`configure_file`:
+  enable standard substitutions, register files as generated, and flag
+  the same file being generated twice.
 
   .. code-block:: cmake
 
@@ -171,10 +317,119 @@ directly.
     Generated file name, interpreted relative to
     ``${CMAKE_CURRENT_BINARY_DIR}``.
 
-  Besides generating the file, this command prepares convenience substitution
-  variables such as ``TEMPLATE``, ``INSTANCE``, ``BINDIR_INSTANCE``, and
-  ``GENERATED_SOURCE``. Re-generating the same output file with different
-  content is treated as a fatal error.
+  When instantiating files we set up a few convenience variables before
+  calling :dune:cmake-command:`configure_file` that can be used in
+  substitutions: ``@TEMPLATE@`` contains the name of the template file.
+  ``@INSTANCE@`` contains the name of the file being generated, not
+  including an implied ``${CMAKE_CURRENT_BINARY_DIR}``.  Use
+  ``@BINDIR_INSTANCE@`` if you do want the implied
+  ``${CMAKE_CURRENT_BINARY_DIR}``.  ``@GENERATED_SOURCE@`` contains a
+  one-line message that this file was generated, including the name of
+  the template file.
+
+  This function checks whether the file to generate has already been
+  generated before.  If yes, it reads the existing file and compares it
+  to the content it would generate.  If they differ, a fatal error is
+  triggered.  This avoids errors due to generating the same file twice
+  with different contents, which would otherwise depend on the order in
+  which generation happens.  As a special exception, if the generated
+  content is the same as before, the error is silently skipped.
+
+.. cmake:command:: dune_instance_quote_element
+
+  .. dune:internal::
+
+  Quote a list element for the internal list-based representation used by
+  the instance generator.
+
+  .. code-block:: cmake
+
+    dune_instance_quote_element(<var>)
+
+  ``var``
+    Variable whose content is transformed into the internal quoted form.
+
+.. cmake:command:: dune_instance_unquote_element
+
+  .. dune:internal::
+
+  Undo :cmake:command:`dune_instance_quote_element()` on a list element in
+  the internal representation.
+
+  .. code-block:: cmake
+
+    dune_instance_unquote_element(<var>)
+
+  ``var``
+    Variable whose content is transformed back from the internal quoted
+    form.
+
+.. cmake:command:: dune_instance_set_generated
+
+  .. dune:internal::
+
+  Prepare standard substitution variables for generated files.
+
+  .. code-block:: cmake
+
+    dune_instance_set_generated()
+
+  This internal helper prepares variables such as ``GENERATED_SOURCE`` and
+  ``BINDIR_INSTANCE`` before a file is generated.
+
+.. cmake:command:: dune_instance_parse_embedded
+
+  .. dune:internal::
+
+  Read a template file and split it into ordinary content parts and
+  embedded templates.
+
+  .. code-block:: cmake
+
+    dune_instance_parse_embedded(<name> <content-parts> <template-parts> <template-names>)
+
+  ``name``
+    Template file to parse.
+
+  ``content-parts``
+    Variable receiving the list of content outside embedded templates.
+
+  ``template-parts``
+    Variable receiving the list of embedded template bodies.
+
+  ``template-names``
+    Variable receiving the list of embedded template names.
+
+.. cmake:command:: dune_instance_generate_parts
+
+  .. dune:internal::
+
+  Instantiate a list of non-template content parts with the current
+  variable values.
+
+  .. code-block:: cmake
+
+    dune_instance_generate_parts(<parts-list>)
+
+  ``parts-list``
+    Variable naming the internal list of content parts.
+
+.. cmake:command:: dune_write_changed_file
+
+  .. dune:internal::
+
+  Write a file only if the generated content differs from the existing
+  content.
+
+  .. code-block:: cmake
+
+    dune_write_changed_file(<name> <content>)
+
+  ``name``
+    Output file.
+
+  ``content``
+    File content to write.
 
 .. cmake:variable:: DUNE_INSTANCE_GENERATED
 
@@ -185,6 +440,22 @@ directly.
   Do not modify this variable inside a
   :cmake:command:`dune_instance_begin()` /
   :cmake:command:`dune_instance_end()` block.
+
+.. cmake:command:: message_verbose
+
+  .. dune:internal::
+  .. deprecated:: 2.10
+     Use ``message(VERBOSE "message text")`` instead. This macro will be
+     removed after Dune 2.10.
+
+  Deprecated compatibility macro for verbose status output.
+
+  .. code-block:: cmake
+
+    message_verbose(<text>)
+
+  ``text``
+    Message text passed through to ``message(VERBOSE ...)``.
 
 #]=======================================================================]
 include_guard(GLOBAL)

@@ -16,10 +16,7 @@ Helper commands to query path variables of Dune modules.
     dune_module_path(
       MODULE <module>
       RESULT <result>
-      [CMAKE_MODULES]
-      [BUILD_DIR]
-      [SOURCE_DIR]
-      [SCRIPT_DIR]
+      [CMAKE_MODULES|BUILD_DIR|SOURCE_DIR|SCRIPT_DIR]
     )
 
   ``MODULE``
