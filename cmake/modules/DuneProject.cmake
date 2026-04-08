@@ -63,10 +63,10 @@ Initialize and finalize a Dune module.
     Name of the suggested dependency that should be treated as required for
     downstream consumers.
 
-  Use this when a dependency listed only in ``Suggested:`` becomes effectively
-  required once it is found, for example because corresponding source files are
-  compiled into the module library. Call this command after
-  :cmake:command:`dune_project()` and before
+  Use this when a dependency listed only in the section ``Suggested:`` of the
+  dune.module file becomes effectively required once it is found, for example
+  because corresponding source files are compiled into the module library.
+  Call this command after :cmake:command:`dune_project()` and before
   :cmake:command:`finalize_dune_project()`.
 
 #]=======================================================================]
