@@ -99,10 +99,11 @@ In order to build the DUNE core modules you need at least the following software
 
 - Add the macro `DUNE_ASSUME` for portable compiler assumption.
 
-- Fix bug in `operator<` and `operator>` of the iterators returned by `IntegralRange`.
-
 - Add converting constructor and assignment operator to `FieldMatrix` and `DiagonalMatrix` to
   allow assignments between `FieldMatrix`es of different field types.
+
+- Add a macro `DUNE_NO_UNIQUE_ADDRESS` that expands to the attribute `[[no_unique_address]]`
+  or something similar, if supported by the compiler.
 
 ## C++: Deprecations and removals
 
@@ -204,8 +205,7 @@ In order to build the DUNE core modules you need at least the following software
 - Add new utility type `IndexedIterator` that extends a given iterator by an `index()`
   method returning a traversal index.
 
-- Add a macro `DUNE_NO_UNIQUE_ADDRESS` that expands to the attribute `[[no_unique_address]]`
-  or something similar, if supported by the compiler.
+- Fix bug in `operator<` and `operator>` of the iterators returned by `IntegralRange`.
 
 ## C++: Deprecations and removals
 
