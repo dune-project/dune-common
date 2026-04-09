@@ -12,6 +12,10 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 - Make `IndexedIterator` compatible with raw pointers as iterators.
 
+- `ParameterizedObjectFactory` has now a method `keys()` that returns a range
+  of valid keys. One intended use case are improved diagnostics in user code.
+
+
 ## Build system: Changelog
 
 - Dune buildsystem policies, such as `DP_DEFAULT_INCLUDE_DIRS`, `DP_TEST_ADD_ALL_FLAGS`,
@@ -116,9 +120,6 @@ In order to build the DUNE core modules you need at least the following software
 
 ## C++: Changelog
 
-- ParameterizedObjectFactory has now a method keys() the returns a range
-  of valid keys. One intended use case are improved diagnostics in user code.
-
 - A set of interfaces and utilities for multi-type tree structures was added
   in the subdirectory `dune/common/typetree/` and namespace `Dune::TypeTree::`.
   This originates in the dune-typetree module but only provides a modernized
@@ -161,10 +162,11 @@ In order to build the DUNE core modules you need at least the following software
 
 - Add the macro `DUNE_ASSUME` for portable compiler assumption.
 
-- Fix bug in `operator<` and `operator>` of the iterators returned by `IntegralRange`.
-
 - Add converting constructor and assignment operator to `FieldMatrix` and `DiagonalMatrix` to
   allow assignments between `FieldMatrix`es of different field types.
+
+- Add a macro `DUNE_NO_UNIQUE_ADDRESS` that expands to the attribute `[[no_unique_address]]`
+  or something similar, if supported by the compiler.
 
 ## C++: Deprecations and removals
 
@@ -266,8 +268,7 @@ In order to build the DUNE core modules you need at least the following software
 - Add new utility type `IndexedIterator` that extends a given iterator by an `index()`
   method returning a traversal index.
 
-- Add a macro `DUNE_NO_UNIQUE_ADDRESS` that expands to the attribute `[[no_unique_address]]`
-  or something similar, if supported by the compiler.
+- Fix bug in `operator<` and `operator>` of the iterators returned by `IntegralRange`.
 
 ## C++: Deprecations and removals
 
