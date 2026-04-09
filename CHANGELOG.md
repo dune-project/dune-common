@@ -12,7 +12,7 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 - Make `IndexedIterator` compatible with raw pointers as iterators.
 
-- ParameterizedObjectFactory has now a method keys() the returns a range
+- `ParameterizedObjectFactory` has now a method `keys()` that returns a range
   of valid keys. One intended use case are improved diagnostics in user code.
 
 
