@@ -18,17 +18,12 @@ int main ()
   using VecIter = std::vector<double>::iterator;
 
   using Vec2ConstIter = std::vector<bool>::const_iterator;
-  using Vec2Iter = std::vector<bool>::iterator;
 
   static_assert(Std::indirectly_copyable<VecConstIter, VecIter>);
   static_assert(not Std::indirectly_copyable<VecIter, VecConstIter>);
 
   static_assert(Std::indirectly_copyable<Vec2ConstIter, VecIter>);
   static_assert(not Std::indirectly_copyable<VecIter, Vec2ConstIter>);
-
-  static_assert(Std::indirectly_copyable<VecConstIter, VecIter>);
-  static_assert(not Std::indirectly_copyable<VecIter, VecConstIter>);
-
 
   // check copyable between different iterator types
 
