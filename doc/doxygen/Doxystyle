@@ -144,6 +144,10 @@ EXPAND_ONLY_PREDEF     = YES
 
 @DOT_TRUE@HAVE_DOT               = YES
 
+# Conditionally enable MathJax
+USE_MATHJAX           = @DUNE_USE_MATHJAX@
+MATHJAX_RELPATH       = @DUNE_MATHJAX_RELPATH@
+
 # If set to YES, the inheritance and collaboration graphs will show the
 # relations between templates and their instances.
 
