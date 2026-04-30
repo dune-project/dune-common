@@ -135,14 +135,14 @@ namespace Dune
 
       constexpr auto operator<=>(const IntegralRangeIterator & other) const noexcept = default;
 
-      IntegralRangeIterator& operator++() noexcept { ++value_; return *this; }
-      IntegralRangeIterator operator++(int) noexcept { IntegralRangeIterator copy( *this ); ++(*this); return copy; }
+      constexpr IntegralRangeIterator& operator++() noexcept { ++value_; return *this; }
+      constexpr IntegralRangeIterator operator++(int) noexcept { IntegralRangeIterator copy( *this ); ++(*this); return copy; }
 
-      IntegralRangeIterator& operator--() noexcept { --value_; return *this; }
-      IntegralRangeIterator operator--(int) noexcept { IntegralRangeIterator copy( *this ); --(*this); return copy; }
+      constexpr IntegralRangeIterator& operator--() noexcept { --value_; return *this; }
+      constexpr IntegralRangeIterator operator--(int) noexcept { IntegralRangeIterator copy( *this ); --(*this); return copy; }
 
-      IntegralRangeIterator& operator+=(difference_type n) noexcept { value_ += n; return *this; }
-      IntegralRangeIterator& operator-=(difference_type n) noexcept { value_ -= n; return *this; }
+      constexpr IntegralRangeIterator& operator+=(difference_type n) noexcept { value_ += n; return *this; }
+      constexpr IntegralRangeIterator& operator-=(difference_type n) noexcept { value_ -= n; return *this; }
 
       friend constexpr IntegralRangeIterator operator+(const IntegralRangeIterator &a, difference_type n) noexcept { return IntegralRangeIterator(a.value_ + n); }
       friend constexpr IntegralRangeIterator operator+(difference_type n, const IntegralRangeIterator &a) noexcept { return IntegralRangeIterator(a.value_ + n); }
