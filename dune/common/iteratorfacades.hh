@@ -1092,7 +1092,7 @@ namespace Dune
     using DifferenceType = difference_type;
 
     // Only defined to do static assertions.
-    IteratorFacade()
+    constexpr IteratorFacade()
     {
       static_assert(std::is_signed_v<difference_type>,
         "Type used as difference_type must be signed");
