@@ -9,6 +9,22 @@ from dune.packagemetadata import getCMakeFlags
 
 logger = logging.getLogger(__name__)
 
+# list of references for citation in scientific articles
+__cite_dune_module_as__ = """
+@article{dunereview:21,
+  author = {Bastian, P. and Blatt, M. and Dedner, M. and Dreier, N.-A. and Engwer,
+            Ch. Fritze, R. and Gr{\"a}ser, C. and Gr{\"u}ninger, Ch. and Kempf, D.
+            and Kl{\"o}fkorn, R. and Ohlberger, M. and Sander, O.},
+  title = {{The Dune framework: Basic concepts and recent developments}},
+  journal = {{CAMWA}},
+  volume = {81},
+  pages = {75-112},
+  year = {2021},
+  doi = {10.1016/j.camwa.2020.06.007}
+}
+"""
+
+
 # default log level is INFO
 loglevel = logging.INFO
 try:

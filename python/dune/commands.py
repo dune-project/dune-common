@@ -17,6 +17,15 @@ def printinfo():
     print(len(files), "generated modules")
     return 0
 
+def printCitations(bibtexfile=None):
+    from dune.citations import collectAllCitations
+    citations = collectAllCitations(bibtexfile)
+    if bibtexfile is None:
+        print(citations)
+    else:
+        with open(bibtexfile, "w") as bibfile:
+            bibfile.write(citations)
+    return 0
 
 def configure():
     print('Set up dune-py module for reconfiguration')

@@ -7,6 +7,7 @@ add_subdirectory(typeregistry)
 
 add_python_targets(dune
   __main__
+  citations
   commands
   create
   packagemetadata
