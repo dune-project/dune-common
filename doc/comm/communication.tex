@@ -78,7 +78,7 @@ When using the data parallel programming model a set of processes
 works collectively on the same set of finite data objects. These might
 be elements of a finite element grid or vector entries in a linear algebra
 computation. Each process works on different partitions of the global
-data. Only for this partition it computes updated values. 
+data. Only for this partition it computes updated values.
 
 In large scale parallel codes it is advisable to store the data
 partition in a local data structure directly in the local memory of
@@ -94,14 +94,14 @@ be updated using communication at so called synchronisation points of
 the algorithm
 
 In the latter case the data structures do not need to know anything
-about the data distribution. 
+about the data distribution.
 This demands more effort from the parallel algorithm designer to make
 sure that the data used for computations is valid, i.e. contains an
 updated value if another process computes the data for it. Still it allows
 for fewer synchronisation points in the algorithms as even in collective
 operations all input data may already be updated from other processes
 due to a previous operation. Between the necessary synchronisation
-points one can take advantage of the fast local memory 
+points one can take advantage of the fast local memory
 access.
 
 Consider representing a random access container $x$ on a set of
@@ -111,7 +111,7 @@ process $p$ of the $P$ processes participating in the
 calculation. Although the global representation of the container is
 not available on any process, a process $p$ needs to know how the
 entries of its local piece $x^p$ correspond to the entries of the
-global container $x$, which would be used in a sequential program. 
+global container $x$, which would be used in a sequential program.
 
 \section{Communication Software Components}
 \label{sec:comm-softw-comp}
@@ -122,9 +122,9 @@ mapping from an index set $I \subset \N_0$ onto a set of objects
 $K$. Note that we do not require $I$ to be consecutive. The piece
 $x_p$ of the container $x$ stored on process $p$ is a mapping $x_p:I_p
 \rightarrow K$, where $I_p \subset I$. Due to efficiency the entries
-of $x_p$ should be stored consecutively in memory. 
+of $x_p$ should be stored consecutively in memory.
 This means that for the local computation the data must be addressable
-by a consecutive index starting from $0$. 
+by a consecutive index starting from $0$.
 
 When using adaptive
 discretisation methods there might be the need to reorder the indices
@@ -143,32 +143,32 @@ will call this global identifier {\em\index{global index}global index}.
 \subsection{ParallelIndexSet}
   Let $I \subset \N_0$ be an arbitrary, not necessarily consecutive,
   index set identifying all discretisation points of the computation.
-  Furthermore, let 
+  Furthermore, let
   $$({I}_p)_{p\in {\cal P}}, \quad
   \bigcup\limits_{p \in {\cal P}} {I}_p = I$$ be an overlapping decomposition of the global index set
   $I$ into the sets of indices ${I}_p$ corresponding to the
   global indices of the values stored locally in the chunk of process $p$.
 
-  Then the class 
+  Then the class
   \begin{lstlisting}{}
   template<typename TG, typename TL>  class ParallelIndexSet;
-  \end{lstlisting} 
-  realises the one to one mapping 
+  \end{lstlisting}
+  realises the one to one mapping
   $$
   \gamma_p\::\: {I}_p \longrightarrow {I}^{\loc}_p := [0, n_p)
   $$
-  of the globally unique index onto the local index. 
+  of the globally unique index onto the local index.
 
   The template parameter \lstinline!TG! is the type of the global
   index and
   \lstinline!TL! is the type of the local index. The only prerequisite
   of \lstinline!TG! is that objects of this type are comparable using
   the less-than-operator \lstinline!<!. Not that this prerequisite
-  still allows attaching further 
+  still allows attaching further
   information to the global index or even using this information as
   the global index. The type \lstinline!TL! has to
   be convertible to  \lstinline!std::size_t! as it is used to address array
-  elements. 
+  elements.
 
   The pairs of global and local indices are
   ordered by ascending global index. It is possible to access the pairs via
@@ -199,7 +199,7 @@ attributes used, e.g. an enumeration \lstinline!Flags! defined by
 \begin{lstlisting}
   enum Flags {owner, ghost};
 \end{lstlisting}
-where 
+where
 \lstinline!owner! marks the indices $k \in I_p$ owned by process
 $p$ and \lstinline!ghost! the indices $k\not\in I_p$ owned
 by other processes.
@@ -209,10 +209,10 @@ processes. In Figure \ref{fig:redistarray} one can see the array
 $a$ as it appears in a sequential program. Below there are two
 different distributions of that array. The local views $s_0$ and
 $s_1$ are the parts process $0$ and $1$ store in the case that $a$ is
-divided into two 
+divided into two
 blocks. The local views $t_0$ and $t_1$  are the parts of $a$ that
 process $0$ and $1$ store in the case that $a$ is divided into 4
-blocks and process 
+blocks and process
 $0$ stores the first and third block and process $1$ the second and
 fourth block. The decompositions have an overlap of one and the indices have
 the attributes \lstinline!owner! and \lstinline!ghost! visualised by
@@ -300,7 +300,7 @@ redistributed. Therefore communication is allowed to occur between different
 decompositions of the same index set.
 
 
-Let $I \subset \N$ be the global index set and 
+Let $I \subset \N$ be the global index set and
 $$
 (I^s_p)_{p\in{\cal P}},\quad \bigcup_{p\in{\cal P}} I^s_p = I,\quad
 \text{ and } \quad
@@ -329,7 +329,7 @@ and
 for all $q\in{\cal P}$.
 Here $\alpha^s_p$ and $\alpha^t_p$ denote the mapping of local
 indices on process $p$ onto attributes for the index set $I^s_p$ and
-$I^t_p$ as realised by \lstinline!ParallelLocalIndex!. 
+$I^t_p$ as realised by \lstinline!ParallelLocalIndex!.
 Note that the sets $r_{p \rightarrow q}^{s}$ and $r_{p \rightarrow
   q}^{t}$ will only be nonempty if the processes $p$ and $q$ manage
 overlapping index sets.
@@ -367,7 +367,7 @@ With the information provided by class \lstinline!RemoteIndices! the
 user can set up arbitrary communication interfaces. These interfaces
 are realised in \lstinline!template<typename T> class Interface!,
 where the template parameter \lstinline!T! is the custom type of the
-\lstinline!ParallelIndexSet! representing the index sets. 
+\lstinline!ParallelIndexSet! representing the index sets.
 Using the attributes attached to the indices by
 \lstinline!ParallelLocalIndex! the user can select subsets of the
 indices for exchanging data, e.g. send data from indices marked
@@ -412,14 +412,14 @@ communication is available and we are set to communicate data values
 of arbitrary
 container types. The only prerequisite for the container type is that
 its values are addressable via \lstinline!operator[](size_t index)!.
-This should be safe to assume. 
+This should be safe to assume.
 
 An important feature of our communicators is that we are not only able to
 send one data item per index, but also different numbers of data
 elements (of the same type) for each index. This is
-supported in a generic way by the traits class 
-\lstinline!template<class V> struct CommPolicy! 
-describing the container type \lstinline!V!. The 
+supported in a generic way by the traits class
+\lstinline!template<class V> struct CommPolicy!
+describing the container type \lstinline!V!. The
 \lstinline!typedef IndexedType! is the atomic type to be communicated and
 \lstinline!typedef IndexedTypeFlag! is either \lstinline!SizeOne! if
 there is only one data item per index or \lstinline!VariableSize! if the
@@ -428,12 +428,12 @@ number of data items per index is variable.
 The default implementation works for all
 array-like containers which provide only one data item per index. For all
 other containers the user has to provide its own custom
-specialisation. 
+specialisation.
 %For the vector classes of ISTL (up to two block levels)
 %those specialisations are already implemented.
 
 The class \lstinline!template<class T> class BufferedCommunicator!
-performs the 
+performs the
 actual communication. The template parameter \lstinline!T! describes
 the type of the parallel index set.
 It uses the information about the communication interface provided by
@@ -473,7 +473,7 @@ and \lstinline!backward! is called. In our case in
 \lstinline!bCommRedist! the \lstinline!forward! method
 sends data from the local views $s_i$ to the local views $t_i$
 according to the interface information and the \lstinline!backward!
-method in the opposite direction. 
+method in the opposite direction.
 
 The following code snippet first redistributes the local views $s_i$
 of the global array to the local views $t_i$ and
@@ -496,7 +496,7 @@ manipulations can be applied to the communicated data in both methods.
 
 For containers with multiple data items associated with one index
 the methods \lstinline!gather! and \lstinline!scatter! must have an additional
-integer argument specifying the sub-index. 
+integer argument specifying the sub-index.
 
 \section{Collective Communication}
 \label{sec:collective-communication}
@@ -508,11 +508,11 @@ collective communication operations, like gathering and scattering data
 abstraction for these operations is crucial for decoupling the
 communication from the parallel programming paradigm used.
 
-Therefore we designed 
+Therefore we designed
 \lstinline!template<class T> class CollectiveCommunication! which provides
 information of the underlying parallel programming paradigm as well as
 the collective communication operations as known from MPI. See Table
-\ref{tab:col-comm} for a list of all functions. 
+\ref{tab:col-comm} for a list of all functions.
 
 \begin{table*}%[b]
   \centering
@@ -528,7 +528,7 @@ the collective communication operations as known from MPI. See Table
     \lstinline!template<typename T> T max (T& in)!&Compute global
     maximum\\
     \lstinline!void barrier()!& Wait for all processes.\\
-    \lstinline!template<typename T> int broadcast (T* inout, int len, int root)! 
+    \lstinline!template<typename T> int broadcast (T* inout, int len, int root)!
 & Broadcast an array from root to all other processes\\
 \lstinline!template<typename T> int gather (T* in, T* out, int len, int root)!&
 Gather arrays at a root process\\
