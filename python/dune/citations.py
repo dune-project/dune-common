@@ -75,9 +75,7 @@ def collectAllCitations(bibtexfile = False):
     citations = _format_citations(print_if_statement=bibtexfile is None)
     return citations
 
-# set 'bibFile' to a file name to get the output printed into that file instead of stdout
-# The following line could be used to set this to 'scriptname.py.bib' - turned off for now
-# bibFile = Path(sys.argv[0]).resolve().name + ".bib"
+# use citationsfile to output citations to a file
 bibFile = None
 
 # when the program that included citations.py end, the list of necessary
