@@ -239,7 +239,7 @@ setup_control_path() {
     else
       NEW_DUNE_CONTROL_DIR=$(pkg-config dune-common --variable=prefix)/lib/dunecontrol
       # There might be old version of DUNE lying around, that do not contain
-      # lib/dunecontrol, yet. To prevent failur at a later stage of dunecontrol
+      # lib/dunecontrol, yet. To prevent failure at a later stage of dunecontrol
       # we check that the directory really exists.
       if test -d "$NEW_DUNE_CONTROL_DIR"; then
         DUNE_CONTROL_PATH=$DUNE_CONTROL_PATH:$NEW_DUNE_CONTROL_DIR
