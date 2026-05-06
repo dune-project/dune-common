@@ -19,7 +19,7 @@ def printinfo():
 
 def printCitations(bibtexfile=None):
     from dune.citations import collectAllCitations
-    citations = collectAllCitations(bibtexfile)
+    citations = collectAllCitations(None)
     if bibtexfile is None:
         print(citations)
     else:
