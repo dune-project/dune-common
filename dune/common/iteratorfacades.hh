@@ -1055,7 +1055,7 @@ namespace Dune
     static constexpr bool isRandomAccess = std::is_convertible_v<C, std::random_access_iterator_tag>;
 
     // We make IteratorFacadeAccess a friend to allow forwarding of the derived()
-    // methods to the free operators instead of havin to do raw casts there.
+    // methods to the free operators instead of having to do raw casts there.
     // This allows to encapsulate all casts within IteratorFacade itself.
     friend IteratorFacadeAccess;
 

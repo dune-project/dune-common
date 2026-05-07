@@ -54,7 +54,7 @@ namespace Dune {
  * In order to calculate the hash, operator() of the generated specialization will
  * return the result of an unqualified call to the global function `hash_value(const type&)`.
  * As the call is not qualified, the function will be found using argument-dependent lookup,
- * allowing implementors to conveniently place it inside the class body.
+ * allowing implementers to conveniently place it inside the class body.
  *
  * Consider the following type:
  *

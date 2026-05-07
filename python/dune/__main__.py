@@ -5,7 +5,8 @@ import sys
 from argparse import ArgumentParser
 from dune.commands import ( printinfo, configure, listgenerated,
                             rmgenerated, makegenerated,
-                            fixdunepy, listdunetype, checkbuilddirs
+                            fixdunepy, listdunetype, checkbuilddirs,
+                            printCitations
                           )
 
 # NOTE: do not import from dune.common (and consequently from dune.generator)
@@ -71,12 +72,19 @@ def run(arguments=None):
     parserCheckBuildDirs.add_argument('args', nargs='+', default=[],
               help='Dune module name and string with builddirs separated by ";"')
 
+    # Citations
+    parserCitations = subparsers.add_parser('citations', help='Print list of journal articles to cite for installed DUNE modules.')
+    parserCitations.add_argument('--file',  dest='file', default=None,
+              help='name of a bibtex file containing list of module papers')
 
     ret = 0
     args = parser.parse_args(arguments)
 
     if args.command == 'info':
         ret = printinfo()
+
+    elif args.command == 'citations':
+        ret = printCitations(args.file)
 
     elif args.command == 'configure':
         ret = configure()
