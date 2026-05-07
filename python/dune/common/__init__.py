@@ -10,7 +10,8 @@ from dune.packagemetadata import getCMakeFlags
 logger = logging.getLogger(__name__)
 
 # list of references for citation in scientific articles
-__cite_dune_module_as__ = """
+def _cite_dune_module_as():
+    return """
 @article{dunereview:21,
   author = {Bastian, P. and Blatt, M. and Dedner, M. and Dreier, N.-A. and Engwer,
             Ch. Fritze, R. and Gr{\\"a}ser, C. and Gr{\\"u}ninger, Ch. and Kempf, D.
@@ -31,10 +32,10 @@ __cite_dune_module_as__ = """
   eprint={2506.23558},
   archivePrefix={arXiv},
   primaryClass={cs.MS},
-  url={https://arxiv.org/abs/2506.23558},
+  url={https://arxiv.org/abs/2506.23558}
 }
 """
-
+## end _cite_dune_module_as
 
 # default log level is INFO
 loglevel = logging.INFO

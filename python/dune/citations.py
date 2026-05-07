@@ -10,47 +10,41 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-def _format_citations(print_if_statement = False):
-    outprefix = "%% In this program you have used modules for which we kindly ask to cite the following articles:\n"
-    if print_if_statement:
-        outprefix = "%% These are the articles we kindly ask to cite for the installed DUNE modules.\n"
+def _format_citations():
     coremodules = ["dune.common", "dune.geometry", "dune.grid", "dune.istl", "dune.localfunctions"]
     output = ""
     for modname in sys.modules:
         try:
             module = importlib.import_module(modname)
-            if hasattr(module, "__cite_dune_module_as__"):
-                citations = module.__cite_dune_module_as__
+            if hasattr(module, "_cite_dune_module_as"):
+                citations = module._cite_dune_module_as()
                 if modname in coremodules and modname != "dune.common":
                     continue
-                if print_if_statement:
-                    modulename = modname if modname != "dune.common" else str(", ".join(mod for mod in coremodules))
-                    output += f"\n% If you are using {modulename}, please cite:"
+                modulename = modname if modname != "dune.common" else str(", ".join(mod for mod in coremodules))
+                output += f"\n% For {modulename} please cite:"
                 output += citations
         except ImportError as e:
           logger.debug('failed to import ' + modname + ': ' + str(e) + '.')
           continue
 
-    return outprefix + output
+    return output
 
 # print citations to stdout
-def _print_citations(print_if_statement = False):
+def _print_citations():
     from dune.common import comm
 
-    citations = _format_citations(print_if_statement)
+    citations = "%% In this program you have used DUNE modules for which kindly ask to cite the following articles:\n"
+    citations += _format_citations()
     if citations is not None and comm.rank == 0:
-        if bibFile is None:
+        if _bibFile is None:
             print(citations)
         else:
-            with open(bibFile,"w") as f:
+            with open(_bibFile,"w") as f:
                 print(citations,file=f)
-
-def _print_citations_if_statement():
-    _print_citations(True)
 
 # when used with python -m dune.citations,
 # references for all installed dune modules are printed
-def collectAllCitations(bibtexfile = False):
+def collectAllCitations():
     import dune.common
     import pkgutil
 
@@ -61,7 +55,6 @@ def collectAllCitations(bibtexfile = False):
     prefix = package.__name__ + "."
     # first import all 'dune' subpackages and collect the 'registry' dicts
     dunesubmodules = set()
-    _print_if_statement = True
     for importer, modname, ispkg in pkgutil.iter_modules(package.__path__, prefix):
         if ispkg:
             try:
@@ -72,11 +65,12 @@ def collectAllCitations(bibtexfile = False):
                 logger.debug('failed to import ' + modname + ': ' + str(e) + '.')
                 continue
 
-    citations = _format_citations(print_if_statement=bibtexfile is None)
+    citations = "%% This is a list of references for all installed DUNE modules.\n"
+    citations += _format_citations()
     return citations
 
 # use citationsfile to output citations to a file
-bibFile = None
+_bibFile = None
 
 # when the program that included citations.py end, the list of necessary
 # citations is printed

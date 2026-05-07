@@ -2,8 +2,15 @@
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 import sys
-import dune.citations as citations
-from pathlib import Path
+import logging
 
-# set 'bibFile' to a file name to get the output printed into that file instead of stdout
-citations.bibFile = Path(sys.argv[0]).resolve().name + ".bib"
+logger = logging.getLogger(__name__)
+
+if "dune.citations" in sys.modules:
+    logger.warning('`dune.citations` was imported before, ignoring `dune.citationsfile` and not writing file!')
+else:
+    import dune.citations as citations
+    from pathlib import Path
+
+    # set '_bibFile' to a file name to get the output printed into that file instead of stdout
+    citations._bibFile = Path(sys.argv[0]).resolve().name + ".bib"
