@@ -263,6 +263,8 @@ endif()
 # is *not* in the sys path, so a simple `python scriptname` does not work.
 if(UNIX)
   find_package(UnixCommands QUIET)
+  set(SHEBANG_BASH "#!${BASH}")
+
   dune_module_path(MODULE dune-common
                    RESULT scriptdir
                    SCRIPT_DIR)
@@ -350,6 +352,7 @@ else()
     endif()
 
     find_package(UnixCommands QUIET)
+    set(SHEBANG_BASH "#!${BASH}")
 
     dune_module_path(MODULE dune-common
                      RESULT scriptdir
