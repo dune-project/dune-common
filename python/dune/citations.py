@@ -10,6 +10,9 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+# use citationsfile to output citations to a file
+_bibFile = None
+
 def _format_citations():
     coremodules = ["dune.common", "dune.geometry", "dune.grid", "dune.istl", "dune.localfunctions"]
     output = ""
@@ -33,7 +36,8 @@ def _format_citations():
 def _print_citations():
     from dune.common import comm
 
-    citations = "%% In this program you have used DUNE modules for which kindly ask to cite the following articles:\n"
+    citations = """%% In this program you have used DUNE modules for which
+%% we kindly ask to cite the following articles:\n"""
     citations += _format_citations()
     if citations is not None and comm.rank == 0:
         if _bibFile is None:
@@ -41,6 +45,27 @@ def _print_citations():
         else:
             with open(_bibFile,"w") as f:
                 print(citations,file=f)
+
+# prints all citations before the end of the program
+def show():
+    """
+    Print citations of all DUNE modules included in the code so far.
+    This function should be called at the end of the program.
+
+    Note: In regular Python scripts the code
+    ```
+    import dune.citations
+    ```
+    will print all citations. This will not work in notebooks, which is why this
+    function exists.
+    """
+
+    # avoid list being printed at exit (since it's printed now)
+    atexit.unregister(_print_citations)
+
+    _print_citations()
+
+    ## end show
 
 # when used with python -m dune.citations,
 # references for all installed dune modules are printed
@@ -68,9 +93,6 @@ def collectAllCitations():
     citations = "%% This is a list of references for all installed DUNE modules.\n"
     citations += _format_citations()
     return citations
-
-# use citationsfile to output citations to a file
-_bibFile = None
 
 # when the program that included citations.py end, the list of necessary
 # citations is printed
