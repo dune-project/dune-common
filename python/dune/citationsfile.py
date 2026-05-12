@@ -14,3 +14,6 @@ else:
 
     # set '_bibFile' to a file name to get the output printed into that file instead of stdout
     citations._bibFile = Path(sys.argv[0]).resolve().name + ".bib"
+
+    # use show function from citations
+    show = citations.show
