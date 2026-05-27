@@ -256,6 +256,7 @@ namespace Dune {
     }
 
     //! Conversion operator
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     constexpr operator const_reference () const noexcept
         requires(SIZE == 1)
     {
@@ -263,6 +264,7 @@ namespace Dune {
     }
 
     //! Conversion operator
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     constexpr operator reference () noexcept
         requires(SIZE == 1)
     {
@@ -277,6 +279,7 @@ namespace Dune {
 
     //! comparing FieldVectors<1> with scalar for equality
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr bool operator== (const FieldVector& a, const S& b) noexcept
         requires(SIZE == 1)
     {
@@ -285,6 +288,7 @@ namespace Dune {
 
     //! comparing FieldVectors<1> with scalar for equality
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr bool operator== (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
@@ -305,6 +309,7 @@ namespace Dune {
 
     //! three-way comparison of FieldVectors<1> with scalar
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator<=> (const FieldVector& a, const S& b) noexcept
         requires(SIZE == 1)
     {
@@ -313,6 +318,7 @@ namespace Dune {
 
     //! three-way comparison of FieldVectors<1> with scalar
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator<=> (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
@@ -360,6 +366,7 @@ namespace Dune {
 
     //! Binary division, when using FieldVector<K,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr FieldVector operator/ (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
@@ -368,6 +375,7 @@ namespace Dune {
 
     //! Binary addition, when using FieldVector<K,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator+ (const FieldVector& a, const S& b) noexcept
         requires(SIZE == 1)
     {
@@ -377,6 +385,7 @@ namespace Dune {
 
     //! Binary addition, when using FieldVector<K,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator+ (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
@@ -386,6 +395,7 @@ namespace Dune {
 
     //! Binary subtraction, when using FieldVector<K,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator- (const FieldVector& a, const S& b) noexcept
         requires(SIZE == 1)
     {
@@ -395,6 +405,7 @@ namespace Dune {
 
     //! Binary subtraction, when using FieldVector<K,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator- (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {

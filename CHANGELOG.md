@@ -76,7 +76,8 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 - Remove the deprecated method `HybridMultiIndex::element`. From now on,
   please use `HybridMultiIndex::operator[]` instead.
 
-- The methods that allowed to treat `FieldMatrix` objects of size 1x1 as scalars
+- The methods that allowed to treat `FieldMatrix` objects of size 1x1
+  and `FieldVector` objects of size 1 as scalars
   have been deprecated, and will be removed in a release not earlier than 2.13.
   These methods created semantic ambiguities and were the source of some confusion.
 
