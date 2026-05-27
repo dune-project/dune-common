@@ -18,6 +18,9 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 ## Build system: Changelog
 
+- Enable cross references in the doxygen documentation towards the upstream modules' documentation.
+  This is done by using doxygen tag files which are also installed along with the documentation.
+
 - Dune buildsystem policies, such as `DP_DEFAULT_INCLUDE_DIRS`, `DP_TEST_ADD_ALL_FLAGS`,
   and `DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM`, do not change automatically
   to `NEW` if a certain event, like a dune version number increment, occurred. Any
