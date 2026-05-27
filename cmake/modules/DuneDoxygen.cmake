@@ -213,19 +213,8 @@ macro(add_doxygen_target)
 
     # When installing call cmake install with the above install target
     install(CODE
-      "execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target doxygen_${ProjectName}_install
-          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-        file(GLOB doxygenfiles
-          ${CMAKE_CURRENT_BINARY_DIR}/installdir/html/*
-          ${CMAKE_CURRENT_BINARY_DIR}/installdir/html/search/*
-          )
-        set(doxygenfiles ${CMAKE_CURRENT_BINARY_DIR}/installdir/${PROJECT_NAME}.tag \"\${doxygenfiles}\")
-        foreach(_file \${doxygenfiles})
-           get_filename_component(_basename \${_file} NAME)
-           # Manifest is generated when prefix was set at configuration time, otherwise is skipped
-           LIST(APPEND CMAKE_INSTALL_MANIFEST_FILES ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen/\${_basename})
-         endforeach()
-         file(INSTALL \${doxygenfiles} DESTINATION ${CMAKE_INSTALL_DOCDIR}/doxygen)
-         message(STATUS \"Installed doxygen into ${CMAKE_INSTALL_DOCDIR}/doxygen\")")
+      "execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target doxygen_${ProjectName}_install WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})")
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/installdir/html/" DESTINATION ${CMAKE_INSTALL_DOCDIR}/doxygen/html)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/installdir/${PROJECT_NAME}.tag" DESTINATION ${CMAKE_INSTALL_DOCDIR}/doxygen)
   endif()
 endmacro(add_doxygen_target)
