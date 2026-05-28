@@ -202,8 +202,13 @@ macro(add_doxygen_target)
 
     set(DOXYGEN_INSTALL_TAGFILES ${DOXYGEN_TAGFILES})
     foreach(module ${DUNE_FOUND_DEPENDENCIES})
-      # TODO: Fix proper doxygen directory structure. This assumes that the tagfiles are installed in the same relative location as the build tagfiles.
-      set(DOXYGEN_INSTALL_TAGFILES "${DOXYGEN_INSTALL_TAGFILES} ${${module}_DOXYGEN_DIR}/installdir/${module}.tag=../../../${module}/doxygen/html")
+      if(${module}_INSTALLED)
+        # The module is already installed, so we can directly use the doxygen directories from the config file
+        set(DOXYGEN_INSTALL_TAGFILES "${DOXYGEN_INSTALL_TAGFILES} ${${module}_DOXYGEN_DIR}/${module}.tag=${${module}_DOXYGEN_DIR}/html")
+      else()
+        # The module is not yet installed, so we assume is going to be installed on the same prefix as this module.
+        set(DOXYGEN_INSTALL_TAGFILES "${DOXYGEN_INSTALL_TAGFILES} ${${module}_DOXYGEN_DIR}/installdir/${module}.tag=../../../${module}/doxygen/html")
+      endif()
     endforeach()
 
     prepare_doxyfile(TARGET ${DOXYGEN_TARGET}_install TAGFILES ${DOXYGEN_INSTALL_TAGFILES} DOXYFILE installdir/Doxyfile)
@@ -216,6 +221,13 @@ macro(add_doxygen_target)
 
     add_custom_target(doxygen_${DOXYGEN_TARGET}_install
       DEPENDS installdir/html/ installdir/${PROJECT_NAME}.tag)
+
+    foreach(module ${DUNE_FOUND_DEPENDENCIES})
+      get_property(module_doxygen_target GLOBAL PROPERTY ${module}_DOXYGEN_TARGET)
+      if(TARGET ${module_doxygen_target})
+        add_dependencies(doxygen_${DOXYGEN_TARGET}_install ${module_doxygen_target}_install)
+      endif()
+    endforeach()
 
     # When installing call cmake install with the above install target
     install(CODE
