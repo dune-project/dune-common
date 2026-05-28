@@ -176,7 +176,7 @@ macro(add_doxygen_target)
     foreach(module ${DUNE_FOUND_DEPENDENCIES})
       set(DOXYGEN_BUILD_TAGFILES "${DOXYGEN_BUILD_TAGFILES} ${${module}_DOXYGEN_DIR}/${module}.tag=${${module}_DOXYGEN_DIR}/html")
     endforeach()
-    prepare_doxyfile(TARGET ${DOXYGEN_TARGET}_build TAGFILES ${DOXYGEN_BUILD_TAGFILES} DOXYFILE Doxyfile)
+    prepare_doxyfile(TARGET ${DOXYGEN_TARGET} TAGFILES ${DOXYGEN_BUILD_TAGFILES} DOXYFILE Doxyfile)
     # custom command that executes doxygen
     add_custom_command(OUTPUT ${DOXYGEN_OUTPUT} html/ ${PROJECT_NAME}.tag
       COMMAND ${CMAKE_COMMAND} -D DOXYGEN_EXECUTABLE=$<TARGET_FILE:Doxygen::doxygen> -D DOXYFILE=Doxyfile -P ${scriptdir}/RunDoxygen.cmake
@@ -184,10 +184,16 @@ macro(add_doxygen_target)
       DEPENDS Doxyfile ${DOXYGEN_DEPENDS})
     # Create a target for building the doxygen documentation of a module,
     # that is run during make doc
-    add_custom_target(doxygen_${DOXYGEN_TARGET}_build
-      DEPENDS html ${PROJECT_NAME}.tag)
-    add_dependencies(doxygen doxygen_${DOXYGEN_TARGET}_build)
+    add_custom_target(doxygen_${DOXYGEN_TARGET} DEPENDS html ${PROJECT_NAME}.tag)
+    add_dependencies(doxygen doxygen_${DOXYGEN_TARGET})
+    foreach(module ${DUNE_FOUND_DEPENDENCIES})
+      get_property(module_doxygen_target GLOBAL PROPERTY ${module}_DOXYGEN_TARGET)
+      if(TARGET ${module_doxygen_target})
+        add_dependencies(doxygen_${DOXYGEN_TARGET} ${module_doxygen_target})
+      endif()
+    endforeach()
 
+    set_property(GLOBAL PROPERTY ${PROJECT_NAME}_DOXYGEN_TARGET doxygen_${DOXYGEN_TARGET})
     set_property(GLOBAL PROPERTY ${PROJECT_NAME}_DOXYGEN_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
     # Use a cmake call to install the doxygen documentation and create a
