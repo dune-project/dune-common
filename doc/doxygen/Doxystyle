@@ -143,6 +143,11 @@ EXPAND_ONLY_PREDEF     = YES
 
 TAGFILES               = @DOXYGEN_TAGFILES@
 
+# Do not show external groups and pages
+# from used TAGFILES
+EXTERNAL_GROUPS        = NO
+EXTERNAL_PAGES         = NO
+
 @DOT_TRUE@HAVE_DOT               = YES
 
 # Conditionally enable MathJax
