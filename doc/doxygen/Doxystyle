@@ -171,6 +171,9 @@ DOT_CLEANUP            = NO
 # Mark experimental features
 ALIASES                += experimental="\attention This feature is marked as experimental"
 
+# Link to topics page
+ALIASES              += reftopics="@DUNE_DOXYGEN_TOPICSLINK@"
+
 #####################################################################
 # Header Footer and Stylesheet in use is controlled by the Makefile #
 #                                            (christi 16. Jan 2006) #
