@@ -17,6 +17,10 @@
 
 namespace Dune {
 
+  /** \addtogroup IndexUtilities
+   *  \{
+   */
+
   // The Impl namespace collects some free standing functions helper functions
   namespace Impl {
 
@@ -199,6 +203,8 @@ namespace Dune {
    * As `HybridMultiIndex` instances should not be mutated after their creation, this function
    * returns a copy of the value. As values are either `std::integral_constant` or `std::size_t`, that's
    * just as cheap as returning a reference.
+   *
+   * \relates HybridMultiIndex
    */
   template<typename... T>
   [[nodiscard]] constexpr auto back(const HybridMultiIndex<T...>& tp)
@@ -212,6 +218,8 @@ namespace Dune {
    * As `HybridMultiIndex` instances should not be mutated after their creation, this function
    * returns a copy of the value. As values are either `std::integral_constant` or `std::size_t`, that's
    * just as cheap as returning a reference.
+   *
+   * \relates HybridMultiIndex
    */
   template<typename... T>
   [[nodiscard]] constexpr auto front(const HybridMultiIndex<T...>& tp)
@@ -223,6 +231,8 @@ namespace Dune {
   //! Appends a run time index to a `HybridMultiIndex`.
   /**
    * This function returns a new `HybridMultiIndex` with the run time index `i` appended.
+   *
+   * \relates HybridMultiIndex
    */
   template<typename... T>
   [[nodiscard]] constexpr HybridMultiIndex<T...,std::size_t> push_back(const HybridMultiIndex<T...>& tp, std::size_t i)
@@ -246,6 +256,7 @@ namespace Dune {
    * auto tp_b = push_back(tp,_1);
    * \endcode
    *
+   * \relates HybridMultiIndex
    */
   template<std::size_t i, typename... T>
   [[nodiscard]] constexpr HybridMultiIndex<T...,index_constant<i>> push_back(const HybridMultiIndex<T...>& tp, index_constant<i> iConstant = {})
@@ -258,6 +269,8 @@ namespace Dune {
   //! Prepends a run time index to a `HybridMultiIndex`.
   /**
    * This function returns a new `HybridMultiIndex` with the run time index `i` prepended.
+   *
+   * \relates HybridMultiIndex
    */
   template<typename... T>
   [[nodiscard]] constexpr HybridMultiIndex<std::size_t,T...> push_front(const HybridMultiIndex<T...>& tp, std::size_t i)
@@ -281,6 +294,7 @@ namespace Dune {
    * auto tp_b = push_front(tp,_1);
    * \endcode
    *
+   * \relates HybridMultiIndex
    */
   template<std::size_t i, typename... T>
   [[nodiscard]] constexpr HybridMultiIndex<index_constant<i>,T...> push_front(const HybridMultiIndex<T...>& tp, index_constant<i> iConstant = {})
@@ -301,6 +315,8 @@ namespace Dune {
    *  accumulate_back(HybridMultiIndex(_0, 2),_2) -> HybridMultiIndex(_0, 4)
    *  accumulate_back(HybridMultiIndex(_0, 2), 2) -> HybridMultiIndex(_0, 4)
    * \endcode
+   *
+   * \relates HybridMultiIndex
    */
   template<typename I, typename... T>
   requires (sizeof...(T) > 0)
@@ -321,6 +337,8 @@ namespace Dune {
    *  accumulate_front(HybridMultiIndex( 0,_2),_2) -> HybridMultiIndex( 2,_2)
    *  accumulate_front(HybridMultiIndex( 0,_2), 2) -> HybridMultiIndex( 2,_2)
    * \endcode
+   *
+   * \relates HybridMultiIndex
    */
   template<typename I, typename... T>
   requires (sizeof...(T) > 0)
@@ -330,12 +348,18 @@ namespace Dune {
   }
 
   //! Join two hybrid multi-indices into one
+  /**
+   * \relates HybridMultiIndex
+   */
   template<class... Head, class... Other>
   [[nodiscard]] constexpr auto join(const HybridMultiIndex<Head...>& head, const Other&... tail) {
     return Dune::HybridMultiIndex{std::tuple_cat(head._data, tail._data...)};
   }
 
   //! Reverses the order of the elements in the multi-index
+  /**
+   * \relates HybridMultiIndex
+   */
   template<class... T>
   [[nodiscard]] constexpr auto reverse(const HybridMultiIndex<T...>& tp) {
     constexpr std::size_t size = sizeof...(T);
@@ -347,6 +371,8 @@ namespace Dune {
   //! Removes first index on a `HybridMultiIndex`.
   /**
    * This function returns a new `HybridMultiIndex` without the first index.
+   *
+   * \relates HybridMultiIndex
    */
   template <class... T>
   requires (sizeof...(T) > 0)
@@ -360,6 +386,8 @@ namespace Dune {
   //! Removes last index on a `HybridMultiIndex`.
   /**
    * This function returns a new `HybridMultiIndex` without the last index.
+   *
+   * \relates HybridMultiIndex
    */
   template <class... T>
   requires (sizeof...(T) > 0)
@@ -378,6 +406,8 @@ namespace Dune {
    * Note, it might be that the values are represented with different types.
    * To check for same value and same type, use a combination of `std::is_same`
    * and this comparison operator.
+   *
+   * \relates HybridMultiIndex
    **/
   template <class... S, class... T>
   [[nodiscard]] constexpr bool operator==(
@@ -402,6 +432,8 @@ namespace Dune {
    * The function returns `std::true_type` if the values of the passed
    * multi-indices are equal. Otherwise returns `std::false_type`. Note, this
    * overload is chosen for purely static multi-indices only.
+   *
+   * \relates HybridMultiIndex
    **/
   template <class S, S... lhs, class T, T... rhs>
   [[nodiscard]] constexpr auto operator==(
@@ -416,6 +448,9 @@ namespace Dune {
 
 
   //! Compare two `HybridMultiIndex`s for inequality
+  /**
+   * \relates HybridMultiIndex
+   */
   template <class... S, class... T>
   [[nodiscard]] constexpr auto operator!=(
     const HybridMultiIndex<S...>& lhs,
@@ -425,6 +460,9 @@ namespace Dune {
   }
 
   //! Compare two static `HybridMultiIndex`s for inequality
+  /**
+   * \relates HybridMultiIndex
+   */
   template <class S, S... lhs, class T, T... rhs>
   [[nodiscard]] constexpr auto operator!=(
     const HybridMultiIndex<std::integral_constant<S,lhs>...>&,
@@ -437,6 +475,9 @@ namespace Dune {
   }
 
   //! Dumps a `HybridMultiIndex` to a stream.
+  /**
+   * \relates HybridMultiIndex
+   */
   template<typename... T>
   std::ostream& operator<<(std::ostream& os, const HybridMultiIndex<T...>& tp)
   {
@@ -448,6 +489,9 @@ namespace Dune {
     return os;
   }
 
+  /**
+   * @} // End of group IndexUtilities
+   */
 } //namespace Dune
 
 

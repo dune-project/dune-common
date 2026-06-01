@@ -52,6 +52,12 @@
 */
 
 /**
+  @defgroup IndexUtilities Index Utilities
+  @brief Utilities for indices, index constants, and multi-indices
+  @ingroup Utilities
+*/
+
+/**
   @defgroup HybridUtilities Hybrid Utilities
   @brief Hybrid utility functions that work on homogeneous as well as heterogeneous containers
   @ingroup Utilities
