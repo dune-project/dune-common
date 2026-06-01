@@ -13,7 +13,7 @@
 
 namespace Dune
 {
-  /** \addtogroup Common
+  /** \addtogroup IndexUtilities
    *  \{
    */
 
@@ -213,6 +213,10 @@ namespace Dune
     }
 
   }} //namespace Indices::Literals
+
+  /**
+   * @} // End of group IndexUtilities
+   */
 } //namespace Dune
 
 #endif // DUNE_COMMON_INDICES_HH
