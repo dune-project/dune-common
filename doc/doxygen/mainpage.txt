@@ -11,10 +11,7 @@ documenting C/C++ code.
 
 \section mods Modules
 
-The best way to start is from the page \subpage modules which gives
+The best way to start is from the page \reftopics which gives
 you access to the documentation by category.
 
-*/
-
-/** \page modules Modules
 */

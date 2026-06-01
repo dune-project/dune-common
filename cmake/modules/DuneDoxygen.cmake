@@ -120,6 +120,11 @@ macro(prepare_doxyfile)
   get_property(use_mathjax GLOBAL PROPERTY DUNE_USE_MATHJAX)
   get_property(mathjax_relpath GLOBAL PROPERTY DUNE_MATHJAX_RELPATH)
 
+  set(DUNE_DOXYGEN_TOPICSLINK "[Topics](topics.html)")
+  if(DOXYGEN_VERSION VERSION_LESS 1.9.8)
+    set(DUNE_DOXYGEN_TOPICSLINK "[Modules](modules.html)")
+  endif()
+
   message(STATUS "using ${DOXYSTYLE_FILE} to create doxystyle file")
   message(STATUS "using C macro definitions from ${DOXYGENMACROS_FILE} for Doxygen")
 
@@ -135,6 +140,7 @@ macro(prepare_doxyfile)
     -D top_srcdir=${${PROJECT_NAME}_SOURCE_DIR}
     -D DOXYGEN_TAGFILES=${DOXYFILE_TAGFILES}
     -D DUNE_USE_MATHJAX=$<IF:$<BOOL:${use_mathjax}>,YES,NO>
+    -D DUNE_DOXYGEN_TOPICSLINK="${DUNE_DOXYGEN_TOPICSLINK}"
     -D DUNE_MATHJAX_RELPATH="${mathjax_relpath}"
     -D DOXYFILE=${DOXYFILE_DOXYFILE}
     -P ${scriptdir}/CreateDoxyFile.cmake)
