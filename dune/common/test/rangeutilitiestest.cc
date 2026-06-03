@@ -453,6 +453,38 @@ Dune::TestSuite testNonDefaultConstructibleValueRange()
   return suite;
 }
 
+Dune::TestSuite testBorrowedRangeEnablement()
+{
+  Dune::TestSuite suite("Check borrowed_range enablement for integer ranges");
+
+  using DynamicRange = Dune::IntegralRange<int>;
+  using StaticRange = Dune::StaticIntegralRange<int, 4, 1>;
+
+  static_assert(std::ranges::enable_borrowed_range<DynamicRange>);
+  static_assert(std::ranges::enable_borrowed_range<StaticRange>);
+  static_assert(std::ranges::borrowed_range<DynamicRange>);
+  static_assert(std::ranges::borrowed_range<StaticRange>);
+
+  suite.check(std::ranges::enable_borrowed_range<DynamicRange>)
+    << "IntegralRange must be marked as std::ranges borrowed_range";
+  suite.check(std::ranges::enable_borrowed_range<StaticRange>)
+    << "StaticIntegralRange must be marked as std::ranges borrowed_range";
+
+#if __cpp_lib_ranges >= 201911L
+  suite.check(std::ranges::is_sorted(DynamicRange{10}))
+    << "IntegralRange must be a std::ranges borrowed_range";
+  auto dangling_iter_d = std::ranges::max_element(DynamicRange{10});
+    static_assert(not std::is_same_v<std::ranges::dangling, decltype(dangling_iter_d)>);
+
+  suite.check(std::ranges::is_sorted(StaticRange{}))
+    << "StaticIntegralRange must be a std::ranges borrowed_range";
+  auto dangling_iter_s = std::ranges::max_element(StaticRange{});
+    static_assert(not std::is_same_v<std::ranges::dangling, decltype(dangling_iter_s)>);
+#endif
+
+  return suite;
+}
+
 
 
 int main()
@@ -577,6 +609,8 @@ int main()
   suite.subTest(testIteratorRange());
 
   suite.subTest(testNonDefaultConstructibleValueRange());
+
+  suite.subTest(testBorrowedRangeEnablement());
 
   return suite.exit();
 
