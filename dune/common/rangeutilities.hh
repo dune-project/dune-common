@@ -9,6 +9,8 @@
 #include <utility>
 #include <type_traits>
 #include <bitset>
+#include <ranges>
+#include <concepts>
 
 #include <dune/common/typetraits.hh>
 #include <dune/common/iteratorfacades.hh>
@@ -115,6 +117,9 @@ namespace Dune
   namespace Impl
   {
 
+    // Tag base used to opt dune ranges into std::ranges::borrowed_range via the constrained partial specialization below.
+    struct BorrowedIntegralRange {};
+
     template <class T>
     class IntegralRangeIterator
     {
@@ -167,7 +172,7 @@ namespace Dune
    * \tparam  T  type of integers contained in the range
    **/
   template <class T>
-  class IntegralRange
+  class IntegralRange : public Impl::BorrowedIntegralRange
   {
   public:
     /** \brief type of integers contained in the range **/
@@ -220,7 +225,7 @@ namespace Dune
    * \tparam  from  first element contained in the range, defaults to 0
    **/
   template <class T, T to, T from = 0>
-  class StaticIntegralRange
+  class StaticIntegralRange : public Impl::BorrowedIntegralRange
   {
     template <T ofs, T... i>
     static std::integer_sequence<T, (i+ofs)...> shift_integer_sequence(std::integer_sequence<T, i...>);
@@ -724,5 +729,8 @@ namespace Dune
    */
 
 }
+
+template <std::derived_from<Dune::Impl::BorrowedIntegralRange> T>
+constexpr bool std::ranges::enable_borrowed_range<T> = true;
 
 #endif // DUNE_COMMON_RANGE_UTILITIES_HH
