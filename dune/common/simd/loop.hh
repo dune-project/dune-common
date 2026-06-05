@@ -67,7 +67,9 @@ namespace Dune {
   public:
 
     //default constructor
-    LoopSIMD() {
+    LoopSIMD()
+      : std::array<T,S>{}
+    {
       assert(reinterpret_cast<uintptr_t>(this) % std::min(alignof(LoopSIMD<T,S,A>),alignof(std::max_align_t)) == 0);
     }
 
