@@ -42,6 +42,7 @@ int main()
 
 
   // this should produce a compiler warning
+  #warning The following code is expected to emitted a compiler warning for testing.
   C< B > cb;
 
   cb.foo();
