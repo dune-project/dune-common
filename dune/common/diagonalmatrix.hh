@@ -27,6 +27,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/genericiterator.hh>
 #include <dune/common/matrixconcepts.hh>
+#include <dune/common/rangeutilities.hh>
 #include <dune/common/typetraits.hh>
 
 
@@ -519,8 +520,8 @@ namespace Dune {
         }
       }();
 
-      for (int i = 0; i < result.N(); ++i)
-        for (int j = 0; j < result.M(); ++j)
+      for (auto i : Dune::range(result.N()))
+        for (auto j : Dune::range(result.M()))
           result[i][j] = matrixA.diagonal(i) * matrixB[i][j];
       return result;
     }
@@ -715,8 +716,8 @@ namespace Dune {
         }
       }();
 
-      for (int i = 0; i < result.N(); ++i)
-        for (int j = 0; j < result.M(); ++j)
+      for (auto i : Dune::range(result.N()))
+        for (auto j : Dune::range(result.M()))
           result[i][j] = matrixA.diagonal(i) * matrixB[i][j];
       return result;
     }
