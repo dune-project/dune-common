@@ -413,6 +413,54 @@ namespace Dune {
       return FieldVector<ResultValueType,dimension>{a - b[0]};
     }
 
+    using Base::operator+=;
+
+    //! Addition with second operand FieldVector<K,1> used like K
+    template<class OtherK>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
+    constexpr FieldVector<K, SIZE>& operator+=(const FieldVector<OtherK, 1>& other)
+    requires ((SIZE!=1) and std::is_convertible_v<OtherK, K>)
+    {
+      (*this) += other[0];
+      return *this;
+    }
+
+    using Base::operator-=;
+
+    //! Subtraction with second operand FieldVector<K,1> used like K
+    template<class OtherK>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
+    constexpr FieldVector<K, SIZE>& operator-=(const FieldVector<OtherK, 1>& other)
+    requires ((SIZE!=1) and std::is_convertible_v<OtherK, K>)
+    {
+      (*this) -= other[0];
+      return *this;
+    }
+
+    using Base::operator*=;
+
+    //! Multiplication with second operand FieldVector<K,1> used like K
+    template<class OtherK>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
+    constexpr FieldVector<K, SIZE>& operator*=(const FieldVector<OtherK, 1>& other)
+    requires (std::is_convertible_v<OtherK, K>)
+    {
+      (*this) *= other[0];
+      return *this;
+    }
+
+    using Base::operator/=;
+
+    //! Division with second operand FieldVector<K,1> used like K
+    template<class OtherK>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
+    constexpr FieldVector<K, SIZE>& operator/=(const FieldVector<OtherK, 1>& other)
+    requires (std::is_convertible_v<OtherK, K>)
+    {
+      (*this) /= other[0];
+      return *this;
+    }
+
     /// @}
   };
 
