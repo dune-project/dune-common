@@ -20,6 +20,28 @@ file(APPEND ${DOXYFILE}.in ${file_contents})
 # needs to be generated first.
 # Therefore we read the ${DOXYFILE}.in and replace the variables using string(CONFIGURE)
 # and then write the file.
+
+# Handle tagfiles: we only want to include existing tagfiles,
+# otherwise doxygen will fail with an error about missing tagfiles.
+if(DEFINED DOXYGEN_TAGFILES AND NOT DOXYGEN_TAGFILES STREQUAL "")
+  separate_arguments(_doxygen_tagfiles NATIVE_COMMAND "${DOXYGEN_TAGFILES}")
+  set(_doxygen_existing_tagfiles "")
+  foreach(_doxygen_tagfile IN LISTS _doxygen_tagfiles)
+    if(_doxygen_tagfile MATCHES "^([^=]+)=(.*)$")
+      set(_doxygen_tagfile_path "${CMAKE_MATCH_1}")
+      if(EXISTS "${_doxygen_tagfile_path}")
+        message(VERBOSE "Found Doxygen tagfile: ${_doxygen_tagfile_path}")
+        list(APPEND _doxygen_existing_tagfiles "${_doxygen_tagfile}")
+      else()
+        message(STATUS "Skipping missing Doxygen tagfile: ${_doxygen_tagfile_path}")
+      endif()
+    else()
+      list(APPEND _doxygen_existing_tagfiles "${_doxygen_tagfile}")
+    endif()
+  endforeach()
+  string(JOIN " " DOXYGEN_TAGFILES ${_doxygen_existing_tagfiles})
+endif()
+
 file(READ ${DOXYFILE}.in file_contents)
 string(CONFIGURE ${file_contents} output)
 file(WRITE ${DOXYFILE} ${output})
