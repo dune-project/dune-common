@@ -697,10 +697,12 @@ class MakefileBuilder(Builder):
     def compile(self, infoTxt, target='all', verbose=False):
         pass
 
-    # open and safely close source file and return content
+    def _normalize_lines(self, s: str) -> str:
+        return "\n".join(line.strip() for line in s.splitlines())
     def _equalToExistingFile(self, source, sourceFileName ):
+        source = self._normalize_lines(source.strip())
         with open(os.path.join(sourceFileName), 'r') as sFile:
-            content = sFile.read()
+            content = self._normalize_lines(sFile.read().strip())
             if len(content) == len(source):
                 return content == source
         # by default return False
