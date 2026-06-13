@@ -698,11 +698,11 @@ class MakefileBuilder(Builder):
         pass
 
     def _normalize_lines(self, s: str) -> str:
-        return "\n".join(line.strip() for line in s.splitlines())
+        return "\n".join(line.strip() for line in s.strip().splitlines())
     def _equalToExistingFile(self, source, sourceFileName ):
-        source = self._normalize_lines(source.strip())
+        source = self._normalize_lines( source )
         with open(os.path.join(sourceFileName), 'r') as sFile:
-            content = self._normalize_lines(sFile.read().strip())
+            content = self._normalize_lines( sFile.read() )
             if len(content) == len(source):
                 return content == source
         # by default return False
