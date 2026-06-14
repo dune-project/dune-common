@@ -30,6 +30,7 @@ install(FILES
         alignedallocator.hh
         arraylist.hh
         bartonnackmanifcheck.hh
+        bigfloat.hh
         bigunsignedint.hh
         binaryfunctions.hh
         bitsetvector.hh

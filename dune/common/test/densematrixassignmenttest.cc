@@ -4,6 +4,7 @@
 
 #include <complex>
 
+#include <dune/common/bigfloat.hh>
 #include <dune/common/boundschecking.hh>
 #include <dune/common/diagonalmatrix.hh>
 #include <dune/common/dynmatrix.hh>
@@ -362,6 +363,9 @@ int main() {
   bool passed = true;
   passed = passed && run<double>();
   passed = passed && run<std::complex<double>>();
+#ifdef HAVE_MPFR
+  passed = passed && run<Dune::BigFloat<128u>>();
+#endif
 #ifdef HAVE_GMP
   passed = passed && run<Dune::GMPField<128u>>();
 #endif

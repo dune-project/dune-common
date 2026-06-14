@@ -15,6 +15,10 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 - `ParameterizedObjectFactory` has now a method `keys()` that returns a range
   of valid keys. One intended use case are improved diagnostics in user code.
 
+- Add a new multi-precision backend, `MPFR`, as alternative to the outdated `GMPXX`. It
+  is implemented in the class `BigFloat` with a proper specialization of
+  `std::numeric_limits` in `dune/common/bigfloat.hh`. Use `find_package(MPFR)` and
+  `add_dune_mpfr_flags(target)` to activate this package on your target.
 
 ## Build system: Changelog
 
