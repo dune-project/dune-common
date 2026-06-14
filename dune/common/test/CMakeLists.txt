@@ -93,6 +93,8 @@ dune_add_test(NAME debugalignsimdtest
 dune_add_test(SOURCES densematrixassignmenttest.cc
               LABELS quick)
 add_dune_gmp_flags(densematrixassignmenttest)
+add_dune_mpfr_flags(densematrixassignmenttest)
+add_dune_quadmath_flags(densematrixassignmenttest)
 
 foreach(FAIL RANGE 0 9)
   dune_add_test(NAME densematrixassignmenttest_fail${FAIL}
@@ -100,7 +102,9 @@ foreach(FAIL RANGE 0 9)
                 COMPILE_DEFINITIONS "FAILURE${FAIL}"
                 EXPECT_COMPILE_FAIL
                 LABELS quick)
-  add_dune_gmp_flags(densematrixassignmenttest)
+  add_dune_gmp_flags(densematrixassignmenttest_fail${FAIL})
+  add_dune_mpfr_flags(densematrixassignmenttest_fail${FAIL})
+  add_dune_quadmath_flags(densematrixassignmenttest_fail${FAIL})
 endforeach()
 
 dune_add_test(SOURCES densevectorassignmenttest.cc
@@ -129,6 +133,9 @@ dune_add_test(SOURCES filledarraytest.cc
 
 dune_add_test(SOURCES fmatrixtest.cc
               LABELS quick)
+add_dune_gmp_flags(fmatrixtest)
+add_dune_mpfr_flags(fmatrixtest)
+add_dune_quadmath_flags(fmatrixtest)
 add_dune_vc_flags(fmatrixtest)
 
 dune_add_test(SOURCES forceinlinetest.cc
@@ -136,6 +143,9 @@ dune_add_test(SOURCES forceinlinetest.cc
 
 dune_add_test(SOURCES fvectortest.cc
               LABELS quick)
+add_dune_gmp_flags(fvectortest)
+add_dune_mpfr_flags(fvectortest)
+add_dune_quadmath_flags(fvectortest)
 
 dune_add_test(SOURCES fvectorconversion1d.cc
               LABELS quick)
@@ -174,6 +184,12 @@ dune_add_test(SOURCES metistest.cc
               CMAKE_GUARD METIS_FOUND
               LABELS quick)
 add_dune_metis_flags(metistest)
+
+dune_add_test(SOURCES bigfloattest.cc
+              CMAKE_GUARD MPFR_FOUND
+              LABELS quick)
+add_dune_mpfr_flags(bigfloattest)
+add_dune_quadmath_flags(bigfloattest)
 
 dune_add_test(SOURCES mpicommunicationtest.cc
               MPI_RANKS 1 2 4 8
@@ -327,6 +343,9 @@ dune_add_test(SOURCES versiontest.cc
 
 dune_add_test(SOURCES mathtest.cc
               LABELS quick)
+add_dune_gmp_flags(mathtest)
+add_dune_mpfr_flags(mathtest)
+add_dune_quadmath_flags(mathtest)
 
 dune_add_test(SOURCES vcexpectedimpltest.cc
               LABELS quick

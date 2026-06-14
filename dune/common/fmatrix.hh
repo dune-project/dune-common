@@ -252,7 +252,7 @@ namespace Dune
         requires(ROWS*COLS == 1)
     {
       using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
-      return FieldMatrix<ResultValueType,1,1>{a[0][0] + b};
+      return FieldMatrix<ResultValueType,1,1>{ResultValueType(a[0][0] + b)};
     }
 
     //! Binary addition, when using FieldMatrix<K,1,1> like K
@@ -262,7 +262,7 @@ namespace Dune
         requires(ROWS*COLS == 1)
     {
       using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
-      return FieldMatrix<ResultValueType,1,1>{a + b[0][0]};
+      return FieldMatrix<ResultValueType,1,1>{ResultValueType(a + b[0][0])};
     }
 
     //! add scalar
@@ -296,7 +296,7 @@ namespace Dune
         requires(ROWS*COLS == 1)
     {
       using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
-      return FieldMatrix<ResultValueType,1,1>{a[0][0] - b};
+      return FieldMatrix<ResultValueType,1,1>{ResultValueType(a[0][0] - b)};
     }
 
     //! Binary subtraction, when using FieldMatrix<K,1,1> like K
@@ -306,7 +306,7 @@ namespace Dune
         requires(ROWS*COLS == 1)
     {
       using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
-      return FieldMatrix<ResultValueType,1,1>{a - b[0][0]};
+      return FieldMatrix<ResultValueType,1,1>{ResultValueType(a - b[0][0])};
     }
 
     //! subtract scalar
@@ -375,10 +375,11 @@ namespace Dune
     //! Binary division, when using FieldMatrix<K,1,1> like K
     template<Concept::Number S>
     [[deprecated("Please use 1x1 FieldMatrix objects like matrices, not like scalars!")]]
-    friend constexpr FieldMatrix operator/ (const S& a, const FieldMatrix& b) noexcept
+    friend constexpr auto operator/ (const S& a, const FieldMatrix& b) noexcept
         requires(ROWS*COLS == 1)
     {
-      return FieldMatrix{a / b[0][0]};
+      using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
+      return FieldMatrix<ResultValueType,1,1>{ResultValueType(a / b[0][0])};
     }
 
     /** \brief division by scalar

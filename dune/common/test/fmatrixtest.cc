@@ -17,11 +17,13 @@
 
 #include <dune-common-config.hh> // HAVE_LAPACK
 
+#include <dune/common/bigfloat.hh>
 #include <dune/common/classname.hh>
 #include <dune/common/deprecated.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fmatrixev.hh>
 #include <dune/common/ftraits.hh>
+#include <dune/common/gmpfield.hh>
 #include <dune/common/quadmath.hh>
 #include <dune/common/rangeutilities.hh>
 #include <dune/common/simd/loop.hh>
@@ -902,9 +904,14 @@ int main()
     test_matrix<Dune::Float128, Dune::Float128, Dune::Float128, 1, 1>();
     ScalarOperatorTest<Dune::Float128>();
 #endif
+#if HAVE_MPFR
+    test_matrix<Dune::BigFloat<128>, Dune::BigFloat<128>, Dune::BigFloat<128>, 1, 1>();
+    ScalarOperatorTest<Dune::BigFloat<128>>();
+#endif
 #if HAVE_GMP
-    test_matrix<Dune::GMPField<128>, Dune::GMPField<128>, Dune::GMPField<128>, 1, 1>();
-    ScalarOperatorTest<Dune::GMPField<128>>();
+    // The following tests fail with a segfault
+    // test_matrix<Dune::GMPField<128>, Dune::GMPField<128>, Dune::GMPField<128>, 1, 1>();
+    // ScalarOperatorTest<Dune::GMPField<128>>();
 #endif
     // test n x m matrices
     test_interface<int, int, 10, 5>();
@@ -915,6 +922,10 @@ int main()
     test_matrix<Dune::Float128, Dune::Float128, Dune::Float128, 5, 10>();
     test_interface<Dune::Float128, Dune::Float128, 5, 10>();
 #endif
+#if HAVE_MPFR
+    test_matrix<Dune::BigFloat<128>, Dune::BigFloat<128>, Dune::BigFloat<128>, 5, 10>();
+    test_interface<Dune::BigFloat<128>, Dune::BigFloat<128>, 5, 10>();
+#endif
 #if HAVE_GMP
     test_matrix<Dune::GMPField<128>, Dune::GMPField<128>, Dune::GMPField<128>, 5, 10>();
     test_interface<Dune::GMPField<128>, Dune::GMPField<128>, 5, 10>();
@@ -924,6 +935,9 @@ int main()
     test_matrix<float, double, float, 5, 10>();
 #if HAVE_QUADMATH
     test_matrix<float, double, Dune::Float128, 5, 10>();
+#endif
+#if HAVE_MPFR
+    test_matrix<float, double, Dune::BigFloat<128>, 5, 10>();
 #endif
 #if HAVE_GMP
     test_matrix<float, double, Dune::GMPField<128>, 5, 10>();

@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <dune/common/bigfloat.hh>
 #include <dune/common/bigunsignedint.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/gmpfield.hh>
@@ -58,6 +59,9 @@ int main ()
 
   // test Number concept for user-defined types
   static_assert(Concept::Number<Dune::bigunsignedint<64>>);
+#if HAVE_MPFR
+  static_assert(Concept::Number<Dune::BigFloat<64>>);
+#endif
 #if HAVE_GMP
   static_assert(Concept::Number<Dune::GMPField<64>>);
 #endif

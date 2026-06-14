@@ -8,6 +8,7 @@ install(FILES
   AddBLASLapackFlags.cmake
   AddGMPFlags.cmake
   AddMETISFlags.cmake
+  AddMPFRFlags.cmake
   AddMPIFlags.cmake
   AddParMETISFlags.cmake
   AddPTScotchFlags.cmake
@@ -51,6 +52,7 @@ install(FILES
   FindLatexMk.cmake
   FindMathJax2.cmake
   FindMETIS.cmake
+  FindMPFR.cmake
   FindParMETIS.cmake
   FindPTScotch.cmake
   FindQuadMath.cmake

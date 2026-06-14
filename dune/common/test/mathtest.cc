@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 
+#include <dune/common/bigfloat.hh>
 #include <dune/common/classname.hh>
 #include <dune/common/gmpfield.hh>
 #include <dune/common/hybridutilities.hh>
@@ -95,9 +96,9 @@ struct Digits10<Dune::GMPField<precision>>
 // check the correct definition of mathematical constants by comparing the
 // digits against an explicit value provided as a string constant
 template<class T>
-auto testMathematicalConstants () -> TestSuite
+auto testMathematicalConstants (std::string name) -> TestSuite
 {
-  TestSuite t;
+  TestSuite t(name);
 
   const auto digits10 = Digits10<T>::value();
 
@@ -110,7 +111,9 @@ auto testMathematicalConstants () -> TestSuite
 
     auto [it1,it2] = std::mismatch(e_T.begin(), e_T.end(), e.begin());
     auto pos = std::distance(e_T.begin(), it1);
-    t.check(pos >= digits10);
+    if (pos < digits10)
+      std::cout << "FAILURE: pos=" << pos << ", digits10=" << digits10 << ", e=" << e_T << std::endl;
+    t.check(pos >= digits10, "constant e");
   }
 
   static const std::string pi = "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491298336733624406566430860213949463952247371907021798609437027705392171762931767523846748184676694051320005681271452635608277857713427577896091736371787214684409012249534301465495853710507922796892589235420199561121290219608640344181598136297747713099605187072113499999983729780499510597317328160963185950244594553469083026425223082533446850352619311881710100031378387528865875332083814206171776691473035982534904287554687311595628638823537875937519577818577805321712268066130019278766111959092164201989";
@@ -122,7 +125,7 @@ auto testMathematicalConstants () -> TestSuite
 
     auto [it1,it2] = std::mismatch(pi_T.begin(), pi_T.end(), pi.begin());
     auto pos = std::distance(pi_T.begin(), it1);
-    t.check(pos >= digits10);
+    t.check(pos >= digits10, "constant pi");
   }
   return t;
 }
@@ -134,16 +137,20 @@ int main(int argc, char** argv)
   t.subTest(testStaticFactorial(_5));
   t.subTest(testStaticBinomial(_5));
 
-  t.subTest(testMathematicalConstants<float>());
-  t.subTest(testMathematicalConstants<double>());
-  t.subTest(testMathematicalConstants<long double>());
+  t.subTest(testMathematicalConstants<float>("float"));
+  t.subTest(testMathematicalConstants<double>("double"));
+  t.subTest(testMathematicalConstants<long double>("long double"));
+
+#if HAVE_MPFR
+  t.subTest(testMathematicalConstants<Dune::BigFloat<128>>("BigFloat"));
+#endif
 
 #if HAVE_QUADMATH
-  t.subTest(testMathematicalConstants<Dune::Float128>());
+  t.subTest(testMathematicalConstants<Dune::Float128>("Float128"));
 #endif
 
 #if HAVE_GMP
-  t.subTest(testMathematicalConstants<Dune::GMPField<3318>>());
+  t.subTest(testMathematicalConstants<Dune::GMPField<3318>>("GMPField"));
 #endif
 
   return t.exit();

@@ -8,8 +8,11 @@ dune_set_minimal_debug_level()
 find_package(LAPACK)
 include(AddBLASLapackFlags)
 
+# find libraries for high/multi-precision arithmetic
 find_package(GMP)
 include(AddGMPFlags)
+find_package(MPFR)
+include(AddMPFRFlags)
 find_package(QuadMath)
 include(AddQuadMathFlags)
 
