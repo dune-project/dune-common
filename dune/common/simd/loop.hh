@@ -58,7 +58,7 @@ namespace Dune {
     *
     *  @tparam T Base type. Could also be vectorized type.
     *  @tparam S Size
-    *  @tparam minimum alignment. It is inherited to rebound types.
+    *  @tparam A minimum alignment. It is inherited to rebound types.
     */
 
   template<class T, std::size_t S, std::size_t A = 0>
