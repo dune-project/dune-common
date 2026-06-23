@@ -3,7 +3,7 @@
 
 #[=======================================================================[.rst:
 AddMPFRFlags
------------
+------------
 
 Helpers for using `MPFR <https://github.com/advanpix/mpreal>`_ from DUNE targets.
 
