@@ -256,6 +256,7 @@ namespace Dune {
     }
 
     //! Conversion operator
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     constexpr operator const_reference () const noexcept
         requires(SIZE == 1)
     {
@@ -263,6 +264,7 @@ namespace Dune {
     }
 
     //! Conversion operator
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     constexpr operator reference () noexcept
         requires(SIZE == 1)
     {
@@ -277,6 +279,7 @@ namespace Dune {
 
     //! comparing FieldVectors<1> with scalar for equality
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr bool operator== (const FieldVector& a, const S& b) noexcept
         requires(SIZE == 1)
     {
@@ -285,6 +288,7 @@ namespace Dune {
 
     //! comparing FieldVectors<1> with scalar for equality
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr bool operator== (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
@@ -305,6 +309,7 @@ namespace Dune {
 
     //! three-way comparison of FieldVectors<1> with scalar
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator<=> (const FieldVector& a, const S& b) noexcept
         requires(SIZE == 1)
     {
@@ -313,6 +318,7 @@ namespace Dune {
 
     //! three-way comparison of FieldVectors<1> with scalar
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator<=> (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
@@ -360,6 +366,7 @@ namespace Dune {
 
     //! Binary division, when using FieldVector<K,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr FieldVector operator/ (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
@@ -368,6 +375,7 @@ namespace Dune {
 
     //! Binary addition, when using FieldVector<K,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator+ (const FieldVector& a, const S& b) noexcept
         requires(SIZE == 1)
     {
@@ -377,6 +385,7 @@ namespace Dune {
 
     //! Binary addition, when using FieldVector<K,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator+ (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
@@ -386,6 +395,7 @@ namespace Dune {
 
     //! Binary subtraction, when using FieldVector<K,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator- (const FieldVector& a, const S& b) noexcept
         requires(SIZE == 1)
     {
@@ -395,11 +405,60 @@ namespace Dune {
 
     //! Binary subtraction, when using FieldVector<K,1> like K
     template<Concept::Number S>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
     friend constexpr auto operator- (const S& a, const FieldVector& b) noexcept
         requires(SIZE == 1)
     {
       using ResultValueType = typename PromotionTraits<K,S>::PromotedType;
       return FieldVector<ResultValueType,dimension>{a - b[0]};
+    }
+
+    using Base::operator+=;
+
+    //! Addition with second operand FieldVector<K,1> used like K
+    template<class OtherK>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
+    constexpr FieldVector<K, SIZE>& operator+=(const FieldVector<OtherK, 1>& other)
+    requires ((SIZE!=1) and std::is_convertible_v<OtherK, K>)
+    {
+      (*this) += other[0];
+      return *this;
+    }
+
+    using Base::operator-=;
+
+    //! Subtraction with second operand FieldVector<K,1> used like K
+    template<class OtherK>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
+    constexpr FieldVector<K, SIZE>& operator-=(const FieldVector<OtherK, 1>& other)
+    requires ((SIZE!=1) and std::is_convertible_v<OtherK, K>)
+    {
+      (*this) -= other[0];
+      return *this;
+    }
+
+    using Base::operator*=;
+
+    //! Multiplication with second operand FieldVector<K,1> used like K
+    template<class OtherK>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
+    constexpr FieldVector<K, SIZE>& operator*=(const FieldVector<OtherK, 1>& other)
+    requires (std::is_convertible_v<OtherK, K>)
+    {
+      (*this) *= other[0];
+      return *this;
+    }
+
+    using Base::operator/=;
+
+    //! Division with second operand FieldVector<K,1> used like K
+    template<class OtherK>
+    [[deprecated("Please use FieldVector objects of size 1 like vectors, not like scalars!")]]
+    constexpr FieldVector<K, SIZE>& operator/=(const FieldVector<OtherK, 1>& other)
+    requires (std::is_convertible_v<OtherK, K>)
+    {
+      (*this) /= other[0];
+      return *this;
     }
 
     /// @}

@@ -249,6 +249,9 @@ namespace Dune {
     constexpr V & asImp() { return static_cast<V&>(*this); }
     constexpr const V & asImp() const { return static_cast<const V&>(*this); }
 
+    template<class OtherV>
+    static constexpr bool isDenseVector = std::is_base_of_v<DenseVector<OtherV>, OtherV>;
+
   protected:
     // construction allowed to derived classes only
     constexpr DenseVector() = default;
@@ -488,6 +491,7 @@ namespace Dune {
      */
     template <typename ValueType>
     constexpr typename std::enable_if<
+      (not isDenseVector<ValueType>) and
       std::is_convertible<ValueType, value_type>::value,
       derived_type
     >::type&
@@ -510,6 +514,7 @@ namespace Dune {
      */
     template <typename ValueType>
     constexpr typename std::enable_if<
+      (not isDenseVector<ValueType>) and
       std::is_convertible<ValueType, value_type>::value,
       derived_type
     >::type&
@@ -532,6 +537,7 @@ namespace Dune {
      */
     template <typename FieldType>
     constexpr typename std::enable_if<
+      (not isDenseVector<FieldType>) and
       std::is_convertible<FieldType, field_type>::value,
       derived_type
     >::type&
@@ -554,6 +560,7 @@ namespace Dune {
      */
     template <typename FieldType>
     constexpr typename std::enable_if<
+      (not isDenseVector<FieldType>) and
       std::is_convertible<FieldType, field_type>::value,
       derived_type
     >::type&
