@@ -88,6 +88,14 @@ namespace Dune {
 
   /** \brief vector space out of a tensor product of fields.
    *
+   * The entry type `K` is expected to be a number type, i.e., to satisfy
+   * `IsNumber<K>::value` (see `dune/common/typetraits.hh`). This holds for
+   * arithmetic types, `std::complex`, and SIMD types such as `Dune::LoopSIMD`.
+   * For compatibility reasons this is not enforced.
+   *
+   * \note Nesting, i.e., `FieldVector<FieldVector<K,M>,N>`, is still found in
+   *       some codes for historical reasons, but it is discouraged.
+   *
    * \tparam K    the field type (use float, double, complex, etc)
    * \tparam SIZE number of components.
    */
