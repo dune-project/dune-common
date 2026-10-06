@@ -17,6 +17,15 @@ int main(int argc, char** argv)
   // a placeholder for dynamic extents
   static constexpr std::size_t dyn = std::dynamic_extent;
 
+  using Dims2 = Dune::Std::dims<2>;
+  using Dims2i = Dune::Std::dims<2,int>;
+  static_assert(std::is_same_v<Dims2,Dune::Std::dextents<std::size_t,2>>);
+  static_assert(std::is_same_v<Dims2i,Dune::Std::dextents<int,2>>);
+  static_assert(Dims2::rank() == 2);
+  static_assert(Dims2::rank_dynamic() == 2);
+  static_assert(std::is_same_v<typename Dims2::index_type,std::size_t>);
+  static_assert(std::is_same_v<typename Dims2i::index_type,int>);
+
   // rank 0
   using Extents0 = Dune::Std::extents<int>;
   [[maybe_unused]] Extents0 extents0{};

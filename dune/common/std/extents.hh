@@ -257,6 +257,14 @@ struct DExtentsImpl<IndexType, std::integer_sequence<std::size_t,I...>>
 template <class IndexType, std::size_t R>
 using dextents = typename Impl::DExtentsImpl<IndexType, std::make_integer_sequence<std::size_t,R>>::type;
 
+/**
+ * \brief Alias of `dextents` of given rank `R`, defaulting the index type to `std::size_t`.
+ * See [mdspan.extents.dims]
+ * \ingroup CxxUtilities
+ **/
+template <std::size_t R, class IndexType = std::size_t>
+using dims = dextents<IndexType,R>;
+
 } // end namespace Dune::Std
 
 #endif // DUNE_COMMON_STD_EXTENTS_HH

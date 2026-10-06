@@ -7,6 +7,7 @@
 
 #include <array>
 #include <span>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 #if __has_include(<version>)
@@ -18,6 +19,7 @@
 #include <dune/common/std/extents.hh>
 #include <dune/common/std/layout_right.hh>
 #include <dune/common/std/no_unique_address.hh>
+#include <dune/common/std/impl/indices.hh>
 
 namespace Dune::Std {
 
@@ -241,6 +243,43 @@ public:
     std::enable_if_t<std::is_nothrow_constructible_v<index_type, const Index&>, int> = 0>
   constexpr reference operator[] (const std::array<Index,extents_type::rank()>& indices) const
   {
+    return std::apply([&](auto... ii) -> reference {
+      return accessor_.access(data_handle_, mapping_(index_type(ii)...)); }, indices);
+  }
+
+  /// \brief Access specified element with bounds checking.
+  template <class... Indices,
+    std::enable_if_t<(sizeof...(Indices) == extents_type::rank()), int> = 0,
+    std::enable_if_t<(... && std::is_convertible_v<Indices, index_type>), int> = 0,
+    std::enable_if_t<(... && std::is_nothrow_constructible_v<index_type,Indices>), int> = 0>
+  constexpr reference at (Indices... indices) const
+  {
+    if (!Impl::indexInIndexSpace(*this, indices...))
+      throw std::out_of_range("mdspan index out of range");
+    return accessor_.access(data_handle_, mapping_(index_type(std::move(indices))...));
+  }
+
+  /// \brief Access specified element with bounds checking.
+  template <class Index,
+    std::enable_if_t<std::is_convertible_v<const Index&, index_type>, int> = 0,
+    std::enable_if_t<std::is_nothrow_constructible_v<index_type, const Index&>, int> = 0>
+  constexpr reference at (std::span<Index,extents_type::rank()> indices) const
+  {
+    if (!Impl::indexInIndexSpace(*this, indices))
+      throw std::out_of_range("mdspan index out of range");
+    return unpackIntegerSequence([&](auto... ii) -> reference {
+      return accessor_.access(data_handle_, mapping_(index_type(indices[ii])...)); },
+      std::make_index_sequence<extents_type::rank()>{});
+  }
+
+  /// \brief Access specified element with bounds checking.
+  template <class Index,
+    std::enable_if_t<std::is_convertible_v<const Index&, index_type>, int> = 0,
+    std::enable_if_t<std::is_nothrow_constructible_v<index_type, const Index&>, int> = 0>
+  constexpr reference at (const std::array<Index,extents_type::rank()>& indices) const
+  {
+    if (!Impl::indexInIndexSpace(*this, indices))
+      throw std::out_of_range("mdspan index out of range");
     return std::apply([&](auto... ii) -> reference {
       return accessor_.access(data_handle_, mapping_(index_type(ii)...)); }, indices);
   }

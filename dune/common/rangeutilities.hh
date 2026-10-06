@@ -287,24 +287,30 @@ namespace Dune
      or
      for (auto i: range(10)) // 0,1,2,3,4,5,6,7,8,9
    */
-  template<class T, class U,
-           std::enable_if_t<std::is_same<std::decay_t<T>, std::decay_t<U>>::value, int> = 0,
-           std::enable_if_t<std::is_integral<std::decay_t<T>>::value, int> = 0>
-  constexpr static IntegralRange<std::decay_t<T>> range(T &&from, U &&to) noexcept
+  template<std::integral T>
+  constexpr static IntegralRange<T> range(T from, T to) noexcept
   {
-    return IntegralRange<std::decay_t<T>>(std::forward<T>(from), std::forward<U>(to));
+    return IntegralRange<T>(from, to);
   }
 
-  template<class T, std::enable_if_t<std::is_integral<std::decay_t<T>>::value, int> = 0>
-  constexpr static IntegralRange<std::decay_t<T>> range(T &&to) noexcept
+  template<std::integral T>
+  constexpr static IntegralRange<T> range(T to) noexcept
   {
-    return IntegralRange<std::decay_t<T>>(std::forward<T>(to));
+    return IntegralRange<T>(to);
   }
 
-  template<class T, std::enable_if_t<std::is_enum<std::decay_t<T>>::value, int> = 0>
-  constexpr static IntegralRange<std::underlying_type_t<std::decay_t<T>>> range(T &&to) noexcept
+  template<class T>
+    requires (std::is_enum_v<T>)
+  constexpr static IntegralRange<std::underlying_type_t<T>> range(T to) noexcept
   {
-    return IntegralRange<std::underlying_type_t<std::decay_t<T>>>(std::forward<T>(to));
+    return IntegralRange<std::underlying_type_t<T>>(to);
+  }
+
+  template<class T>
+    requires (std::is_enum_v<T>)
+  constexpr static IntegralRange<std::underlying_type_t<T>> range(T from, T to) noexcept
+  {
+    return IntegralRange<std::underlying_type_t<T>>(from, to);
   }
 
   template<class T, T from, T to>

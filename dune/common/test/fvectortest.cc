@@ -12,6 +12,7 @@
 
 #include <dune/common/bigfloat.hh>
 #include <dune/common/classname.hh>
+#include <dune/common/deprecated.hh>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/gmpfield.hh>
@@ -191,6 +192,7 @@ struct ScalarOperatorTest
 
     v = a;
     v = w = v;
+DUNE_NO_DEPRECATED_BEGIN
     a = v;
 
     a = v + a;
@@ -229,6 +231,7 @@ struct ScalarOperatorTest
     b = (v != a);
     b = (a == v);
     b = (a != v);
+DUNE_NO_DEPRECATED_END
 
     // test scalar operations with SIMD
     auto x = a * d;
@@ -258,6 +261,7 @@ struct ScalarOrderingTest
     b = (a >= c);
     b = (a >  c);
 
+DUNE_NO_DEPRECATED_BEGIN
     b = (v == a);
     b = (v != a);
     b = (a == v);
@@ -277,6 +281,7 @@ struct ScalarOrderingTest
     b = (a <= w);
     b = (a >= w);
     b = (a >  w);
+DUNE_NO_DEPRECATED_END
   }
 };
 

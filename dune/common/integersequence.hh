@@ -43,7 +43,7 @@ template <class T, T... II,
   std::enable_if_t<(sizeof...(II) > 0), int> = 0>
 constexpr auto back (std::integer_sequence<T,II...> seq)
 {
-  return get<sizeof...(II)-1>(seq);
+  return Dune::get<sizeof...(II)-1>(seq);
 }
 
 
@@ -128,7 +128,7 @@ constexpr auto sorted (std::integer_sequence<T,II...> /*seq*/, Compare comp)
 template <class T, T... II>
 constexpr auto sorted (std::integer_sequence<T,II...> seq)
 {
-  return sorted(seq, std::less<T>{});
+  return Dune::sorted(seq, std::less<T>{});
 }
 
 //! Checks whether or not a given sequence contains a value.
@@ -144,11 +144,11 @@ constexpr auto difference (std::integer_sequence<T,II...> iSeq, std::integer_seq
   if constexpr(iSeq.size() == 0 || jSeq.size() == 0)
     return iSeq;
   else {
-    constexpr auto I0 = head(iSeq);
-    if constexpr(!contains(jSeq,I0))
-      return push_front<I0.value>(difference(tail(iSeq),jSeq));
+    constexpr auto I0 = Dune::head(iSeq);
+    if constexpr(!Dune::contains(jSeq,I0))
+      return Dune::push_front<I0.value>(Dune::difference(Dune::tail(iSeq),jSeq));
     else
-      return difference(tail(iSeq),jSeq);
+      return Dune::difference(Dune::tail(iSeq),jSeq);
   }
 }
 
@@ -157,7 +157,7 @@ template <std::size_t N, class T, T... JJ,
   std::enable_if_t<(N >= sizeof...(JJ)), int> = 0>
 constexpr auto difference (std::integer_sequence<T,JJ...> jSeq)
 {
-  return difference(std::make_integer_sequence<T,N>{}, jSeq);
+  return Dune::difference(std::make_integer_sequence<T,N>{}, jSeq);
 }
 
 
@@ -185,9 +185,9 @@ template <template <auto> class Filter, class T, T J0, T... JJ>
 constexpr auto filter (std::integer_sequence<T,J0,JJ...> jSeq)
 {
   if constexpr(Filter<J0>::value)
-    return push_front(filter<Filter>(tail(jSeq)), head(jSeq));
+    return Dune::push_front(Dune::filter<Filter>(Dune::tail(jSeq)), Dune::head(jSeq));
   else
-    return filter<Filter>(tail(jSeq));
+    return Dune::filter<Filter>(Dune::tail(jSeq));
 }
 
 template <class Filter, class T>
@@ -198,11 +198,11 @@ constexpr auto filter (Filter, std::integer_sequence<T> jSeq) { return jSeq; }
 template <class Filter, class T, T J0, T... JJ>
 constexpr auto filter (Filter f, std::integer_sequence<T,J0,JJ...> jSeq)
 {
-  constexpr auto jHead = head(jSeq);
+  constexpr auto jHead = Dune::head(jSeq);
   if constexpr(f(jHead))
-    return push_front(filter(f, tail(jSeq)), jHead);
+    return Dune::push_front(Dune::filter(f, Dune::tail(jSeq)), jHead);
   else
-    return filter(f, tail(jSeq));
+    return Dune::filter(f, Dune::tail(jSeq));
 }
 
 } // end namespace Dune
