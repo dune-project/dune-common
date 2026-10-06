@@ -29,6 +29,7 @@ target_sources(dunecommon PRIVATE
 install(FILES
         alignedallocator.hh
         arraylist.hh
+        asnumber.hh
         bartonnackmanifcheck.hh
         bigfloat.hh
         bigunsignedint.hh
