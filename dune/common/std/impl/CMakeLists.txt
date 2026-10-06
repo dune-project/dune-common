@@ -4,4 +4,5 @@
 install(FILES
     containerconstructiontraits.hh
     fwd_layouts.hh
+    indices.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/std/impl)

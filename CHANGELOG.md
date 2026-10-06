@@ -19,6 +19,8 @@ In order to build the DUNE core modules you need at least the following software
 - Add `Dune::Std::dims`, the standard mdspan alias template for dynamic
   extents with default index type `std::size_t`.
 
+- Add bounds-checked `at()` element access to `Std::mdspan` and `Std::mdarray`.
+
 - Add five variants of the method `insert(pos, ...)` to `ReservedVector`.
   These are exactly the methods known from `std::vector`.
 
