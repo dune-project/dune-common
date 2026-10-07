@@ -31,5 +31,8 @@ dune_add_test(SOURCES mdspantest.cc
 dune_add_test(SOURCES mdarraytest.cc
               LABELS quick)
 
+dune_add_test(SOURCES submdspantest.cc
+              LABELS quick)
+
 dune_add_test(SOURCES spantest.cc
               LABELS quick)
