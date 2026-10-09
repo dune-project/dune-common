@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <array>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 #include <span>
 #include <tuple>
@@ -22,6 +23,7 @@
 #include <dune/common/std/mdspan.hh>
 #include <dune/common/std/no_unique_address.hh>
 #include <dune/common/std/impl/containerconstructiontraits.hh>
+#include <dune/common/std/impl/indices.hh>
 
 namespace Dune::Std {
 
@@ -457,6 +459,80 @@ public:
     std::enable_if_t<std::is_convertible_v<const Index&, index_type>, int> = 0>
   constexpr const_reference operator[] (const std::array<Index,extents_type::rank()>& indices) const
   {
+    return std::apply([&](auto... ii) -> const_reference {
+      return container_[mapping_(index_type(ii)...)]; }, indices);
+  }
+
+  /// \brief Access element with bounds checking.
+  template <class... Indices,
+    std::enable_if_t<(sizeof...(Indices) == extents_type::rank()), int> = 0,
+    std::enable_if_t<(... && std::is_convertible_v<Indices,index_type>), int> = 0,
+    std::enable_if_t<(... && std::is_nothrow_constructible_v<index_type,Indices>), int> = 0>
+  constexpr reference at (Indices... indices)
+  {
+    if (!Impl::indexInIndexSpace(*this, indices...))
+      throw std::out_of_range("mdarray index out of range");
+    return container_[mapping_(index_type(std::move(indices))...)];
+  }
+
+  /// \brief Access element with bounds checking.
+  template <class... Indices,
+    std::enable_if_t<(sizeof...(Indices) == extents_type::rank()), int> = 0,
+    std::enable_if_t<(... && std::is_convertible_v<Indices,index_type>), int> = 0,
+    std::enable_if_t<(... && std::is_nothrow_constructible_v<index_type,Indices>), int> = 0>
+  constexpr const_reference at (Indices... indices) const
+  {
+    if (!Impl::indexInIndexSpace(*this, indices...))
+      throw std::out_of_range("mdarray index out of range");
+    return container_[mapping_(index_type(std::move(indices))...)];
+  }
+
+  /// \brief Access element with bounds checking.
+  template <class Index,
+    std::enable_if_t<std::is_convertible_v<const Index&, index_type>, int> = 0,
+    std::enable_if_t<std::is_nothrow_constructible_v<index_type, const Index&>, int> = 0>
+  constexpr reference at (std::span<Index,extents_type::rank()> indices)
+  {
+    if (!Impl::indexInIndexSpace(*this, indices))
+      throw std::out_of_range("mdarray index out of range");
+    return unpackIntegerSequence([&](auto... ii) -> reference {
+      return container_[mapping_(index_type(indices[ii])...)]; },
+      std::make_index_sequence<extents_type::rank()>{});
+  }
+
+  /// \brief Access element with bounds checking.
+  template <class Index,
+    std::enable_if_t<std::is_convertible_v<const Index&, index_type>, int> = 0,
+    std::enable_if_t<std::is_nothrow_constructible_v<index_type, const Index&>, int> = 0>
+  constexpr const_reference at (std::span<Index,extents_type::rank()> indices) const
+  {
+    if (!Impl::indexInIndexSpace(*this, indices))
+      throw std::out_of_range("mdarray index out of range");
+    return unpackIntegerSequence([&](auto... ii) -> const_reference {
+      return container_[mapping_(index_type(indices[ii])...)]; },
+      std::make_index_sequence<extents_type::rank()>{});
+  }
+
+  /// \brief Access element with bounds checking.
+  template <class Index,
+    std::enable_if_t<std::is_convertible_v<const Index&, index_type>, int> = 0,
+    std::enable_if_t<std::is_nothrow_constructible_v<index_type, const Index&>, int> = 0>
+  constexpr reference at (const std::array<Index,extents_type::rank()>& indices)
+  {
+    if (!Impl::indexInIndexSpace(*this, indices))
+      throw std::out_of_range("mdarray index out of range");
+    return std::apply([&](auto... ii) -> reference {
+      return container_[mapping_(index_type(ii)...)]; }, indices);
+  }
+
+  /// \brief Access element with bounds checking.
+  template <class Index,
+    std::enable_if_t<std::is_convertible_v<const Index&, index_type>, int> = 0,
+    std::enable_if_t<std::is_nothrow_constructible_v<index_type, const Index&>, int> = 0>
+  constexpr const_reference at (const std::array<Index,extents_type::rank()>& indices) const
+  {
+    if (!Impl::indexInIndexSpace(*this, indices))
+      throw std::out_of_range("mdarray index out of range");
     return std::apply([&](auto... ii) -> const_reference {
       return container_[mapping_(index_type(ii)...)]; }, indices);
   }

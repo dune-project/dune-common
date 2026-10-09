@@ -20,6 +20,8 @@ install(FILES
   memory.hh
   no_unique_address.hh
   span.hh
+  submdspan.hh
+  submdspan_slices.hh
   type_traits.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/std)
 

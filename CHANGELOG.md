@@ -5,7 +5,21 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 # Master (will become release 2.12)
 
+## Dependencies
+In order to build the DUNE core modules you need at least the following software:
+
+- C++ compilers LLVM Clang >= 15 or GCC g++ >= 12
+- CMake >= 3.25
+- pkg-config to find other optional dependencies
+- The Python bindings require at least Python 3.11 or higher and are currently not
+  compatible to libc++.
+
 ## C++: Changelog
+
+- Add `Dune::Std::dims`, the standard mdspan alias template for dynamic
+  extents with default index type `std::size_t`.
+
+- Add bounds-checked `at()` element access to `Std::mdspan` and `Std::mdarray`.
 
 - Add five variants of the method `insert(pos, ...)` to `ReservedVector`.
   These are exactly the methods known from `std::vector`.
@@ -23,7 +37,19 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 - Add `Dune::Std::layout_left_padded` and `Dune::Std::layout_right_padded`
   layout mappings for `Dune::Std::mdspan`.
 
+- Add `Dune::Std::submdspan` and the corresponding standard-style slice
+  specifiers for creating non-owning subviews of `Dune::Std::mdspan`.
+
+- Use explicit namespace qualification when using the integer-sequence
+  utility `get<i>(seq)`, as it might be provided by the c++ standard library as well.
+  
 ## Build system: Changelog
+
+- Add the CMake option `DUNE_REQUIRE_PYTHONBINDINGS`. When enabled, missing
+  Python development packages or other unmet requirements for building the
+  Python bindings produce a `FATAL_ERROR` during configuration instead of a
+  `NOTICE`. This helps to catch broken Python bindings early in restricted
+  environments where the bindings are built but cannot work at runtime.
 
 - Enable cross references in the doxygen documentation towards the upstream modules' documentation.
   This is done by using doxygen tag files which are also installed along with the documentation.
@@ -67,7 +93,8 @@ SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 - Remove the deprecated method `HybridMultiIndex::element`. From now on,
   please use `HybridMultiIndex::operator[]` instead.
 
-- The methods that allowed to treat `FieldMatrix` objects of size 1x1 as scalars
+- The methods that allowed to treat `FieldMatrix` objects of size 1x1
+  and `FieldVector` objects of size 1 as scalars
   have been deprecated, and will be removed in a release not earlier than 2.13.
   These methods created semantic ambiguities and were the source of some confusion.
 

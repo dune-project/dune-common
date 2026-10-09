@@ -76,8 +76,21 @@ if(NOT DUNE_ENABLE_PYTHONBINDINGS)
   set(DUNE_ENABLE_PYTHONMODULE_PRECOMPILE OFF)
 endif()
 
+# this option changes some internal NOTICEs to FATAL_ERRORs in case python bindings are enabled but
+# cannot be built, e.g., due to missing dependencies or development packages. Enable this option in
+# modules that require python bindings to function properly.
+option(DUNE_REQUIRE_PYTHONBINDINGS "Require Python bindings for DUNE. Leads to hard errors if not possible." OFF)
+
 # helper message used below in various user messages
-set(DUNE_PYTHON_BINDINGS_USER_NOTICE "If you do not plan to use the Dune Python bindings you can ignore this information")
+set(DUNE_PYTHON_BINDINGS_USER_NOTICE "To resolve this issue either install the required packages or disable Python bindings by setting DUNE_ENABLE_PYTHONBINDINGS=OFF")
+
+# Turn a message NOTE into a FATAL_ERROR in case python bindings are required
+if(SKBUILD OR (DUNE_ENABLE_PYTHONBINDINGS AND DUNE_REQUIRE_PYTHONBINDINGS))
+  set(DUNE_PYTHONBINDINGS_FAIL_MODE FATAL_ERROR)
+else()
+  set(DUNE_PYTHONBINDINGS_FAIL_MODE NOTICE)
+endif()
+
 
 if(Python3_Interpreter_FOUND)
   include(DuneExecuteProcess)
@@ -98,7 +111,7 @@ if(Python3_Interpreter_FOUND)
   # disabled and the user gets an informative message explaining why
   if((DUNE_ENABLE_PYTHONBINDINGS) AND (NOT ${Python3_Development.Module_FOUND}))
     message(STATUS "Python bindings disabled")
-    message(NOTICE
+    message(${DUNE_PYTHONBINDINGS_FAIL_MODE}
       "   ----------------------------------------------------------------------------------------\n"
       "   Found a Python interpreter but the Python bindings also requires the Python libraries.\n"
       "   On Linux systems they may be installed in form of a package like python3-dev, python3-devel, python-dev or python-devel (depending on your distribution).\n"
@@ -113,7 +126,7 @@ if(Python3_Interpreter_FOUND)
   set(DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION 3.7)
   if((DUNE_ENABLE_PYTHONBINDINGS) AND (Python3_VERSION VERSION_LESS ${DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION}))
     message(STATUS "Python bindings disabled")
-    message(NOTICE
+    message(${DUNE_PYTHONBINDINGS_FAIL_MODE}
       "   ----------------------------------------------------------------------------------------\n"
       "   Python bindings require at least Python version ${DUNE_PYTHON_BINDINGS_MIN_PYTHON_VERSION} but only version ${Python3_VERSION} was found.\n"
       "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"
@@ -153,7 +166,7 @@ if(Python3_Interpreter_FOUND)
 
 else()
   message(STATUS "Python bindings disabled")
-  message(NOTICE
+  message(${DUNE_PYTHONBINDINGS_FAIL_MODE}
         "   ----------------------------------------------------------------------------------------\n"
         "   Python bindings require a Python3 interpreter.\n"
         "   ${DUNE_PYTHON_BINDINGS_USER_NOTICE}.\n"

@@ -502,7 +502,10 @@ def metaData(version=None, dependencyCheck=True):
             "python_requires": ">=3.4",
         })
 
-    from skbuild.command.build_py import build_py
+    try:
+        from skbuild.command.build_py import build_py
+    except ModuleNotFoundError:
+        from setuptools.command.build_py import build_py
 
     class DunepyConfigure(build_py):
         def run(self):

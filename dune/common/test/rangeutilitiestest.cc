@@ -485,6 +485,14 @@ Dune::TestSuite testBorrowedRangeEnablement()
   return suite;
 }
 
+struct Geometry1 {
+  static const int dim = 2;
+};
+
+
+struct Geometry2 {
+  enum { dim = 2 };
+};
 
 
 int main()
@@ -600,6 +608,23 @@ int main()
     auto op = [](const auto& x){};
     suite.check(testConstIterator(it, end, op)==0)
       << "iterator test fails for range(-10,11)";
+  }
+
+  // check range over static int and enum constants
+  {
+    int result1 = 0;
+    for (auto i : Dune::range(Geometry1::dim))
+    {
+      result1 += i;
+    }
+    suite.check(result1 == 1);
+
+    int result2 = 0;
+    for (auto i : Dune::range(Geometry2::dim))
+    {
+      result2 += i;
+    }
+    suite.check(result2 == 1);
   }
 
   suite.subTest(testTransformedRangeView());

@@ -27,9 +27,8 @@ Dependencies
 
 dune-common depends on the following software packages
 
-- CMake >= 3.16
-- Compiler (C, C++): GNU >= 10 or Clang >= 13
-- Library: GNU libstdc++ >= 10 or Clang libc++ >= 13
+- CMake >= 3.25
+- Compiler (C, C++): GNU >= 12 or Clang >= 15
 
 Other compilers may also work, but they must support C++20 to the same extent as
 the above. For an overview of the C++20 features supported by these versions, see
@@ -40,7 +39,10 @@ The following software is recommended but optional:
 
 - pkg-config
 - MPI (either OpenMPI, lam, or mpich suffice)
-- Python >= 3.7 (interpreter and development kit for building the python bindings)
+- Python >= 3.11 (interpreter and development kit for building the python bindings)
+
+These version requirements are for the master branch. For releases,
+check the release notes.
 
 License
 -------

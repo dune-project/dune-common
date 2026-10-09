@@ -40,8 +40,8 @@ int main()
   static_assert(head(seq2) == std::integral_constant<int,0>{});
   static_assert(front(seq2) == head(seq2));
   static_assert(back(seq2) == head(tail(seq2)));
-  static_assert(get<1>(seq2) == 1);
-  static_assert(get(seq2,1) == 1);
+  static_assert(Dune::get<1>(seq2) == 1);
+  static_assert(Dune::get(seq2,1) == 1);
   static_assert(contains(seq2, std::integral_constant<int,0>{}) == true);
   static_assert(contains(seq2, std::integral_constant<int,1>{}) == true);
   static_assert(contains(seq2, std::integral_constant<int,2>{}) == false);
@@ -57,7 +57,7 @@ int main()
   static_assert(equal(seq3, sorted(seq3a)));
   static_assert(equal(seq3b, sorted(seq3a,std::greater<>{})));
   static_assert(equal(push_front<2>(tail(seq3)), seq3));
-  static_assert(equal(push_back<14>(std::integer_sequence<int,get<0>(seq3),get<1>(seq3)>{}), seq3));
+  static_assert(equal(push_back<14>(std::integer_sequence<int,Dune::get<0>(seq3),Dune::get<1>(seq3)>{}), seq3));
   static_assert(empty(difference(seq3,seq3a)));
   static_assert(empty(difference(seq3a,seq3)));
 

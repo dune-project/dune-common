@@ -22,6 +22,8 @@ void checkAccess(Dune::TestSuite& testSuite, const Tensor& tensor)
 
   if constexpr(Tensor::rank() == 0) {
     subTestSuite.check(tensor[std::array<int,0>{}] == 42.0);
+    subTestSuite.check(tensor.at() == 42.0);
+    subTestSuite.check(tensor.at(std::array<int,0>{}) == 42.0);
 #if __cpp_multidimensional_subscript >= 202110L
     subTestSuite.check(tensor[] == 42.0);
 #endif
@@ -30,29 +32,56 @@ void checkAccess(Dune::TestSuite& testSuite, const Tensor& tensor)
     for (int i = 0; i < tensor.extent(0); ++i) {
       subTestSuite.check(tensor[std::array{i}] == 42.0);
       subTestSuite.check(tensor[i] == 42.0);
+      subTestSuite.check(tensor.at(i) == 42.0);
+      subTestSuite.check(tensor.at(std::array{i}) == 42.0);
+      std::array indices{i};
+      subTestSuite.check(tensor.at(std::span<int,1>{indices}) == 42.0);
     }
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(-1); });
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(tensor.extent(0)); });
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(std::array{tensor.extent(0)}); });
+    std::array indices{tensor.extent(0)};
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(std::span<typename Tensor::index_type,1>{indices}); });
   }
   else if constexpr(Tensor::rank() == 2) {
     for (int i = 0; i < tensor.extent(0); ++i) {
       for (int j = 0; j < tensor.extent(1); ++j) {
         subTestSuite.check(tensor[std::array{i,j}] == 42.0);
+        subTestSuite.check(tensor.at(i,j) == 42.0);
+        subTestSuite.check(tensor.at(std::array{i,j}) == 42.0);
+        std::array indices{i,j};
+        subTestSuite.check(tensor.at(std::span<int,2>{indices}) == 42.0);
 #if __cpp_multidimensional_subscript >= 202110L
         subTestSuite.check(tensor[i,j] == 42.0);
 #endif
       }
     }
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(-1,0); });
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(tensor.extent(0),0); });
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(std::array{0,tensor.extent(1)}); });
+    std::array indices{typename Tensor::index_type(0), tensor.extent(1)};
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(std::span<typename Tensor::index_type,2>{indices}); });
   }
   else if constexpr(Tensor::rank() == 3) {
     for (int i = 0; i < tensor.extent(0); ++i) {
       for (int j = 0; j < tensor.extent(1); ++j) {
         for (int k = 0; k < tensor.extent(2); ++k) {
           subTestSuite.check(tensor[std::array{i,j,k}] == 42.0);
+          subTestSuite.check(tensor.at(i,j,k) == 42.0);
+          subTestSuite.check(tensor.at(std::array{i,j,k}) == 42.0);
+          std::array indices{i,j,k};
+          subTestSuite.check(tensor.at(std::span<int,3>{indices}) == 42.0);
 #if __cpp_multidimensional_subscript >= 202110L
           subTestSuite.check(tensor[i,j,k] == 42.0);
 #endif
         }
       }
     }
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(-1,0,0); });
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(tensor.extent(0),0,0); });
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(std::array{0,0,tensor.extent(2)}); });
+    std::array indices{typename Tensor::index_type(0), typename Tensor::index_type(0), tensor.extent(2)};
+    subTestSuite.checkThrow<std::out_of_range>([&] { tensor.at(std::span<typename Tensor::index_type,3>{indices}); });
   }
 
   testSuite.subTest(subTestSuite);
@@ -90,6 +119,29 @@ void test_container (Dune::TestSuite& testSuite, std::string name, const M& mapp
   // construct from mdspan
   Tensor tensor6{tensor_span};
   Tensor tensor7{ctensor_span};
+
+  if constexpr(Tensor::rank() == 0) {
+    tensor3.at() = 43.0;
+    tensor3.at(std::array<int,0>{}) = 42.0;
+  }
+  else if constexpr(Tensor::rank() == 1) {
+    tensor3.at(0) = 43.0;
+    tensor3.at(std::array{0}) = 43.0;
+    std::array indices{0};
+    tensor3.at(std::span<int,1>{indices}) = 42.0;
+  }
+  else if constexpr(Tensor::rank() == 2) {
+    tensor3.at(0,0) = 43.0;
+    tensor3.at(std::array{0,0}) = 43.0;
+    std::array indices{0,0};
+    tensor3.at(std::span<int,2>{indices}) = 42.0;
+  }
+  else if constexpr(Tensor::rank() == 3) {
+    tensor3.at(0,0,0) = 43.0;
+    tensor3.at(std::array{0,0,0}) = 43.0;
+    std::array indices{0,0,0};
+    tensor3.at(std::span<int,3>{indices}) = 42.0;
+  }
 
   checkAccess(subTestSuite, tensor3);
   testSuite.subTest(subTestSuite);
