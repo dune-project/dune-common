@@ -34,6 +34,9 @@ In order to build the DUNE core modules you need at least the following software
   `std::numeric_limits` in `dune/common/bigfloat.hh`. Use `find_package(MPFR)` and
   `add_dune_mpfr_flags(target)` to activate this package on your target.
 
+- Add `Dune::Std::layout_left_padded` and `Dune::Std::layout_right_padded`
+  layout mappings for `Dune::Std::mdspan`.
+
 - Add `Dune::Std::submdspan` and the corresponding standard-style slice
   specifiers for creating non-owning subviews of `Dune::Std::mdspan`.
 

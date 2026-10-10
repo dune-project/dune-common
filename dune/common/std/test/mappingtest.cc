@@ -11,10 +11,51 @@
 #include <dune/common/filledarray.hh>
 #include <dune/common/std/extents.hh>
 #include <dune/common/std/layout_left.hh>
+#include <dune/common/std/layout_left_padded.hh>
 #include <dune/common/std/layout_right.hh>
+#include <dune/common/std/layout_right_padded.hh>
 #include <dune/common/std/layout_stride.hh>
 #include <dune/common/test/testsuite.hh>
 
+void test_padded_layout (Dune::TestSuite& testSuite)
+{
+  Dune::TestSuite subTest("padded layouts");
+
+  using E = Dune::Std::extents<int,3,4,2>;
+  Dune::Std::layout_left_padded<4>::mapping<E> left(E{});
+  subTest.check(left.stride(0) == 1, "left stride 0");
+  subTest.check(left.stride(1) == 4, "left padded stride 1");
+  subTest.check(left.stride(2) == 16, "left stride 2");
+  subTest.check(left(2,3,1) == 2 + 3*4 + 1*16, "left mapping");
+  subTest.check(!left.is_exhaustive(), "left not exhaustive");
+
+  Dune::Std::layout_stride::mapping<E> leftStride(left);
+  Dune::Std::layout_left_padded<>::mapping<E> leftFromStride(leftStride);
+  Dune::Std::layout_left_padded<>::mapping<E> leftFromPadded(left);
+  subTest.check(leftFromStride == left, "left from stride");
+  subTest.check(leftFromPadded == left, "left from padded");
+
+  Dune::Std::layout_right_padded<4>::mapping<E> right(E{});
+  subTest.check(right.stride(2) == 1, "right stride 2");
+  subTest.check(right.stride(1) == 4, "right padded stride 1");
+  subTest.check(right.stride(0) == 16, "right stride 0");
+  subTest.check(right(2,3,1) == 2*16 + 3*4 + 1, "right mapping");
+  subTest.check(!right.is_exhaustive(), "right not exhaustive");
+
+  Dune::Std::layout_stride::mapping<E> rightStride(right);
+  Dune::Std::layout_right_padded<>::mapping<E> rightFromStride(rightStride);
+  Dune::Std::layout_right_padded<>::mapping<E> rightFromPadded(right);
+  subTest.check(rightFromStride == right, "right from stride");
+  subTest.check(rightFromPadded == right, "right from padded");
+
+  using E1 = Dune::Std::extents<int,5>;
+  Dune::Std::layout_left_padded<>::mapping<E1> leftRank1(Dune::Std::layout_right::mapping<E1>{});
+  Dune::Std::layout_right_padded<>::mapping<E1> rightRank1(Dune::Std::layout_left::mapping<E1>{});
+  subTest.check(leftRank1(3) == 3, "left rank-1 from right");
+  subTest.check(rightRank1(3) == 3, "right rank-1 from left");
+
+  testSuite.subTest(subTest);
+}
 template <class E, class L, class L0>
 void test_strided_layout (Dune::TestSuite& testSuite, std::string name, const E& e)
 {
@@ -136,6 +177,8 @@ int main (int argc, char** argv)
   test_extents<Dune::Std::extents<int,7>>(testSuite, "rank=1");
   test_extents<Dune::Std::extents<int,7,7>>(testSuite, "rank=2");
   test_extents<Dune::Std::extents<int,7,7,7>>(testSuite, "rank=3");
+
+  test_padded_layout(testSuite);
 
   return testSuite.exit();
 }

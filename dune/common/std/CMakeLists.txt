@@ -11,7 +11,9 @@ install(FILES
   functional.hh
   iterator.hh
   layout_left.hh
+  layout_left_padded.hh
   layout_right.hh
+  layout_right_padded.hh
   layout_stride.hh
   mdarray.hh
   mdspan.hh

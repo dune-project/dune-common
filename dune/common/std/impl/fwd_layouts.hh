@@ -5,6 +5,8 @@
 #ifndef DUNE_COMMON_STD_IMPL_FWD_LAYOUTS_HH
 #define DUNE_COMMON_STD_IMPL_FWD_LAYOUTS_HH
 
+#include <span>
+
 namespace Dune::Std {
 
 /**
@@ -37,6 +39,30 @@ struct layout_right
  * \ingroup CxxUtilities
  **/
 struct layout_stride
+{
+  template <class Extents>
+  class mapping;
+};
+
+/**
+ * \brief A layout mapping where the leftmost extent has stride 1 and the
+ *        second stride may be padded.
+ * \ingroup CxxUtilities
+ **/
+template <std::size_t PaddingValue = std::dynamic_extent>
+struct layout_left_padded
+{
+  template <class Extents>
+  class mapping;
+};
+
+/**
+ * \brief A layout mapping where the rightmost extent has stride 1 and the
+ *        next-to-last stride may be padded.
+ * \ingroup CxxUtilities
+ **/
+template <std::size_t PaddingValue = std::dynamic_extent>
+struct layout_right_padded
 {
   template <class Extents>
   class mapping;
