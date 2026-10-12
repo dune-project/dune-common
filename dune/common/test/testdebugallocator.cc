@@ -58,7 +58,8 @@ void allocator_tests()
   std::cout << v[0] << "\n";
   std::cout << v[1] << "\n";
 #ifdef FAILURE5
-  std::cout << v[v.capacity()] << "\n";
+  // Bypass vector bounds checks to test the allocator's memory protection.
+  std::cout << v.data()[v.capacity()] << "\n";
 #endif
 }
 
