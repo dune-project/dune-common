@@ -14,7 +14,9 @@
 #include <dune/common/indices.hh>
 #include <dune/common/typetraits.hh>
 #include <dune/common/std/extents.hh>
+#include <dune/common/std/layout_left_padded.hh>
 #include <dune/common/std/layout_left.hh>
+#include <dune/common/std/layout_right_padded.hh>
 #include <dune/common/std/layout_right.hh>
 #include <dune/common/std/layout_stride.hh>
 #include <dune/common/std/submdspan_slices.hh>
@@ -78,6 +80,34 @@ inline constexpr bool is_pair_like_v = IsPairLike<T>::value;
 template <class Slice>
 inline constexpr bool is_kept_slice_v =
   is_full_extent_v<Slice> || is_extent_slice_v<Slice> || is_range_slice_v<Slice> || is_pair_like_v<Slice>;
+
+// Slices that keep a dimension and do not change the stride of that dimension.
+// These are the slice forms that can preserve a padded layout for submatrix views.
+template <class Slice, class = void>
+struct IsContiguousKeptSlice : IsFullExtent<Slice> {};
+
+template <class T>
+struct IsContiguousKeptSlice<T, std::enable_if_t<is_pair_like_v<T>>> : std::true_type {};
+
+template <class Stride, bool = is_integral_constant_v<Stride>>
+struct IsUnitStride : std::false_type {};
+
+template <class Stride>
+struct IsUnitStride<Stride,true> : std::bool_constant<(Stride::value == 1)> {};
+
+template <class First, class Last, class Stride>
+struct IsContiguousKeptSlice<range_slice<First,Last,Stride>>
+  : IsUnitStride<Stride>
+{};
+
+template <class Offset, class Extent, class Stride>
+struct IsContiguousKeptSlice<extent_slice<Offset,Extent,Stride>>
+  : IsUnitStride<Stride>
+{};
+
+template <class Slice>
+inline constexpr bool is_contiguous_kept_slice_v =
+  IsContiguousKeptSlice<std::remove_cv_t<std::remove_reference_t<Slice>>>::value;
 
 // Compute the source index selected by a slice at relative result index zero.
 template <class Slice, class IndexType>
@@ -196,9 +226,33 @@ using SubextentsType = typename SubextentsImpl<
   0,
   std::remove_cv_t<std::remove_reference_t<Slices>>...>::type;
 
+template <class Layout>
+struct LayoutLeftPadding
+  : std::integral_constant<std::size_t,std::dynamic_extent>
+{};
+
+template <std::size_t PaddingValue>
+struct LayoutLeftPadding<layout_left_padded<PaddingValue>>
+  : std::integral_constant<std::size_t,PaddingValue>
+{};
+
+template <class Layout>
+struct LayoutRightPadding
+  : std::integral_constant<std::size_t,std::dynamic_extent>
+{};
+
+template <std::size_t PaddingValue>
+struct LayoutRightPadding<layout_right_padded<PaddingValue>>
+  : std::integral_constant<std::size_t,PaddingValue>
+{};
+
+template <class Layout>
+inline constexpr bool is_padded_layout_v =
+  is_layout_left_padded_v<Layout> || is_layout_right_padded_v<Layout>;
+
 // Conservative layout preservation: keep layout_right only for fixed leading
 // dimensions followed by full dimensions, and layout_left for full dimensions
-// followed by fixed trailing dimensions. Other regular views become strided.
+// followed by fixed trailing dimensions.
 template <class Layout, class SlicesTuple, std::size_t... i>
 constexpr bool preserve_layout_right (std::index_sequence<i...>)
 {
@@ -240,15 +294,95 @@ constexpr bool preserve_layout_left (std::index_sequence<i...>)
   }
 }
 
+// Padded-left submatrix preservation from P2642. For rank two, contiguous
+// ranges in both dimensions are representable. For higher ranks, changing the
+// second dimension would also change the stride of later dimensions, so only
+// the first dimension may be a proper range while the others remain full.
+template <class Layout, class SlicesTuple, std::size_t... i>
+constexpr bool preserve_layout_left_padded (std::index_sequence<i...>)
+{
+  constexpr std::size_t rank = sizeof...(i);
+  if constexpr(!(std::is_same_v<Layout,layout_left> || is_layout_left_padded_v<Layout>) || rank < 2)
+    return false;
+  else {
+    constexpr bool contiguous[] = {is_contiguous_kept_slice_v<std::tuple_element_t<i,SlicesTuple>>...};
+    constexpr bool full[] = {is_full_extent_v<std::tuple_element_t<i,SlicesTuple>>...};
+    if (!contiguous[0] || !contiguous[1])
+      return false;
+    if constexpr(rank > 2 && !full[1])
+      return false;
+    for (std::size_t k = 2; k < rank; ++k)
+      if (!full[k])
+        return false;
+    return true;
+  }
+}
+
+// Padded-right counterpart. For rank two, contiguous ranges in both dimensions
+// are representable. For higher ranks, the next-to-last dimension must remain
+// full so that strides of earlier dimensions stay unchanged.
+template <class Layout, class SlicesTuple, std::size_t... i>
+constexpr bool preserve_layout_right_padded (std::index_sequence<i...>)
+{
+  constexpr std::size_t rank = sizeof...(i);
+  if constexpr(!(std::is_same_v<Layout,layout_right> || is_layout_right_padded_v<Layout>) || rank < 2)
+    return false;
+  else {
+    constexpr bool contiguous[] = {is_contiguous_kept_slice_v<std::tuple_element_t<i,SlicesTuple>>...};
+    constexpr bool full[] = {is_full_extent_v<std::tuple_element_t<i,SlicesTuple>>...};
+    for (std::size_t k = 0; k + 2 < rank; ++k)
+      if (!full[k])
+        return false;
+    if constexpr(rank > 2 && !full[rank-2])
+      return false;
+    return contiguous[rank-2] && contiguous[rank-1];
+  }
+}
+
+template <class Layout, class Extents>
+struct SubLayoutLeftPadded
+{
+  static constexpr std::size_t padding = [] {
+    if constexpr(is_layout_left_padded_v<Layout>)
+      return LayoutLeftPadding<Layout>::value;
+    else if constexpr(Extents::rank() > 0 && Extents::static_extent(0) != std::dynamic_extent)
+      return Extents::static_extent(0);
+    else
+      return std::dynamic_extent;
+  }();
+
+  using type = layout_left_padded<padding>;
+};
+
+template <class Layout, class Extents>
+struct SubLayoutRightPadded
+{
+  static constexpr std::size_t padding = [] {
+    if constexpr(is_layout_right_padded_v<Layout>)
+      return LayoutRightPadding<Layout>::value;
+    else if constexpr(Extents::rank() > 0 && Extents::static_extent(Extents::rank()-1) != std::dynamic_extent)
+      return Extents::static_extent(Extents::rank()-1);
+    else
+      return std::dynamic_extent;
+  }();
+
+  using type = layout_right_padded<padding>;
+};
+
 template <class Layout, class Extents, class... Slices>
 struct SubLayout
 {
   using slices_tuple = std::tuple<std::remove_cv_t<std::remove_reference_t<Slices>>...>;
   static constexpr bool right = preserve_layout_right<Layout,slices_tuple>(std::index_sequence_for<Slices...>{});
   static constexpr bool left = preserve_layout_left<Layout,slices_tuple>(std::index_sequence_for<Slices...>{});
+  static constexpr bool right_padded = preserve_layout_right_padded<Layout,slices_tuple>(std::index_sequence_for<Slices...>{});
+  static constexpr bool left_padded = preserve_layout_left_padded<Layout,slices_tuple>(std::index_sequence_for<Slices...>{});
 
   using type = std::conditional_t<right, layout_right,
-    std::conditional_t<left, layout_left, layout_stride>>;
+    std::conditional_t<left, layout_left,
+    std::conditional_t<right_padded, typename SubLayoutRightPadded<Layout,Extents>::type,
+    std::conditional_t<left_padded, typename SubLayoutLeftPadded<Layout,Extents>::type,
+    layout_stride>>>>;
 };
 
 // Construct the result mapping plus the source data offset. This is the central
@@ -292,6 +426,10 @@ constexpr auto make_sub_mapping (const Mapping& mapping, const std::tuple<Slices
   if constexpr(std::is_same_v<sub_layout_type,layout_stride>) {
     return submdspan_mapping_result<sub_mapping_type>{
       sub_mapping_type{sub_extents, sub_strides}, offset};
+  } else if constexpr(is_padded_layout_v<sub_layout_type>) {
+    using strided_mapping_type = typename layout_stride::template mapping<sub_extents_type>;
+    return submdspan_mapping_result<sub_mapping_type>{
+      sub_mapping_type{strided_mapping_type{sub_extents, sub_strides}}, offset};
   } else {
     return submdspan_mapping_result<sub_mapping_type>{
       sub_mapping_type{sub_extents}, offset};

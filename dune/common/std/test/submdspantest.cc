@@ -11,7 +11,9 @@
 
 #include <dune/common/std/extents.hh>
 #include <dune/common/std/layout_left.hh>
+#include <dune/common/std/layout_left_padded.hh>
 #include <dune/common/std/layout_right.hh>
+#include <dune/common/std/layout_right_padded.hh>
 #include <dune/common/std/layout_stride.hh>
 #include <dune/common/std/mdarray.hh>
 #include <dune/common/std/mdspan.hh>
@@ -110,6 +112,7 @@ void testGeneralStridedSlices (Dune::TestSuite& testSuite)
     Dune::Std::full_extent,
     std::pair{1,4},
     Dune::Std::full_extent);
+  static_assert(std::is_same_v<typename decltype(pairRange)::layout_type,Dune::Std::layout_stride>);
   subTest.check(pairRange.extent(1) == 3, "pair range extent");
   subTest.check(pairRange(1,2,4) == span(1,3,4), "pair range value");
 
@@ -125,6 +128,99 @@ void testGeneralStridedSlices (Dune::TestSuite& testSuite)
   static_assert(std::is_same_v<typename decltype(strided)::layout_type,Dune::Std::layout_stride>);
   subTest.check(strided.extent(1) == 2, "strided extent");
   subTest.check(strided(1,1,4) == span(1,2,4), "strided value");
+
+  testSuite.subTest(subTest);
+}
+
+void testPaddedSubmdspanLayouts (Dune::TestSuite& testSuite)
+{
+  Dune::TestSuite subTest("padded submdspan layouts");
+
+  {
+    using E = Dune::Std::extents<int,4,5>;
+    using M = Dune::Std::layout_right::mapping<E>;
+    M mapping(E{});
+    auto data = makeData(mapping);
+    Dune::Std::mdspan<int,E,Dune::Std::layout_right> span(data.data(), mapping);
+
+    auto sub = Dune::Std::submdspan(span, std::pair{1,3}, std::pair{1,4});
+    static_assert(std::is_same_v<typename decltype(sub)::layout_type,Dune::Std::layout_right_padded<5>>);
+    subTest.check(sub.extent(0) == 2, "right padded extent 0");
+    subTest.check(sub.extent(1) == 3, "right padded extent 1");
+    subTest.check(sub.stride(0) == span.stride(0), "right padded stride");
+    subTest.check(sub(1,2) == span(2,3), "right padded value");
+  }
+
+  {
+    using E = Dune::Std::extents<int,4,5>;
+    using M = Dune::Std::layout_left::mapping<E>;
+    M mapping(E{});
+    auto data = makeData(mapping);
+    Dune::Std::mdspan<int,E,Dune::Std::layout_left> span(data.data(), mapping);
+
+    auto sub = Dune::Std::submdspan(span, std::pair{1,3}, std::pair{1,4});
+    static_assert(std::is_same_v<typename decltype(sub)::layout_type,Dune::Std::layout_left_padded<4>>);
+    subTest.check(sub.extent(0) == 2, "left padded extent 0");
+    subTest.check(sub.extent(1) == 3, "left padded extent 1");
+    subTest.check(sub.stride(1) == span.stride(1), "left padded stride");
+    subTest.check(sub(1,2) == span(2,3), "left padded value");
+  }
+
+  {
+    using E = Dune::Std::dextents<int,2>;
+    Dune::Std::layout_right_padded<>::mapping<E> mapping(E{4,5}, 8);
+    auto data = makeData(mapping);
+    Dune::Std::mdspan<int,E,Dune::Std::layout_right_padded<>> span(data.data(), mapping);
+
+    auto sub = Dune::Std::submdspan(span, std::pair{1,3}, std::pair{1,4});
+    static_assert(std::is_same_v<typename decltype(sub)::layout_type,Dune::Std::layout_right_padded<>>);
+    subTest.check(sub.stride(0) == 8, "dynamic right padded stride");
+    subTest.check(sub(1,2) == span(2,3), "dynamic right padded value");
+  }
+
+  {
+    using E = Dune::Std::dextents<int,2>;
+    Dune::Std::layout_left_padded<>::mapping<E> mapping(E{4,5}, 7);
+    auto data = makeData(mapping);
+    Dune::Std::mdspan<int,E,Dune::Std::layout_left_padded<>> span(data.data(), mapping);
+
+    auto sub = Dune::Std::submdspan(span, std::pair{1,3}, std::pair{1,4});
+    static_assert(std::is_same_v<typename decltype(sub)::layout_type,Dune::Std::layout_left_padded<>>);
+    subTest.check(sub.stride(1) == 7, "dynamic left padded stride");
+    subTest.check(sub(1,2) == span(2,3), "dynamic left padded value");
+  }
+
+  {
+    using E = Dune::Std::extents<int,2,4,5>;
+    using M = Dune::Std::layout_right::mapping<E>;
+    M mapping(E{});
+    auto data = makeData(mapping);
+    Dune::Std::mdspan<int,E,Dune::Std::layout_right> span(data.data(), mapping);
+
+    auto sub = Dune::Std::submdspan(span,
+      Dune::Std::full_extent,
+      Dune::Std::full_extent,
+      std::pair{1,4});
+    static_assert(std::is_same_v<typename decltype(sub)::layout_type,Dune::Std::layout_right_padded<5>>);
+    subTest.check(sub.stride(1) == span.stride(1), "rank-3 right padded stride");
+    subTest.check(sub(1,3,2) == span(1,3,3), "rank-3 right padded value");
+  }
+
+  {
+    using E = Dune::Std::extents<int,4,5,2>;
+    using M = Dune::Std::layout_left::mapping<E>;
+    M mapping(E{});
+    auto data = makeData(mapping);
+    Dune::Std::mdspan<int,E,Dune::Std::layout_left> span(data.data(), mapping);
+
+    auto sub = Dune::Std::submdspan(span,
+      std::pair{1,4},
+      Dune::Std::full_extent,
+      Dune::Std::full_extent);
+    static_assert(std::is_same_v<typename decltype(sub)::layout_type,Dune::Std::layout_left_padded<4>>);
+    subTest.check(sub.stride(1) == span.stride(1), "rank-3 left padded stride");
+    subTest.check(sub(2,3,1) == span(3,3,1), "rank-3 left padded value");
+  }
 
   testSuite.subTest(subTest);
 }
@@ -175,6 +271,7 @@ int main (int argc, char** argv)
   testLayoutRightRowSlice(testSuite);
   testLayoutLeftColumnSlice(testSuite);
   testGeneralStridedSlices(testSuite);
+  testPaddedSubmdspanLayouts(testSuite);
   testScalarAndConstSlices(testSuite);
   testLagrangeSimplexSliceUse(testSuite);
 

@@ -37,6 +37,10 @@ In order to build the DUNE core modules you need at least the following software
 - Add `Dune::Std::layout_left_padded` and `Dune::Std::layout_right_padded`
   layout mappings for `Dune::Std::mdspan`.
 
+- Extend `Dune::Std::submdspan` to return padded layout mappings for
+  submatrix-like slices whenever the resulting strides can be represented by
+  `layout_left_padded` or `layout_right_padded`.
+
 - Add `Dune::Std::submdspan` and the corresponding standard-style slice
   specifiers for creating non-owning subviews of `Dune::Std::mdspan`.
 

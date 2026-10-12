@@ -45,8 +45,12 @@
  * The returned `mdspan` aliases the source data. The implementation preserves
  * `layout_right` for fixed leading indices followed by full dimensions, e.g.
  * row slices of a row-major tensor, and preserves `layout_left` for the
- * symmetric fixed trailing-index case. Other regular slices use
- * `layout_stride`.
+ * symmetric fixed trailing-index case. Following
+ * <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2642r0.html">P2642R0</a>,
+ * contiguous submatrix-like slices of `layout_left`, `layout_right`, and the
+ * corresponding padded layouts return `layout_left_padded` or
+ * `layout_right_padded` when the resulting strides can be represented by those
+ * layouts. Other regular slices use `layout_stride`.
  *
  * \b Examples:
  * \code{.cpp}
