@@ -16,6 +16,13 @@ In order to build the DUNE core modules you need at least the following software
 
 ## C++: Changelog
 
+- Fix the Vc SIMD abstraction layer for Vc >= 1.4: `Simd::Rebind`,
+  `Simd::Mask`, and the binary `Simd::max()`/`Simd::min()` for masks now
+  consistently return `Vc::SimdArray`/`Vc::SimdMaskArray` instead of the Vc
+  1.4 derived types `Vc::fixed_size_simd`/`Vc::fixed_size_simd_mask`. The
+  SIMD unit test gained the customization point `UnitTestVectorVectorShift` to
+  skip vector-vector shift checks for types that do not support them.
+
 - Add `Dune::Std::dims`, the standard mdspan alias template for dynamic
   extents with default index type `std::size_t`.
 

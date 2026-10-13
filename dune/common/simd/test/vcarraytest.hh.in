@@ -18,6 +18,14 @@ constexpr std::size_t lanes = 4;
 namespace Dune {
   namespace Simd {
 
+#if Vc_VERSION_NUMBER >= Vc_VERSION_CHECK(1, 4, 0)
+    // Since Vc 1.4 the operators `<<` and `>>` are not available for two
+    // `SimdArray` operands anymore, only for a `SimdArray` and a scalar.
+    template<class T, std::size_t n, class V, std::size_t m>
+    struct UnitTestVectorVectorShift<Vc::SimdArray<T, n, V, m> >
+      : std::false_type {};
+#endif
+
 #cmake @template POINT@
     extern template void
     UnitTest::check@POINT@<Vc::SimdArray<@SCALAR@, ::lanes> >();

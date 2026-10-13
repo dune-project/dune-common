@@ -182,6 +182,39 @@ namespace Dune {
       template<> struct IsVectorizable<std::int16_t>  : std::true_type {};
       template<> struct IsVectorizable<std::uint16_t> : std::true_type {};
 
+      //! the mask type corresponding to a Vc vector type
+      /**
+       * This is `V::mask_type`, except for `SimdArray`.  Since Vc 1.4
+       * `SimdArray<T, n>::mask_type` is `Vc::fixed_size_simd_mask<T, n>`, a
+       * class derived from `SimdMaskArray<T, n>`.  To get the same mask type
+       * independent of the Vc version, and to stay consistent with rebinding
+       * masks to `SimdArray`, we use `SimdMaskArray` here.
+       */
+      template<class V>
+      struct MaskType { using type = typename V::mask_type; };
+
+      template<typename T, std::size_t n, typename V, std::size_t m>
+      struct MaskType<Vc::SimdArray<T, n, V, m> >
+      {
+        using type = Vc::SimdMaskArray<T, n, V, m>;
+      };
+
+      //! the vector type corresponding to a Vc mask type
+      /**
+       * This is `M::Vector`, except for `SimdMaskArray`.  Since Vc 1.4
+       * `SimdMaskArray<T, n>::Vector` is `Vc::fixed_size_simd<T, n>`, a class
+       * derived from `SimdArray<T, n>`.  We use `SimdArray` here for the same
+       * reasons as in `MaskType`.
+       */
+      template<class M>
+      struct VectorType { using type = typename M::Vector; };
+
+      template<typename T, std::size_t n, typename V, std::size_t m>
+      struct VectorType<Vc::SimdMaskArray<T, n, V, m> >
+      {
+        using type = Vc::SimdArray<T, n, V, m>;
+      };
+
       //! A reference-like proxy for elements of random-access vectors.
       /**
        * This is necessary because Vc's lane-access operation return a proxy
@@ -476,7 +509,7 @@ namespace Dune {
       struct RebindType<bool, V, std::enable_if_t<VcImpl::IsVector<V>::value &&
                                                   !VcImpl::IsMask<V>::value>>
       {
-        using type = typename V::mask_type;
+        using type = typename VcImpl::MaskType<V>::type;
       };
 
       //! should have a member type \c type
@@ -490,7 +523,7 @@ namespace Dune {
       struct RebindType<Scalar<typename M::Vector>, M,
                         std::enable_if_t<VcImpl::IsMask<M>::value>>
       {
-        using type = typename M::Vector;
+        using type = typename VcImpl::VectorType<M>::type;
       };
 
       //! should have a member type \c type
@@ -618,9 +651,10 @@ namespace Dune {
 
       //! implements binary Simd::max()
       template<class M>
-      auto max(ADLTag<5, VcImpl::IsMask<M>::value>,
-               const M &m1, const M &m2)
+      M max(ADLTag<5, VcImpl::IsMask<M>::value>,
+            const M &m1, const M &m2)
       {
+        // since Vc 1.4 the result type for SimdMaskArray is a derived class
         return m1 || m2;
       }
 
@@ -635,9 +669,10 @@ namespace Dune {
 
       //! implements binary Simd::min()
       template<class M>
-      auto min(ADLTag<5, VcImpl::IsMask<M>::value>,
-               const M &m1, const M &m2)
+      M min(ADLTag<5, VcImpl::IsMask<M>::value>,
+            const M &m1, const M &m2)
       {
+        // since Vc 1.4 the result type for SimdMaskArray is a derived class
         return m1 && m2;
       }
 

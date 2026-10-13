@@ -161,6 +161,21 @@ namespace Dune {
     template<class T>
     using IsLoop = typename Impl::IsLoop<T>::type;
 
+    //! whether to check shift operations with two vector operands
+    /**
+     * Some SIMD libraries do not support the shift operators `v1 << v2` and
+     * `v1 >> v2` when both operands are vectors, although they support
+     * shifting a vector by a scalar.  Specialize this to `std::false_type` for
+     * such vector types `V` to exclude the vector-vector checks of these
+     * operators.  The checks of the compound assignment operators `<<=` and
+     * `>>=` are unaffected.
+     *
+     * The specialization must be visible wherever `UnitTest::check*<V>()` is
+     * instantiated.
+     */
+    template<class V>
+    struct UnitTestVectorVectorShift : std::true_type {};
+
     class UnitTest {
       bool good_ = true;
       std::ostream &log_ = std::cerr;
@@ -1411,6 +1426,7 @@ namespace Dune {
         constexpr bool do_SV = true;
         constexpr bool do_VV = true;
         constexpr bool do_VS = true;
+        constexpr bool do_VVShift = UnitTestVectorVectorShift<V>::value;
 
 #define DUNE_SIMD_DO(M1, M2, M3, V1, V2, V3, NAME)              \
         checker(bool_constant<isMask ? do_##M1 : do_##V1>{},    \
@@ -1427,8 +1443,8 @@ namespace Dune {
         DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixPlus            );
         DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixMinus           );
 
-        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixLeftShift       );
-        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixRightShift      );
+        DUNE_SIMD_DO(  ,   ,   ,   , VVShift, VS, InfixLeftShift  );
+        DUNE_SIMD_DO(  ,   ,   ,   , VVShift, VS, InfixRightShift );
 
         DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixLess            );
         DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixGreater         );
