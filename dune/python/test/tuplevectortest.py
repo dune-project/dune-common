@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
 
 from io import StringIO
-import os,sys
+import os,struct,sys
 os.environ['DUNE_LOG_LEVEL'] = 'debug'
 os.environ['DUNE_SAVE_BUILD'] = 'console'
 from dune.common import FieldVector,TupleVector
@@ -17,7 +17,8 @@ for v in range(len(mtbv)-1): # block vector has no correct comparison by itself
 mtbv[1]= FieldVector([2,5]) # check assignment of field vector to multi type block vector entry
 
 # check that is really the same data address
-assert(sys.getsizeof(mtbv)==7*8)
+# (the pybind11 instance consists of 7 pointer-sized words)
+assert(sys.getsizeof(mtbv)==7*struct.calcsize("P"))
 
 mtbv2= TupleVector(18.0, mtbv)# try nested TupleVectors
 assert(mtbv2[0] == 18)
