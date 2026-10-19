@@ -4,8 +4,8 @@
     "--analyzers=clang-tidy",
     "--file=*/dune-common/*.cc",
     "--skip", ".codechecker/skipfile",
-    "--disable", "clang-diagnostic-deprecated-copy",
-    "--disable", "clang-diagnostic-unused"
+    "--disable", "checker:clang-diagnostic-deprecated-copy",
+    "--disable", "checker:clang-diagnostic-unused"
   ],
   "parse": [
     "--file=*/dune-common/*"
