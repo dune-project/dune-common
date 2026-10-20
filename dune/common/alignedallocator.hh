@@ -5,99 +5,87 @@
 #ifndef DUNE_ALIGNED_ALLOCATOR_HH
 #define DUNE_ALIGNED_ALLOCATOR_HH
 
-#include "mallocallocator.hh"
-#include <cstdlib>
-#include <type_traits>
+#include <algorithm>
+#include <bit>
+#include <cstddef>
+#include <limits>
+#include <new>
 
 namespace Dune
 {
 
   /**
      @ingroup Allocators
-     @brief Allocators which guarantee alignment of the memory
+     @brief Allocators which guarantee a minimum alignment of the memory.
+     @details This allocator provides a simple interface to allocate memory with a
+     minimum alignment. The actual alignment of the allocated memory is the
+     maximum of the minimum alignment and the alignment of the type T. This
+     ensures that the allocated memory is always aligned to the requirements of
+     the type T, while also allowing for bigger alignments when needed. Note that
+     the minimum alignment is also guaranteed in rebinding, i.e. when allocating
+     memory for a different type U.
 
-     @tparam T         type of the object one wants to allocate
-     @tparam Alignment explicitly specify the alignment, by default it is std::alignment_of<T>::value
-   */
-  template<class T, int Alignment = -1>
-  class AlignedAllocator : public MallocAllocator<T> {
-
-#if __APPLE__
-
-    /*
-     * macOS has pretty draconian restrictions on the
-     * alignments that you may ask for: It has to be
-     *
-     * 1) a power of 2
-     * 2) at least as large as sizeof(void*)
-     *
-     * So here is a little constexpr function that calculates just that
-     * (together with the correct starting value for align fed in further down).
-     */
-    static constexpr int fixAlignment(int align)
-    {
-      return ((Alignment==-1) ? std::alignment_of<T>::value : Alignment) > align
-        ? fixAlignment(align << 1) : align;
-    }
-
-#else
-
-    /*
-     * Non-Apple platforms we just have to check whether an explicit alignment was
-     * restricted or fall back to the default alignment of T.
-     */
-    static constexpr int fixAlignment(int align)
-    {
-      return (Alignment==-1) ? std::alignment_of<T>::value : Alignment;
-    }
-
-#endif
+     @tparam T            Type of the object one wants to allocate
+     @tparam MinAlignment Minimum alignment of the allocated memory.
+  */
+  template<class T, std::size_t MinAlignment = 1>
+  class AlignedAllocator
+  {
 
   public:
-    using pointer = typename MallocAllocator<T>::pointer;
-    using size_type = typename MallocAllocator<T>::size_type;
-    template <class U> struct rebind {
-      typedef AlignedAllocator<U,Alignment> other;
+
+    //! Rebind allocator to type U
+    template<class U>
+    struct rebind
+    {
+      using other = AlignedAllocator<U, MinAlignment>;
     };
 
-    static constexpr int alignment = fixAlignment(sizeof(void*));
+    //! Type of the object to allocate
+    using value_type = T;
 
-    //! allocate n objects of type T
-    pointer allocate(size_type n, [[maybe_unused]] const void* hint = 0)
+    static_assert(std::has_single_bit(MinAlignment), "MinAlignment must be a power of 2");
+
+    //! Alignment of the allocated memory
+    static constexpr std::size_t alignment = std::max(MinAlignment, std::alignment_of<T>::value);
+
+    //! Default constructor
+    AlignedAllocator() noexcept = default;
+
+    //! Construct an aligned allocator from another aligned allocator of different type
+    template<class U>
+    AlignedAllocator(const AlignedAllocator<U, MinAlignment>&) noexcept
     {
-      if (n > this->max_size())
-        throw std::bad_alloc();
-
-#if __APPLE__
-      // Apple is also restrictive regarding the allocation size.
-      // size must be at least the alignment size.
-      size_type size = n * sizeof(T) >= alignment ? n * sizeof(T) : alignment;
-#else
-      size_type size = n * sizeof(T);
-#endif
-
-      /*
-       * Everybody else gets the standard treatment.
-       */
-#if defined(_MSC_VER)
-      pointer ret = static_cast<pointer>(_aligned_malloc(alignment, size));
-#else
-      pointer ret = static_cast<pointer>(std::aligned_alloc(alignment, size));
-#endif
-      if (!ret)
-        throw std::bad_alloc();
-
-      return ret;
     }
 
-#if defined(_MSC_VER)
-    void deallocate(pointer p, [[maybe_unused]] size_type n)
+    /**
+     * @brief Allocate n objects of type T
+     * @param n Number of objects to allocate
+     * @return Pointer to the allocated memory
+     */
+    T* allocate(std::size_t n)
     {
-        _aligned_free(p);
+      if (n > std::numeric_limits<std::size_t>::max() / sizeof(T))
+        throw std::bad_array_new_length();
+      return static_cast<T*>(
+        ::operator new(n * sizeof(T), std::align_val_t{ alignment }));
     }
-#endif
+
+    /**
+     * @brief Deallocate memory previously allocated with allocate()
+     * @param p Pointer to the memory to deallocate
+     * @param n Number of objects to deallocate
+     */
+    void deallocate(T* p, std::size_t n)
+    {
+      ::operator delete(p, n * sizeof(T), std::align_val_t{ alignment });
+    }
   };
 
-}
+  //! Compare two aligned allocators of different types for equality
+  template <class T, class U, std::size_t A>
+  bool operator==(const AlignedAllocator<T, A>&, const AlignedAllocator<U, A>&) noexcept { return true; }
+
+} // namespace Dune
 
 #endif // DUNE_ALIGNED_ALLOCATOR_HH
