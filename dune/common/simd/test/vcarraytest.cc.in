@@ -19,27 +19,34 @@
 template<class T> struct RebindAccept : std::false_type {};
 #cmake @template@
 template<>
-struct RebindAccept<Vc::SimdArray<@SCALAR@, ::lanes> >     : std::true_type {};
+struct RebindAccept<Vc::SimdArray<@SCALAR@, @LANES@> >            : std::true_type {};
 template<>
-struct RebindAccept<Vc::SimdMaskArray<@SCALAR@, ::lanes> > : std::true_type {};
+struct RebindAccept<Vc::SimdMaskArray<@SCALAR@, @LANES@> >        : std::true_type {};
+template<>
+struct RebindAccept<Vc::fixed_size_simd<@SCALAR@, @LANES@> >      : std::true_type {};
+template<>
+struct RebindAccept<Vc::fixed_size_simd_mask<@SCALAR@, @LANES@> > : std::true_type {};
 #cmake @endtemplate@
 
 using Rebinds = Dune::TypeList<
-#cmake @template@
+#cmake @template REBINDS@
   @SCALAR@,
-#cmake @endtemplate@
+#cmake @endtemplate REBINDS@
   bool,
   std::size_t>;
 
 int main()
 {
-  using Vc::Vector;
-  using Vc::SimdArray;
-
   Dune::Simd::UnitTest test;
 
 #@template@
-  test.check<SimdArray<@SCALAR@, ::lanes>,
+  test.check<Vc::SimdArray<@SCALAR@, @LANES@>,
+             Rebinds, Dune::Simd::IsLoop, RebindAccept>();
+  test.check<Vc::SimdMaskArray<@SCALAR@, @LANES@>,
+             Rebinds, Dune::Simd::IsLoop, RebindAccept>();
+  test.check<Vc::fixed_size_simd<@SCALAR@, @LANES@>,
+             Rebinds, Dune::Simd::IsLoop, RebindAccept>();
+  test.check<Vc::fixed_size_simd_mask<@SCALAR@, @LANES@>,
              Rebinds, Dune::Simd::IsLoop, RebindAccept>();
 #@endtemplate@
 

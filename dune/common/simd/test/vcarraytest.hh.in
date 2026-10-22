@@ -13,16 +13,18 @@
 #include <dune/common/simd/test.hh>
 #include <dune/common/simd/vc.hh>
 
-constexpr std::size_t lanes = 4;
-
 namespace Dune {
   namespace Simd {
 
 #cmake @template POINT@
     extern template void
-    UnitTest::check@POINT@<Vc::SimdArray<@SCALAR@, ::lanes> >();
+    UnitTest::check@POINT@<Vc::SimdArray<@SCALAR@, @LANES@> >();
     extern template void
-    UnitTest::check@POINT@<Vc::SimdMaskArray<@SCALAR@, ::lanes> >();
+    UnitTest::check@POINT@<Vc::SimdMaskArray<@SCALAR@, @LANES@> >();
+    extern template void
+    UnitTest::check@POINT@<Vc::fixed_size_simd<@SCALAR@, @LANES@> >();
+    extern template void
+    UnitTest::check@POINT@<Vc::fixed_size_simd_mask<@SCALAR@, @LANES@> >();
 #cmake @endtemplate@
 
   } // namespace Simd

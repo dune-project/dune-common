@@ -72,13 +72,19 @@ set(VCTEST_TYPES std::int16_t std::uint16_t std::int32_t std::uint32_t float dou
 # invocations in the test for each instance.
 dune_instance_begin(FILES vcarraytest.hh vcarraytest.cc)
 foreach(SCALAR IN LISTS VCTEST_TYPES)
-  dune_instance_add(ID "${SCALAR}")
-  foreach(POINT IN ITEMS
-      Type
-      BinaryOpsScalarVector BinaryOpsVectorScalar
-      BinaryOpsProxyVector BinaryOpsVectorProxy)
-    dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}"
-      FILES vctest_simdarray.cc vctest_simdmaskarray.cc)
+  # list each scalar only once as rebind target
+  dune_instance_add(TEMPLATE REBINDS ID "${SCALAR}")
+  # a native-width and a non-power-of-two number of lanes
+  foreach(LANES IN ITEMS 4 3)
+    dune_instance_add(ID "${SCALAR}_${LANES}")
+    foreach(POINT IN ITEMS
+        Type
+        BinaryOpsScalarVector BinaryOpsVectorScalar
+        BinaryOpsProxyVector BinaryOpsVectorProxy)
+      dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}_${LANES}"
+        FILES vctest_simdarray.cc vctest_simdmaskarray.cc
+              vctest_fixedsizesimd.cc vctest_fixedsizesimdmask.cc)
+    endforeach()
   endforeach()
 endforeach()
 dune_instance_end()
