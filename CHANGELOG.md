@@ -16,6 +16,8 @@ In order to build the DUNE core modules you need at least the following software
 
 ## C++: Changelog
 
+- The optional Vc SIMD support now requires Vc >= 1.4.1.
+
 - Fix the Vc SIMD abstraction layer for Vc >= 1.4: `Simd::Rebind`,
   `Simd::Mask`, and the binary `Simd::max()`/`Simd::min()` for masks now
   consistently return `Vc::SimdArray`/`Vc::SimdMaskArray` instead of the Vc
