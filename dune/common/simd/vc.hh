@@ -24,7 +24,16 @@
  *  @ingroup SIMDApp
  *
  * This implements the vectorization interface for Vc types, namely
- * `Vc::Vector`, `Vc::Mask`, `Vc::SimdArray` and `Vc::SimdMask`.
+ * `Vc::Vector`, `Vc::Mask`, `Vc::SimdArray`, `Vc::SimdMaskArray`,
+ * `Vc::fixed_size_simd` and `Vc::fixed_size_simd_mask`.  It requires Vc
+ * 1.4.1 or newer.
+ *
+ * For a fixed number of lanes, prefer `Vc::fixed_size_simd<T, N>` (and
+ * `Vc::fixed_size_simd_mask<T, N>`) over `Vc::SimdArray<T, N>`.  Since Vc
+ * 1.4 the operations on `SimdArray` return `fixed_size_simd`, and
+ * `Simd::Rebind` and `Simd::Mask` produce `fixed_size_simd` and
+ * `fixed_size_simd_mask` for all Vc types.  `SimdArray` and `SimdMaskArray`
+ * are still supported as input types.
  *
  * As an application developer, you need to `#include
  * <dune/common/simd/vc.hh>`.  You need to make sure that `HAVE_VC` is true
