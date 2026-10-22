@@ -1411,6 +1411,17 @@ namespace Dune {
         constexpr bool do_SV = true;
         constexpr bool do_VV = true;
         constexpr bool do_VS = true;
+        // Not all SIMD libraries provide the shift operators `<<` and `>>`
+        // with two vector operands, e.g. Vc >= 1.4 does not for `SimdArray`.
+        // Check them only if available.  The requirements are checked in
+        // order, so requiring the scalar shifts first avoids instantiating
+        // vector shift operators that are not SFINAE-friendly, e.g. for
+        // `LoopSIMD<float>`.
+        constexpr bool do_VVShift =
+          requires(const Scalar<V>& s, const V& v) {
+            s << s; s >> s;
+            v << v; v >> v;
+          };
 
 #define DUNE_SIMD_DO(M1, M2, M3, V1, V2, V3, NAME)              \
         checker(bool_constant<isMask ? do_##M1 : do_##V1>{},    \
@@ -1427,8 +1438,8 @@ namespace Dune {
         DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixPlus            );
         DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixMinus           );
 
-        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixLeftShift       );
-        DUNE_SIMD_DO(  ,   ,   ,   , VV, VS, InfixRightShift      );
+        DUNE_SIMD_DO(  ,   ,   ,   , VVShift, VS, InfixLeftShift  );
+        DUNE_SIMD_DO(  ,   ,   ,   , VVShift, VS, InfixRightShift );
 
         DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixLess            );
         DUNE_SIMD_DO(  ,   ,   , SV, VV, VS, InfixGreater         );
