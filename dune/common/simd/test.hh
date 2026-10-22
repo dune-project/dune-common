@@ -161,21 +161,6 @@ namespace Dune {
     template<class T>
     using IsLoop = typename Impl::IsLoop<T>::type;
 
-    //! whether to check shift operations with two vector operands
-    /**
-     * Some SIMD libraries do not support the shift operators `v1 << v2` and
-     * `v1 >> v2` when both operands are vectors, although they support
-     * shifting a vector by a scalar.  Specialize this to `std::false_type` for
-     * such vector types `V` to exclude the vector-vector checks of these
-     * operators.  The checks of the compound assignment operators `<<=` and
-     * `>>=` are unaffected.
-     *
-     * The specialization must be visible wherever `UnitTest::check*<V>()` is
-     * instantiated.
-     */
-    template<class V>
-    struct UnitTestVectorVectorShift : std::true_type {};
-
     class UnitTest {
       bool good_ = true;
       std::ostream &log_ = std::cerr;
@@ -1426,7 +1411,17 @@ namespace Dune {
         constexpr bool do_SV = true;
         constexpr bool do_VV = true;
         constexpr bool do_VS = true;
-        constexpr bool do_VVShift = UnitTestVectorVectorShift<V>::value;
+        // Not all SIMD libraries provide the shift operators `<<` and `>>`
+        // with two vector operands, e.g. Vc >= 1.4 does not for `SimdArray`.
+        // Check them only if available.  The requirements are checked in
+        // order, so requiring the scalar shifts first avoids instantiating
+        // vector shift operators that are not SFINAE-friendly, e.g. for
+        // `LoopSIMD<float>`.
+        constexpr bool do_VVShift =
+          requires(const Scalar<V>& s, const V& v) {
+            s << s; s >> s;
+            v << v; v >> v;
+          };
 
 #define DUNE_SIMD_DO(M1, M2, M3, V1, V2, V3, NAME)              \
         checker(bool_constant<isMask ? do_##M1 : do_##V1>{},    \
