@@ -22,6 +22,9 @@ In order to build the DUNE core modules you need at least the following software
   follows more closely the updated C++ simd proposal. We now support the
   new `Vc::fixed_size_simd`, which is the alternative to `Vc::SimdArray`.
 
+- The SIMD interface required `min` and `max` being available via ADL or `std`.
+  This is now added to the unit tests.
+
 - Add `Dune::Std::dims`, the standard mdspan alias template for dynamic
   extents with default index type `std::size_t`.
 

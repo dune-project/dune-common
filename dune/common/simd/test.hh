@@ -1729,6 +1729,14 @@ namespace Dune {
 
         DUNE_SIMD_CHECK(allTrue(maxExp == Simd::max(arg1, arg2)));
         DUNE_SIMD_CHECK(allTrue(minExp == Simd::min(arg1, arg2)));
+
+        // generic code also uses `using std::max; max(v1, v2)` for vectors,
+        // so the implementation must provide overloads found by ADL
+        if constexpr (!std::is_same<Scalar<V>, bool>::value)
+        {
+          DUNE_SIMD_CHECK(allTrue(maxExp == V(max(arg1, arg2))));
+          DUNE_SIMD_CHECK(allTrue(minExp == V(min(arg1, arg2))));
+        }
       }
 
       template<class V>

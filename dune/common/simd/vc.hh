@@ -777,4 +777,48 @@ namespace Dune {
 
 } // namespace Dune
 
+namespace Vc_VERSIONED_NAMESPACE {
+
+  //! Binary maximum of two `Vc::fixed_size_simd`, found by ADL
+  /**
+   * \ingroup SIMDVc
+   *
+   * Vc declares the binary `max()` only for `Vc::SimdArray`.  For the derived
+   * `Vc::fixed_size_simd`, generic code of the form
+   * \code
+   *   using std::max;
+   *   auto m = max(a, b);
+   * \endcode
+   * would then select `std::max()`, which cannot use the mask returned by
+   * `<`.  This overload is found by argument-dependent lookup and forwards to
+   * Vc's implementation for `SimdArray`.  The SIMD interface requires this
+   * for all vector types, see `Dune::Simd::max()`.
+   *
+   * \note It is declared in Vc's (versioned) namespace, since that is the
+   *       only namespace argument-dependent lookup searches for this type.
+   */
+  template<class T, int N>
+  fixed_size_simd<T, N> max(const fixed_size_simd<T, N> &a,
+                            const fixed_size_simd<T, N> &b)
+  {
+    using A = SimdArray<T, std::size_t(N)>;
+    return max(static_cast<const A &>(a), static_cast<const A &>(b));
+  }
+
+  //! Binary minimum of two `Vc::fixed_size_simd`, found by ADL
+  /**
+   * \ingroup SIMDVc
+   *
+   * The counterpart of `max()` for `fixed_size_simd`, see there.
+   */
+  template<class T, int N>
+  fixed_size_simd<T, N> min(const fixed_size_simd<T, N> &a,
+                            const fixed_size_simd<T, N> &b)
+  {
+    using A = SimdArray<T, std::size_t(N)>;
+    return min(static_cast<const A &>(a), static_cast<const A &>(b));
+  }
+
+} // namespace Vc_VERSIONED_NAMESPACE
+
 #endif // DUNE_COMMON_SIMD_VC_HH
