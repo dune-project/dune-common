@@ -80,7 +80,8 @@ foreach(SCALAR IN LISTS VCTEST_TYPES)
     foreach(POINT IN ITEMS
         Type
         BinaryOpsScalarVector BinaryOpsVectorScalar
-        BinaryOpsProxyVector BinaryOpsVectorProxy)
+        BinaryOpsProxyVector BinaryOpsVectorProxy
+        BinaryOpsMixedProxyVector BinaryOpsMixedVectorProxy)
       dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}_${LANES}"
         FILES vctest_simdarray.cc vctest_simdmaskarray.cc
               vctest_fixedsizesimd.cc vctest_fixedsizesimdmask.cc)
@@ -104,7 +105,8 @@ foreach(SCALAR IN LISTS VCTEST_TYPES)
   foreach(POINT IN ITEMS
       Type
       BinaryOpsScalarVector BinaryOpsVectorScalar
-      BinaryOpsProxyVector BinaryOpsVectorProxy)
+      BinaryOpsProxyVector BinaryOpsVectorProxy
+      BinaryOpsMixedProxyVector BinaryOpsMixedVectorProxy)
     dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}"
       FILES vctest_vector.cc vctest_mask.cc)
   endforeach()

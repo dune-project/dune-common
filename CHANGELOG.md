@@ -25,6 +25,10 @@ In order to build the DUNE core modules you need at least the following software
 - The SIMD interface required `min` and `max` being available via ADL or `std`.
   This is now added to the unit tests.
 
+- The SIMD unit tests now check that the lane proxies returned by
+  `Simd::lane()` behave like scalars also together with vectors of another
+  scalar type, as used in mixed-precision code.
+
 - Add `Dune::Std::dims`, the standard mdspan alias template for dynamic
   extents with default index type `std::size_t`.
 

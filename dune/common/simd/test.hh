@@ -127,6 +127,12 @@ namespace Dune {
       template<class T, std::size_t S>
       struct IsLoop<LoopSIMD<T, S> > : std::true_type {};
 
+      // like IsLoop, but for any alignment
+      template<class T>
+      struct IsAnyLoop : std::false_type {};
+      template<class T, std::size_t S, std::size_t A>
+      struct IsAnyLoop<LoopSIMD<T, S, A> > : std::true_type {};
+
       // used inside static_assert to trick the compiler into printing a list
       // of types:
       //
@@ -1365,6 +1371,129 @@ namespace Dune {
 
       //////////////////////////////////////////////////////////////////////
       //
+      // checks for mixed-precision vector-proxy binary operations
+      //
+
+      // We check the following candidate operation
+      //
+      //   wopres = wop1 @ pop2
+      //
+      // against the reference operation
+      //
+      //   wrefres = wref1 @ sref2
+      //
+      // w... variables are simd-vectors of type W, p... variables are proxies
+      // of entries of simd-vectors of type V, and s... variables are scalars
+      // of type Scalar<V>, with Scalar<W> != Scalar<V>.  I.e. a proxy must
+      // behave like the scalar it represents, also when combined with vectors
+      // of a different scalar type.  We only check operations that are
+      // supported by the scalars, and where `wref1 @ sref2` is supported.
+      //
+      // We do the following checks:
+      // 1.  decltype(wopres) == decltype(wrefres)  (after decay)
+      // 2.  lane(l, wopres)  == lane(l, wrefres)   foreach l
+      // 3.  lane(l, wop1)    == lane(l, wref1)     foreach l
+      // 4.  pop2 is never modified
+
+      // use `Op::scalar()`, which is SFINAE-friendly; `Op::operator()` has a
+      // deduced return type, so checking it would instantiate its body.
+      // Despite its name, `scalar()` works for any operand types, here a
+      // vector and a scalar.
+      template<class Op, class W1, class T2>
+      using MixedResult =
+        decltype(std::declval<Op>().scalar(std::declval<W1>(),
+                                           std::declval<T2>()));
+
+      template<class W1, class V2, class Op>
+      void checkBinaryOpMixedVP(MetaType<W1>, MetaType<V2>, Op op)
+      {
+        using W = std::decay_t<W1>;
+        using V = std::decay_t<V2>;
+        using T2 = const Scalar<V>&;
+
+        // check the scalar operation first, the vector operation may not be
+        // SFINAE-friendly
+        if constexpr (Std::is_detected_v<ScalarResult, Op, W1, V2>)
+          if constexpr (Std::is_detected_v<MixedResult, Op, W1, T2>)
+          {
+#define DUNE_SIMD_OPNAME \
+  (className<Op(W1, decltype(lane(0, std::declval<V2>())))>())
+            // initial values
+            const auto sinit2 = rightScalar<Scalar<V> >();
+
+            // reference arguments
+            auto wref1 = leftVector<W>();
+            auto sref2 = sinit2;
+
+            // candidate arguments
+            auto wop1 = wref1;
+            auto vop2 = V(Scalar<V>(0));
+            lane(0, vop2) = sinit2; // pop2 is just a name for `lane(0, vop2)`
+
+            // reference and candidate operation
+            auto &&wrefres = op(static_cast<W1>(wref1), static_cast<T2>(sref2));
+            auto &&wopres =
+              op(static_cast<W1>(wop1), lane(0, static_cast<V2>(vop2)));
+
+            // check 1.  decltype(wopres) == decltype(wrefres)
+            static_assert(std::is_same<std::decay_t<decltype(wopres)>,
+                                       std::decay_t<decltype(wrefres)> >::value,
+                          "An operation with a proxy must have the same result "
+                          "type as the operation with the scalar it "
+                          "represents.");
+
+            // check 2.  lane(l, wopres) == lane(l, wrefres)  foreach l
+            for(auto l : range(lanes(wopres)))
+              DUNE_SIMD_CHECK_OP(lane(l, wopres) == lane(l, wrefres));
+
+            // check 3.  lane(l, wop1)   == lane(l, wref1)    foreach l
+            for(auto l : range(lanes(wop1)))
+              DUNE_SIMD_CHECK_OP(lane(l, wop1) == lane(l, wref1));
+
+            // check 4.  pop2 is never modified
+            DUNE_SIMD_CHECK_OP(lane(0, vop2) == sinit2);
+#undef DUNE_SIMD_OPNAME
+          }
+      }
+
+      template<class W1, class V2>
+      void checkBinaryOpMixedVP(MetaType<W1>, MetaType<V2>, OpInfixComma)
+      {
+        // Don't really know how to check comma operator for proxies
+      }
+
+      template<class V1, class W2, class Op>
+      void checkBinaryOpMixedPV(MetaType<V1> v1, MetaType<W2> w2, Op op)
+      {
+        checkBinaryOpMixedVP(w2, v1, OpInfixSwappedArgs<Op>{op});
+      }
+
+      template<class V1, class W2>
+      void checkBinaryOpMixedPV(MetaType<V1>, MetaType<W2>, OpInfixComma)
+      {
+        // Don't really know how to check comma operator for proxies
+      }
+
+      // scalar types used to construct the vector types W = Rebind<S, V> for
+      // the mixed-precision checks
+      using MixedPrecisionScalars = TypeList<float, double, int>;
+
+      // call f(MetaType<W>) for the vector types W used in the
+      // mixed-precision checks of V
+      template<class V, class F>
+      static void forEachMixedPrecisionPartner(F f)
+      {
+        if constexpr (!std::is_same<Scalar<V>, bool>::value)
+          Hybrid::forEach(MixedPrecisionScalars{}, [&](auto s) {
+            using W = Rebind<typename decltype(s)::type, V>;
+            if constexpr (!std::is_same<Scalar<W>, Scalar<V> >::value &&
+                          !Impl::IsAnyLoop<W>::value)
+              f(MetaType<W>{});
+          });
+      }
+
+      //////////////////////////////////////////////////////////////////////
+      //
       // cross-check scalar-vector binary operations against vector-vector
       //
 
@@ -1804,6 +1933,8 @@ namespace Dune {
        *     - `checkBinaryOpsVectorScalar()`
        *     - `checkBinaryOpsProxyVector()`
        *     - `checkBinaryOpsVectorProxy()`
+       *     - `checkBinaryOpsMixedProxyVector()`
+       *     - `checkBinaryOpsMixedVectorProxy()`
        *
        * Each instantiation point in the hierarchy implicitly instantiates its
        * descendants, unless there are explicit instantiation declarations for
@@ -1848,6 +1979,8 @@ namespace Dune {
       template<class V> void checkBinaryOpsVectorScalar();
       template<class V> void checkBinaryOpsProxyVector();
       template<class V> void checkBinaryOpsVectorProxy();
+      template<class V> void checkBinaryOpsMixedProxyVector();
+      template<class V> void checkBinaryOpsMixedVectorProxy();
       /** @} Group Test instantiation points */
 
       //! run unit tests for simd vector type V
@@ -1991,6 +2124,8 @@ namespace Dune {
       checkBinaryOpsVectorScalar<V>();
       checkBinaryOpsProxyVector<V>();
       checkBinaryOpsVectorProxy<V>();
+      checkBinaryOpsMixedProxyVector<V>();
+      checkBinaryOpsMixedVectorProxy<V>();
     }
     template<class V> void UnitTest::checkBinaryOpsVectorVector()
     {
@@ -2051,6 +2186,34 @@ namespace Dune {
         this->checkBinaryRefQual<V, V, doVS>(check);
       };
       checkBinaryOps<V>(checker);
+    }
+    template<class V> void UnitTest::checkBinaryOpsMixedProxyVector()
+    {
+      forEachMixedPrecisionPartner<V>([this](auto w) {
+        using W = typename decltype(w)::type;
+        auto checker = [this, TL = TypeList<W&, const W&, W&&>{}]
+          (auto doSV, auto doVV, auto doVS, auto op) {
+          if constexpr (doSV)
+            Hybrid::forEach(TL, [this,op](auto t2) {
+              this->checkBinaryOpMixedPV(MetaType<V&>{}, t2, op);
+            });
+        };
+        this->template checkBinaryOps<V>(checker);
+      });
+    }
+    template<class V> void UnitTest::checkBinaryOpsMixedVectorProxy()
+    {
+      forEachMixedPrecisionPartner<V>([this](auto w) {
+        using W = typename decltype(w)::type;
+        auto checker = [this, TL = TypeList<W&, const W&, W&&>{}]
+          (auto doSV, auto doVV, auto doVS, auto op) {
+          if constexpr (doVS)
+            Hybrid::forEach(TL, [this,op](auto t1) {
+              this->checkBinaryOpMixedVP(t1, MetaType<V&>{}, op);
+            });
+        };
+        this->template checkBinaryOps<V>(checker);
+      });
     }
 
   } // namespace Simd

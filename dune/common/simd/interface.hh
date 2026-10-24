@@ -318,6 +318,13 @@ namespace Dune {
      *         lvalue or an rvalue, and the result is a prvalue (a temporary)
      *         of type `Scalar<decay_t<V>>`.
      *
+     * A proxy object must behave like the scalar it represents in binary
+     * operations, also together with vectors of a different scalar type: if
+     * `w @ s` is valid for a vector `w` and a scalar `s` of type
+     * `Scalar<decay_t<V>>`, then `w @ lane(l, v)` and `lane(l, v) @ w` must be
+     * valid as well, with the same result type and value.  This enables
+     * mixed-precision code.
+     *
      * Implemented by `Overloads::lane()`.
      */
     template<class V>
