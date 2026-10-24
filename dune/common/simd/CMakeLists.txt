@@ -19,5 +19,6 @@ install(FILES
   simd.hh
   standard.hh
   test.hh # may be used from dependent modules
+  valueproxy.hh
   vc.hh
 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/common/simd)
