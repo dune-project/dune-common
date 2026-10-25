@@ -1,0 +1,28 @@
+// SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+// SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+// @GENERATED_SOURCE@
+
+#ifndef DUNE_COMMON_SIMD_TEST_STDSIMDTEST_HH
+#define DUNE_COMMON_SIMD_TEST_STDSIMDTEST_HH
+
+#include <dune/common/simd/stdsimd.hh>
+
+#if DUNE_HAVE_CXX_EXPERIMENTAL_SIMD
+
+#include <dune/common/simd/test.hh>
+
+namespace Dune {
+  namespace Simd {
+
+#cmake @template POINT@
+    extern template void
+    UnitTest::check@POINT@<std::experimental::simd<@SCALAR@, @ABI@> >();
+    extern template void
+    UnitTest::check@POINT@<std::experimental::simd_mask<@SCALAR@, @ABI@> >();
+#cmake @endtemplate@
+
+  } // namespace Simd
+} // namespace Dune
+
+#endif // DUNE_HAVE_CXX_EXPERIMENTAL_SIMD
+#endif // DUNE_COMMON_SIMD_TEST_STDSIMDTEST_HH
