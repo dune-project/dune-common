@@ -30,6 +30,9 @@
 /* does the standard library provide identity ? */
 #cmakedefine DUNE_HAVE_CXX_STD_IDENTITY 1
 
+/* does the standard library provide experimental::simd ? */
+#cmakedefine DUNE_HAVE_CXX_EXPERIMENTAL_SIMD 1
+
 /* Define if you have a BLAS library. */
 #cmakedefine HAVE_BLAS 1
 

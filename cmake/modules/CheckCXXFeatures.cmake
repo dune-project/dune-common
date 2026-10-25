@@ -100,3 +100,18 @@ dune_check_cxx_source_compiles("
   #include <functional>
   int main() { std::identity{}; }
 " DUNE_HAVE_CXX_STD_IDENTITY)
+
+# Check for `std::experimental::simd` (Parallelism TS v2) with the parts
+# needed by the SIMD abstraction
+dune_check_cxx_source_compiles("
+  #include <experimental/simd>
+  namespace stdx = std::experimental;
+  int main() {
+    stdx::native_simd<double> v(1.0);
+    stdx::fixed_size_simd<float, 3> f([](auto i) { return float(i); });
+    stdx::rebind_simd_t<int, decltype(v)> i(1);
+    stdx::where(v > 0.0, v) = 2.0;
+    v[0] = 3.0;
+    return (stdx::hmax(v) > stdx::hmin(f) && stdx::any_of(i == 1)) ? 0 : 1;
+  }
+" DUNE_HAVE_CXX_EXPERIMENTAL_SIMD)
