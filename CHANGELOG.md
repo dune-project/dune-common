@@ -25,6 +25,11 @@ In order to build the DUNE core modules you need at least the following software
 - The SIMD interface required `min` and `max` being available via ADL or `std`.
   This is now added to the unit tests.
 
+- Add SIMD support for `std::experimental::simd`, e.g. `native_simd<double>`
+  or `fixed_size_simd<double, 4>`, in `dune/common/simd/stdsimd.hh`. It is
+  available if the standard library provides these types, which is indicated
+  by `DUNE_HAVE_CXX_EXPERIMENTAL_SIMD`.
+
 - Add `Dune::Std::dims`, the standard mdspan alias template for dynamic
   extents with default index type `std::size_t`.
 

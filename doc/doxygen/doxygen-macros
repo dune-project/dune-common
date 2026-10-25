@@ -10,6 +10,7 @@
 
 PREDEFINED             = DOXYGEN \
                          HAVE_MPI:=1 \
+                         DUNE_HAVE_CXX_EXPERIMENTAL_SIMD:=1 \
                          _DEBUG_ALLOCATOR_H:=1 \
                          Vc_VERSIONED_NAMESPACE:=Vc \
 
