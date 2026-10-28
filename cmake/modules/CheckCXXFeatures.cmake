@@ -32,7 +32,7 @@ macro(dune_check_cxx_source_compiles SOURCE VAR)
   message(STATUS "Performing Test ${VAR}")
   file(WRITE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src_${VAR}.cxx" "${SOURCE}\n")
 
-  set(_cxx_std 17)
+  set(_cxx_std 20)
   if(DEFINED CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD GREATER_EQUAL 17)
     set(_cxx_std ${CMAKE_CXX_STANDARD})
   endif()
