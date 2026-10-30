@@ -53,7 +53,11 @@ In order to build the DUNE core modules you need at least the following software
 
 - Use explicit namespace qualification when using the integer-sequence
   utility `get<i>(seq)`, as it might be provided by the c++ standard library as well.
-  
+
+- Deprecated the file `dune/common/vc.hh`, directly include `<Vc/Vc>` instead.
+- Removed deprecated header `dune/common/simd.hh`. Use the new infrastructure from
+  `dune/common/simd/simd.hh` instead.
+
 ## Build system: Changelog
 
 - Add the CMake option `DUNE_REQUIRE_PYTHONBINDINGS`. When enabled, missing

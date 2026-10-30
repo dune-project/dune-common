@@ -8,6 +8,8 @@
  *  @brief SIMD abstractions for Vc
  */
 
+#include <Vc/Vc>
+
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -17,7 +19,6 @@
 #include <dune/common/simd/defaults.hh> // for anyFalse()
 #include <dune/common/simd/loop.hh>
 #include <dune/common/typetraits.hh>
-#include <dune/common/vc.hh>
 
 /** @defgroup SIMDVc SIMD Abstraction Implementation for Vc
  *  @ingroup SIMDApp
