@@ -77,7 +77,7 @@ code-spelling-check:
   script:
   - codespell
     --ignore-words-list te,inout,incrementall,iif,\trun,referr,ba,ser,debbugs
-    --skip pybind11,'*.tex'
+    --skip pybind11,'*.tex', './.git'
 
 reuse:
   stage: .pre
