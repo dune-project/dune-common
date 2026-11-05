@@ -22,10 +22,15 @@ template<> struct RebindAccept<Vc::Vector<@SCALAR@> > : std::true_type {};
 template<> struct RebindAccept<Vc::Mask<@SCALAR@> >   : std::true_type {};
 #cmake @endtemplate@
 
-// ignore rebinds to LoopSIMD as well as Vc::SimdArray
+// ignore rebinds to LoopSIMD as well as to the fixed-size Vc types, which are
+// covered by vcarraytest
 template<class T> struct Prune : Dune::Simd::IsLoop<T>  {};
 template<class T, std::size_t n, class V, std::size_t m>
 struct Prune<Vc::SimdArray<T, n, V, m> >     : std::true_type {};
+template<class T, int n>
+struct Prune<Vc::fixed_size_simd<T, n> >      : std::true_type {};
+template<class T, int n>
+struct Prune<Vc::fixed_size_simd_mask<T, n> > : std::true_type {};
 
 using Rebinds = Dune::TypeList<
 #cmake @template@

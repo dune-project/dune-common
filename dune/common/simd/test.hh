@@ -867,6 +867,16 @@ namespace Dune {
       DUNE_SIMD_ASSIGN_OP(AssignXor,        ^= );
       DUNE_SIMD_ASSIGN_OP(AssignOr,         |= );
 
+      // comparison operators, their result must be of type Mask<V>
+      template<class Op>
+      static constexpr bool isComparisonOp =
+        std::is_same<Op, OpInfixLess>::value ||
+        std::is_same<Op, OpInfixGreater>::value ||
+        std::is_same<Op, OpInfixLessEqual>::value ||
+        std::is_same<Op, OpInfixGreaterEqual>::value ||
+        std::is_same<Op, OpInfixEqual>::value ||
+        std::is_same<Op, OpInfixNotEqual>::value;
+
 #undef DUNE_SIMD_INFIX_OP
 #undef DUNE_SIMD_REPL_OP
 #undef DUNE_SIMD_ASSIGN_OP
@@ -965,6 +975,12 @@ namespace Dune {
         static_assert(lanes<std::decay_t<VR> >() == lanes<std::decay_t<V1> >(),
                       "The result must have the same number of lanes as the "
                       "operands.");
+
+        // comparisons must yield exactly the mask type, see DESIGN.md
+        static_assert(!isComparisonOp<Op> ||
+                      std::is_same<std::decay_t<VR>,
+                                   Mask<std::decay_t<V1> > >::value,
+                      "The result of a comparison must be of type Mask<V>.");
 
         // do the reference operation, and simultaneously
         // check 2.  lane(l, vopres) == arefres[l]  foreach l
@@ -1713,6 +1729,14 @@ namespace Dune {
 
         DUNE_SIMD_CHECK(allTrue(maxExp == Simd::max(arg1, arg2)));
         DUNE_SIMD_CHECK(allTrue(minExp == Simd::min(arg1, arg2)));
+
+        // generic code also uses `using std::max; max(v1, v2)` for vectors,
+        // so the implementation must provide overloads found by ADL
+        if constexpr (!std::is_same<Scalar<V>, bool>::value)
+        {
+          DUNE_SIMD_CHECK(allTrue(maxExp == V(max(arg1, arg2))));
+          DUNE_SIMD_CHECK(allTrue(minExp == V(min(arg1, arg2))));
+        }
       }
 
       template<class V>

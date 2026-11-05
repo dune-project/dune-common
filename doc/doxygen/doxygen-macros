@@ -11,6 +11,7 @@
 PREDEFINED             = DOXYGEN \
                          HAVE_MPI:=1 \
                          _DEBUG_ALLOCATOR_H:=1 \
+                         Vc_VERSIONED_NAMESPACE:=Vc \
 
 
 # marker - here to allow the last line continuation

@@ -45,13 +45,7 @@ find_package(SuiteSparse OPTIONAL_COMPONENTS CHOLMOD LDL SPQR UMFPACK)
 include(AddSuiteSparseFlags)
 
 # try to find the Vc library
-set(MINIMUM_VC_VERSION)
-if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) AND
-    (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7))
-  message(STATUS "Raising minimum acceptable Vc version to 1.4.1 due to use of Clang 7 (or later), see https://gitlab.dune-project.org/core/dune-common/issues/132")
-  set(MINIMUM_VC_VERSION 1.4.1)
-endif()
-find_package(Vc ${MINIMUM_VC_VERSION} NO_MODULE)
+find_package(Vc 1.4.1 NO_MODULE)
 include(AddVcFlags)
 
 # Run the python extension of the Dune cmake build system

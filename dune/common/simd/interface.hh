@@ -404,6 +404,12 @@ namespace Dune {
     //! The binary maximum value over two simd objects
     /**
      * Implemented by `Overloads::max()`.
+     *
+     * For vector types (not masks), an abstraction must also make the
+     * unqualified call in `using std::max; max(v1, v2)` work, i.e. provide an
+     * overload that is found by argument-dependent lookup.  Generic code,
+     * e.g. in the solvers of dune-istl, relies on this.  The same holds for
+     * `min()`.
      */
     template<class V>
     auto max(const V &v1, const V &v2)

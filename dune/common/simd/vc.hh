@@ -24,7 +24,16 @@
  *  @ingroup SIMDApp
  *
  * This implements the vectorization interface for Vc types, namely
- * `Vc::Vector`, `Vc::Mask`, `Vc::SimdArray` and `Vc::SimdMask`.
+ * `Vc::Vector`, `Vc::Mask`, `Vc::SimdArray`, `Vc::SimdMaskArray`,
+ * `Vc::fixed_size_simd` and `Vc::fixed_size_simd_mask`.  It requires Vc
+ * 1.4.1 or newer.
+ *
+ * For a fixed number of lanes, prefer `Vc::fixed_size_simd<T, N>` (and
+ * `Vc::fixed_size_simd_mask<T, N>`) over `Vc::SimdArray<T, N>`.  Since Vc
+ * 1.4 the operations on `SimdArray` return `fixed_size_simd`, and
+ * `Simd::Rebind` and `Simd::Mask` produce `fixed_size_simd` and
+ * `fixed_size_simd_mask` for all Vc types.  `SimdArray` and `SimdMaskArray`
+ * are still supported as input types.
  *
  * As an application developer, you need to `#include
  * <dune/common/simd/vc.hh>`.  You need to make sure that `HAVE_VC` is true
@@ -182,39 +191,6 @@ namespace Dune {
       template<> struct IsVectorizable<std::uint32_t> : std::true_type {};
       template<> struct IsVectorizable<std::int16_t>  : std::true_type {};
       template<> struct IsVectorizable<std::uint16_t> : std::true_type {};
-
-      //! the mask type corresponding to a Vc vector type
-      /**
-       * This is `V::mask_type`, except for `SimdArray`.  Since Vc 1.4
-       * `SimdArray<T, n>::mask_type` is `Vc::fixed_size_simd_mask<T, n>`, a
-       * class derived from `SimdMaskArray<T, n>`.  To get the same mask type
-       * independent of the Vc version, and to stay consistent with rebinding
-       * masks to `SimdArray`, we use `SimdMaskArray` here.
-       */
-      template<class V>
-      struct MaskType { using type = typename V::mask_type; };
-
-      template<typename T, std::size_t n, typename V, std::size_t m>
-      struct MaskType<Vc::SimdArray<T, n, V, m> >
-      {
-        using type = Vc::SimdMaskArray<T, n, V, m>;
-      };
-
-      //! the vector type corresponding to a Vc mask type
-      /**
-       * This is `M::Vector`, except for `SimdMaskArray`.  Since Vc 1.4
-       * `SimdMaskArray<T, n>::Vector` is `Vc::fixed_size_simd<T, n>`, a class
-       * derived from `SimdArray<T, n>`.  We use `SimdArray` here for the same
-       * reasons as in `MaskType`.
-       */
-      template<class M>
-      struct VectorType { using type = typename M::Vector; };
-
-      template<typename T, std::size_t n, typename V, std::size_t m>
-      struct VectorType<Vc::SimdMaskArray<T, n, V, m> >
-      {
-        using type = Vc::SimdArray<T, n, V, m>;
-      };
 
       //! A reference-like proxy for elements of random-access vectors.
       /**
@@ -510,7 +486,7 @@ namespace Dune {
       struct RebindType<bool, V, std::enable_if_t<VcImpl::IsVector<V>::value &&
                                                   !VcImpl::IsMask<V>::value>>
       {
-        using type = typename VcImpl::MaskType<V>::type;
+        using type = typename V::mask_type;
       };
 
       //! should have a member type \c type
@@ -524,7 +500,7 @@ namespace Dune {
       struct RebindType<Scalar<typename M::Vector>, M,
                         std::enable_if_t<VcImpl::IsMask<M>::value>>
       {
-        using type = typename VcImpl::VectorType<M>::type;
+        using type = typename M::Vector;
       };
 
       //! should have a member type \c type
@@ -533,6 +509,9 @@ namespace Dune {
        *
        * This specialization covers
        * - Mask -> Vc-vectorizable type except bool, Scalar<Mask::Vector>
+       *
+       * The result is a \c Vc::fixed_size_simd, which is what Vc itself
+       * returns for operations on fixed-size vectors since Vc 1.4.
        */
       template<class S, class M>
       struct RebindType<S, M,
@@ -542,7 +521,7 @@ namespace Dune {
                           !std::is_same<S, Scalar<typename M::Vector> >::value
                           > >
       {
-        using type = Vc::SimdArray<S, Simd::lanes<M>()>;
+        using type = Vc::fixed_size_simd<S, int(Simd::lanes<M>())>;
       };
 
       //! should have a member type \c type
@@ -551,6 +530,9 @@ namespace Dune {
        *
        * This specialization covers
        * - Vector -> Vc-vectorizable type except bool, Scalar<Vector>
+       *
+       * The result is a \c Vc::fixed_size_simd, which is what Vc itself
+       * returns for operations on fixed-size vectors since Vc 1.4.
        */
       template<class S, class V>
       struct RebindType<S, V,
@@ -559,7 +541,7 @@ namespace Dune {
                                          VcImpl::IsVectorizable<S>::value &&
                                          !std::is_same<S, Scalar<V> >::value> >
       {
-        using type = Vc::SimdArray<S, Simd::lanes<V>()>;
+        using type = Vc::fixed_size_simd<S, int(Simd::lanes<V>())>;
       };
 
       //! should have a member type \c type
@@ -655,7 +637,7 @@ namespace Dune {
       M max(ADLTag<5, VcImpl::IsMask<M>::value>,
             const M &m1, const M &m2)
       {
-        // since Vc 1.4 the result type for SimdMaskArray is a derived class
+        // for SimdMaskArray, Vc returns the derived fixed_size_simd_mask
         return m1 || m2;
       }
 
@@ -673,7 +655,7 @@ namespace Dune {
       M min(ADLTag<5, VcImpl::IsMask<M>::value>,
             const M &m1, const M &m2)
       {
-        // since Vc 1.4 the result type for SimdMaskArray is a derived class
+        // for SimdMaskArray, Vc returns the derived fixed_size_simd_mask
         return m1 && m2;
       }
 
@@ -794,5 +776,49 @@ namespace Dune {
     AutonomousValueType<typename Simd::VcImpl::Proxy<V>::value_type> {};
 
 } // namespace Dune
+
+namespace Vc_VERSIONED_NAMESPACE {
+
+  //! Binary maximum of two `Vc::fixed_size_simd`, found by ADL
+  /**
+   * \ingroup SIMDVc
+   *
+   * Vc declares the binary `max()` only for `Vc::SimdArray`.  For the derived
+   * `Vc::fixed_size_simd`, generic code of the form
+   * \code
+   *   using std::max;
+   *   auto m = max(a, b);
+   * \endcode
+   * would then select `std::max()`, which cannot use the mask returned by
+   * `<`.  This overload is found by argument-dependent lookup and forwards to
+   * Vc's implementation for `SimdArray`.  The SIMD interface requires this
+   * for all vector types, see `Dune::Simd::max()`.
+   *
+   * \note It is declared in Vc's (versioned) namespace, since that is the
+   *       only namespace argument-dependent lookup searches for this type.
+   */
+  template<class T, int N>
+  fixed_size_simd<T, N> max(const fixed_size_simd<T, N> &a,
+                            const fixed_size_simd<T, N> &b)
+  {
+    using A = SimdArray<T, std::size_t(N)>;
+    return max(static_cast<const A &>(a), static_cast<const A &>(b));
+  }
+
+  //! Binary minimum of two `Vc::fixed_size_simd`, found by ADL
+  /**
+   * \ingroup SIMDVc
+   *
+   * The counterpart of `max()` for `fixed_size_simd`, see there.
+   */
+  template<class T, int N>
+  fixed_size_simd<T, N> min(const fixed_size_simd<T, N> &a,
+                            const fixed_size_simd<T, N> &b)
+  {
+    using A = SimdArray<T, std::size_t(N)>;
+    return min(static_cast<const A &>(a), static_cast<const A &>(b));
+  }
+
+} // namespace Vc_VERSIONED_NAMESPACE
 
 #endif // DUNE_COMMON_SIMD_VC_HH
