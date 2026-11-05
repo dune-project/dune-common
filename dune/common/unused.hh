@@ -5,6 +5,8 @@
 #ifndef DUNE_COMMON_UNUSED_HH
 #define DUNE_COMMON_UNUSED_HH
 
+#warning This file is deprecated since dune-common 2.12. Use [[maybe_unused]] instead of the DUNE_UNUSED_PARAMETER macro!
+
 /** \file
  * \brief Definition of the `DUNE_UNUSED_PARAMETER` macro.
  */

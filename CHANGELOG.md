@@ -123,6 +123,10 @@ In order to build the DUNE core modules you need at least the following software
   We encourage everyone to try the new option eventually, as we are considering
   to completely remove our vendored copy of `pybind11` in some later release.
 
+- The header `unused.hh` (which provides the `DUNE_UNUSED_PARAMETER` macro)
+  has been marked as deprecated. Please stop including this header,
+  and replace `DUNE_UNUSED_PARAMETER` by `[[maybe_unused]]`.
+
 
 # Release 2.11
 
