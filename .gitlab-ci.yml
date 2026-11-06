@@ -14,6 +14,8 @@ variables:
   DUNE_TEST_EXPECTED_VC_IMPLEMENTATION: SSE2
   PIP_DEFAULT_TIMEOUT: 0
   DUNE_LOG_LEVEL:     DEBUG
+  # block the pipeline until the manual core-modules-test (see ci-config) succeeded
+  DUNECI_CORE_MODULES_TEST_REQUIRED: "1"
 
 debian:13 gcc-14-23-expensive:
   extends: .common
@@ -38,36 +40,6 @@ debian:13 gcc-14-23-pybind11:
   variables:
     DUNECI_TOOLCHAIN: gcc-14-23
     DUNECI_CMAKE_FLAGS: '-DDUNE_USE_SYSTEM_PYBIND11:BOOL=TRUE'
-
-core-modules-test:
-  stage: downstream
-  inherit:
-    variables: false # do not inherit global variables
-  variables:
-    CI_BUILD_REF_NAME: $CI_COMMIT_REF_NAME
-    DUNECI_TEST_LABELS: ""
-  trigger:
-    project: infrastructure/dune-nightly-test
-    branch: core
-    strategy: depend
-  rules:
-    - when: manual
-      allow_failure: false
-
-full-system-test:
-  stage: downstream
-  inherit:
-    variables: false # do not inherit global variables
-  variables:
-    CI_BUILD_REF_NAME: $CI_COMMIT_REF_NAME
-    DUNECI_TEST_LABELS: ""
-  trigger:
-    project: infrastructure/dune-nightly-test
-    branch: master
-    strategy: depend
-  rules:
-    - when: manual
-      allow_failure: true
 
 # Check for spelling mistakes in text
 code-spelling-check:
