@@ -18,6 +18,7 @@
 #include <dune/common/simd/base.hh>
 #include <dune/common/simd/defaults.hh> // for anyFalse()
 #include <dune/common/simd/loop.hh>
+#include <dune/common/simd/valueproxy.hh>
 #include <dune/common/typetraits.hh>
 
 /** @defgroup SIMDVc SIMD Abstraction Implementation for Vc
@@ -192,107 +193,15 @@ namespace Dune {
       template<> struct IsVectorizable<std::int16_t>  : std::true_type {};
       template<> struct IsVectorizable<std::uint16_t> : std::true_type {};
 
-      //! A reference-like proxy for elements of random-access vectors.
+      //! Operations of lane proxies with Vc vector types
       /**
-       * This is necessary because Vc's lane-access operation return a proxy
-       * that cannot constructed by non-Vc code (i.e. code that isn't
-       * explicitly declared `friend`).  This means in particular that there
-       * is no copy/move constructor, meaning we cannot return such proxies
-       * from our own functions, such as `lane()`.  To work around this, we
-       * define our own proxy class which internally holds a reference to the
-       * vector and a lane index.
-       *
-       * Note: this should be unnecessary with C++17, as just returning a
-       * temporary object should not involve copying it.
+       * Base class of `Proxy`, see `Impl::ValueProxy`.  `Proxy` is the proxy
+       * class, `ValueType` its `value_type`.
        */
-      template<class V>
-      class Proxy
+      template<class Proxy, class ValueType>
+      struct ProxyOperations
       {
-        static_assert(std::is_same<V, std::decay_t<V> >::value, "Class Proxy "
-                      "may only be instantiated with unqualified types");
-      public:
-        using value_type = typename V::value_type;
-
-      private:
-        static_assert(std::is_arithmetic<value_type>::value,
-                      "Only arithmetic types are supported");
-        V &vec_;
-        std::size_t idx_;
-
-      public:
-        Proxy(std::size_t idx, V &vec)
-          : vec_(vec), idx_(idx)
-        { }
-
-        Proxy(const Proxy&) = delete;
-        // allow move construction so we can return proxies from functions
-        Proxy(Proxy&&) = default;
-
-        operator value_type() const { return vec_[idx_]; }
-
-        // assignment operators
-#define DUNE_SIMD_VC_ASSIGNMENT(OP)                              \
-        template<class T,                                        \
-                 class = decltype(std::declval<value_type&>() OP \
-                                  autoCopy(std::declval<T>()) )> \
-        Proxy operator OP(T &&o) &&                              \
-        {                                                        \
-          vec_[idx_] OP autoCopy(std::forward<T>(o));            \
-          return { idx_, vec_ };                                 \
-        }
-        DUNE_SIMD_VC_ASSIGNMENT(=);
-        DUNE_SIMD_VC_ASSIGNMENT(*=);
-        DUNE_SIMD_VC_ASSIGNMENT(/=);
-        DUNE_SIMD_VC_ASSIGNMENT(%=);
-        DUNE_SIMD_VC_ASSIGNMENT(+=);
-        DUNE_SIMD_VC_ASSIGNMENT(-=);
-        DUNE_SIMD_VC_ASSIGNMENT(<<=);
-        DUNE_SIMD_VC_ASSIGNMENT(>>=);
-        DUNE_SIMD_VC_ASSIGNMENT(&=);
-        DUNE_SIMD_VC_ASSIGNMENT(^=);
-        DUNE_SIMD_VC_ASSIGNMENT(|=);
-#undef DUNE_SIMD_VC_ASSIGNMENT
-
-        // unary (prefix) operators
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        Proxy operator++() { ++(vec_[idx_]); return *this; }
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        Proxy operator--() { --(vec_[idx_]); return *this; }
-
-        // postfix operators
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        value_type operator++(int) { return vec_[idx_]++; }
-        template<class T = value_type,
-                 class = std::enable_if_t<!std::is_same<T, bool>::value> >
-        value_type operator--(int) { return vec_[idx_]--; }
-
-
-        // swap on proxies swaps the proxied vector entries.  As such, it
-        // applies to rvalues of proxies too, not just lvalues
-        friend void swap(const Proxy &a, const Proxy &b) {
-          // don't use swap() ourselves -- not supported by Vc 1.3.0 (but is
-          // supported by Vc 1.3.2)
-          value_type tmp = std::move(a.vec_[a.idx_]);
-          a.vec_[a.idx_] = std::move(b.vec_[b.idx_]);
-          b.vec_[b.idx_] = std::move(tmp);
-        }
-        friend void swap(value_type &a, const Proxy &b) {
-          // don't use swap() ourselves -- not supported by Vc 1.3.0 (but is
-          // supported by Vc 1.3.2)
-          value_type tmp = std::move(a);
-          a = std::move(b.vec_[b.idx_]);
-          b.vec_[b.idx_] = std::move(tmp);
-        }
-        friend void swap(const Proxy &a, value_type &b) {
-          // don't use swap() ourselves -- not supported by Vc 1.3.0 (but is
-          // supported by Vc 1.3.2)
-          value_type tmp = std::move(a.vec_[a.idx_]);
-          a.vec_[a.idx_] = std::move(b);
-          b = std::move(tmp);
-        }
+        using value_type = ValueType;
 
         // binary operators
         //
@@ -361,10 +270,10 @@ namespace Dune {
           return l OP value_type(r);                                    \
         }                                                               \
         template<class T, class Abi>                                    \
-        auto operator OP(const Vc::Vector<T, Abi> &r) &&                \
+        friend auto operator OP(Proxy&& l, const Vc::Vector<T, Abi> &r) \
           -> decltype(std::declval<value_type>() OP r)                  \
         {                                                               \
-          return value_type(*this) OP r;                                \
+          return value_type(l) OP r;                                    \
         }                                                               \
         template<class T, std::size_t n, class Vec, std::size_t m>      \
         friend auto                                                     \
@@ -374,10 +283,11 @@ namespace Dune {
           return l OP value_type(r);                                    \
         }                                                               \
         template<class T, std::size_t n, class Vec, std::size_t m>      \
-        auto operator OP(const Vc::SimdArray<T, n, Vec, m> &r) &&       \
+        friend auto                                                     \
+        operator OP(Proxy&& l, const Vc::SimdArray<T, n, Vec, m> &r)    \
           -> decltype(std::declval<value_type>() OP r)                  \
         {                                                               \
-          return value_type(*this) OP r;                                \
+          return value_type(l) OP r;                                    \
         }
 
         DUNE_SIMD_VC_BINARY(*);
@@ -405,14 +315,14 @@ namespace Dune {
                                                               T>::value> >
         operator Vc::Vector<T, Abi>() &&
         {
-          return value_type(*this);
+          return value_type(static_cast<const Proxy &>(*this));
         }
         template<class T, std::size_t n, class Vec, std::size_t m,
                  class = std::enable_if_t<std::is_convertible<value_type,
                                                               T>::value> >
         operator Vc::SimdArray<T, n, Vec, m>() &&
         {
-          return value_type(*this);
+          return value_type(static_cast<const Proxy &>(*this));
         }
 
 #define DUNE_SIMD_VC_ASSIGN(OP)                                         \
@@ -440,6 +350,15 @@ namespace Dune {
         DUNE_SIMD_VC_ASSIGN(>>=);
 #undef DUNE_SIMD_VC_ASSIGN
       };
+
+      //! A reference-like proxy for elements of Vc vectors and masks.
+      /**
+       * Vc's lane-access operation returns a proxy that cannot be copied or
+       * moved by non-Vc code, so it cannot be returned from `lane()`.  Use
+       * the generic proxy instead.
+       */
+      template<class V>
+      using Proxy = Impl::ValueProxy<V, ProxyOperations>;
 
     } // namespace VcImpl
 
@@ -769,11 +688,6 @@ namespace Dune {
   struct IsNumber<Vc::Vector<T, Abi>>
     : public std::integral_constant<bool, IsNumber<T>::value> {
   };
-
-  //! Specialization of AutonomousValue for Vc proxies
-  template<class V>
-  struct AutonomousValueType<Simd::VcImpl::Proxy<V> > :
-    AutonomousValueType<typename Simd::VcImpl::Proxy<V>::value_type> {};
 
 } // namespace Dune
 

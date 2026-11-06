@@ -1,0 +1,54 @@
+// SPDX-FileCopyrightInfo: Copyright © DUNE Project contributors, see file LICENSE.md in module root
+// SPDX-License-Identifier: LicenseRef-GPL-2.0-only-with-DUNE-exception
+// @GENERATED_SOURCE@
+
+#include <dune-common-config.hh> // DUNE_HAVE_CXX_EXPERIMENTAL_SIMD
+
+#if !DUNE_HAVE_CXX_EXPERIMENTAL_SIMD
+#error Inconsistent buildsystem.  This program should not be built in the \
+  absence of std::experimental::simd.
+#endif
+
+#include <complex>
+#include <cstddef>
+#include <cstdlib>
+#include <type_traits>
+
+#include <dune/common/simd/test.hh>
+#include <dune/common/simd/test/stdsimdtest.hh>
+#include <dune/common/simd/stdsimd.hh>
+#include <dune/common/typelist.hh>
+
+// the types that are checked explicitly; rebind_simd_t may yield many more
+// ABIs, these are not checked
+template<class T> struct IsEntry : std::false_type {};
+#cmake @template@
+template<>
+struct IsEntry<std::experimental::simd<@SCALAR@, @ABI@> >      : std::true_type {};
+template<>
+struct IsEntry<std::experimental::simd_mask<@SCALAR@, @ABI@> > : std::true_type {};
+#cmake @endtemplate@
+
+template<class T> struct Prune : std::bool_constant<!IsEntry<T>::value> {};
+
+using Rebinds = Dune::TypeList<
+#cmake @template REBINDS@
+  @SCALAR@,
+#cmake @endtemplate REBINDS@
+  bool,
+  std::size_t,
+  std::complex<double> >;
+
+int main()
+{
+  Dune::Simd::UnitTest test;
+
+#@template@
+  test.check<std::experimental::simd<@SCALAR@, @ABI@>,
+             Rebinds, Prune, IsEntry>();
+  test.check<std::experimental::simd_mask<@SCALAR@, @ABI@>,
+             Rebinds, Prune, IsEntry>();
+#@endtemplate@
+
+  return test.good() ? EXIT_SUCCESS : EXIT_FAILURE;
+}

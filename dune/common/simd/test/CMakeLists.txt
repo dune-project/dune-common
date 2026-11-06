@@ -80,7 +80,8 @@ foreach(SCALAR IN LISTS VCTEST_TYPES)
     foreach(POINT IN ITEMS
         Type
         BinaryOpsScalarVector BinaryOpsVectorScalar
-        BinaryOpsProxyVector BinaryOpsVectorProxy)
+        BinaryOpsProxyVector BinaryOpsVectorProxy
+        BinaryOpsMixedProxyVector BinaryOpsMixedVectorProxy)
       dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}_${LANES}"
         FILES vctest_simdarray.cc vctest_simdmaskarray.cc
               vctest_fixedsizesimd.cc vctest_fixedsizesimdmask.cc)
@@ -104,7 +105,8 @@ foreach(SCALAR IN LISTS VCTEST_TYPES)
   foreach(POINT IN ITEMS
       Type
       BinaryOpsScalarVector BinaryOpsVectorScalar
-      BinaryOpsProxyVector BinaryOpsVectorProxy)
+      BinaryOpsProxyVector BinaryOpsVectorProxy
+      BinaryOpsMixedProxyVector BinaryOpsMixedVectorProxy)
     dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}"
       FILES vctest_vector.cc vctest_mask.cc)
   endforeach()
@@ -117,3 +119,42 @@ dune_add_test(NAME vcvectortest
 )
 add_dune_vc_flags(vcvectortest)
 # no need to install vcvectortest.hh, used by vctest*.cc only
+
+# all arithmetic types except bool, as for standardtest
+set(STDSIMDTEST_TYPES
+  char "unsigned char" "signed char"
+  short int long "long long"
+  "unsigned short" unsigned "unsigned long" "unsigned long long"
+  float double "long double")
+
+# Generate files with instantiations, external declarations, and also the
+# invocations in the test for each instance.
+dune_instance_begin(FILES stdsimdtest.hh stdsimdtest.cc)
+foreach(SCALAR IN LISTS STDSIMDTEST_TYPES)
+  # list each scalar only once as rebind target
+  dune_instance_add(TEMPLATE REBINDS ID "${SCALAR}")
+  # the native ABI and a fixed size with a non-power-of-two number of lanes
+  foreach(ABITAG IN ITEMS native fixed3)
+    if(ABITAG STREQUAL "native")
+      set(ABI "std::experimental::simd_abi::native<${SCALAR}>")
+    else()
+      set(ABI "std::experimental::simd_abi::fixed_size<3>")
+    endif()
+    dune_instance_add(ID "${SCALAR}_${ABITAG}")
+    foreach(POINT IN ITEMS
+        Type
+        BinaryOpsScalarVector BinaryOpsVectorScalar
+        BinaryOpsProxyVector BinaryOpsVectorProxy
+        BinaryOpsMixedProxyVector BinaryOpsMixedVectorProxy)
+      dune_instance_add(TEMPLATE POINT ID "${POINT}_${SCALAR}_${ABITAG}"
+        FILES stdsimdtest_vector.cc stdsimdtest_mask.cc)
+    endforeach()
+  endforeach()
+endforeach()
+dune_instance_end()
+list(FILTER DUNE_INSTANCE_GENERATED INCLUDE REGEX [[\.cc$]])
+dune_add_test(NAME stdsimdtest
+  SOURCES ${DUNE_INSTANCE_GENERATED}
+  CMAKE_GUARD DUNE_HAVE_CXX_EXPERIMENTAL_SIMD
+)
+# no need to install stdsimdtest.hh, used by stdsimdtest*.cc only
