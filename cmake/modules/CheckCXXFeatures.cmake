@@ -102,9 +102,22 @@ dune_check_cxx_source_compiles("
 " DUNE_HAVE_CXX_STD_IDENTITY)
 
 # Check for `std::experimental::simd` (Parallelism TS v2) with the parts
-# needed by the SIMD abstraction
+# needed by the SIMD abstraction.
+#
+# Clang up to at least 17 (and probably 18) crashes or does not terminate
+# (nondeterministically, depending on the memory layout) while compiling
+# `operator/` of `std::experimental::simd` from older libstdc++ headers
+# (libstdc++ 11 and 12.2; fixed in 12.3/12.4, see issue #439).  A small
+# program does not trigger this, so we cannot detect it by compiling, and
+# instead reject the combination by the version macros: the macro
+# `_GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA` (defined, empty for Clang, by
+# <experimental/simd>) marks the fixed generation of the libstdc++ headers.
+# Compilers other than Clang, and Clang 19 and newer, are not affected.
 dune_check_cxx_source_compiles("
   #include <experimental/simd>
+  #if defined(__clang__) && __clang_major__ < 19 && !defined(_GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA)
+  #error Clang < 19 crashes on std::experimental::simd of libstdc++ < 12.3
+  #endif
   namespace stdx = std::experimental;
   int main() {
     stdx::native_simd<double> v(1.0);
