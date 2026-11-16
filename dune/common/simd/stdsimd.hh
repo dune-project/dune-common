@@ -106,10 +106,10 @@ namespace Dune {
         using type = typename M::simd_type;
       };
 
-      //! Operations of lane proxies with `std::experimental::simd` types
+      //! A reference-like proxy for lanes of `std::experimental::simd` types
       /**
-       * Base class of the lane proxy, see `Impl::ValueProxy`.  `Proxy` is
-       * the proxy class, `ValueType` its `value_type`.
+       * Derived from the generic lane proxy `Impl::ValueProxy`, with the
+       * operations with `std::experimental::simd` types added.
        *
        * The library's vectors broadcast from anything that converts to their
        * scalar type, including the proxy.  For operations with a vector of
@@ -118,11 +118,26 @@ namespace Dune {
        * type `simd<unsigned>`.  These overloads match exactly and do the
        * operation with the scalar, so the proxy behaves like the scalar it
        * represents.
+       *
+       * The operators with the proxy on the left are *member* functions, not
+       * friends: with two friends mirroring each other (`vector == proxy` and
+       * `proxy == vector`), Clang up to 17 selects the reversed candidate for
+       * `vector == proxy`, and rejects it since the result of a rewritten
+       * `operator==` must be `bool` but the operators of the library return
+       * masks, see dune-common#439.  They must be members of the final proxy
+       * class: members of a base class would need a derived-to-base
+       * conversion of the proxy and lose against the generic operators of
+       * `ValueProxy`.
        */
-      template<class Proxy, class ValueType>
-      struct ProxyOperations
+      template<class V>
+      class Proxy : public Impl::ValueProxy<V>
       {
-        using value_type = ValueType;
+        using Base = Impl::ValueProxy<V>;
+      public:
+        using value_type = typename Base::value_type;
+
+        using Base::Base;
+        using Base::operator=;
 
 #define DUNE_SIMD_STDSIMD_BINARY(OP)                                    \
         template<class T, class Abi>                                    \
@@ -132,10 +147,10 @@ namespace Dune {
           return l OP value_type(r);                                    \
         }                                                               \
         template<class T, class Abi>                                    \
-        friend auto operator OP(Proxy&& l, const stdx::simd<T, Abi> &r) \
+        auto operator OP(const stdx::simd<T, Abi> &r) &&                \
           -> decltype(std::declval<value_type>() OP r)                  \
         {                                                               \
-          return value_type(l) OP r;                                    \
+          return value_type(*this) OP r;                                \
         }
 
         DUNE_SIMD_STDSIMD_BINARY(*);
@@ -176,10 +191,6 @@ namespace Dune {
         DUNE_SIMD_STDSIMD_ASSIGN(>>=);
 #undef DUNE_SIMD_STDSIMD_ASSIGN
       };
-
-      //! A reference-like proxy for lanes of `std::experimental::simd` types
-      template<class V>
-      using Proxy = Impl::ValueProxy<V, ProxyOperations>;
 
     } // namespace StdSimdImpl
 
@@ -472,6 +483,11 @@ namespace Dune {
   struct IsNumber<std::experimental::simd<T, Abi> >
     : public std::integral_constant<bool, IsNumber<T>::value> {
   };
+
+  //! Specialization of AutonomousValue for lane proxies of std::experimental::simd
+  template<class V>
+  struct AutonomousValueType<Simd::StdSimdImpl::Proxy<V> > :
+    AutonomousValueType<typename Simd::StdSimdImpl::Proxy<V>::value_type> {};
 
 } // namespace Dune
 
