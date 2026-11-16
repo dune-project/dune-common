@@ -193,15 +193,32 @@ namespace Dune {
       template<> struct IsVectorizable<std::int16_t>  : std::true_type {};
       template<> struct IsVectorizable<std::uint16_t> : std::true_type {};
 
-      //! Operations of lane proxies with Vc vector types
+      //! A reference-like proxy for elements of Vc vectors and masks.
       /**
-       * Base class of `Proxy`, see `Impl::ValueProxy`.  `Proxy` is the proxy
-       * class, `ValueType` its `value_type`.
+       * Vc's lane-access operation returns a proxy that cannot be copied or
+       * moved by non-Vc code, so it cannot be returned from `lane()`.  This
+       * class derives from the generic `Impl::ValueProxy` and adds the
+       * operators with Vc vector types.
+       *
+       * The operators with the proxy on the left are *member* functions, not
+       * friends: with two friends mirroring each other (`vector == proxy` and
+       * `proxy == vector`), Clang up to 17 selects the reversed candidate for
+       * `vector == proxy`, and rejects it since the result of a rewritten
+       * `operator==` must be `bool` but the Vc operators return masks, see
+       * dune-common#439.  The proxy is derived from `ValueProxy`, and not
+       * passed to it as the `ExtraOperations` base, so that the members have
+       * the proxy as their object type and not a base class (which would lose
+       * against the generic operators of `ValueProxy`).
        */
-      template<class Proxy, class ValueType>
-      struct ProxyOperations
+      template<class V>
+      class Proxy : public Impl::ValueProxy<V>
       {
-        using value_type = ValueType;
+        using Base = Impl::ValueProxy<V>;
+      public:
+        using value_type = typename Base::value_type;
+
+        using Base::Base;
+        using Base::operator=;
 
         // binary operators
         //
@@ -270,10 +287,10 @@ namespace Dune {
           return l OP value_type(r);                                    \
         }                                                               \
         template<class T, class Abi>                                    \
-        friend auto operator OP(Proxy&& l, const Vc::Vector<T, Abi> &r) \
+        auto operator OP(const Vc::Vector<T, Abi> &r) &&                \
           -> decltype(std::declval<value_type>() OP r)                  \
         {                                                               \
-          return value_type(l) OP r;                                    \
+          return value_type(*this) OP r;                                \
         }                                                               \
         template<class T, std::size_t n, class Vec, std::size_t m>      \
         friend auto                                                     \
@@ -283,11 +300,10 @@ namespace Dune {
           return l OP value_type(r);                                    \
         }                                                               \
         template<class T, std::size_t n, class Vec, std::size_t m>      \
-        friend auto                                                     \
-        operator OP(Proxy&& l, const Vc::SimdArray<T, n, Vec, m> &r)    \
+        auto operator OP(const Vc::SimdArray<T, n, Vec, m> &r) &&       \
           -> decltype(std::declval<value_type>() OP r)                  \
         {                                                               \
-          return value_type(l) OP r;                                    \
+          return value_type(*this) OP r;                                \
         }
 
         DUNE_SIMD_VC_BINARY(*);
@@ -350,15 +366,6 @@ namespace Dune {
         DUNE_SIMD_VC_ASSIGN(>>=);
 #undef DUNE_SIMD_VC_ASSIGN
       };
-
-      //! A reference-like proxy for elements of Vc vectors and masks.
-      /**
-       * Vc's lane-access operation returns a proxy that cannot be copied or
-       * moved by non-Vc code, so it cannot be returned from `lane()`.  Use
-       * the generic proxy instead.
-       */
-      template<class V>
-      using Proxy = Impl::ValueProxy<V, ProxyOperations>;
 
     } // namespace VcImpl
 
@@ -688,6 +695,11 @@ namespace Dune {
   struct IsNumber<Vc::Vector<T, Abi>>
     : public std::integral_constant<bool, IsNumber<T>::value> {
   };
+
+  //! Specialization of AutonomousValue for Vc proxies
+  template<class V>
+  struct AutonomousValueType<Simd::VcImpl::Proxy<V> > :
+    AutonomousValueType<typename Simd::VcImpl::Proxy<V>::value_type> {};
 
 } // namespace Dune
 
