@@ -28,7 +28,9 @@ In order to build the DUNE core modules you need at least the following software
 - Add SIMD support for `std::experimental::simd`, e.g. `native_simd<double>`
   or `fixed_size_simd<double, 4>`, in `dune/common/simd/stdsimd.hh`. It is
   available if the standard library provides these types, which is indicated
-  by `DUNE_HAVE_CXX_EXPERIMENTAL_SIMD`.
+  by `DUNE_HAVE_CXX_EXPERIMENTAL_SIMD`. It is not enabled for Clang < 19 in
+  combination with the older libstdc++ headers (libstdc++ 11 and 12.2), where
+  Clang crashes on `operator/` of `std::experimental::simd`.
 
 - Add `Dune::Std::dims`, the standard mdspan alias template for dynamic
   extents with default index type `std::size_t`.
