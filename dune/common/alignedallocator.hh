@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <limits>
 #include <new>
+#include <type_traits>
 
 namespace Dune
 {
@@ -47,7 +48,7 @@ namespace Dune
     static_assert(std::has_single_bit(MinAlignment), "MinAlignment must be a power of 2");
 
     //! Alignment of the allocated memory
-    static constexpr std::size_t alignment = std::max(MinAlignment, std::alignment_of<T>::value);
+    static constexpr std::size_t alignment = std::max(MinAlignment, std::alignment_of_v<T>);
 
     //! Default constructor
     AlignedAllocator() noexcept = default;
