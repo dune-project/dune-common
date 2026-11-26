@@ -79,7 +79,12 @@ namespace Dune
      */
     void deallocate(T* p, std::size_t n)
     {
+      // Clang some times does not enable sized deallocations when compiled with stdlibc++
+#if __cpp_sized_deallocation >= 201309
       ::operator delete(p, n * sizeof(T), std::align_val_t{ alignment });
+#else
+      ::operator delete(p, std::align_val_t{ alignment });
+#endif
     }
   };
 
