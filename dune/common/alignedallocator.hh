@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <limits>
 #include <new>
+#include <type_traits>
 
 namespace Dune
 {
@@ -47,7 +48,7 @@ namespace Dune
     static_assert(std::has_single_bit(MinAlignment), "MinAlignment must be a power of 2");
 
     //! Alignment of the allocated memory
-    static constexpr std::size_t alignment = std::max(MinAlignment, std::alignment_of<T>::value);
+    static constexpr std::size_t alignment = std::max(MinAlignment, std::alignment_of_v<T>);
 
     //! Default constructor
     AlignedAllocator() noexcept = default;
@@ -78,7 +79,12 @@ namespace Dune
      */
     void deallocate(T* p, std::size_t n)
     {
+      // Clang some times does not enable sized deallocations when compiled with stdlibc++
+#if __cpp_sized_deallocation >= 201309
       ::operator delete(p, n * sizeof(T), std::align_val_t{ alignment });
+#else
+      ::operator delete(p, std::align_val_t{ alignment });
+#endif
     }
   };
 
